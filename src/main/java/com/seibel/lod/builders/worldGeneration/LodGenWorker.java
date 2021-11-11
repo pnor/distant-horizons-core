@@ -37,10 +37,10 @@ import com.seibel.lod.objects.LodDimension;
 import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.util.LodUtil;
 
+import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.palette.UpgradeData;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
@@ -90,7 +90,7 @@ public class LodGenWorker implements IWorker
 	
 	
 	
-	public LodGenWorker(ChunkPos newPos, DistanceGenerationMode newGenerationMode,
+	public LodGenWorker(ChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
 			LodBuilder newLodBuilder,
 			LodDimension newLodDimension, ServerWorld newServerWorld)
 	{
@@ -161,9 +161,9 @@ public class LodGenWorker implements IWorker
 		public final DistanceGenerationMode generationMode;
 		public final LodBuilder lodBuilder;
 		
-		private final ChunkPos pos;
+		private final ChunkPosWrapper pos;
 		
-		public LodChunkGenThread(ChunkPos newPos, DistanceGenerationMode newGenerationMode,
+		public LodChunkGenThread(ChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
 				LodBuilder newLodBuilder,
 				LodDimension newLodDimension, ServerWorld newServerWorld)
 		{
@@ -177,13 +177,13 @@ public class LodGenWorker implements IWorker
 		@Override
 		public void run()
 		{
-			try
-			{
+			//try
+			//{
 				// only generate LodChunks if they can
 				// be added to the current LodDimension
 				
 				/* TODO I must disable this 'if', if I will find a way to replace it */
-				if (lodDim.regionIsInRange(pos.x / LodUtil.REGION_WIDTH_IN_CHUNKS, pos.z / LodUtil.REGION_WIDTH_IN_CHUNKS))
+				if (lodDim.regionIsInRange(pos.getX() / LodUtil.REGION_WIDTH_IN_CHUNKS, pos.getZ() / LodUtil.REGION_WIDTH_IN_CHUNKS))
 				{
 					//
 					//{
@@ -270,20 +270,20 @@ public class LodGenWorker implements IWorker
 //					System.out.println(endTime - startTime);
 					
 				}// if in range
-			}
-			catch (Exception e)
-			{
-				ClientProxy.LOGGER.error(LodChunkGenThread.class.getSimpleName() + ": ran into an error: " + e.getMessage());
-				e.printStackTrace();
-			}
-			finally
-			{
+			//}
+			//catch (Exception e)
+			//{
+			//	ClientProxy.LOGGER.error(LodChunkGenThread.class.getSimpleName() + ": ran into an error: " + e.getMessage());
+			//	e.printStackTrace();
+			//}
+			//finally
+			//{
 				// decrement how many threads are running
 				LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.addAndGet(-1);
 				
 				// this position is no longer being generated
 				LodWorldGenerator.INSTANCE.positionsWaitingToBeGenerated.remove(pos);
-			}
+			//}
 			
 		}// run
 		
@@ -295,7 +295,7 @@ public class LodGenWorker implements IWorker
 		private void generateUsingBiomesOnly()
 		{
 			List<IChunk> chunkList = new LinkedList<>();
-			ChunkPrimer chunk = new ChunkPrimer(pos, UpgradeData.EMPTY);
+			ChunkPrimer chunk = new ChunkPrimer(pos.getChunkPos(), UpgradeData.EMPTY);
 			chunkList.add(chunk);
 			
 			ServerChunkProvider chunkSource = serverWorld.getChunkSource();
@@ -407,7 +407,7 @@ public class LodGenWorker implements IWorker
 		private void generateUsingSurface()
 		{
 			List<IChunk> chunkList = new LinkedList<>();
-			ChunkPrimer chunk = new ChunkPrimer(pos, UpgradeData.EMPTY);
+			ChunkPrimer chunk = new ChunkPrimer(pos.getChunkPos(), UpgradeData.EMPTY);
 			chunkList.add(chunk);
 			LodServerWorld lodServerWorld = new LodServerWorld(serverWorld, chunk);
 			
@@ -447,7 +447,7 @@ public class LodGenWorker implements IWorker
 		private void generateUsingFeatures()
 		{
 			List<IChunk> chunkList = new LinkedList<>();
-			ChunkPrimer chunk = new ChunkPrimer(pos, UpgradeData.EMPTY);
+			ChunkPrimer chunk = new ChunkPrimer(pos.getChunkPos(), UpgradeData.EMPTY);
 			chunkList.add(chunk);
 			LodServerWorld lodServerWorld = new LodServerWorld(serverWorld, chunk);
 			
@@ -565,7 +565,7 @@ public class LodGenWorker implements IWorker
 		 */
 		private void generateWithServer()
 		{
-			lodBuilder.generateLodNodeFromChunk(lodDim,  new ChunkWrapper(serverWorld.getChunk(pos.x, pos.z, ChunkStatus.FEATURES)), new LodBuilderConfig(DistanceGenerationMode.SERVER));
+			lodBuilder.generateLodNodeFromChunk(lodDim,  new ChunkWrapper(serverWorld.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FEATURES)), new LodBuilderConfig(DistanceGenerationMode.SERVER));
 		}
 		
 		

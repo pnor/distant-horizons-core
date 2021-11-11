@@ -28,10 +28,10 @@ import com.seibel.lod.enums.DebugMode;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.LodUtil;
+import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 
 /**
@@ -74,35 +74,58 @@ public class Box
 	public static final Map<Direction, int[][]> DIRECTION_VERTEX_MAP = new HashMap<Direction, int[][]>()
 	{{
 		put(Direction.UP, new int[][] {
-				{ 0, 1, 0 },
-				{ 0, 1, 1 },
-				{ 1, 1, 1 },
-				{ 1, 1, 0 } });
+				{ 0, 1, 0 }, // 0
+				{ 0, 1, 1 }, // 1
+				{ 1, 1, 1 }, // 2
+				
+				{ 0, 1, 0 }, // 0
+				{ 1, 1, 1 }, // 2
+				{ 1, 1, 0 } // 3
+		});
 		put(Direction.DOWN, new int[][] {
-				{ 1, 0, 0 },
-				{ 1, 0, 1 },
-				{ 0, 0, 1 },
-				{ 0, 0, 0 } });
+				{ 1, 0, 0 }, // 0
+				{ 1, 0, 1 }, // 1
+				{ 0, 0, 1 }, // 2
+				
+				{ 1, 0, 0 }, // 0
+				{ 0, 0, 1 }, // 2
+				{ 0, 0, 0 } // 3
+		 });
 		put(Direction.EAST, new int[][] {
-				{ 1, 1, 0 },
-				{ 1, 1, 1 },
-				{ 1, 0, 1 },
-				{ 1, 0, 0 } });
+				{ 1, 1, 0 }, // 0
+				{ 1, 1, 1 }, // 1
+				{ 1, 0, 1 }, // 2
+				
+				{ 1, 1, 0 }, // 0
+				{ 1, 0, 1 }, // 2
+				{ 1, 0, 0 } }); // 3
 		put(Direction.WEST, new int[][] {
-				{ 0, 0, 0 },
-				{ 0, 0, 1 },
-				{ 0, 1, 1 },
-				{ 0, 1, 0 } });
+				{ 0, 0, 0 }, // 0
+				{ 0, 0, 1 }, // 1
+				{ 0, 1, 1 }, // 2
+				
+				{ 0, 0, 0 }, // 0
+				{ 0, 1, 1 }, // 2
+				{ 0, 1, 0 } // 3
+		});
 		put(Direction.SOUTH, new int[][] {
-				{ 1, 0, 1 },
-				{ 1, 1, 1 },
-				{ 0, 1, 1 },
-				{ 0, 0, 1 } });
+				{ 1, 0, 1 }, // 0
+				{ 1, 1, 1 }, // 1
+				{ 0, 1, 1 }, // 2
+				
+				{ 1, 0, 1 }, // 0
+				{ 0, 1, 1 }, // 2
+				{ 0, 0, 1 } // 3
+		});
 		put(Direction.NORTH, new int[][] {
-				{ 0, 0, 0 },
-				{ 0, 1, 0 },
-				{ 1, 1, 0 },
-				{ 1, 0, 0 } });
+				{ 0, 0, 0 }, // 0
+				{ 0, 1, 0 }, // 1
+				{ 1, 1, 0 }, // 2
+				
+				{ 0, 0, 0 }, // 0
+				{ 1, 1, 0 }, // 2
+				{ 1, 0, 0 } // 3
+		});
 	}};
 	
 	
@@ -226,7 +249,7 @@ public class Box
 		for (Direction direction : DIRECTIONS)
 		{
 			if (!adjShadeDisabled[DIRECTION_INDEX.get(direction)])
-				colorMap[DIRECTION_INDEX.get(direction)] = ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientWorld().getShade(direction, true));
+				colorMap[DIRECTION_INDEX.get(direction)] = ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientLevel().getShade(direction, true));
 			else
 				colorMap[DIRECTION_INDEX.get(direction)] = color;
 		}
@@ -241,7 +264,7 @@ public class Box
 		if (LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != DebugMode.SHOW_DETAIL)
 			return colorMap[DIRECTION_INDEX.get(direction)];
 		else
-			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientWorld().getShade(direction, true));
+			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientLevel().getShade(direction, true));
 	}
 	
 	/**
@@ -279,7 +302,7 @@ public class Box
 	}
 	
 	/** determine which faces should be culled */
-	public void setUpCulling(int cullingDistance, BlockPos playerPos)
+	public void setUpCulling(int cullingDistance, BlockPosWrapper playerPos)
 	{
 		for (Direction direction : DIRECTIONS)
 		{

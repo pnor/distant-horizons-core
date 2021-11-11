@@ -19,10 +19,10 @@
 
 package com.seibel.lod.proxy;
 
-import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL15;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder;
@@ -40,8 +40,10 @@ import com.seibel.lod.util.DetailDistanceUtil;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.util.ThreadMapUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
 
 import net.minecraft.profiler.IProfiler;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
@@ -54,7 +56,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * This handles all events sent to the client,
  * and is the starting point for most of the mod.
  * @author James_Seibel
- * @version 10-23-2021
+ * @version 11-8-2021
  */
 public class ClientProxy
 {
@@ -99,7 +101,7 @@ public class ClientProxy
 	//==============//
 	
 	/** Do any setup that is required to draw LODs and then tell the LodRenderer to draw. */
-	public void renderLods(MatrixStack mcMatrixStack, float partialTicks)
+	public void renderLods(MatrixStack mcModelViewMatrix, float partialTicks)
 	{
 		// comment out when creating a release
 		// applyConfigOverrides();
@@ -129,6 +131,15 @@ public class ClientProxy
 			lodDim.expandOrLoadRegionsAsync((int) mc.getPlayer().getX(), (int) mc.getPlayer().getZ());
 			
 			
+			// get the default projection matrix, so we can
+			// reset it after drawing the LODs
+			float[] mcProjMatrixRaw = new float[16];
+			GL15.glGetFloatv(GL15.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
+			Matrix4f mcProjectionMatrix = new Matrix4f(mcProjMatrixRaw);
+			// OpenGl outputs their matrices in col,row form instead of row,col
+			// (or maybe vice versa I have no idea :P)
+			mcProjectionMatrix.transpose();
+			
 			// Note to self:
 			// if "unspecified" shows up in the pie chart, it is
 			// possibly because the amount of time between sections
@@ -137,7 +148,8 @@ public class ClientProxy
 			profiler.pop(); // get out of "terrain"
 			profiler.push("LOD");
 			
-			renderer.drawLODs(lodDim, mcMatrixStack, partialTicks, mc.getProfiler());
+			
+			renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, mc.getProfiler());
 			
 			profiler.pop(); // end LOD
 			profiler.push("terrain"); // go back into "terrain"
@@ -161,18 +173,19 @@ public class ClientProxy
 		// remind the developer(s) that the config override is active
 		if (!configOverrideReminderPrinted)
 		{
+			// TODO add a send message method to the MC wrapper
 //			mc.getPlayer().sendMessage(new StringTextComponent("LOD experimental build 1.5.1"), mc.getPlayer().getUUID());
 //			mc.getPlayer().sendMessage(new StringTextComponent("Here be dragons!"), mc.getPlayer().getUUID());
 			
 			mc.getPlayer().sendMessage(new StringTextComponent("Debug settings enabled!"), mc.getPlayer().getUUID());
 			configOverrideReminderPrinted = true;
 		}
-
+		
 //		LodConfig.CLIENT.graphics.drawResolution.set(HorizontalResolution.BLOCK);
 //		LodConfig.CLIENT.worldGenerator.generationResolution.set(HorizontalResolution.BLOCK);
 		// requires a world restart?
 //		LodConfig.CLIENT.worldGenerator.lodQualityMode.set(VerticalQuality.VOXEL);
-
+		
 //		LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.set(FogDistance.FAR);
 //		LodConfig.CLIENT.graphics.fogQualityOption.fogDrawOverride.set(FogDrawOverride.FANCY);
 //		LodConfig.CLIENT.graphics.fogQualityOption.disableVanillaFog.set(true);
@@ -181,7 +194,7 @@ public class ClientProxy
 //		LodConfig.CLIENT.graphics.advancedGraphicsOption.vanillaOverdraw.set(VanillaOverdraw.DYNAMIC);
 		
 //		LodConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.set(GpuUploadMethod.BUFFER_STORAGE);
-
+		
 //		LodConfig.CLIENT.worldGenerator.distanceGenerationMode.set(DistanceGenerationMode.SURFACE);
 //		LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.set(128);
 //		LodConfig.CLIENT.worldGenerator.lodDistanceCalculatorType.set(DistanceCalculatorType.LINEAR);
@@ -250,23 +263,25 @@ public class ClientProxy
 		{
 			// the player just left the server
 			
+			// TODO should "resetMod()" be called here? -James
+			
 			// if this isn't done unfinished tasks may be left in the queue
 			// preventing new LodChunks form being generated
-			//LodNodeGenWorker.restartExecutorService();
+			//LodNodeGenWorker.restartExecutorService(); // TODO why was this commented out? -James
 			//ThreadMapUtil.clearMaps();
 			
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);
 			lodWorld.deselectWorld();
 			
 			
-			// hopefully this should reduce issues related to the buffer builder
+			// prevent issues related to the buffer builder
 			// breaking when changing worlds.
 			renderer.destroyBuffers();
 			recalculateWidths = true;
 			renderer = new LodRenderer(lodBufferBuilder);
 			
 			
-			// make sure the nilled objects are freed.
+			// make sure the nulled objects are freed.
 			// (this prevents an out of memory error when
 			// changing worlds)
 			System.gc();
@@ -314,7 +329,7 @@ public class ClientProxy
 	private void playerMoveEvent(LodDimension lodDim)
 	{
 		// make sure the dimension is centered
-		RegionPos playerRegionPos = new RegionPos(mc.getPlayer().blockPosition());
+		RegionPos playerRegionPos = new RegionPos(mc.getPlayerBlockPos());
 		RegionPos worldRegionOffset = new RegionPos(playerRegionPos.x - lodDim.getCenterRegionPosX(), playerRegionPos.z - lodDim.getCenterRegionPosZ());
 		if (worldRegionOffset.x != 0 || worldRegionOffset.z != 0)
 		{
@@ -330,7 +345,7 @@ public class ClientProxy
 	{
 		// calculate how wide the dimension(s) should be in regions
 		int chunksWide;
-		if (mc.getClientWorld().dimensionType().hasCeiling())
+		if (mc.getClientLevel().dimensionType().hasCeiling())
 			chunksWide = Math.min(LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
 		else
 			chunksWide = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 2 + 1;
@@ -347,7 +362,7 @@ public class ClientProxy
 			// update the dimensions to fit the new width
 			lodWorld.resizeDimensionRegionWidth(newWidth);
 			lodBuilder.defaultDimensionWidthInRegions = newWidth;
-			renderer.setupBuffers(lodWorld.getLodDimension(mc.getClientWorld().dimensionType()));
+			renderer.setupBuffers(lodWorld.getLodDimension(mc.getClientLevel().dimensionType()));
 			
 			recalculateWidths = false;
 			//LOGGER.info("new dimension width in regions: " + newWidth + "\t potential: " + newWidth );
@@ -368,6 +383,7 @@ public class ClientProxy
 	/** this method reset some static data every time we change world */
 	private void resetMod()
 	{
+		// TODO when should this be used?
 		ThreadMapUtil.clearMaps();
 		LodGenWorker.restartExecutorService();
 		

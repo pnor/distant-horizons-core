@@ -26,7 +26,9 @@ import com.seibel.lod.ModInfo;
 import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.util.LodUtil;
 
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.Block.BlockPosWrapper;
+import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.World.LevelWrapper;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
@@ -44,6 +46,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
@@ -170,6 +173,17 @@ public class MinecraftWrapper
 		return mc.player;
 	}
 	
+	public BlockPosWrapper getPlayerBlockPos()
+	{
+		BlockPos playerPos = getPlayer().blockPosition();
+		return new BlockPosWrapper(playerPos.getX(), playerPos.getY(), playerPos.getZ());
+	}
+
+	public ChunkPosWrapper getPlayerChunkPos()
+	{
+		return new ChunkPosWrapper(getPlayer().xChunk, getPlayer().zChunk);
+	}
+
 	public GameSettings getOptions()
 	{
 		return mc.options;
@@ -180,17 +194,17 @@ public class MinecraftWrapper
 		return mc.getModelManager();
 	}
 	
-	public ClientWorld getClientWorld()
+	public ClientWorld getClientLevel()
 	{
 		return mc.level;
 	}
 	
-	public WorldWrapper getWrappedClientWorld()
+	public LevelWrapper getWrappedClientLevel()
 	{
-		return WorldWrapper.getWorldWrapper(mc.level);
+		return LevelWrapper.getLevelWrapper(mc.level);
 	}
 	
-	public WorldWrapper getWrappedServerWorld()
+	public LevelWrapper getWrappedServerLevel()
 	{
 		
 		if (mc.level == null)
@@ -212,7 +226,7 @@ public class MinecraftWrapper
 			}
 		}
 		
-		return WorldWrapper.getWorldWrapper(returnWorld);
+		return LevelWrapper.getLevelWrapper(returnWorld);
 	}
 	
 	/** Measured in chunks */

@@ -25,15 +25,16 @@ import com.seibel.lod.enums.DebugMode;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.LodUtil;
+import com.seibel.lod.wrappers.Block.BlockPosWrapper;
+
 
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
 
 /**
  * Builds LODs as rectangular prisms.
  * @author James Seibel
- * @version 10-10-2021
+ * @version 11-8-2021
  */
 public class CubicLodTemplate extends AbstractLodTemplate
 {
@@ -44,7 +45,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	}
 	
 	@Override
-	public void addLodToBuffer(BufferBuilder buffer, BlockPos bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
+	public void addLodToBuffer(BufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (box == null)
@@ -79,7 +80,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	private void generateBoundingBox(Box box,
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
-			BlockPos bufferCenterBlockPos,
+			BlockPosWrapper bufferCenterBlockPos,
 			Map<Direction, long[]> adjData,
 			int color,
 			int skyLight,
@@ -118,10 +119,11 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		{
 			if(box.isCulled(direction))
 				continue;
+			
 			int verticalFaceIndex = 0;
 			while (box.shouldRenderFace(direction, verticalFaceIndex))
 			{
-				for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++)
+				for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++)
 				{
 					color = box.getColor(direction);
 					skyLight = box.getSkyLight(direction, verticalFaceIndex);

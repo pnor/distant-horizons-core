@@ -41,9 +41,8 @@ import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Block.BlockShapeWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
-import com.seibel.lod.wrappers.World.BiomeColorWrapper;
 import com.seibel.lod.wrappers.World.BiomeWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.World.LevelWrapper;
 
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.IWorld;
@@ -109,7 +108,7 @@ public class LodBuilder
 			{
 				// we need a loaded client world in order to
 				// get the textures for blocks
-				if (mc.getClientWorld() == null)
+				if (mc.getClientLevel() == null)
 					return;
 				
 				// don't try to generate LODs if the user isn't in the world anymore
@@ -171,7 +170,7 @@ public class LodBuilder
 			return;
 		
 		// this happens if a LOD is generated after the user leaves the world.
-		if (MinecraftWrapper.INSTANCE.getWrappedClientWorld() == null)
+		if (MinecraftWrapper.INSTANCE.getWrappedClientLevel() == null)
 			return;
 		
 		// determine how many LODs to generate horizontally
@@ -231,8 +230,8 @@ public class LodBuilder
 		int xAbs;
 		int yAbs;
 		int zAbs;
-		boolean hasCeiling = mc.getClientWorld().dimensionType().hasCeiling();
-		boolean hasSkyLight = mc.getClientWorld().dimensionType().hasSkyLight();
+		boolean hasCeiling = mc.getClientLevel().dimensionType().hasCeiling();
+		boolean hasSkyLight = mc.getClientLevel().dimensionType().hasSkyLight();
 		boolean isDefault;
 		BlockPosWrapper blockPos = new BlockPosWrapper();
 		int index;
@@ -387,7 +386,7 @@ public class LodBuilder
 		// 1 means the lighting is a guess
 		int isDefault = 0;
 		
-		WorldWrapper world = MinecraftWrapper.INSTANCE.getWrappedServerWorld();
+		LevelWrapper world = MinecraftWrapper.INSTANCE.getWrappedServerLevel();
 		
 		int blockBrightness = chunk.getEmittedBrightness(blockPos);
 		// get the air block above or below this block
@@ -415,7 +414,7 @@ public class LodBuilder
 			{
 				// we are on predicted terrain, and we don't know what the light here is,
 				// lets just take a guess
-				if (blockPos.getY() >= mc.getClientWorld().getSeaLevel() - 5)
+				if (blockPos.getY() >= mc.getClientLevel().getSeaLevel() - 5)
 				{
 					skyLight = 12;
 					isDefault = 1;
@@ -426,7 +425,7 @@ public class LodBuilder
 		}
 		else
 		{
-			world = MinecraftWrapper.INSTANCE.getWrappedClientWorld();
+			world = MinecraftWrapper.INSTANCE.getWrappedClientLevel();
 			if (world.isEmpty())
 				return 0;
 			// client world sky light (almost never accurate)
@@ -448,7 +447,7 @@ public class LodBuilder
 					{
 						// we don't know what the light here is,
 						// lets just take a guess
-						if (blockPos.getY() >= mc.getClientWorld().getSeaLevel() - 5)
+						if (blockPos.getY() >= mc.getClientLevel().getSeaLevel() - 5)
 						{
 							skyLight = 12;
 							isDefault = 1;
@@ -485,10 +484,7 @@ public class LodBuilder
 		BlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(blockPos);
 		
 		if (chunk.isWaterLogged(blockPos))
-		{
-			BiomeWrapper biome = chunk.getBiome(xRel, y, zRel);
-			return biome.getWaterTint();
-		}
+			blockColorWrapper = BlockColorWrapper.getWaterColor();
 		else
 			blockColorWrapper = chunk.getBlockColorWrapper(blockPos);
 		
@@ -500,20 +496,16 @@ public class LodBuilder
 		
 		if (blockColorWrapper.hasTint())
 		{
-			WorldWrapper world = MinecraftWrapper.INSTANCE.getWrappedServerWorld();
-			
-			if (world == null || world.isEmpty())
-				world = MinecraftWrapper.INSTANCE.getWrappedClientWorld();
-			
+			BiomeWrapper biome = chunk.getBiome(xRel, y, zRel);
 			int tintValue;
 			if (blockColorWrapper.hasGrassTint())
 				// grass and green plants
-				tintValue = BiomeColorWrapper.getGrassColor(world, blockPos);
+				tintValue = biome.getGrassTint(0,0);
 			else if (blockColorWrapper.hasFolliageTint())
-				tintValue = BiomeColorWrapper.getFoliageColor(world, blockPos);
+				tintValue = biome.getFolliageTint();
 			else
 				//we can reintroduce this with the wrappers
-				tintValue = BiomeColorWrapper.getWaterColor(world, blockPos);
+				tintValue = biome.getWaterTint();
 			
 			colorInt = ColorUtil.multiplyRGBcolors(tintValue | 0xFF000000, colorOfBlock);
 		}
