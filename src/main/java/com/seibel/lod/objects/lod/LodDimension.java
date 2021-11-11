@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.objects;
+package com.seibel.lod.objects.lod;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +29,8 @@ import com.seibel.lod.enums.DistanceGenerationMode;
 import com.seibel.lod.enums.GenerationPriority;
 import com.seibel.lod.enums.VerticalQuality;
 import com.seibel.lod.handlers.LodDimensionFileHandler;
+import com.seibel.lod.objects.PosToGenerateContainer;
+import com.seibel.lod.objects.PosToRenderContainer;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.DetailDistanceUtil;
 import com.seibel.lod.util.LevelPosUtil;

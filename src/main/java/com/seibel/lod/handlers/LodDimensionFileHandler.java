@@ -31,10 +31,10 @@ import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
 import com.seibel.lod.enums.DistanceGenerationMode;
 import com.seibel.lod.enums.VerticalQuality;
-import com.seibel.lod.objects.LodDimension;
-import com.seibel.lod.objects.LodRegion;
-import com.seibel.lod.objects.RegionPos;
-import com.seibel.lod.objects.VerticalLevelContainer;
+import com.seibel.lod.objects.lod.LodDimension;
+import com.seibel.lod.objects.lod.LodRegion;
+import com.seibel.lod.objects.lod.RegionPos;
+import com.seibel.lod.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;

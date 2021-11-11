@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.objects;
+package com.seibel.lod.objects.lod;
 
 /**
  * A level container is a quad tree level

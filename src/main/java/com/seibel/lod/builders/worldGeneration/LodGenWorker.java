@@ -33,7 +33,7 @@ import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.DistanceGenerationMode;
-import com.seibel.lod.objects.LodDimension;
+import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.util.LodUtil;
 
