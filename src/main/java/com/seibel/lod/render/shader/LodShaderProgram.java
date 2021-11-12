@@ -24,7 +24,7 @@ import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
-import net.minecraft.util.math.vector.Matrix4f;
+import com.seibel.lod.objects.rending.Mat4f;
 
 
 /**
@@ -169,7 +169,7 @@ public class LodShaderProgram
 	 * @param location Uniform location
 	 * @param value    Value to set
 	 */
-	public void setUniform(int location, Matrix4f value)
+	public void setUniform(int location, Mat4f value)
 	{
 		try (MemoryStack stack = MemoryStack.stackPush())
 		{

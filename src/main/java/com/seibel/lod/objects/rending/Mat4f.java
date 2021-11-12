@@ -2,33 +2,31 @@ package com.seibel.lod.objects.rending;
 
 import java.nio.FloatBuffer;
 
-import net.minecraft.util.math.vector.Vector3f;
-
 /**
  * A (almost) exact copy of Minecraft's 1.16.5
  * implementation of a 4x4 matrix.
  * 
  * @author James Seibel
- * 
+ * @version 11-11-2021
  */
 public class Mat4f
 {
-	protected float m00;
-	protected float m01;
-	protected float m02;
-	protected float m03;
-	protected float m10;
-	protected float m11;
-	protected float m12;
-	protected float m13;
-	protected float m20;
-	protected float m21;
-	protected float m22;
-	protected float m23;
-	protected float m30;
-	protected float m31;
-	protected float m32;
-	protected float m33;
+	private float m00;
+	private float m01;
+	private float m02;
+	private float m03;
+	private float m10;
+	private float m11;
+	private float m12;
+	private float m13;
+	private float m20;
+	private float m21;
+	private float m22;
+	private float m23;
+	private float m30;
+	private float m31;
+	private float m32;
+	private float m33;
 	
 	
 	public Mat4f()
@@ -377,20 +375,18 @@ public class Mat4f
 		this.m33 *= scalar;
 	}
 	
-	/* not currently needed/implemented
-	 * Also the parameter names should be double checked as they may be incorrect
-	public static Matrix4Float perspective(double fov, float heightWidthRatio, float nearClipPlane, float farClipPlane)
+	public static Mat4f perspective(double fov, float widthHeightRatio, float nearClipPlane, float farClipPlane)
 	{
 		float f = (float) (1.0D / Math.tan(fov * ((float) Math.PI / 180F) / 2.0D));
-		Matrix4Float matrix = new Matrix4Float();
-		matrix.m00 = f / heightWidthRatio;
+		Mat4f matrix = new Mat4f();
+		matrix.m00 = f / widthHeightRatio;
 		matrix.m11 = f;
 		matrix.m22 = (farClipPlane + nearClipPlane) / (nearClipPlane - farClipPlane);
 		matrix.m32 = -1.0F;
 		matrix.m23 = 2.0F * farClipPlane * nearClipPlane / (nearClipPlane - farClipPlane);
 		return matrix;
 	}
-	*/
+	
 	
 	/* not currently needed/implemented
 	 * Also the parameter names should be double checked as they may be incorrect
@@ -409,11 +405,21 @@ public class Mat4f
 	}
 	*/
 	
-	public void translate(Vector3f vec)
+	/** 
+	 * TODO: what kind of translation is this? 
+	 * and how is this different from "multiplyTranslationMatrix"?
+	 */
+	public void translate(Vec3f vec)
 	{
-		this.m03 += vec.x();
-		this.m13 += vec.y();
-		this.m23 += vec.z();
+		this.m03 += vec.x;
+		this.m13 += vec.y;
+		this.m23 += vec.z;
+	}
+	
+	/** originally "translate" from Minecraft's MatrixStack */
+	public void multiplyTranslationMatrix(double x, double y, double z)
+	{
+		multiply(createTranslateMatrix((float)x, (float)y, (float)z));
 	}
 	
 	public Mat4f copy()
@@ -466,6 +472,11 @@ public class Mat4f
 		m33 = values[15];
 	}
 	
+	public Mat4f(FloatBuffer buffer)
+	{
+		this(buffer.array());
+	}
+
 	public void set(Mat4f mat)
 	{
 		this.m00 = mat.m00;

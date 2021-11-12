@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL15;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.builders.worldGeneration.LodGenWorker;
@@ -34,6 +33,7 @@ import com.seibel.lod.enums.DistanceGenerationMode;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodWorld;
 import com.seibel.lod.objects.lod.RegionPos;
+import com.seibel.lod.objects.rending.Mat4f;
 import com.seibel.lod.render.LodRenderer;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.DetailDistanceUtil;
@@ -43,7 +43,6 @@ import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
 
 import net.minecraft.profiler.IProfiler;
-import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
@@ -101,7 +100,7 @@ public class ClientProxy
 	//==============//
 	
 	/** Do any setup that is required to draw LODs and then tell the LodRenderer to draw. */
-	public void renderLods(MatrixStack mcModelViewMatrix, float partialTicks)
+	public void renderLods(Mat4f mcModelViewMatrix, float partialTicks)
 	{
 		// comment out when creating a release
 		// applyConfigOverrides();
@@ -135,7 +134,7 @@ public class ClientProxy
 			// reset it after drawing the LODs
 			float[] mcProjMatrixRaw = new float[16];
 			GL15.glGetFloatv(GL15.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
-			Matrix4f mcProjectionMatrix = new Matrix4f(mcProjMatrixRaw);
+			Mat4f mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
 			// OpenGl outputs their matrices in col,row form instead of row,col
 			// (or maybe vice versa I have no idea :P)
 			mcProjectionMatrix.transpose();

@@ -58,6 +58,8 @@ public class ThreadMapUtil
 	public static final ConcurrentMap<String, Map<Direction, long[]>> adjDataMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, Box> boxMap = new ConcurrentHashMap<>();
 	
+	
+	
 	/** returns the array NOT cleared every time */
 	public static boolean[] getAdjShadeDisabledArray()
 	{

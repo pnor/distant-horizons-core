@@ -29,9 +29,9 @@ import com.seibel.lod.enums.HorizontalResolution;
 import com.seibel.lod.enums.VanillaOverdraw;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;
+import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.MinecraftWrapper;
 
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -498,4 +498,15 @@ public class LodUtil
 		}
 		return false;
 	}
+	
+	
+	/** This is copied from Minecraft's MathHelper class */
+	public static float fastInvSqrt(float numb)
+	{
+	      float half = 0.5F * numb;
+	      int i = Float.floatToIntBits(numb);
+	      i = 1597463007 - (i >> 1);
+	      numb = Float.intBitsToFloat(i);
+	      return numb * (1.5F - half * numb * numb);
+	   }
 }

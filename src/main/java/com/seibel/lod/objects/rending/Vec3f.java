@@ -2,16 +2,23 @@ package com.seibel.lod.objects.rending;
 
 import com.seibel.lod.util.LodUtil;
 
-import net.minecraft.util.math.MathHelper;
-
+/**
+ * A (almost) exact copy of Minecraft's 1.16.5
+ * implementation of a 3 element vector.
+ * 
+ * @author James Seibel
+ * @version 11-11-2021
+ */
 public class Vec3f
 {
-	public static Vec3f XN = new Vec3f(-1.0F, 0.0F, 0.0F);
-	public static Vec3f XP = new Vec3f(1.0F, 0.0F, 0.0F);
-	public static Vec3f YN = new Vec3f(0.0F, -1.0F, 0.0F);
-	public static Vec3f YP = new Vec3f(0.0F, 1.0F, 0.0F);
-	public static Vec3f ZN = new Vec3f(0.0F, 0.0F, -1.0F);
-	public static Vec3f ZP = new Vec3f(0.0F, 0.0F, 1.0F);
+	public static Vec3f XNeg = new Vec3f(-1.0F, 0.0F, 0.0F);
+	public static Vec3f XPos = new Vec3f(1.0F, 0.0F, 0.0F);
+	public static Vec3f YNeg = new Vec3f(0.0F, -1.0F, 0.0F);
+	public static Vec3f YPos = new Vec3f(0.0F, 1.0F, 0.0F);
+	public static Vec3f ZNeg = new Vec3f(0.0F, 0.0F, -1.0F);
+	public static Vec3f ZPos = new Vec3f(0.0F, 0.0F, 1.0F);
+	
+	
 	public float x;
 	public float y;
 	public float z;
@@ -130,7 +137,7 @@ public class Vec3f
 		}
 		else
 		{
-			float f1 = MathHelper.fastInvSqrt(squaredSum);
+			float f1 = LodUtil.fastInvSqrt(squaredSum);
 			this.x *= f1;
 			this.y *= f1;
 			this.z *= f1;

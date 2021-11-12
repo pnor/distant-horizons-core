@@ -26,7 +26,6 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.NVFogDistance;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder.VertexBuffersAndOffset;
 import com.seibel.lod.config.LodConfig;
@@ -38,6 +37,7 @@ import com.seibel.lod.enums.GpuUploadMethod;
 import com.seibel.lod.handlers.ReflectionHandler;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;
+import com.seibel.lod.objects.rending.Mat4f;
 import com.seibel.lod.objects.rending.NearFarFogSettings;
 import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.proxy.GlProxy;
@@ -45,6 +45,7 @@ import com.seibel.lod.render.shader.LodShaderProgram;
 import com.seibel.lod.util.DetailDistanceUtil;
 import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodUtil;
+import com.seibel.lod.wrappers.McObjectConverter;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
@@ -55,7 +56,6 @@ import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.potion.Effects;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 
@@ -157,7 +157,7 @@ public class LodRenderer
 	 * @param mcProjectionMatrix 
 	 * @param partialTicks how far into the current tick this method was called.
 	 */
-	public void drawLODs(LodDimension lodDim, MatrixStack mcModelViewMatrix, Matrix4f mcProjectionMatrix, float partialTicks, IProfiler newProfiler)
+	public void drawLODs(LodDimension lodDim, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfiler newProfiler)
 	{
 		//=================================//
 		// determine if LODs should render //
@@ -248,7 +248,7 @@ public class LodRenderer
 		int currentProgram = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 		
 		
-		Matrix4f modelViewMatrix = offsetTheModelViewMatrix(mcModelViewMatrix, partialTicks);
+		Mat4f modelViewMatrix = offsetTheModelViewMatrix(mcModelViewMatrix, partialTicks);
 		vanillaBlockRenderedDistance = mc.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		// required for setupFog and setupProjectionMatrix
 		if (mc.getClientLevel().dimensionType().hasCeiling())
@@ -257,7 +257,7 @@ public class LodRenderer
 			farPlaneBlockDistance = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * LodUtil.CHUNK_WIDTH;
 		
 		
-		Matrix4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, partialTicks);
+		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, partialTicks);
 		
 		
 		// commented out until we can add shaders to handle lighting
@@ -543,12 +543,8 @@ public class LodRenderer
 	 * (since AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
 	 * accuracy vs the model view matrix, which only uses floats)
 	 */
-	private Matrix4f offsetTheModelViewMatrix(MatrixStack mcModelViewMatrix, float partialTicks)
+	private Mat4f offsetTheModelViewMatrix(Mat4f mcModelViewMatrix, float partialTicks)
 	{
-		// duplicate the last matrix
-		mcModelViewMatrix.pushPose();
-		
-		
 		// get all relevant camera info
 		ActiveRenderInfo camera = mc.getGameRenderer().getMainCamera();
 		Vector3d projectedView = camera.getPosition();
@@ -559,16 +555,9 @@ public class LodRenderer
 		BlockPosWrapper bufferPos = vbosCenter.getWorldPosition();
 		double xDiff = projectedView.x - bufferPos.getX();
 		double zDiff = projectedView.z - bufferPos.getZ();
-		mcModelViewMatrix.translate(-xDiff, -projectedView.y, -zDiff);
+		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
 		
-		
-		
-		// get the modified model view matrix
-		Matrix4f lodModelViewMatrix = mcModelViewMatrix.last().pose();
-		// remove the lod ModelViewMatrix
-		mcModelViewMatrix.popPose();
-		
-		return lodModelViewMatrix;
+		return mcModelViewMatrix;
 	}
 		
 	/**
@@ -577,30 +566,30 @@ public class LodRenderer
 	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
 	 * @param partialTicks how many ticks into the frame we are
 	 */
-	private Matrix4f createProjectionMatrix(Matrix4f currentProjectionMatrix, float vanillaBlockRenderedDistance, float partialTicks)
+	private Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance, float partialTicks)
 	{
 		// create the new projection matrix
-		Matrix4f lodProj =
-				Matrix4f.perspective(
-						getFov(partialTicks, true),
-						(float) this.mc.getWindow().getScreenWidth() / (float) this.mc.getWindow().getScreenHeight(),
-						LodConfig.CLIENT.graphics.advancedGraphicsOption.useExtendedNearClipPlane.get() ? vanillaBlockRenderedDistance / 5 : 1,
-						farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
+		
+		Mat4f lodProj = Mat4f.perspective(
+				getFov(partialTicks, true),
+				(float) this.mc.getWindow().getScreenWidth() / (float) this.mc.getWindow().getScreenHeight(),
+				LodConfig.CLIENT.graphics.advancedGraphicsOption.useExtendedNearClipPlane.get() ? vanillaBlockRenderedDistance / 5 : 1,
+				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
+				
 		
 		// get Minecraft's un-edited projection matrix
 		// (this is before it is zoomed, distorted, etc.)
-		Matrix4f defaultMcProj = mc.getGameRenderer().getProjectionMatrix(mc.getGameRenderer().getMainCamera(), partialTicks, true);
+		Mat4f defaultMcProj = McObjectConverter.Convert(mc.getGameRenderer().getProjectionMatrix(mc.getGameRenderer().getMainCamera(), partialTicks, true));
 		// true here means use "use fov setting" (probably)
-		
 		
 		// this logic strips away the defaultMcProj matrix, so we
 		// can get the distortionMatrix, which represents all
 		// transformations, zooming, distortions, etc. done
 		// to Minecraft's Projection matrix
-		Matrix4f defaultMcProjInv = defaultMcProj.copy();
+		Mat4f defaultMcProjInv = defaultMcProj.copy();
 		defaultMcProjInv.invert();
 		
-		Matrix4f distortionMatrix = defaultMcProjInv.copy();
+		Mat4f distortionMatrix = defaultMcProjInv.copy();
 		distortionMatrix.multiply(currentProjectionMatrix);
 		
 		
@@ -610,7 +599,6 @@ public class LodRenderer
 		
 		return lodProj;
 	}
-	
 	
 	///** setup the lighting to be used for the LODs */
 	/*private void setupLighting(LodDimension lodDimension, float partialTicks)

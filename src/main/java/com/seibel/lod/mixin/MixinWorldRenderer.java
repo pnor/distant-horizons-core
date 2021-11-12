@@ -25,7 +25,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.seibel.lod.LodMain;
+import com.seibel.lod.api.ClientApi;
+import com.seibel.lod.objects.rending.Mat4f;
+import com.seibel.lod.wrappers.McObjectConverter;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -59,6 +61,9 @@ public class MixinWorldRenderer
 		// only render if LODs are enabled and
 		// only render before solid blocks
 		if (renderType.equals(RenderType.solid()))
-			LodMain.client_proxy.renderLods(matrixStackIn, previousPartialTicks);
+		{
+			Mat4f mcModelViewMatrix = McObjectConverter.Convert(matrixStackIn.last().pose());
+			ClientApi.renderLods(mcModelViewMatrix, previousPartialTicks);
+		}
 	}
 }
