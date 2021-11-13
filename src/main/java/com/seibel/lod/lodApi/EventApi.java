@@ -138,7 +138,7 @@ public class EventApi
 			// breaking when changing worlds.
 			ClientApi.renderer.destroyBuffers();
 			recalculateWidths = true;
-			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilder);
+			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 			
 			
 			// make sure the nulled objects are freed.

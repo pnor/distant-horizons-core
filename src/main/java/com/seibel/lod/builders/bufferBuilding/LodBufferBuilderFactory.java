@@ -47,6 +47,7 @@ import com.seibel.lod.objects.PosToRenderContainer;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodRegion;
 import com.seibel.lod.objects.lod.RegionPos;
+import com.seibel.lod.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.proxy.GlProxy;
 import com.seibel.lod.render.LodRenderer;
 import com.seibel.lod.util.DataPointUtil;
@@ -59,20 +60,22 @@ import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 
-import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.util.Direction;
 
 /**
- * This object is used to create NearFarBuffer objects.
+ * This object creates the geometry that is
+ * rendered by the LodRenderer.
+ * 
  * @author James Seibel
- * @version 11-8-2021
+ * @version 11-13-2021
  */
-public class LodBufferBuilder
+public class LodBufferBuilderFactory
 {
 	
 	/** The thread used to generate new LODs off the main thread. */
-	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(LodBufferBuilder.class.getSimpleName() + " - main"));
+	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main"));
 	/** The threads used to generate buffers. */
 	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(LodConfig.CLIENT.advancedModOptions.threading.numberOfBufferBuilderThreads.get(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
 	
@@ -100,7 +103,7 @@ public class LodBufferBuilder
 	public volatile int[][] numberOfBuffersPerRegion;
 	
 	/** Stores the vertices when building the VBOs */
-	public volatile BufferBuilder[][][] buildableBuffers;
+	public volatile LodBufferBuilder[][][] buildableBuffers;
 	
 	/** The OpenGL IDs of the storage buffers used by the buildableVbos */
 	public int[][][] buildableStorageBufferIds;
@@ -149,7 +152,7 @@ public class LodBufferBuilder
 	
 	
 	
-	public LodBufferBuilder()
+	public LodBufferBuilderFactory()
 	{
 		
 	}
@@ -242,7 +245,7 @@ public class LodBufferBuilder
 								zRegion + lodDim.getCenterRegionPosZ() - lodDim.getWidth() / 2);
 						
 						// local position in the vbo and bufferBuilder arrays
-						BufferBuilder[] currentBuffers = buildableBuffers[xRegion][zRegion];
+						LodBufferBuilder[] currentBuffers = buildableBuffers[xRegion][zRegion];
 						LodRegion region = lodDim.getRegion(regionPos.x, regionPos.z);
 						
 						if (region == null)
@@ -527,7 +530,7 @@ public class LodBufferBuilder
 		
 		previousRegionWidth = numbRegionsWide;
 		numberOfBuffersPerRegion = new int[numbRegionsWide][numbRegionsWide];
-		buildableBuffers = new BufferBuilder[numbRegionsWide][numbRegionsWide][];
+		buildableBuffers = new LodBufferBuilder[numbRegionsWide][numbRegionsWide][];
 		
 		buildableVbos = new VertexBuffer[numbRegionsWide][numbRegionsWide][];
 		drawableVbos = new VertexBuffer[numbRegionsWide][numbRegionsWide][];
@@ -554,7 +557,7 @@ public class LodBufferBuilder
 					// always allocating the max memory is a bit expensive isn't it?
 					regionMemoryRequired = LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY;
 					numberOfBuffersPerRegion[x][z] = numberOfBuffers;
-					buildableBuffers[x][z] = new BufferBuilder[numberOfBuffers];
+					buildableBuffers[x][z] = new LodBufferBuilder[numberOfBuffers];
 					buildableVbos[x][z] = new VertexBuffer[numberOfBuffers];
 					drawableVbos[x][z] = new VertexBuffer[numberOfBuffers];
 					
@@ -568,7 +571,7 @@ public class LodBufferBuilder
 				{
 					// we only need one buffer for this region
 					numberOfBuffersPerRegion[x][z] = 1;
-					buildableBuffers[x][z] = new BufferBuilder[1];
+					buildableBuffers[x][z] = new LodBufferBuilder[1];
 					buildableVbos[x][z] = new VertexBuffer[1];
 					drawableVbos[x][z] = new VertexBuffer[1];
 					
@@ -582,10 +585,10 @@ public class LodBufferBuilder
 				
 				for (int i = 0; i < numberOfBuffersPerRegion[x][z]; i++)
 				{
-					buildableBuffers[x][z][i] = new BufferBuilder((int) regionMemoryRequired);
+					buildableBuffers[x][z][i] = new LodBufferBuilder((int) regionMemoryRequired);
 					
-					buildableVbos[x][z][i] = new VertexBuffer(LodUtil.LOD_VERTEX_FORMAT);
-					drawableVbos[x][z][i] = new VertexBuffer(LodUtil.LOD_VERTEX_FORMAT);
+					buildableVbos[x][z][i] = new VertexBuffer(DefaultVertexFormats.POSITION_COLOR); //LodUtil.LOD_VERTEX_FORMAT);
+					drawableVbos[x][z][i] = new VertexBuffer(DefaultVertexFormats.POSITION_COLOR); //(LodUtil.LOD_VERTEX_FORMAT);
 					
 					
 					// create the initial mapped buffers (system memory)
@@ -777,7 +780,7 @@ public class LodBufferBuilder
 					{
 						for (int i = 0; i < buildableBuffers[x][z].length; i++)
 						{
-							ByteBuffer uploadBuffer = buildableBuffers[x][z][i].popNextBuffer().getSecond();
+							ByteBuffer uploadBuffer = buildableBuffers[x][z][i].getCleanedByteBuffer();
 							int storageBufferId = 0;
 							if (buildableStorageBufferIds != null)
 								storageBufferId = buildableStorageBufferIds[x][z][i];
@@ -792,7 +795,7 @@ public class LodBufferBuilder
 		catch (Exception e)
 		{
 			// this doesn't appear to be necessary anymore, but just in case.
-			ClientApi.LOGGER.error(LodBufferBuilder.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
+			ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
 			e.printStackTrace();
 		}
 		finally

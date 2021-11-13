@@ -22,28 +22,28 @@ package com.seibel.lod.builders.bufferBuilding.lodTemplates;
 import java.util.Map;
 
 import com.seibel.lod.enums.rendering.DebugMode;
+import com.seibel.lod.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.Direction;
 
 /**
  * This is the abstract class used to create different
  * BufferBuilders.
  * @author James Seibel
- * @version 10-10-2021
+ * @version 11-13-2021
  */
 public abstract class AbstractLodTemplate
 {
 	
 	/** Uploads the given LOD to the buffer. */
-	public abstract void addLodToBuffer(BufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
+	public abstract void addLodToBuffer(LodBufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled);
 	
 	/** add the given position and color to the buffer */
-	protected void addPosAndColor(BufferBuilder buffer,
-			double x, double y, double z,
+	protected void addPosAndColor(LodBufferBuilder buffer,
+			float x, float y, float z,
 			int color)
 	{
 		// TODO re-add transparency by replacing the 255 with "ColorUtil.getAlpha(color)"

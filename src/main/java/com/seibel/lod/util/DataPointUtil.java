@@ -19,7 +19,7 @@
 
 package com.seibel.lod.util;
 
-import static com.seibel.lod.builders.bufferBuilding.LodBufferBuilder.skyLightPlayer;
+import static com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory.skyLightPlayer;
 
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 

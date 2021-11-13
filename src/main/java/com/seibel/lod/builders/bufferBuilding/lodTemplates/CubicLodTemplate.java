@@ -22,13 +22,12 @@ package com.seibel.lod.builders.bufferBuilding.lodTemplates;
 import java.util.Map;
 
 import com.seibel.lod.enums.rendering.DebugMode;
+import com.seibel.lod.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 
-
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.Direction;
 
 /**
@@ -45,7 +44,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	}
 	
 	@Override
-	public void addLodToBuffer(BufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
+	public void addLodToBuffer(LodBufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (box == null)
@@ -110,7 +109,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		box.setAdjData(adjData);
 	}
 	
-	private void addBoundingBoxToBuffer(BufferBuilder buffer, Box box)
+	private void addBoundingBoxToBuffer(LodBufferBuilder buffer, Box box)
 	{
 		int color;
 		int skyLight;

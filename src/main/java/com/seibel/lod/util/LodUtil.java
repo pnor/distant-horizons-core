@@ -29,18 +29,17 @@ import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.enums.config.VanillaOverdraw;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;
+import com.seibel.lod.objects.opengl.DefaultLodVertexFormats;
+import com.seibel.lod.objects.opengl.LodVertexFormat;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
 import com.seibel.lod.wrappers.World.WorldWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
 
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.CompiledChunk;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -54,7 +53,7 @@ import net.minecraft.world.server.ServerWorld;
  * This class holds methods and constants that may be used in multiple places.
  * 
  * @author James Seibel
- * @version 10-20-2021
+ * @version 11-13-2021
  */
 public class LodUtil
 {
@@ -142,17 +141,17 @@ public class LodUtil
 	 * 64 MB by default is the maximum amount of memory that
 	 * can be directly allocated. <br><br>
 	 * <p>
-	 * I know there are commands to change that amount
+	 * James knows there are commands to change that amount
 	 * (specifically "-XX:MaxDirectMemorySize"), but
-	 * I have no idea how to access that amount. <br>
-	 * So I guess this will be the hard limit for now. <br><br>
+	 * He has no idea how to access that amount. <br>
+	 * So for now this will be the hard limit. <br><br>
 	 * <p>
 	 * https://stackoverflow.com/questions/50499238/bytebuffer-allocatedirect-and-xmx
 	 */
 	public static final int MAX_ALLOCATABLE_DIRECT_MEMORY = 64 * 1024 * 1024;
 	
-	
-	public static final VertexFormat LOD_VERTEX_FORMAT = DefaultVertexFormats.POSITION_COLOR;
+	/** the format of data stored in the GPU buffers */
+	public static final LodVertexFormat LOD_VERTEX_FORMAT = DefaultLodVertexFormats.POSITION_COLOR;
 	
 	
 	

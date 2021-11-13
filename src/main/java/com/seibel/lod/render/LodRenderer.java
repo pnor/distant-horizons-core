@@ -26,8 +26,8 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.NVFogDistance;
 
-import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder;
-import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder.VertexBuffersAndOffset;
+import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.config.GpuUploadMethod;
 import com.seibel.lod.enums.rendering.DebugMode;
@@ -87,7 +87,7 @@ public class LodRenderer
 	
 	
 	/** This is used to generate the buildable buffers */
-	private final LodBufferBuilder lodBufferBuilder;
+	private final LodBufferBuilderFactory lodBufferBuilderFactory;
 	
 	/** Each VertexBuffer represents 1 region */
 	private VertexBuffer[][][] vbos;
@@ -135,12 +135,12 @@ public class LodRenderer
 	
 	
 	
-	public LodRenderer(LodBufferBuilder newLodNodeBufferBuilder)
+	public LodRenderer(LodBufferBuilderFactory newLodNodeBufferBuilder)
 	{
 		mc = MinecraftWrapper.INSTANCE;
 		gameRender = mc.getGameRenderer();
 		
-		lodBufferBuilder = newLodNodeBufferBuilder;
+		lodBufferBuilderFactory = newLodNodeBufferBuilder;
 	}
 	
 	
@@ -195,10 +195,10 @@ public class LodRenderer
 		// 2. we aren't already regenerating the LODs
 		// 3. we aren't waiting for the build and draw buffers to swap
 		//		(this is to prevent thread conflicts)
-		if ((partialRegen || fullRegen) && !lodBufferBuilder.generatingBuffers && !lodBufferBuilder.newBuffersAvailable())
+		if ((partialRegen || fullRegen) && !lodBufferBuilderFactory.generatingBuffers && !lodBufferBuilderFactory.newBuffersAvailable())
 		{
 			// generate the LODs on a separate thread to prevent stuttering or freezing
-			lodBufferBuilder.generateLodBuffersAsync(this, lodDim, mc.getPlayerBlockPos(), true);
+			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, mc.getPlayerBlockPos(), true);
 			
 			// the regen process has been started,
 			// it will be done when lodBufferBuilder.newBuffersAvailable()
@@ -210,7 +210,7 @@ public class LodRenderer
 		// TODO move the buffer regeneration logic into its own class (probably called in the client proxy instead)
 		// ...ending here
 		
-		if (lodBufferBuilder.newBuffersAvailable())
+		if (lodBufferBuilderFactory.newBuffersAvailable())
 		{
 			swapBuffers();
 		}
@@ -644,7 +644,7 @@ public class LodRenderer
 	/** Create all buffers that will be used. */
 	public void setupBuffers(LodDimension lodDim)
 	{
-		lodBufferBuilder.setupBuffers(lodDim);
+		lodBufferBuilderFactory.setupBuffers(lodDim);
 	}
 	
 	
@@ -673,7 +673,7 @@ public class LodRenderer
 	{
 		// replace the drawable buffers with
 		// the newly created buffers from the lodBufferBuilder
-		VertexBuffersAndOffset result = lodBufferBuilder.getVertexBuffers();
+		VertexBuffersAndOffset result = lodBufferBuilderFactory.getVertexBuffers();
 		vbos = result.vbos;
 		storageBufferIds = result.storageBufferIds;
 		vbosCenter = result.drawableCenterChunkPos;
@@ -682,7 +682,7 @@ public class LodRenderer
 	/** Calls the BufferBuilder's destroyBuffers method. */
 	public void destroyBuffers()
 	{
-		lodBufferBuilder.destroyBuffers();
+		lodBufferBuilderFactory.destroyBuffers();
 	}
 	
 	// TODO move this into the MC wrapper

@@ -48,7 +48,7 @@ public class ClientApi
 	public static final ClientApi INSTANCE = new ClientApi();
 	public static final Logger LOGGER = LogManager.getLogger("LOD");
 	
-	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilder);
+	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 	
 	
 	private final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;

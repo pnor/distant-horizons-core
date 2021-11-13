@@ -19,7 +19,7 @@
 
 package com.seibel.lod.lodApi;
 
-import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder;
+import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.objects.lod.LodWorld;
 
@@ -34,7 +34,7 @@ public class ApiShared
 {
 	public ApiShared INSTANCE = new ApiShared();
 	
-	public static final LodBufferBuilder lodBufferBuilder = new LodBufferBuilder();
+	public static final LodBufferBuilderFactory lodBufferBuilderFactory = new LodBufferBuilderFactory();
 	public static final LodWorld lodWorld = new LodWorld();
 	public static final LodBuilder lodBuilder = new LodBuilder();
 	

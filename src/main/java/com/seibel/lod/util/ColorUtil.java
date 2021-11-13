@@ -27,7 +27,7 @@ import com.seibel.lod.wrappers.MinecraftWrapper;
  * 
  * @author Cola
  * @author Leonardo Amato
- * @version ??
+ * @version 11-13-2021
  */
 public class ColorUtil
 {
@@ -41,21 +41,25 @@ public class ColorUtil
 		return (alpha << 24) | (red << 16) | (green << 8) | blue;
 	}
 	
+	/** Returns a value between 0 and 255 */
 	public static int getAlpha(int color)
 	{
 		return (color >> 24) & 0xFF;
 	}
 	
+	/** Returns a value between 0 and 255 */
 	public static int getRed(int color)
 	{
 		return (color >> 16) & 0xFF;
 	}
 	
+	/** Returns a value between 0 and 255 */
 	public static int getGreen(int color)
 	{
 		return (color >> 8) & 0xFF;
 	}
 	
+	/** Returns a value between 0 and 255 */
 	public static int getBlue(int color)
 	{
 		return color & 0xFF;
