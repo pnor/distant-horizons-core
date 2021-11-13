@@ -22,10 +22,8 @@ package com.seibel.lod.objects.lod;
 import java.util.Hashtable;
 import java.util.Map;
 
-import com.seibel.lod.proxy.ClientProxy;
-
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
-import net.minecraft.world.DimensionType;
 
 /**
  * This stores all LODs for a given world.
@@ -108,18 +106,18 @@ public class LodWorld
 		if (lodDimensions == null)
 			return;
 		
-		lodDimensions.put(DimensionTypeWrapper.getDimensionTypeWrapper(newDimension.dimension), newDimension);
+		lodDimensions.put(newDimension.dimension, newDimension);
 	}
 	
 	/**
 	 * Returns null if no LodDimension exists for the given dimension
 	 */
-	public LodDimension getLodDimension(DimensionType dimension)
+	public LodDimension getLodDimension(DimensionTypeWrapper dimType)
 	{
 		if (lodDimensions == null)
 			return null;
 		
-		return lodDimensions.get(DimensionTypeWrapper.getDimensionTypeWrapper(dimension));
+		return lodDimensions.get(dimType);
 	}
 	
 	/**
@@ -147,7 +145,7 @@ public class LodWorld
 		
 		// TODO we should only print this if lods were actually saved to file
 		// but that requires a LodDimension.hasDirtyRegions() method or something similar
-		ClientProxy.LOGGER.info("Saving LODs");
+		ClientApi.LOGGER.info("Saving LODs");
 		
 		for (DimensionTypeWrapper key : lodDimensions.keySet())
 			lodDimensions.get(key).saveDirtyRegionsToFileAsync();

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.DebugMode;
+import com.seibel.lod.enums.rendering.DebugMode;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.LodUtil;
@@ -249,7 +249,7 @@ public class Box
 		for (Direction direction : DIRECTIONS)
 		{
 			if (!adjShadeDisabled[DIRECTION_INDEX.get(direction)])
-				colorMap[DIRECTION_INDEX.get(direction)] = ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientLevel().getShade(direction, true));
+				colorMap[DIRECTION_INDEX.get(direction)] = ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientWorld().getShade(direction, true));
 			else
 				colorMap[DIRECTION_INDEX.get(direction)] = color;
 		}
@@ -264,7 +264,7 @@ public class Box
 		if (LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != DebugMode.SHOW_DETAIL)
 			return colorMap[DIRECTION_INDEX.get(direction)];
 		else
-			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientLevel().getShade(direction, true));
+			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientWorld().getShade(direction, true));
 	}
 	
 	/**

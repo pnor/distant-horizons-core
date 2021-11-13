@@ -17,37 +17,64 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
- * Lowest <br>
- * Low <br>
- * Medium <br>
- * High <br>
- * <br>
- * this indicates the base of the quadratic function we use for the quality drop off
+ * heightmap <br>
+ * multi_lod <br>
  * 
  * @author Leonardo Amato
- * @version 9-29-2021
+ * @version 10-07-2021
  */
-public enum HorizontalQuality
+public enum VerticalQuality
 {
-	/** 1.0 AKA Linear */
-	LOWEST(1.0f),
+	LOW(
+			new int[] { 2,
+					2,
+					2,
+					2,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1 }
+	),
 	
-	/** exponent 1.5 */
-	LOW(1.5f),
+	MEDIUM(
+			new int[] { 4,
+					4,
+					2,
+					2,
+					2,
+					1,
+					1,
+					1,
+					1,
+					1,
+					1 }
+	),
 	
-	/** exponent 2.0 */
-	MEDIUM(2.0f),
+	HIGH(
+			new int[] {
+					8,
+					8,
+					4,
+					4,
+					2,
+					2,
+					2,
+					1,
+					1,
+					1,
+					1 }
+	);
 	
-	/** exponent 2.2 */
-	HIGH(2.2f);
+	public final int[] maxVerticalData;
 	
-	public final double quadraticBase;
-	
-	HorizontalQuality(double distanceUnit)
+	VerticalQuality(int[] maxVerticalData)
 	{
-		this.quadraticBase = distanceUnit;
+		this.maxVerticalData = maxVerticalData;
 	}
 }

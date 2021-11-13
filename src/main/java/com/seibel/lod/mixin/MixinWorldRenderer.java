@@ -19,13 +19,14 @@
 
 package com.seibel.lod.mixin;
 
+import org.lwjgl.opengl.GL15;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.seibel.lod.api.ClientApi;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.objects.rending.Mat4f;
 import com.seibel.lod.wrappers.McObjectConverter;
 
@@ -62,8 +63,18 @@ public class MixinWorldRenderer
 		// only render before solid blocks
 		if (renderType.equals(RenderType.solid()))
 		{
+			// get MC's current projection matrix
+			float[] mcProjMatrixRaw = new float[16];
+			GL15.glGetFloatv(GL15.GL_PROJECTION_MATRIX, mcProjMatrixRaw);
+			Mat4f mcProjectionMatrix = new Mat4f(mcProjMatrixRaw);
+			// OpenGl outputs their matrices in col,row form instead of row,col
+			// (or maybe vice versa I have no idea :P)
+			mcProjectionMatrix.transpose();
+			
+			
 			Mat4f mcModelViewMatrix = McObjectConverter.Convert(matrixStackIn.last().pose());
-			ClientApi.renderLods(mcModelViewMatrix, previousPartialTicks);
+			
+			ClientApi.INSTANCE.renderLods(mcModelViewMatrix, mcProjectionMatrix, previousPartialTicks);
 		}
 	}
 }

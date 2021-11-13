@@ -134,7 +134,7 @@ public class BlockColorWrapper
 		else
 		{
 			isColored = true;
-			texture = mc.getModelManager().getBlockModelShaper().getTexture(block.defaultBlockState(), mc.getClientLevel(), blockPosWrapper.getBlockPos());
+			texture = mc.getModelManager().getBlockModelShaper().getTexture(block.defaultBlockState(), mc.getClientWorld(), blockPosWrapper.getBlockPos());
 		}
 		
 		int count = 0;

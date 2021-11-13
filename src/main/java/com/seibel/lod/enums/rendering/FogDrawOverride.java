@@ -17,39 +17,31 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.wrappers;
-
-import java.nio.FloatBuffer;
-
-import com.seibel.lod.objects.rending.Mat4f;
-
-import net.minecraft.util.math.vector.Matrix4f;
+package com.seibel.lod.enums.rendering;
 
 /**
- * This class converts between Minecraft objects (Ex: Matrix4f)
- * and objects we created (Ex: Mat4f).
- * Since we don't want to deal with a bunch of tiny changes
- * every time Minecraft renames a variable in Matrix4f or something.
+ * USE_OPTIFINE_FOG_SETTING, <br>
+ * NEVER_DRAW_FOG, <br>
+ * ALWAYS_DRAW_FOG_FAST, <br>
+ * ALWAYS_DRAW_FOG_FANCY <br>
  * 
  * @author James Seibel
- * @version 11-11-2021
+ * @version 7-3-2021
  */
-public class McObjectConverter
+public enum FogDrawOverride
 {
+	/**
+	 * Use whatever Fog setting optifine is using.
+	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
+	 */
+	OPTIFINE_SETTING,
 	
-	public McObjectConverter()
-	{
-		
-	}
+	/** Never draw fog on the LODs */
+	NO_FOG,
 	
+	/** Always draw fast fog on the LODs */
+	FAST,
 	
-	/** 4x4 float matrix converter */
-	public static Mat4f Convert(Matrix4f mcMatrix)
-	{
-		FloatBuffer buffer = FloatBuffer.allocate(16);
-		mcMatrix.store(buffer);
-		Mat4f matrix = new Mat4f(buffer);
-		matrix.transpose();
-		return matrix;
-	}
+	/** Always draw fancy fog on the LODs */
+	FANCY
 }

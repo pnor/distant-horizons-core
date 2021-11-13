@@ -20,9 +20,9 @@
 package com.seibel.lod.util;
 
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.DistanceGenerationMode;
-import com.seibel.lod.enums.HorizontalQuality;
-import com.seibel.lod.enums.HorizontalResolution;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
+import com.seibel.lod.enums.config.HorizontalQuality;
+import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 
 /**

@@ -28,7 +28,8 @@ import org.lwjgl.opengl.GLCapabilities;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.lod.ModInfo;
-import com.seibel.lod.enums.GlProxyContext;
+import com.seibel.lod.enums.rendering.GlProxyContext;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.render.shader.LodShader;
 import com.seibel.lod.render.shader.LodShaderProgram;
 import com.seibel.lod.wrappers.MinecraftWrapper;
@@ -85,7 +86,7 @@ public class GlProxy
 	
 	private GlProxy()
 	{
-		ClientProxy.LOGGER.error("Creating " + GlProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
+		ClientApi.LOGGER.error("Creating " + GlProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
 		
 		// getting Minecraft's context has to be done on the render thread,
 		// where the GL context is
@@ -128,7 +129,7 @@ public class GlProxy
 		// get any GPU related capabilities //
 		//==================================//
 		
-		ClientProxy.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
+		ClientApi.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
 		
 		// crash the game if the GPU doesn't support OpenGL 2.0
 		if (!minecraftGlCapabilities.OpenGL20)
@@ -152,11 +153,11 @@ public class GlProxy
 		if (!bufferStorageSupported)
 		{
 			String fallBackVersion = mapBufferRangeSupported ? "3.0" : "1.5";  
-			ClientProxy.LOGGER.error("This GPU doesn't support Buffer Storage (OpenGL 4.5), falling back to OpenGL " + fallBackVersion + ". This may cause stuttering and reduced performance.");			
+			ClientApi.LOGGER.error("This GPU doesn't support Buffer Storage (OpenGL 4.5), falling back to OpenGL " + fallBackVersion + ". This may cause stuttering and reduced performance.");			
 		}
 		
 		if (!fancyFogAvailable)
-			ClientProxy.LOGGER.info("This GPU does not support GL_NV_fog_distance. This means that the fancy fog option will not be available.");
+			ClientApi.LOGGER.info("This GPU does not support GL_NV_fog_distance. This means that the fancy fog option will not be available.");
 		
 		
 		
@@ -189,7 +190,7 @@ public class GlProxy
 		
 		
 		// GlProxy creation success
-		ClientProxy.LOGGER.error(GlProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
+		ClientApi.LOGGER.error(GlProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
 	}
 	
 	/** Creates all required shaders */
@@ -231,7 +232,7 @@ public class GlProxy
 		}
 		catch (Exception e)
 		{
-			ClientProxy.LOGGER.error("Unable to compile shaders. Error: " + e.getMessage());
+			ClientApi.LOGGER.error("Unable to compile shaders. Error: " + e.getMessage());
 		}
 	}
 	

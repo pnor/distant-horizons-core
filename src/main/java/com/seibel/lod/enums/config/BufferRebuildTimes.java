@@ -17,38 +17,33 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
- * off, detail, detail wireframe
+ * Near_First <br>
+ * Far_First <br>
+ * <br>
+ * Determines how fast the buffers need to be regenerated
  * 
- * @author James Seibel
- * @version 8-28-2021
+ * @author Leonardo Amato
+ * @version 9-25-2021
  */
-public enum DebugMode
+public enum BufferRebuildTimes
 {
-	/** LODs are rendered normally */
-	OFF,
+	FREQUENT(1000, 500, 2500),
 	
-	/** LOD colors are based on their detail */
-	SHOW_DETAIL,
+	NORMAL(2000, 1000, 5000),
 	
-	/** LOD colors are based on their detail, and draws in wireframe. */
-	SHOW_DETAIL_WIREFRAME;
+	RARE(5000, 2000, 10000);
 	
-	/** used when cycling through the different modes */
-	private DebugMode next;
+	public final int playerMoveTimeout;
+	public final int renderedChunkTimeout;
+	public final int chunkChangeTimeout;
 	
-	static
+	BufferRebuildTimes(int playerMoveTimeout, int renderedChunkTimeout, int chunkChangeTimeout)
 	{
-		OFF.next = SHOW_DETAIL;
-		SHOW_DETAIL.next = SHOW_DETAIL_WIREFRAME;
-		SHOW_DETAIL_WIREFRAME.next = OFF;
-	}
-	
-	/** returns the next debug mode */
-	public DebugMode getNext()
-	{
-		return this.next;
+		this.playerMoveTimeout = playerMoveTimeout;
+		this.renderedChunkTimeout = renderedChunkTimeout;
+		this.chunkChangeTimeout = chunkChangeTimeout;
 	}
 }

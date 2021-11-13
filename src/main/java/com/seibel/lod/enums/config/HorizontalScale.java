@@ -17,29 +17,33 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
- * None, Dynamic, Always
- *
- * <p>
- * This represents how far the LODs should overlap with
- * the vanilla Minecraft terrain.
+ * Low <br>
+ * Medium <br>
+ * High <br>
+ * <br>
+ * this is a quality scale for the detail drop-off
  * 
- * @author James Seibel
- * @version 10-11-2021
+ * @author Leonardo Amato
+ * @version 9-25-2021
  */
-public enum VanillaOverdraw
+public enum HorizontalScale
 {
-	/** Never draw LODs where a minecraft chunk could be. */
-	NEVER,
+	/** Lods are 2D with heightMap */
+	LOW(64),
 	
-	/** Draw LODs over the farther minecraft chunks. */
-	DYNAMIC,
+	/** Lods expand in three dimension */
+	MEDIUM(128),
 	
-	/** Draw LODs over all minecraft chunks. */
-	ALWAYS,
+	/** Lods expand in three dimension */
+	HIGH(256);
 	
-	/** Draw LODs over border chunks. */
-	BORDER,
+	public final int distanceUnit;
+	
+	HorizontalScale(int distanceUnit)
+	{
+		this.distanceUnit = distanceUnit;
+	}
 }

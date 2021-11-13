@@ -19,7 +19,7 @@
 
 package com.seibel.lod.builders.lodBuilding;
 
-import com.seibel.lod.enums.DistanceGenerationMode;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
 
 /**
  * This is used to easily configure how LodChunks are generated.

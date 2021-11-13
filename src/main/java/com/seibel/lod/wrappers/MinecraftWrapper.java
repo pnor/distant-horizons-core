@@ -21,14 +21,16 @@ package com.seibel.lod.wrappers;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.ArrayList;
 
 import com.seibel.lod.ModInfo;
-import com.seibel.lod.proxy.ClientProxy;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.util.LodUtil;
-
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.World.LevelWrapper;
+import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.World.WorldWrapper;
+
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
@@ -109,14 +111,14 @@ public class MinecraftWrapper
 		return mc.hasSingleplayerServer();
 	}
 	
-	public DimensionType getCurrentDimension()
+	public DimensionTypeWrapper getCurrentDimension()
 	{
-		return mc.player.level.dimensionType();
+		return DimensionTypeWrapper.getDimensionTypeWrapper(mc.player.level.dimensionType());
 	}
 	
 	public String getCurrentDimensionId()
 	{
-		return LodUtil.getDimensionIDFromWorld(mc.level);
+		return LodUtil.getDimensionIDFromWorld(WorldWrapper.getWorldWrapper(mc.level));
 	}
 	
 	/**
@@ -178,12 +180,12 @@ public class MinecraftWrapper
 		BlockPos playerPos = getPlayer().blockPosition();
 		return new BlockPosWrapper(playerPos.getX(), playerPos.getY(), playerPos.getZ());
 	}
-
+	
 	public ChunkPosWrapper getPlayerChunkPos()
 	{
 		return new ChunkPosWrapper(getPlayer().xChunk, getPlayer().zChunk);
 	}
-
+	
 	public GameSettings getOptions()
 	{
 		return mc.options;
@@ -194,39 +196,43 @@ public class MinecraftWrapper
 		return mc.getModelManager();
 	}
 	
-	public ClientWorld getClientLevel()
+	public ClientWorld getClientWorld()
 	{
 		return mc.level;
 	}
 	
-	public LevelWrapper getWrappedClientLevel()
+	/** 
+	 * Attempts to get the ServerWorld for the dimension
+	 * the user is currently in.
+	 * @returns null if no ServerWorld is available
+	 */
+	public WorldWrapper getWrappedServerWorld()
 	{
-		return LevelWrapper.getLevelWrapper(mc.level);
-	}
-	
-	public LevelWrapper getWrappedServerLevel()
-	{
-		
 		if (mc.level == null)
 			return null;
+		
 		DimensionType dimension = mc.level.dimensionType();
 		IntegratedServer server = mc.getSingleplayerServer();
+		
 		if (server == null)
 			return null;
 		
+		ServerWorld serverWorld = null;
 		Iterable<ServerWorld> worlds = server.getAllLevels();
-		ServerWorld returnWorld = null;
-		
 		for (ServerWorld world : worlds)
 		{
 			if (world.dimensionType() == dimension)
 			{
-				returnWorld = world;
+				serverWorld = world;
 				break;
 			}
 		}
-		
-		return LevelWrapper.getLevelWrapper(returnWorld);
+		return WorldWrapper.getWorldWrapper(serverWorld);
+	}
+	
+	public WorldWrapper getWrappedClientWorld()
+	{
+		return WorldWrapper.getWorldWrapper(mc.level);
 	}
 	
 	/** Measured in chunks */
@@ -285,19 +291,36 @@ public class MinecraftWrapper
 		return mc.levelRenderer;
 	}
 	
+	/** Returns all worlds available to the server */
+	public ArrayList<WorldWrapper> getAllServerWorlds()
+	{
+		ArrayList<WorldWrapper> worlds = new ArrayList<WorldWrapper>();
+		
+		Iterable<ServerWorld> serverWorlds = mc.getSingleplayerServer().getAllLevels();
+		for (ServerWorld world : serverWorlds)
+		{
+			worlds.add(WorldWrapper.getWorldWrapper(world));
+		}
+		
+		return worlds;
+	}
+	
+	
 	
 	/**
 	 * Crashes Minecraft, displaying the given errorMessage <br> <br>
 	 * In the following format: <br>
 	 * 
 	 * The game crashed whilst <strong>errorMessage</strong>  <br>
-	 * Error: <strong>java.lang.ExceptionClass: exceptionErrorMessage</strong>  <br>
+	 * Error: <strong>ExceptionClass: exceptionErrorMessage</strong>  <br>
 	 * Exit Code: -1  <br>
 	 */
 	public void crashMinecraft(String errorMessage, Throwable exception)
 	{
-		ClientProxy.LOGGER.error(ModInfo.READABLE_NAME + " had the following error: [" + errorMessage + "]. Crashing Minecraft...");
+		ClientApi.LOGGER.error(ModInfo.READABLE_NAME + " had the following error: [" + errorMessage + "]. Crashing Minecraft...");
 		CrashReport report = new CrashReport(errorMessage, exception);
 		Minecraft.crash(report);
 	}
+	
+	
 }

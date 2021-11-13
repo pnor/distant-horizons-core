@@ -17,31 +17,37 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
- * heightmap <br>
- * multi_lod <br>
+ * Lowest <br>
+ * Low <br>
+ * Medium <br>
+ * High <br>
+ * <br>
+ * this indicates the base of the quadratic function we use for the quality drop off
  * 
  * @author Leonardo Amato
- * @version 19-10-2021
+ * @version 9-29-2021
  */
-public enum BlockToAvoid
+public enum HorizontalQuality
 {
-	NONE(false, false),
+	/** 1.0 AKA Linear */
+	LOWEST(1.0f),
 	
-	NON_FULL(true, false),
+	/** exponent 1.5 */
+	LOW(1.5f),
 	
-	NO_COLLISION(false, true),
+	/** exponent 2.0 */
+	MEDIUM(2.0f),
 	
-	BOTH(true, true);
+	/** exponent 2.2 */
+	HIGH(2.2f);
 	
-	public final boolean nonFull;
-	public final boolean noCollision;
+	public final double quadraticBase;
 	
-	BlockToAvoid(boolean nonFull, boolean noCollision)
+	HorizontalQuality(double distanceUnit)
 	{
-		this.nonFull = nonFull;
-		this.noCollision = noCollision;
+		this.quadraticBase = distanceUnit;
 	}
 }

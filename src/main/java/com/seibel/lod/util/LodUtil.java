@@ -25,13 +25,16 @@ import java.util.HashSet;
 
 import com.seibel.lod.builders.bufferBuilding.lodTemplates.Box;
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.HorizontalResolution;
-import com.seibel.lod.enums.VanillaOverdraw;
+import com.seibel.lod.enums.config.HorizontalResolution;
+import com.seibel.lod.enums.config.VanillaOverdraw;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.World.WorldWrapper;
 
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -42,12 +45,9 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 
 /**
@@ -179,18 +179,18 @@ public class LodUtil
 	 * Gets the ServerWorld for the relevant dimension.
 	 * @return null if there is no ServerWorld for the given dimension
 	 */
-	public static ServerWorld getServerWorldFromDimension(DimensionType dimension)
+	public static WorldWrapper getServerWorldFromDimension(DimensionTypeWrapper newDimension)
 	{
 		IntegratedServer server = mc.getSinglePlayerServer();
 		if (server == null)
 			return null;
 		
-		Iterable<ServerWorld> worlds = server.getAllLevels();
-		ServerWorld returnWorld = null;
+		Iterable<WorldWrapper> worlds = mc.getAllServerWorlds();
+		WorldWrapper returnWorld = null;
 		
-		for (ServerWorld world : worlds)
+		for (WorldWrapper world : worlds)
 		{
-			if (world.dimensionType() == dimension)
+			if (world.getDimensionType() == newDimension)
 			{
 				returnWorld = world;
 				break;
@@ -238,7 +238,7 @@ public class LodUtil
 	 * world, if in multiplayer it will return the server name, IP,
 	 * and game version.
 	 */
-	public static String getWorldID(IWorld world)
+	public static String getWorldID(WorldWrapper world)
 	{
 		if (mc.hasSinglePlayerServer())
 		{
@@ -266,26 +266,22 @@ public class LodUtil
 	 * This can be used to determine where to save files for a given
 	 * dimension.
 	 */
-	public static String getDimensionIDFromWorld(IWorld world)
+	public static String getDimensionIDFromWorld(WorldWrapper world)
 	{
 		if (mc.hasSinglePlayerServer())
 		{
 			// this will return the world save location
 			// and the dimension folder
 			
-			ServerWorld serverWorld = LodUtil.getServerWorldFromDimension(world.dimensionType());
+			WorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(world.getDimensionType());
 			if (serverWorld == null)
-				throw new NullPointerException("getDimensionIDFromWorld wasn't able to get the ServerWorld for the dimension " + world.dimensionType().effectsLocation().getPath());
+				throw new NullPointerException("getDimensionIDFromWorld wasn't able to get the WorldWrapper for the dimension " + world.getDimensionType().getDimensionName());
 			
-			ServerChunkProvider provider = serverWorld.getChunkSource();
-			if (provider == null)
-				throw new NullPointerException("getDimensionIDFromWorld wasn't able to get the ServerChunkProvider for the dimension " + world.dimensionType().effectsLocation().getPath());
-			
-			return provider.dataStorage.dataFolder.toString();
+			return serverWorld.getSaveFolder().toString();
 		}
 		else
 		{
-			return getServerId() + File.separatorChar + "dim_" + world.dimensionType().effectsLocation().getPath() + File.separatorChar;
+			return getServerId() + File.separatorChar + "dim_" + world.getDimensionType().getDimensionName() + File.separatorChar;
 		}
 	}
 	

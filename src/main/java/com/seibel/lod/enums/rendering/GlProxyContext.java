@@ -17,33 +17,22 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.rendering;
 
 /**
- * Low <br>
- * Medium <br>
- * High <br>
- * <br>
- * this is a quality scale for the detail drop-off
+ * Minecraft, Lod_Builder, None
  * 
- * @author Leonardo Amato
- * @version 9-25-2021
+ * @author James Seibel
+ * @version 10-1-2021
  */
-public enum HorizontalScale
+public enum GlProxyContext
 {
-	/** Lods are 2D with heightMap */
-	LOW(64),
+	/** Minecraft's render thread */
+	MINECRAFT,
 	
-	/** Lods expand in three dimension */
-	MEDIUM(128),
+	/** The context we send buffers to the GPU on */
+	LOD_BUILDER,
 	
-	/** Lods expand in three dimension */
-	HIGH(256);
-	
-	public final int distanceUnit;
-	
-	HorizontalScale(int distanceUnit)
-	{
-		this.distanceUnit = distanceUnit;
-	}
+	/** used to un-bind threads */
+	NONE,
 }

@@ -20,19 +20,14 @@
 package com.seibel.lod.enums;
 
 /**
- * Buffer_Storage, Sub_Data, Buffer_Mapping
+ * ServerWorld, ClientWorld, Unknown
  * 
  * @author James Seibel
- * @version 10-23-2021
+ * @version 11-12-2021
  */
-public enum GpuUploadMethod
+public enum WorldType
 {
-	/** Default if OpenGL 4.5 is supported. Fast rendering, no stuttering. */
-	BUFFER_STORAGE,
-	
-	/** Default if OpenGL 4.5 is NOT supported. Fast rendering but may stutter when uploading. */
-	SUB_DATA,
-	
-	/** May end up storing buffers in System memory. Slower rendering but won't stutter when uploading. */
-	BUFFER_MAPPING,
+	ServerWorld,
+	ClientWorld,
+	Unknown
 }

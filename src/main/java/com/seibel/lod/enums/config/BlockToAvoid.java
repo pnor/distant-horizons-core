@@ -17,64 +17,31 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
  * heightmap <br>
  * multi_lod <br>
  * 
  * @author Leonardo Amato
- * @version 10-07-2021
+ * @version 19-10-2021
  */
-public enum VerticalQuality
+public enum BlockToAvoid
 {
-	LOW(
-			new int[] { 2,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1 }
-	),
+	NONE(false, false),
 	
-	MEDIUM(
-			new int[] { 4,
-					4,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1 }
-	),
+	NON_FULL(true, false),
 	
-	HIGH(
-			new int[] {
-					8,
-					8,
-					4,
-					4,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1 }
-	);
+	NO_COLLISION(false, true),
 	
-	public final int[] maxVerticalData;
+	BOTH(true, true);
 	
-	VerticalQuality(int[] maxVerticalData)
+	public final boolean nonFull;
+	public final boolean noCollision;
+	
+	BlockToAvoid(boolean nonFull, boolean noCollision)
 	{
-		this.maxVerticalData = maxVerticalData;
+		this.nonFull = nonFull;
+		this.noCollision = noCollision;
 	}
 }

@@ -32,13 +32,13 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.DistanceGenerationMode;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.objects.lod.LodDimension;
-import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.util.LodUtil;
-
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
+import com.seibel.lod.wrappers.World.WorldWrapper;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.palette.UpgradeData;
@@ -92,7 +92,7 @@ public class LodGenWorker implements IWorker
 	
 	public LodGenWorker(ChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
 			LodBuilder newLodBuilder,
-			LodDimension newLodDimension, ServerWorld newServerWorld)
+			LodDimension newLodDimension, WorldWrapper serverWorld)
 	{
 		// just a few sanity checks
 		if (newPos == null)
@@ -104,14 +104,14 @@ public class LodGenWorker implements IWorker
 		if (newLodDimension == null)
 			throw new IllegalArgumentException("LodChunkGenThread requires a non-null LodDimension");
 		
-		if (newServerWorld == null)
+		if (serverWorld == null)
 			throw new IllegalArgumentException("LodChunkGenThread requires a non-null ServerWorld");
 		
 		
 		
 		thread = new LodChunkGenThread(newPos, newGenerationMode,
 				newLodBuilder,
-				newLodDimension, newServerWorld);
+				newLodDimension, serverWorld.getServerWorld()); // TODO wrapper needed
 	}
 	
 	@Override

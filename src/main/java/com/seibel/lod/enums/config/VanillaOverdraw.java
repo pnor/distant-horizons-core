@@ -17,31 +17,29 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
- * USE_OPTIFINE_FOG_SETTING, <br>
- * NEVER_DRAW_FOG, <br>
- * ALWAYS_DRAW_FOG_FAST, <br>
- * ALWAYS_DRAW_FOG_FANCY <br>
+ * None, Dynamic, Always
+ *
+ * <p>
+ * This represents how far the LODs should overlap with
+ * the vanilla Minecraft terrain.
  * 
  * @author James Seibel
- * @version 7-3-2021
+ * @version 10-11-2021
  */
-public enum FogDrawOverride
+public enum VanillaOverdraw
 {
-	/**
-	 * Use whatever Fog setting optifine is using.
-	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
-	 */
-	OPTIFINE_SETTING,
+	/** Never draw LODs where a minecraft chunk could be. */
+	NEVER,
 	
-	/** Never draw fog on the LODs */
-	NO_FOG,
+	/** Draw LODs over the farther minecraft chunks. */
+	DYNAMIC,
 	
-	/** Always draw fast fog on the LODs */
-	FAST,
+	/** Draw LODs over all minecraft chunks. */
+	ALWAYS,
 	
-	/** Always draw fancy fog on the LODs */
-	FANCY
+	/** Draw LODs over border chunks. */
+	BORDER,
 }

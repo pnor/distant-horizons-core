@@ -17,17 +17,22 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.rendering;
 
 /**
- * fast, fancy, or off
+ * NEAR, FAR, or NEAR_AND_FAR.
  * 
  * @author James Seibel
  * @version 02-14-2021
  */
-public enum FogQuality
+public enum FogDistance
 {
-	FAST,
-	FANCY,
-	OFF
+	/** good for fast or fancy fog qualities. */
+	NEAR,
+	
+	/** good for fast or fancy fog qualities. */
+	FAR,
+	
+	/** only looks good if the fog quality is set to Fancy. */
+	NEAR_AND_FAR
 }

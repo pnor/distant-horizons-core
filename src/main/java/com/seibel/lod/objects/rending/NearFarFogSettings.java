@@ -19,8 +19,8 @@
 
 package com.seibel.lod.objects.rending;
 
-import com.seibel.lod.enums.FogDistance;
-import com.seibel.lod.enums.FogQuality;
+import com.seibel.lod.enums.rendering.FogDistance;
+import com.seibel.lod.enums.rendering.FogQuality;
 
 /**
  * This object is just a replacement for an array

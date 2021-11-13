@@ -33,8 +33,7 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
- * Initialize and setup the Mod.
- * <br>
+ * Initialize and setup the Mod. <br>
  * If you are looking for the real start of the mod
  * check out the ClientProxy.
  * 
@@ -42,12 +41,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  * @version 7-3-2021
  */
 @Mod(ModInfo.ID)
-public class LodMain
+public class LodForgeMain
 {
-	public static LodMain instance;
-	
-	public static ClientProxy client_proxy;
-	
+	public static ClientProxy clientProxy;
 	
 	private void init(final FMLCommonSetupEvent event)
 	{
@@ -55,7 +51,7 @@ public class LodMain
 	}
 	
 	
-	public LodMain()
+	public LodForgeMain()
 	{
 		// Register the methods
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
@@ -67,8 +63,8 @@ public class LodMain
 	
 	private void onClientStart(final FMLClientSetupEvent event)
 	{
-		client_proxy = new ClientProxy();
-		MinecraftForge.EVENT_BUS.register(client_proxy);
+		clientProxy = new ClientProxy();
+		MinecraftForge.EVENT_BUS.register(clientProxy);
 	}
 	
 	

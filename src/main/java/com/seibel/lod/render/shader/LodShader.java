@@ -27,7 +27,7 @@ import java.io.InputStreamReader;
 
 import org.lwjgl.opengl.GL20;
 
-import com.seibel.lod.proxy.ClientProxy;
+import com.seibel.lod.lodApi.ClientApi;
 
 /**
  * This object holds a OpenGL reference to a shader
@@ -76,7 +76,7 @@ public class LodShader
 		}
 		catch (IOException e)
 		{
-			ClientProxy.LOGGER.error("Unable to load shader from file [" + path + "]. Error: " + e.getMessage());
+			ClientApi.LOGGER.error("Unable to load shader from file [" + path + "]. Error: " + e.getMessage());
 		}
 		CharSequence shaderFileSource = stringBuilder.toString();
 		

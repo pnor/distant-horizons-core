@@ -23,8 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.DistanceGenerationMode;
-import com.seibel.lod.enums.HorizontalResolution;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
+import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodRegion;
 import com.seibel.lod.objects.lod.LodWorld;
@@ -42,10 +42,8 @@ import com.seibel.lod.wrappers.Block.BlockShapeWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.World.BiomeWrapper;
-import com.seibel.lod.wrappers.World.LevelWrapper;
-
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.IWorld;
+import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.World.WorldWrapper;
 
 /**
  * This object is in charge of creating Lod related objects.
@@ -86,12 +84,12 @@ public class LodBuilder
 	
 	}
 	
-	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, IWorld world)
+	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, DimensionTypeWrapper dim)
 	{
-		generateLodNodeAsync(chunk, lodWorld, world, DistanceGenerationMode.SERVER);
+		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.SERVER);
 	}
 	
-	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, IWorld world, DistanceGenerationMode generationMode)
+	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, DimensionTypeWrapper dim, DistanceGenerationMode generationMode)
 	{
 		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
 			return;
@@ -108,15 +106,13 @@ public class LodBuilder
 			{
 				// we need a loaded client world in order to
 				// get the textures for blocks
-				if (mc.getClientLevel() == null)
+				if (mc.getClientWorld() == null)
 					return;
 				
 				// don't try to generate LODs if the user isn't in the world anymore
 				// (this happens a lot when the user leaves a world/server)
 				if (mc.getSinglePlayerServer() == null && mc.getCurrentServer() == null)
 					return;
-				
-				DimensionType dim = world.dimensionType();
 				
 				// make sure the dimension exists
 				LodDimension lodDim;
@@ -170,7 +166,7 @@ public class LodBuilder
 			return;
 		
 		// this happens if a LOD is generated after the user leaves the world.
-		if (MinecraftWrapper.INSTANCE.getWrappedClientLevel() == null)
+		if (MinecraftWrapper.INSTANCE.getWrappedClientWorld() == null)
 			return;
 		
 		// determine how many LODs to generate horizontally
@@ -230,8 +226,8 @@ public class LodBuilder
 		int xAbs;
 		int yAbs;
 		int zAbs;
-		boolean hasCeiling = mc.getClientLevel().dimensionType().hasCeiling();
-		boolean hasSkyLight = mc.getClientLevel().dimensionType().hasSkyLight();
+		boolean hasCeiling = mc.getClientWorld().dimensionType().hasCeiling();
+		boolean hasSkyLight = mc.getClientWorld().dimensionType().hasSkyLight();
 		boolean isDefault;
 		BlockPosWrapper blockPos = new BlockPosWrapper();
 		int index;
@@ -386,7 +382,7 @@ public class LodBuilder
 		// 1 means the lighting is a guess
 		int isDefault = 0;
 		
-		LevelWrapper world = MinecraftWrapper.INSTANCE.getWrappedServerLevel();
+		WorldWrapper world = MinecraftWrapper.INSTANCE.getWrappedServerWorld();
 		
 		int blockBrightness = chunk.getEmittedBrightness(blockPos);
 		// get the air block above or below this block
@@ -414,7 +410,7 @@ public class LodBuilder
 			{
 				// we are on predicted terrain, and we don't know what the light here is,
 				// lets just take a guess
-				if (blockPos.getY() >= mc.getClientLevel().getSeaLevel() - 5)
+				if (blockPos.getY() >= mc.getClientWorld().getSeaLevel() - 5)
 				{
 					skyLight = 12;
 					isDefault = 1;
@@ -425,7 +421,7 @@ public class LodBuilder
 		}
 		else
 		{
-			world = MinecraftWrapper.INSTANCE.getWrappedClientLevel();
+			world = MinecraftWrapper.INSTANCE.getWrappedServerWorld();
 			if (world.isEmpty())
 				return 0;
 			// client world sky light (almost never accurate)
@@ -447,7 +443,7 @@ public class LodBuilder
 					{
 						// we don't know what the light here is,
 						// lets just take a guess
-						if (blockPos.getY() >= mc.getClientLevel().getSeaLevel() - 5)
+						if (blockPos.getY() >= mc.getClientWorld().getSeaLevel() - 5)
 						{
 							skyLight = 12;
 							isDefault = 1;

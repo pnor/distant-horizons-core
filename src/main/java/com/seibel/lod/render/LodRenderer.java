@@ -29,17 +29,17 @@ import org.lwjgl.opengl.NVFogDistance;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilder.VertexBuffersAndOffset;
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.DebugMode;
-import com.seibel.lod.enums.FogDistance;
-import com.seibel.lod.enums.FogDrawOverride;
-import com.seibel.lod.enums.FogQuality;
-import com.seibel.lod.enums.GpuUploadMethod;
+import com.seibel.lod.enums.config.GpuUploadMethod;
+import com.seibel.lod.enums.rendering.DebugMode;
+import com.seibel.lod.enums.rendering.FogDistance;
+import com.seibel.lod.enums.rendering.FogDrawOverride;
+import com.seibel.lod.enums.rendering.FogQuality;
 import com.seibel.lod.handlers.ReflectionHandler;
+import com.seibel.lod.lodApi.ApiShared;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;
 import com.seibel.lod.objects.rending.Mat4f;
 import com.seibel.lod.objects.rending.NearFarFogSettings;
-import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.proxy.GlProxy;
 import com.seibel.lod.render.shader.LodShaderProgram;
 import com.seibel.lod.util.DetailDistanceUtil;
@@ -251,7 +251,7 @@ public class LodRenderer
 		Mat4f modelViewMatrix = offsetTheModelViewMatrix(mcModelViewMatrix, partialTicks);
 		vanillaBlockRenderedDistance = mc.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		// required for setupFog and setupProjectionMatrix
-		if (mc.getClientLevel().dimensionType().hasCeiling())
+		if (mc.getClientWorld().dimensionType().hasCeiling())
 			farPlaneBlockDistance = Math.min(LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
 			farPlaneBlockDistance = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * LodUtil.CHUNK_WIDTH;
@@ -802,7 +802,7 @@ public class LodRenderer
 		//=============//
 		
 		// check if the view distance changed
-		if (ClientProxy.previousLodRenderDistance != LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get()
+		if (ApiShared.previousLodRenderDistance != LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get()
 					|| chunkRenderDistance != prevRenderDistance
 					|| prevFogDistance != LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
 		{

@@ -29,13 +29,13 @@ import java.util.concurrent.Executors;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
-import com.seibel.lod.enums.DistanceGenerationMode;
-import com.seibel.lod.enums.VerticalQuality;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
+import com.seibel.lod.enums.config.VerticalQuality;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodRegion;
 import com.seibel.lod.objects.lod.RegionPos;
 import com.seibel.lod.objects.lod.VerticalLevelContainer;
-import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.util.ThreadMapUtil;
@@ -175,7 +175,7 @@ public class LodDimensionFileHandler
 							// close the reader and delete the file.
 							inputStream.close();
 							file.delete();
-							ClientProxy.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
+							ClientApi.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
 									+ " version found: " + fileVersion
 									+ ", version requested: " + LOD_SAVE_FILE_VERSION
 									+ ". File was been deleted.");
@@ -188,7 +188,7 @@ public class LodDimensionFileHandler
 							// close the reader and ignore the file, we don't
 							// want to accidentally delete anything the user may want.
 							inputStream.close();
-							ClientProxy.LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
+							ClientApi.LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
 									+ " version found: " + fileVersion
 									+ ", version requested: " + LOD_SAVE_FILE_VERSION
 									+ " this region will not be written to in order to protect the newer file.");
@@ -209,7 +209,7 @@ public class LodDimensionFileHandler
 					}
 					catch (IOException ioEx)
 					{
-						ClientProxy.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
+						ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
 						ioEx.printStackTrace();
 					}
 				}
@@ -218,7 +218,7 @@ public class LodDimensionFileHandler
 			{
 				// the buffered reader encountered a
 				// problem reading the file
-				ClientProxy.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + e.getMessage() + "]: ");
+				ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + e.getMessage() + "]: ");
 				e.printStackTrace();
 			}
 		}// for each detail level
@@ -280,7 +280,7 @@ public class LodDimensionFileHandler
 			// for some reason
 			if (fileName == null)
 			{
-				ClientProxy.LOGGER.warn("Unable to save region [" + region.regionPosX + ", " + region.regionPosZ + "] to file, file is inaccessible.");
+				ClientApi.LOGGER.warn("Unable to save region [" + region.regionPosX + ", " + region.regionPosZ + "] to file, file is inaccessible.");
 				return;
 			}
 			File oldFile = new File(fileName);
@@ -331,7 +331,7 @@ public class LodDimensionFileHandler
 						// existing file is complete while new one is only partially generate
 						// this can happen is for some reason loading failed
 						// this doesn't fix the bug, but at least protects old data
-						ClientProxy.LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + fileName + "]");
+						ClientApi.LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + fileName + "]");
 						return;
 					}
 					// if we got this far then we are good
@@ -358,7 +358,7 @@ public class LodDimensionFileHandler
 			}
 			catch (Exception e)
 			{
-				ClientProxy.LOGGER.error("LOD file write error. Unable to write to [" + fileName + "] error [" + e.getMessage() + "]: ");
+				ClientApi.LOGGER.error("LOD file write error. Unable to write to [" + fileName + "] error [" + e.getMessage() + "]: ");
 				e.printStackTrace();
 			}
 		}
@@ -382,7 +382,7 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException ioEx)
 		{
-			ClientProxy.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
+			ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
 			ioEx.printStackTrace();
 		}
 		return new byte[0];
@@ -414,7 +414,7 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException | SecurityException e)
 		{
-			ClientProxy.LOGGER.warn("Unable to get the filename for the region [" + regionX + ", " + regionZ + "], error: [" + e.getMessage() + "], stacktrace: ");
+			ClientApi.LOGGER.warn("Unable to get the filename for the region [" + regionX + ", " + regionZ + "], error: [" + e.getMessage() + "], stacktrace: ");
 			e.printStackTrace();
 			return null;
 		}

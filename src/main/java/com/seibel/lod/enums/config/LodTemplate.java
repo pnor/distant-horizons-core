@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 import com.seibel.lod.builders.bufferBuilding.lodTemplates.AbstractLodTemplate;
 import com.seibel.lod.builders.bufferBuilding.lodTemplates.CubicLodTemplate;

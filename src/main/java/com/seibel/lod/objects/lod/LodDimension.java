@@ -25,9 +25,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.DistanceGenerationMode;
-import com.seibel.lod.enums.GenerationPriority;
-import com.seibel.lod.enums.VerticalQuality;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
+import com.seibel.lod.enums.config.GenerationPriority;
+import com.seibel.lod.enums.config.VerticalQuality;
 import com.seibel.lod.handlers.LodDimensionFileHandler;
 import com.seibel.lod.objects.PosToGenerateContainer;
 import com.seibel.lod.objects.PosToRenderContainer;
@@ -37,11 +37,10 @@ import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.World.WorldWrapper;
 
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.server.ServerChunkProvider;
-import net.minecraft.world.server.ServerWorld;
 
 
 /**
@@ -54,11 +53,11 @@ import net.minecraft.world.server.ServerWorld;
  * 
  * @author Leonardo Amato
  * @author James Seibel
- * @version 10-10-2021
+ * @version 11-12-2021
  */
 public class LodDimension
 {
-	public final DimensionType dimension;
+	public final DimensionTypeWrapper dimension;
 	
 	/** measured in regions */
 	private volatile int width;
@@ -97,7 +96,7 @@ public class LodDimension
 	 * Creates the dimension centered at (0,0)
 	 * @param newWidth in regions
 	 */
-	public LodDimension(DimensionType newDimension, LodWorld lodWorld, int newWidth)
+	public LodDimension(DimensionTypeWrapper newDimension, LodWorld lodWorld, int newWidth)
 	{
 		lastCutChunk = null;
 		lastExpandedChunk = null;
@@ -110,17 +109,14 @@ public class LodDimension
 		{
 			try
 			{
+				// determine the save folder
 				File saveDir;
 				if (mc.hasSinglePlayerServer())
 				{
 					// local world
 					
-					ServerWorld serverWorld = LodUtil.getServerWorldFromDimension(newDimension);
-					
-					// provider needs a separate variable to prevent
-					// the compiler from complaining
-					ServerChunkProvider provider = serverWorld.getChunkSource();
-					saveDir = new File(provider.dataStorage.dataFolder.getCanonicalFile().getPath() + File.separatorChar + "lod");
+					WorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(newDimension);
+					saveDir = new File(serverWorld.getSaveFolder().getCanonicalFile().getPath() + File.separatorChar + "lod");
 				}
 				else
 				{

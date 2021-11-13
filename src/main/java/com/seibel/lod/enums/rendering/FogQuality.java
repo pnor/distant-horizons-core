@@ -17,22 +17,17 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.rendering;
 
 /**
- * Minecraft, Lod_Builder, None
+ * fast, fancy, or off
  * 
  * @author James Seibel
- * @version 10-1-2021
+ * @version 02-14-2021
  */
-public enum GlProxyContext
+public enum FogQuality
 {
-	/** Minecraft's render thread */
-	MINECRAFT,
-	
-	/** The context we send buffers to the GPU on */
-	LOD_BUILDER,
-	
-	/** used to un-bind threads */
-	NONE,
+	FAST,
+	FANCY,
+	OFF
 }

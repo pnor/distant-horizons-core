@@ -1,4 +1,4 @@
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
  * NONE, GAME_SHADING

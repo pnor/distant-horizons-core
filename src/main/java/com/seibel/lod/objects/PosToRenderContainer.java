@@ -21,7 +21,7 @@ package com.seibel.lod.objects;
 
 import java.util.Arrays;
 
-import com.seibel.lod.proxy.ClientProxy;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodUtil;
 
@@ -60,7 +60,7 @@ public class PosToRenderContainer
 		{
 			// This is might be due to dimensions having a different width
 			// when first loading in
-			ClientProxy.LOGGER.error("Unable to addPosToRender. numberOfPosToRender [" + numberOfPosToRender + "] detailLevel [" + detailLevel + "] Pos [" + posX + "," + posZ + "]");
+			ClientApi.LOGGER.error("Unable to addPosToRender. numberOfPosToRender [" + numberOfPosToRender + "] detailLevel [" + detailLevel + "] Pos [" + posX + "," + posZ + "]");
 			numberOfPosToRender++; // incrementing so we can see how many pos over the limit we would go
 			return;
 		}

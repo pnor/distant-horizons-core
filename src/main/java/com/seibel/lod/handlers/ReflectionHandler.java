@@ -19,8 +19,8 @@
 
 package com.seibel.lod.handlers;
 
-import com.seibel.lod.enums.FogQuality;
-import com.seibel.lod.proxy.ClientProxy;
+import com.seibel.lod.enums.rendering.FogQuality;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import net.minecraft.util.math.vector.Matrix4f;
 
@@ -70,7 +70,7 @@ public class ReflectionHandler
 		// we didn't find the field,
 		// either optifine isn't installed, or
 		// optifine changed the name of the variable
-		ClientProxy.LOGGER.info(ReflectionHandler.class.getSimpleName() + ": unable to find the Optifine fog field. If Optifine isn't installed this can be ignored.");
+		ClientApi.LOGGER.info(ReflectionHandler.class.getSimpleName() + ": unable to find the Optifine fog field. If Optifine isn't installed this can be ignored.");
 	}
 	
 	

@@ -19,8 +19,8 @@
 
 package com.seibel.lod.objects.lod;
 
-import com.seibel.lod.enums.DistanceGenerationMode;
-import com.seibel.lod.enums.VerticalQuality;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
+import com.seibel.lod.enums.config.VerticalQuality;
 import com.seibel.lod.objects.PosToGenerateContainer;
 import com.seibel.lod.objects.PosToRenderContainer;
 import com.seibel.lod.util.DataPointUtil;

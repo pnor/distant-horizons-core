@@ -21,9 +21,8 @@ package com.seibel.lod.builders.bufferBuilding.lodTemplates;
 
 import java.util.Map;
 
-import com.seibel.lod.enums.DebugMode;
-import com.seibel.lod.proxy.ClientProxy;
-
+import com.seibel.lod.enums.rendering.DebugMode;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.Direction;
@@ -42,7 +41,7 @@ public class DynamicLodTemplate extends AbstractLodTemplate
 	public void addLodToBuffer(BufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
-		ClientProxy.LOGGER.error(DynamicLodTemplate.class.getSimpleName() + " is not implemented!");
+		ClientApi.LOGGER.error(DynamicLodTemplate.class.getSimpleName() + " is not implemented!");
 	}
 	
 }

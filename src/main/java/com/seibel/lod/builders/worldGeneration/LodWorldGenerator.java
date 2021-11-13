@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.DistanceGenerationMode;
+import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.objects.PosToGenerateContainer;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.render.LodRenderer;
@@ -35,10 +35,10 @@ import com.seibel.lod.util.DetailDistanceUtil;
 import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.World.WorldWrapper;
 
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.WorldWorkerManager;
 
 /**
@@ -115,7 +115,7 @@ public class LodWorldGenerator
 					// fill in positionsWaitingToBeGenerated //
 					//=======================================//
 					
-					ServerWorld serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
+					WorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 					
 					PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(
 							maxChunkGenRequests,

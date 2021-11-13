@@ -39,14 +39,14 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.lod.builders.bufferBuilding.lodTemplates.Box;
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.enums.GlProxyContext;
-import com.seibel.lod.enums.GpuUploadMethod;
-import com.seibel.lod.enums.VanillaOverdraw;
+import com.seibel.lod.enums.config.GpuUploadMethod;
+import com.seibel.lod.enums.config.VanillaOverdraw;
+import com.seibel.lod.enums.rendering.GlProxyContext;
+import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.objects.PosToRenderContainer;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodRegion;
 import com.seibel.lod.objects.lod.RegionPos;
-import com.seibel.lod.proxy.ClientProxy;
 import com.seibel.lod.proxy.GlProxy;
 import com.seibel.lod.render.LodRenderer;
 import com.seibel.lod.util.DataPointUtil;
@@ -229,7 +229,7 @@ public class LodBufferBuilder
 			// create the nodeToRenderThreads //
 			//================================//
 			
-			skyLightPlayer = MinecraftWrapper.INSTANCE.getWrappedClientLevel().getSkyLight(playerBlockPos);
+			skyLightPlayer = MinecraftWrapper.INSTANCE.getWrappedClientWorld().getSkyLight(playerBlockPos);
 			
 			for (int xRegion = 0; xRegion < lodDim.getWidth(); xRegion++)
 			{
@@ -426,7 +426,7 @@ public class LodBufferBuilder
 				// the future will be false if its thread failed
 				if (!future.get())
 				{
-					ClientProxy.LOGGER.warn("LodBufferBuilder ran into trouble and had to start over.");
+					ClientApi.LOGGER.warn("LodBufferBuilder ran into trouble and had to start over.");
 					break;
 				}
 			}
@@ -445,7 +445,7 @@ public class LodBufferBuilder
 		}
 		catch (Exception e)
 		{
-			ClientProxy.LOGGER.warn("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ");
+			ClientApi.LOGGER.warn("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ");
 			e.printStackTrace();
 		}
 		finally
@@ -461,7 +461,7 @@ public class LodBufferBuilder
 			}
 			catch (Exception e)
 			{
-				ClientProxy.LOGGER.warn("\"LodNodeBufferBuilder.generateLodBuffersAsync\" was unable to upload the buffers to the GPU: " + e.getMessage());
+				ClientApi.LOGGER.warn("\"LodNodeBufferBuilder.generateLodBuffersAsync\" was unable to upload the buffers to the GPU: " + e.getMessage());
 				e.printStackTrace();
 			}
 			
@@ -792,7 +792,7 @@ public class LodBufferBuilder
 		catch (Exception e)
 		{
 			// this doesn't appear to be necessary anymore, but just in case.
-			ClientProxy.LOGGER.error(LodBufferBuilder.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
+			ClientApi.LOGGER.error(LodBufferBuilder.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
 			e.printStackTrace();
 		}
 		finally
@@ -911,7 +911,7 @@ public class LodBufferBuilder
 			}
 			catch (Exception e)
 			{
-				ClientProxy.LOGGER.error("vboUpload failed: " + e.getClass().getSimpleName());
+				ClientApi.LOGGER.error("vboUpload failed: " + e.getClass().getSimpleName());
 				e.printStackTrace();
 			}
 			finally

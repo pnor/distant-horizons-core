@@ -17,22 +17,22 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.enums;
+package com.seibel.lod.enums.config;
 
 /**
- * NEAR, FAR, or NEAR_AND_FAR.
+ * Buffer_Storage, Sub_Data, Buffer_Mapping
  * 
  * @author James Seibel
- * @version 02-14-2021
+ * @version 10-23-2021
  */
-public enum FogDistance
+public enum GpuUploadMethod
 {
-	/** good for fast or fancy fog qualities. */
-	NEAR,
+	/** Default if OpenGL 4.5 is supported. Fast rendering, no stuttering. */
+	BUFFER_STORAGE,
 	
-	/** good for fast or fancy fog qualities. */
-	FAR,
+	/** Default if OpenGL 4.5 is NOT supported. Fast rendering but may stutter when uploading. */
+	SUB_DATA,
 	
-	/** only looks good if the fog quality is set to Fancy. */
-	NEAR_AND_FAR
+	/** May end up storing buffers in System memory. Slower rendering but won't stutter when uploading. */
+	BUFFER_MAPPING,
 }
