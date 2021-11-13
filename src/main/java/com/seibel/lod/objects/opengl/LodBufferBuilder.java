@@ -39,29 +39,12 @@ public class LodBufferBuilder
 	private LodVertexFormat format;
 	private boolean building;
 	
-	private boolean defaultColorSet = false;
-	private int defaultR = 255;
-	private int defaultG = 255;
-	private int defaultB = 255;
-	private int defaultA = 255;
-	
 	
 	
 	
 	public LodBufferBuilder(int bufferSizeInBytes)
 	{
 		this.buffer = allocateByteBuffer(bufferSizeInBytes * 4);
-	}
-	
-	
-	// Part of MC BufferBuilder's parent DefaultColorVertexBuilder
-	public void defaultColor(int red, int green, int blue, int alpha)
-	{
-		this.defaultR = red;
-		this.defaultG = green;
-		this.defaultB = blue;
-		this.defaultA = alpha;
-		this.defaultColorSet = true;
 	}
 	
 	
@@ -72,6 +55,7 @@ public class LodBufferBuilder
 		return ByteBuffer.allocateDirect(bufferSizeInBytes).order(ByteOrder.nativeOrder());
 	}
 	/** originally from MC's GLAllocation class */
+	@SuppressWarnings("unused")
 	private FloatBuffer allocateFloatBuffer(int bufferSizeInBytes)
 	{
 		return allocateByteBuffer(bufferSizeInBytes).asFloatBuffer();
@@ -337,38 +321,27 @@ public class LodBufferBuilder
 	
 	public LodBufferBuilder color(int red, int green, int blue, int alpha)
 	{
-		if (this.defaultColorSet)
+		LodVertexFormatElement LodVertexFormatelement = this.currentElement();
+		if (LodVertexFormatelement.getType() != LodVertexFormatElement.DataType.UBYTE)
 		{
-			throw new IllegalStateException();
+			throw new IllegalStateException("Color must be stored as a UBYTE");
 		}
 		else
 		{
-			LodVertexFormatElement LodVertexFormatelement = this.currentElement();
-//			if (LodVertexFormatelement.getUsage() != LodVertexFormatElement.Usage.COLOR)
-//			{
-//				return this;
-//			}
-//			else if (LodVertexFormatelement.getType() != LodVertexFormatElement.Type.UBYTE)
-//			{
-//				throw new IllegalStateException();
-//			}
-//			else
-//			{
-				this.putByte(0, (byte) red);
-				this.putByte(1, (byte) green);
-				this.putByte(2, (byte) blue);
-				this.putByte(3, (byte) alpha);
-				this.nextElement();
-				return this;
-//			}
+			this.putByte(0, (byte) red);
+			this.putByte(1, (byte) green);
+			this.putByte(2, (byte) blue);
+			this.putByte(3, (byte) alpha);
+			this.nextElement();
+			return this;
 		}
 	}
 	
 	public LodBufferBuilder vertex(float x, float y, float z)
 	{
-		if (this.currentElement().getType() != LodVertexFormatElement.Type.FLOAT)
+		if (this.currentElement().getType() != LodVertexFormatElement.DataType.FLOAT)
 		{
-			throw new IllegalStateException();
+			throw new IllegalStateException("Position verticies must be stored as a FLOAT");
 		}
 		else
 		{
@@ -531,18 +504,6 @@ public class LodBufferBuilder
 		public int mode()
 		{
 			return this.mode;
-		}
-	}
-	
-	public static class State
-	{
-		private final ByteBuffer data;
-		private final LodVertexFormat format;
-		
-		private State(ByteBuffer newByteBuffer, LodVertexFormat newLodVertexFormat)
-		{
-			data = newByteBuffer;
-			format = newLodVertexFormat;
 		}
 	}
 	

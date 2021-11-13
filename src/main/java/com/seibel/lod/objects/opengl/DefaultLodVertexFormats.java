@@ -11,12 +11,12 @@ import com.google.common.collect.ImmutableList;
  */
 public class DefaultLodVertexFormats
 {
-	public static final LodVertexFormatElement ELEMENT_POSITION = new LodVertexFormatElement(0, LodVertexFormatElement.Type.FLOAT, 3);
-	public static final LodVertexFormatElement ELEMENT_COLOR = new LodVertexFormatElement(0, LodVertexFormatElement.Type.UBYTE, 4);
-	public static final LodVertexFormatElement ELEMENT_UV = new LodVertexFormatElement(0, LodVertexFormatElement.Type.FLOAT, 2);
-	public static final LodVertexFormatElement ELEMENT_LIGHT_MAP_UV = new LodVertexFormatElement(1, LodVertexFormatElement.Type.SHORT, 2);
-	public static final LodVertexFormatElement ELEMENT_NORMAL = new LodVertexFormatElement(0, LodVertexFormatElement.Type.BYTE, 3);
-	public static final LodVertexFormatElement ELEMENT_PADDING = new LodVertexFormatElement(0, LodVertexFormatElement.Type.BYTE, 1);
+	public static final LodVertexFormatElement ELEMENT_POSITION = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.FLOAT, 3);
+	public static final LodVertexFormatElement ELEMENT_COLOR = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.UBYTE, 4);
+	public static final LodVertexFormatElement ELEMENT_UV = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.FLOAT, 2);
+	public static final LodVertexFormatElement ELEMENT_LIGHT_MAP_UV = new LodVertexFormatElement(1, LodVertexFormatElement.DataType.SHORT, 2);
+	public static final LodVertexFormatElement ELEMENT_NORMAL = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.BYTE, 3);
+	public static final LodVertexFormatElement ELEMENT_PADDING = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.BYTE, 1);
 	
 	
 	public static final LodVertexFormat POSITION = 						new LodVertexFormat(ImmutableList.<LodVertexFormatElement>builder().add(ELEMENT_POSITION).build());

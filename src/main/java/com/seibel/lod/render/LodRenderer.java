@@ -38,6 +38,7 @@ import com.seibel.lod.handlers.ReflectionHandler;
 import com.seibel.lod.lodApi.ApiShared;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;
+import com.seibel.lod.objects.opengl.LodVertexBuffer;
 import com.seibel.lod.objects.rending.Mat4f;
 import com.seibel.lod.objects.rending.NearFarFogSettings;
 import com.seibel.lod.proxy.GlProxy;
@@ -52,7 +53,6 @@ import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.potion.Effects;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.util.math.ChunkPos;
@@ -90,7 +90,7 @@ public class LodRenderer
 	private final LodBufferBuilderFactory lodBufferBuilderFactory;
 	
 	/** Each VertexBuffer represents 1 region */
-	private VertexBuffer[][][] vbos;
+	private LodVertexBuffer[][][] vbos;
 	/**
 	 * the OpenGL IDs for the vbos of the same indices.
 	 * These have to be separate because we can't override the

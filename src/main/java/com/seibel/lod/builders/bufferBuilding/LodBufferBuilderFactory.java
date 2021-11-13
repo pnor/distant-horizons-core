@@ -48,6 +48,7 @@ import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodRegion;
 import com.seibel.lod.objects.lod.RegionPos;
 import com.seibel.lod.objects.opengl.LodBufferBuilder;
+import com.seibel.lod.objects.opengl.LodVertexBuffer;
 import com.seibel.lod.proxy.GlProxy;
 import com.seibel.lod.render.LodRenderer;
 import com.seibel.lod.util.DataPointUtil;
@@ -60,12 +61,10 @@ import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
 
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.util.Direction;
 
 /**
- * This object creates the geometry that is
+ * This object creates the buffers that are
  * rendered by the LodRenderer.
  * 
  * @author James Seibel
@@ -111,9 +110,9 @@ public class LodBufferBuilderFactory
 	public int[][][] drawableStorageBufferIds;
 	
 	/** Used when building new VBOs */
-	public volatile VertexBuffer[][][] buildableVbos;
+	public volatile LodVertexBuffer[][][] buildableVbos;
 	/** VBOs that are sent over to the LodNodeRenderer */
-	public volatile VertexBuffer[][][] drawableVbos;
+	public volatile LodVertexBuffer[][][] drawableVbos;
 	
 	/**
 	 * if this is true the LOD buffers are currently being
@@ -532,8 +531,8 @@ public class LodBufferBuilderFactory
 		numberOfBuffersPerRegion = new int[numbRegionsWide][numbRegionsWide];
 		buildableBuffers = new LodBufferBuilder[numbRegionsWide][numbRegionsWide][];
 		
-		buildableVbos = new VertexBuffer[numbRegionsWide][numbRegionsWide][];
-		drawableVbos = new VertexBuffer[numbRegionsWide][numbRegionsWide][];
+		buildableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
+		drawableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
 		
 		if (glProxy.bufferStorageSupported)
 		{
@@ -558,8 +557,8 @@ public class LodBufferBuilderFactory
 					regionMemoryRequired = LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY;
 					numberOfBuffersPerRegion[x][z] = numberOfBuffers;
 					buildableBuffers[x][z] = new LodBufferBuilder[numberOfBuffers];
-					buildableVbos[x][z] = new VertexBuffer[numberOfBuffers];
-					drawableVbos[x][z] = new VertexBuffer[numberOfBuffers];
+					buildableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
+					drawableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
 					
 					if (glProxy.bufferStorageSupported)
 					{
@@ -572,8 +571,8 @@ public class LodBufferBuilderFactory
 					// we only need one buffer for this region
 					numberOfBuffersPerRegion[x][z] = 1;
 					buildableBuffers[x][z] = new LodBufferBuilder[1];
-					buildableVbos[x][z] = new VertexBuffer[1];
-					drawableVbos[x][z] = new VertexBuffer[1];
+					buildableVbos[x][z] = new LodVertexBuffer[1];
+					drawableVbos[x][z] = new LodVertexBuffer[1];
 					
 					if (glProxy.bufferStorageSupported)
 					{
@@ -587,8 +586,8 @@ public class LodBufferBuilderFactory
 				{
 					buildableBuffers[x][z][i] = new LodBufferBuilder((int) regionMemoryRequired);
 					
-					buildableVbos[x][z][i] = new VertexBuffer(DefaultVertexFormats.POSITION_COLOR); //LodUtil.LOD_VERTEX_FORMAT);
-					drawableVbos[x][z][i] = new VertexBuffer(DefaultVertexFormats.POSITION_COLOR); //(LodUtil.LOD_VERTEX_FORMAT);
+					buildableVbos[x][z][i] = new LodVertexBuffer();
+					drawableVbos[x][z][i] = new LodVertexBuffer();
 					
 					
 					// create the initial mapped buffers (system memory)
@@ -810,7 +809,7 @@ public class LodBufferBuilderFactory
 	}
 	
 	/** Uploads the uploadBuffer so the GPU can use it. */
-	private void vboUpload(VertexBuffer vbo, int storageBufferId, ByteBuffer uploadBuffer,
+	private void vboUpload(LodVertexBuffer vbo, int storageBufferId, ByteBuffer uploadBuffer,
 			boolean allowBufferExpansion, GpuUploadMethod uploadMethod)
 	{
 		// this shouldn't happen, but just to be safe
@@ -935,7 +934,7 @@ public class LodBufferBuilderFactory
 		// since this is called on the main render thread
 		if (bufferLock.tryLock())
 		{
-			VertexBuffer[][][] tmpVbo = drawableVbos;
+			LodVertexBuffer[][][] tmpVbo = drawableVbos;
 			drawableVbos = buildableVbos;
 			buildableVbos = tmpVbo;
 			
@@ -956,11 +955,11 @@ public class LodBufferBuilderFactory
 	/** A simple container to pass multiple objects back in the getVertexBuffers method. */
 	public static class VertexBuffersAndOffset
 	{
-		public final VertexBuffer[][][] vbos;
+		public final LodVertexBuffer[][][] vbos;
 		public final int[][][] storageBufferIds;
 		public final ChunkPosWrapper drawableCenterChunkPos;
 		
-		public VertexBuffersAndOffset(VertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, ChunkPosWrapper newDrawableCenterChunkPos)
+		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, ChunkPosWrapper newDrawableCenterChunkPos)
 		{
 			vbos = newVbos;
 			storageBufferIds = newStorageBufferIds;
