@@ -24,7 +24,7 @@ import java.nio.FloatBuffer;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
-import com.seibel.lod.objects.rending.Mat4f;
+import com.seibel.lod.objects.math.Mat4f;
 
 
 /**

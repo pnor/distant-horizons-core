@@ -23,10 +23,10 @@ import java.awt.Color;
 import java.io.File;
 import java.util.HashSet;
 
-import com.seibel.lod.builders.bufferBuilding.lodTemplates.Box;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.enums.config.VanillaOverdraw;
+import com.seibel.lod.objects.Box;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;
 import com.seibel.lod.objects.opengl.DefaultLodVertexFormats;

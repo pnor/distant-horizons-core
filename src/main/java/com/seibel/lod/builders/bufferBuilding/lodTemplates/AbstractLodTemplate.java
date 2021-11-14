@@ -22,6 +22,7 @@ package com.seibel.lod.builders.bufferBuilding.lodTemplates;
 import java.util.Map;
 
 import com.seibel.lod.enums.rendering.DebugMode;
+import com.seibel.lod.objects.Box;
 import com.seibel.lod.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;

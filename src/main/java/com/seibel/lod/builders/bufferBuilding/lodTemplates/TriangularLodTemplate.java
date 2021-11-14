@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.seibel.lod.enums.rendering.DebugMode;
 import com.seibel.lod.lodApi.ClientApi;
+import com.seibel.lod.objects.Box;
 import com.seibel.lod.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 

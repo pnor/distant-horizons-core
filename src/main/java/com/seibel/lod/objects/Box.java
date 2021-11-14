@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.builders.bufferBuilding.lodTemplates;
+package com.seibel.lod.objects;
 
 import java.util.Arrays;
 import java.util.HashMap;

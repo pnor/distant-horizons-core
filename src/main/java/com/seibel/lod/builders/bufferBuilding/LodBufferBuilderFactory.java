@@ -37,12 +37,12 @@ import org.lwjgl.opengl.GL45;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.seibel.lod.builders.bufferBuilding.lodTemplates.Box;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.config.GpuUploadMethod;
 import com.seibel.lod.enums.config.VanillaOverdraw;
 import com.seibel.lod.enums.rendering.GlProxyContext;
 import com.seibel.lod.lodApi.ClientApi;
+import com.seibel.lod.objects.Box;
 import com.seibel.lod.objects.PosToRenderContainer;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodRegion;

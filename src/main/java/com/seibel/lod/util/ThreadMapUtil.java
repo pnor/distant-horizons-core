@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.seibel.lod.builders.bufferBuilding.lodTemplates.Box;
+import com.seibel.lod.objects.Box;
 
 import net.minecraft.util.Direction;
 

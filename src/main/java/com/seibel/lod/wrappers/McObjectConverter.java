@@ -21,7 +21,7 @@ package com.seibel.lod.wrappers;
 
 import java.nio.FloatBuffer;
 
-import com.seibel.lod.objects.rending.Mat4f;
+import com.seibel.lod.objects.math.Mat4f;
 
 import net.minecraft.util.math.vector.Matrix4f;
 
