@@ -19,7 +19,7 @@
 
 package com.seibel.lod.util;
 
-import com.seibel.lod.config.LodConfig;
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.enums.config.HorizontalQuality;
 import com.seibel.lod.enums.config.HorizontalResolution;

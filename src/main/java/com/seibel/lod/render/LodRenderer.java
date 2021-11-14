@@ -26,10 +26,10 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.NVFogDistance;
 
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.api.lod.ApiShared;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
-import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.config.GpuUploadMethod;
 import com.seibel.lod.enums.rendering.DebugMode;
 import com.seibel.lod.enums.rendering.FogDistance;

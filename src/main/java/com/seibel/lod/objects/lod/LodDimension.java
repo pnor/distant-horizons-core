@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.config.LodConfig;
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.enums.config.GenerationPriority;
 import com.seibel.lod.enums.config.VerticalQuality;

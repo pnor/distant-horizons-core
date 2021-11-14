@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.io.File;
 import java.util.HashSet;
 
-import com.seibel.lod.config.LodConfig;
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.enums.config.VanillaOverdraw;

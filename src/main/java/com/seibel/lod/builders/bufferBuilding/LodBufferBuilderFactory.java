@@ -36,8 +36,8 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL45;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.api.lod.ClientApi;
-import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.config.GpuUploadMethod;
 import com.seibel.lod.enums.config.VanillaOverdraw;

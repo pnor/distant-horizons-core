@@ -20,7 +20,6 @@
 package com.seibel.lod.api.forge;
 
 import com.seibel.lod.ModInfo;
-import com.seibel.lod.config.LodConfig;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

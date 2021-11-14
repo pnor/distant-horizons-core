@@ -21,8 +21,8 @@ package com.seibel.lod.api.lod;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.builders.worldGeneration.LodWorldGenerator;
-import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.RegionPos;

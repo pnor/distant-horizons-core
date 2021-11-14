@@ -1,33 +1,6 @@
-/*
- *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
- *    licensed under the GNU GPL v3 License.
- *
- *    Copyright (C) 2020  James Seibel
- *
- *    This program is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, version 3.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+package com.seibel.lod.api.lod;
 
-package com.seibel.lod.config;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.core.io.WritingMode;
-import com.seibel.lod.ModInfo;
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.enums.config.BlockToAvoid;
 import com.seibel.lod.enums.config.BufferRebuildTimes;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
@@ -42,37 +15,21 @@ import com.seibel.lod.enums.config.VerticalQuality;
 import com.seibel.lod.enums.rendering.DebugMode;
 import com.seibel.lod.enums.rendering.FogDistance;
 import com.seibel.lod.enums.rendering.FogDrawOverride;
+import com.seibel.lod.objects.MinDefaultMax;
 import com.seibel.lod.util.LodUtil;
 
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 
 /**
- * This handles any configuration the user has access to.
- * @author Leonardo Amato
+ * This holds the config defaults and setters/getters
+ * that should be hooked into the host mod loader (Fabric, Forge, etc.).
+ * 
  * @author James Seibel
- * @version 10-25-2021
+ * @version 11-14-2021
  */
-@Mod.EventBusSubscriber
-public class LodConfig
+public class ConfigApi
 {
-	// CONFIG STRUCTURE
-	// 	-> Client
-	//		|
-	//		|-> Graphics
-	//		|		|-> QualityOption
-	//		|		|-> FogQualityOption
-	//		|		|-> AdvancedGraphicsOption
-	//		|
-	//		|-> World Generation
-	//		|
-	//		|-> Advanced Mod Option
-	//				|-> Threads
-	//				|-> Buffers
-	//				|-> Debugging
-	
+	public static final Client client = new Client();
 	
 	
 	public static class Client
@@ -85,15 +42,11 @@ public class LodConfig
 		//================//
 		// Client Configs //
 		//================//
-		public Client(ForgeConfigSpec.Builder builder)
+		public Client()
 		{
-			builder.push(this.getClass().getSimpleName());
-			{
-				graphics = new Graphics(builder);
-				worldGenerator = new WorldGenerator(builder);
-				advancedModOptions = new AdvancedModOptions(builder);
-			}
-			builder.pop();
+			graphics = new Graphics();
+			worldGenerator = new WorldGenerator();
+			advancedModOptions = new AdvancedModOptions();
 		}
 		
 		
@@ -107,78 +60,64 @@ public class LodConfig
 			public final FogQualityOption fogQualityOption;
 			public final AdvancedGraphicsOption advancedGraphicsOption;
 			
-			Graphics(ForgeConfigSpec.Builder builder)
+			Graphics()
 			{
-				builder.comment("These settings control how the mod will look in game").push("Graphics");
-				{
-					qualityOption = new QualityOption(builder);
-					advancedGraphicsOption = new AdvancedGraphicsOption(builder);
-					fogQualityOption = new FogQualityOption(builder);
-				}
-				builder.pop();
+				qualityOption = new QualityOption();
+				advancedGraphicsOption = new AdvancedGraphicsOption();
+				fogQualityOption = new FogQualityOption();
 			}
 			
 			
 			public static class QualityOption
 			{
-				public final ForgeConfigSpec.EnumValue<HorizontalResolution> drawResolution;
-				
-				public final ForgeConfigSpec.IntValue lodChunkRenderDistance;
-				
-				public final ForgeConfigSpec.EnumValue<VerticalQuality> verticalQuality;
-				
-				public final ForgeConfigSpec.EnumValue<HorizontalScale> horizontalScale;
-				
-				public final ForgeConfigSpec.EnumValue<HorizontalQuality> horizontalQuality;
-				
-				
-				QualityOption(ForgeConfigSpec.Builder builder)
+				public static final HorizontalResolution DRAW_RESOLUTION_DEFAULT = HorizontalResolution.BLOCK;
+				public HorizontalResolution getDrawResolution()
 				{
-					builder.comment("These settings control how detailed the fake chunks will be.").push(this.getClass().getSimpleName());
-					
-					verticalQuality = builder
-							.comment("\n\n"
-									+ " This indicates how detailed fake chunks will represent \n"
-									+ " overhangs, caves, floating islands, ect. \n"
-									+ " Higher options will use more memory and increase GPU usage. \n"
-									+ " " + VerticalQuality.LOW + ": uses at max 2 columns per position. \n"
-									+ " " + VerticalQuality.MEDIUM + ": uses at max 4 columns per position. \n"
-									+ " " + VerticalQuality.HIGH + ": uses at max 8 columns per position. \n")
-							.defineEnum("Vertical Quality", VerticalQuality.MEDIUM);
-					
-					horizontalScale = builder
-							.comment("\n\n"
-									+ " This indicates how quickly fake chunks drop off in quality. \n"
-									+ " " + HorizontalScale.LOW + ": quality drops every " + HorizontalScale.LOW.distanceUnit / 16 + " chunks. \n"
-									+ " " + HorizontalScale.MEDIUM + ": quality drops every " + HorizontalScale.MEDIUM.distanceUnit / 16 + " chunks. \n"
-									+ " " + HorizontalScale.HIGH + ": quality drops every " + HorizontalScale.HIGH.distanceUnit / 16 + " chunks. \n")
-							.defineEnum("Horizontal Scale", HorizontalScale.MEDIUM);
-					
-					horizontalQuality = builder
-							.comment("\n\n"
-									+ " This indicates the exponential base of the quadratic drop-off \n"
-									+ " " + HorizontalQuality.LOWEST + ": base " + HorizontalQuality.LOWEST.quadraticBase + ". \n"
-									+ " " + HorizontalQuality.LOW + ": base " + HorizontalQuality.LOW.quadraticBase + ". \n"
-									+ " " + HorizontalQuality.MEDIUM + ": base " + HorizontalQuality.MEDIUM.quadraticBase + ". \n"
-									+ " " + HorizontalQuality.HIGH + ": base " + HorizontalQuality.HIGH.quadraticBase + ". \n")
-							.defineEnum("Horizontal Quality", HorizontalQuality.MEDIUM);
-					
-					drawResolution = builder
-							.comment("\n\n"
-									+ " What is the maximum detail fake chunks should be drawn at? \n"
-									+ " " + HorizontalResolution.CHUNK + ": render 1 LOD for each Chunk. \n"
-									+ " " + HorizontalResolution.HALF_CHUNK + ": render 4 LODs for each Chunk. \n"
-									+ " " + HorizontalResolution.FOUR_BLOCKS + ": render 16 LODs for each Chunk. \n"
-									+ " " + HorizontalResolution.TWO_BLOCKS + ": render 64 LODs for each Chunk. \n"
-									+ " " + HorizontalResolution.BLOCK + ": render 256 LODs for each Chunk. \n")
-							.defineEnum("Block size", HorizontalResolution.BLOCK);
-					
-					lodChunkRenderDistance = builder
-							.comment("\n\n"
-									+ " The mod's render distance, measured in chunks. \n")
-							.defineInRange("Lod Render Distance", 64, 32, 1024);
-					
-					builder.pop();
+					return LodConfig.CLIENT.graphics.qualityOption.drawResolution.get();
+				}
+				public void setDrawResolution(HorizontalResolution newHorizontalResolution)
+				{
+					LodConfig.CLIENT.graphics.qualityOption.drawResolution.set(newHorizontalResolution);
+				}
+				
+				public static final MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(32, 64, 1024);
+				public int getLodChunkRenderDistance()
+				{
+					return LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get();
+				}
+				public void setLodChunkRenderDistance(int newLodChunkRenderDistance)
+				{
+					LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.set(newLodChunkRenderDistance);
+				}
+				
+				public static final VerticalQuality VERTICAL_QUALITY_DEFAULT = VerticalQuality.MEDIUM;
+				public VerticalQuality getVerticalQuality()
+				{
+					return LodConfig.CLIENT.graphics.qualityOption.verticalQuality.get();
+				}
+				public void setVerticalQuality(VerticalQuality newVerticalQuality)
+				{
+					LodConfig.CLIENT.graphics.qualityOption.verticalQuality.set(newVerticalQuality);
+				}
+				
+				public static final HorizontalScale HORIZONTAL_SCALE_DEFAULT = HorizontalScale.MEDIUM;
+				public HorizontalScale getHorizontalScale()
+				{
+					return LodConfig.CLIENT.graphics.qualityOption.horizontalScale.get();
+				}
+				public void setLodChunkRenderDistance(HorizontalScale newHorizontalScale)
+				{
+					LodConfig.CLIENT.graphics.qualityOption.horizontalScale.set(newHorizontalScale);
+				}
+				
+				public static final HorizontalQuality HORIZONTAL_QUALITY_DEFAULT = HorizontalQuality.MEDIUM;
+				public HorizontalQuality getHorizontalQuality()
+				{
+					return LodConfig.CLIENT.graphics.qualityOption.horizontalQuality.get();
+				}
+				public void setLodChunkRenderDistance(HorizontalQuality newHorizontalQuality)
+				{
+					LodConfig.CLIENT.graphics.qualityOption.horizontalQuality.set(newHorizontalQuality);
 				}
 			}
 			
@@ -554,38 +493,6 @@ public class LodConfig
 				}
 			}
 		}
-	}
-	
-	
-	/** {@link Path} to the configuration file of this mod */
-	private static final Path CONFIG_PATH = Paths.get("config", ModInfo.NAME + ".toml");
-	
-	public static final ForgeConfigSpec CLIENT_SPEC;
-	public static final Client CLIENT;
-	
-	static
-	{
-		final Pair<Client, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Client::new);
-		CLIENT_SPEC = specPair.getRight();
-		CLIENT = specPair.getLeft();
-		CommentedFileConfig clientConfig = CommentedFileConfig.builder(CONFIG_PATH)
-				.writingMode(WritingMode.REPLACE)
-				.build();
-		clientConfig.load();
-		clientConfig.save();
-		CLIENT_SPEC.setConfig(clientConfig);
-	}
-	
-	@SubscribeEvent
-	public static void onLoad(final ModConfig.Loading configEvent)
-	{
-		LogManager.getLogger().debug(ModInfo.NAME, "Loaded forge config file {}", configEvent.getConfig().getFileName());
-	}
-	
-	@SubscribeEvent
-	public static void onFileChange(final ModConfig.Reloading configEvent)
-	{
-		LogManager.getLogger().debug(ModInfo.NAME, "Forge config just got changed on the file system!");
 	}
 	
 }

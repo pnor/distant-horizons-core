@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.seibel.lod.config.LodConfig;
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.rendering.DebugMode;
 import com.seibel.lod.objects.math.Vec3i;

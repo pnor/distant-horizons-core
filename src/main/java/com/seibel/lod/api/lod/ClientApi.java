@@ -22,8 +22,8 @@ package com.seibel.lod.api.lod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.seibel.lod.api.forge.LodConfig;
 import com.seibel.lod.builders.worldGeneration.LodGenWorker;
-import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.math.Mat4f;
 import com.seibel.lod.render.GlProxy;
