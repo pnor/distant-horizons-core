@@ -26,6 +26,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLCapabilities;
 
+import com.mojang.blaze3d.systems.IRenderCall;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.lod.ModInfo;
 import com.seibel.lod.enums.rendering.GlProxyContext;
@@ -46,7 +47,7 @@ import com.seibel.lod.wrappers.MinecraftWrapper;
  * https://gamedev.stackexchange.com/questions/91995/edit-vbo-data-or-create-a-new-one <br><br>
  * 
  * @author James Seibel
- * @version 11-8-2021
+ * @version 11-13-2021
  */
 public class GlProxy
 {
@@ -273,12 +274,22 @@ public class GlProxy
 			break;
 		}
 		
-		
 		GLFW.glfwMakeContextCurrent(contextPointer);
 		GL.setCapabilities(newGlCapabilities);
 	}
 	
 	
+	/** 
+	 * Asynchronously calls the given runnable on a valid OpenGL context.
+	 * Useful for creating/destroying OpenGL objects in a thread
+	 * that doesn't normally have access to a OpenGL context.
+	 */
+	public void recordOpenGlCall(IRenderCall renderCall) //(Runnable renderCall)
+	{
+		// TODO this shouldn't rely on Minecraft's RenderSystem and should just run 
+		// on a executer thread with a separate context
+		RenderSystem.recordRenderCall(renderCall);
+	}
 	
 	
 	

@@ -2,7 +2,11 @@ package com.seibel.lod.wrappers;
 
 import net.minecraft.client.renderer.texture.NativeImage;
 
-
+/**
+ * 
+ * @author Leonardo Amato
+ * @version 11-13-2021
+ */
 public class LightMapWrapper
 {
 	static NativeImage lightMap = null;

@@ -36,7 +36,6 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL45;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.config.GpuUploadMethod;
@@ -649,7 +648,7 @@ public class LodBufferBuilderFactory
 						// called we aren't worried about stuttering anyway.
 						// This way we don't have to worry about what context this
 						// was called from (if any).
-						RenderSystem.recordRenderCall(() ->
+						GlProxy.getInstance().recordOpenGlCall(() ->
 						{
 							GL15.glDeleteBuffers(buildableId);
 							GL15.glDeleteBuffers(drawableId);
@@ -691,7 +690,7 @@ public class LodBufferBuilderFactory
 							drawableId = 0;
 						
 						
-						RenderSystem.recordRenderCall(() ->
+						GlProxy.getInstance().recordOpenGlCall(() ->
 						{
 							if (buildableId != 0)
 								GL15.glDeleteBuffers(buildableId);
