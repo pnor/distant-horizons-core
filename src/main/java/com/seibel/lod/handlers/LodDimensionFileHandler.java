@@ -29,9 +29,9 @@ import java.util.concurrent.Executors;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
+import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.enums.config.VerticalQuality;
-import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.lod.LodRegion;
 import com.seibel.lod.objects.lod.RegionPos;

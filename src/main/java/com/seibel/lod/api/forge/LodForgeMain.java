@@ -17,10 +17,10 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod;
+package com.seibel.lod.api.forge;
 
+import com.seibel.lod.ModInfo;
 import com.seibel.lod.config.LodConfig;
-import com.seibel.lod.proxy.ClientProxy;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

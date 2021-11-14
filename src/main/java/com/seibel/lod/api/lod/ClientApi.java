@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.lodApi;
+package com.seibel.lod.api.lod;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +26,7 @@ import com.seibel.lod.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.math.Mat4f;
-import com.seibel.lod.proxy.GlProxy;
+import com.seibel.lod.render.GlProxy;
 import com.seibel.lod.render.LodRenderer;
 import com.seibel.lod.util.DetailDistanceUtil;
 import com.seibel.lod.util.ThreadMapUtil;

@@ -21,14 +21,21 @@ package com.seibel.lod;
 
 /**
  * This file is similar to mcmod.info
+ * <br>
+ * If you are looking at this mod's source code and don't
+ * know where to start.
+ * Go to the api/lod package (folder) and take a look at the ClientApi.java file,
+ * Pretty much all of the mod stems from there.
+ * 
  * @author James Seibel
- * @version 10-23-2021
+ * @version 11-13-2021
  */
 public final class ModInfo
 {
 	public static final String ID = "lod";
+	/** The internal mod name */
 	public static final String NAME = "DistantHorizons";
-	/** Human readable version of MOD_NAME */
+	/** Human readable version of NAME */
 	public static final String READABLE_NAME = "Distant Horizons";
 	public static final String API = "LodAPI";
 	public static final String VERSION = "a1.5.2";

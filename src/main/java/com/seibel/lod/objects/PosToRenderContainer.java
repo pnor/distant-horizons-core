@@ -21,7 +21,7 @@ package com.seibel.lod.objects;
 
 import java.util.Arrays;
 
-import com.seibel.lod.lodApi.ClientApi;
+import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodUtil;
 

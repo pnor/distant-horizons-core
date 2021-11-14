@@ -3,7 +3,7 @@ package com.seibel.lod.objects.opengl;
 import org.lwjgl.opengl.GL15;
 
 import com.seibel.lod.enums.rendering.GlProxyContext;
-import com.seibel.lod.proxy.GlProxy;
+import com.seibel.lod.render.GlProxy;
 
 /**
  * a (almost) exact copy of MC's

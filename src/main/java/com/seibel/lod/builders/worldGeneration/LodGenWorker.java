@@ -23,10 +23,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
-import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;

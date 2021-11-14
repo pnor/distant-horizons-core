@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.seibel.lod.lodApi.ClientApi;
+import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.objects.math.Mat4f;
 import com.seibel.lod.wrappers.McObjectConverter;
 

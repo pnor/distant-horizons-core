@@ -22,8 +22,8 @@ package com.seibel.lod.handlers;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.enums.rendering.FogQuality;
-import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.objects.math.Mat4f;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 

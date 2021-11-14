@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.proxy;
+package com.seibel.lod.render;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
@@ -29,8 +29,8 @@ import org.lwjgl.opengl.GLCapabilities;
 import com.mojang.blaze3d.systems.IRenderCall;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.lod.ModInfo;
+import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.enums.rendering.GlProxyContext;
-import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.render.shader.LodShader;
 import com.seibel.lod.render.shader.LodShaderProgram;
 import com.seibel.lod.wrappers.MinecraftWrapper;

@@ -17,9 +17,9 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.proxy;
+package com.seibel.lod.api.forge;
 
-import com.seibel.lod.lodApi.EventApi;
+import com.seibel.lod.api.lod.EventApi;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;

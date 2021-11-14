@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.lodApi;
+package com.seibel.lod.api.lod;
 
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;

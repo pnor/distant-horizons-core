@@ -22,7 +22,7 @@ package com.seibel.lod.objects.lod;
 import java.util.Hashtable;
 import java.util.Map;
 
-import com.seibel.lod.lodApi.ClientApi;
+import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 
 /**
