@@ -27,10 +27,10 @@ import com.seibel.lod.ModInfo;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.util.LodUtil;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.MainWindow;

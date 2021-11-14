@@ -1,4 +1,4 @@
-package com.seibel.lod.wrappers;
+package com.seibel.lod.wrappers.worldGeneration;
 
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
@@ -9,14 +9,13 @@ import java.util.function.Supplier;
 
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.builders.lodBuilding.LodBuilderConfig;
-import com.seibel.lod.builders.worldGeneration.LodServerWorld;
 import com.seibel.lod.config.LodConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.util.LodUtil;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkWrapper;
+import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.util.palette.UpgradeData;
 import net.minecraft.util.registry.Registry;

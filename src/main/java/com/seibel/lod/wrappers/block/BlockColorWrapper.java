@@ -1,4 +1,4 @@
-package com.seibel.lod.wrappers.Block;
+package com.seibel.lod.wrappers.block;
 
 import java.util.List;
 import java.util.Objects;

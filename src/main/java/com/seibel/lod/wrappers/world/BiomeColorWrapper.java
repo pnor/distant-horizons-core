@@ -17,9 +17,9 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.wrappers.World;
+package com.seibel.lod.wrappers.world;
 
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.world.biome.BiomeColors;
 

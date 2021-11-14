@@ -36,14 +36,14 @@ import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.util.ThreadMapUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
-import com.seibel.lod.wrappers.Block.BlockColorWrapper;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
-import com.seibel.lod.wrappers.Block.BlockShapeWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
-import com.seibel.lod.wrappers.World.BiomeWrapper;
-import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.block.BlockColorWrapper;
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.wrappers.block.BlockShapeWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkWrapper;
+import com.seibel.lod.wrappers.world.BiomeWrapper;
+import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.world.WorldWrapper;
 
 /**
  * This object is in charge of creating Lod related objects.

@@ -27,8 +27,7 @@ import com.seibel.lod.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.LodUtil;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
-
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.enums.LodDirection;
 
 /**

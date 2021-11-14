@@ -1,11 +1,11 @@
-package com.seibel.lod.wrappers.World;
+package com.seibel.lod.wrappers.world;
 
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.enums.WorldType;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.IWorld;

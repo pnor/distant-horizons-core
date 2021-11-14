@@ -21,8 +21,8 @@ package com.seibel.lod.render;
 
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3f;

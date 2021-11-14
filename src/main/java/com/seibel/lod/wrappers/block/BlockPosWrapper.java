@@ -1,4 +1,4 @@
-package com.seibel.lod.wrappers.Block;
+package com.seibel.lod.wrappers.block;
 
 import com.seibel.lod.enums.LodDirection;
 import net.minecraft.util.math.BlockPos;

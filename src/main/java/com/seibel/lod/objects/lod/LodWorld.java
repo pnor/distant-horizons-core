@@ -23,7 +23,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import com.seibel.lod.lodApi.ClientApi;
-import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 
 /**
  * This stores all LODs for a given world.

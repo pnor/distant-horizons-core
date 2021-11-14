@@ -36,13 +36,14 @@ import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraftforge.common.WorldWorkerManager;
 
 /**
  * A singleton that handles all long distance LOD world generation.
+ * @author Leonardo Amato
  * @author James Seibel
  * @version 9-25-2021
  */

@@ -1,11 +1,11 @@
-package com.seibel.lod.wrappers.Chunk;
-
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
+package com.seibel.lod.wrappers.chunk;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.Objects;
+
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
 
 //This class wraps the minecraft ChunkPos class

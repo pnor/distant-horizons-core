@@ -20,9 +20,9 @@
 package com.seibel.lod.proxy;
 
 import com.seibel.lod.lodApi.EventApi;
-import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
-import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkWrapper;
+import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;

@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.builders.worldGeneration;
+package com.seibel.lod.wrappers.worldGeneration;
 
 import java.util.HashMap;
 import java.util.List;

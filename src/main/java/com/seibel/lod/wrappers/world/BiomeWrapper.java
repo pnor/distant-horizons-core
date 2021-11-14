@@ -1,7 +1,8 @@
-package com.seibel.lod.wrappers.World;
+package com.seibel.lod.wrappers.world;
 
 import com.seibel.lod.util.ColorUtil;
-import com.seibel.lod.wrappers.Block.BlockColorWrapper;
+import com.seibel.lod.wrappers.block.BlockColorWrapper;
+
 import net.minecraft.block.Blocks;
 import net.minecraft.world.biome.Biome;
 

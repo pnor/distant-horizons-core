@@ -29,9 +29,9 @@ import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.util.LodUtil;
-import com.seibel.lod.wrappers.WorldGeneratorWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.world.WorldWrapper;
+import com.seibel.lod.wrappers.worldGeneration.WorldGeneratorWrapper;
 
 import net.minecraftforge.common.WorldWorkerManager.IWorker;
 

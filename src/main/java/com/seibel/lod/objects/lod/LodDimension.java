@@ -37,8 +37,8 @@ import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
-import com.seibel.lod.wrappers.World.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.World.WorldWrapper;
+import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
+import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.util.math.ChunkPos;
 

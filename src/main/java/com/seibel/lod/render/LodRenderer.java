@@ -48,8 +48,8 @@ import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.McObjectConverter;
 import com.seibel.lod.wrappers.MinecraftWrapper;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
-import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.GameRenderer;

@@ -1,4 +1,4 @@
-package com.seibel.lod.wrappers.World;
+package com.seibel.lod.wrappers.world;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

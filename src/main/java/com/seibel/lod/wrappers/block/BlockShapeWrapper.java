@@ -1,7 +1,6 @@
 
-package com.seibel.lod.wrappers.Block;
+package com.seibel.lod.wrappers.block;
 
-import com.seibel.lod.wrappers.Chunk.ChunkWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SixWayBlock;
@@ -13,6 +12,8 @@ import net.minecraft.world.IBlockReader;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 
 
 //This class wraps the minecraft Block class

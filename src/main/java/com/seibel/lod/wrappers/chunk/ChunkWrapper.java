@@ -1,10 +1,11 @@
-package com.seibel.lod.wrappers.Chunk;
+package com.seibel.lod.wrappers.chunk;
 
 import com.seibel.lod.util.LodUtil;
-import com.seibel.lod.wrappers.Block.BlockColorWrapper;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
-import com.seibel.lod.wrappers.Block.BlockShapeWrapper;
-import com.seibel.lod.wrappers.World.BiomeWrapper;
+import com.seibel.lod.wrappers.block.BlockColorWrapper;
+import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.wrappers.block.BlockShapeWrapper;
+import com.seibel.lod.wrappers.world.BiomeWrapper;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ILiquidContainer;
 import net.minecraft.block.IWaterLoggable;
