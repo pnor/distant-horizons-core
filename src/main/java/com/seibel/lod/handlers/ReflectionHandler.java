@@ -19,13 +19,13 @@
 
 package com.seibel.lod.handlers;
 
-import com.seibel.lod.enums.rendering.FogQuality;
-import com.seibel.lod.lodApi.ClientApi;
-import com.seibel.lod.wrappers.MinecraftWrapper;
-import net.minecraft.util.math.vector.Matrix4f;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
+import com.seibel.lod.enums.rendering.FogQuality;
+import com.seibel.lod.lodApi.ClientApi;
+import com.seibel.lod.objects.math.Mat4f;
+import com.seibel.lod.wrappers.MinecraftWrapper;
 
 /**
  * This object is used to get variables from methods
@@ -134,26 +134,32 @@ public class ReflectionHandler
 	/**
 	 * Modifies a projection matrix's clip planes.
 	 * The projection matrix must be in a column-major format.
+	 * 
 	 * @param projectionMatrix The projection matrix to be modified.
-	 * @param n the new near clip plane value.
-	 * @param f the new far clip plane value.
+	 * @param nearClipPlane the new near clip plane value.
+	 * @param farClipPlane the new far clip plane value.
 	 * @return The modified matrix.
 	 */
-	public Matrix4f Matrix4fModifyClipPlanes(Matrix4f projectionMatrix, float n, float f)
+	public Mat4f Matrix4fModifyClipPlanes(Mat4f projectionMatrix, float nearClipPlane, float farClipPlane)
 	{
-		//find the matrix values.
-		float nMatrixValue = -((f + n) / (f - n));
-		float fMatrixValue = -((2 * f * n) / (f - n));
+		// find the matrix values.
+		float nearMatrixValue = -((farClipPlane + nearClipPlane) / (farClipPlane - nearClipPlane));
+		float farMatrixValue = -((2 * farClipPlane * nearClipPlane) / (farClipPlane - nearClipPlane));
+		
 		try
 		{
-			//get the fields of the projectionMatrix
+			// TODO this was originally created before we had the Mat4f object,
+			// so this doesn't need to be done with reflection anymore.
+			// And should be moved to the LodRenderer
+			
+			// get the fields of the projectionMatrix
 			Field[] fields = projectionMatrix.getClass().getDeclaredFields();
-			//bypass the security protections on the fields that encode near and far plane values.
+			// bypass the security protections on the fields that encode near and far plane values.
 			fields[10].setAccessible(true);
 			fields[11].setAccessible(true);
-			//Change the values of the near and far plane.
-			fields[10].set(projectionMatrix, nMatrixValue);
-			fields[11].set(projectionMatrix, fMatrixValue);
+			// Change the values of the near and far plane.
+			fields[10].set(projectionMatrix, nearMatrixValue);
+			fields[11].set(projectionMatrix, farMatrixValue);
 		}
 		catch (Exception e)
 		{
