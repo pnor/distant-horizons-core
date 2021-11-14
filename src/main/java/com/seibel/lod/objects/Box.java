@@ -24,15 +24,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.seibel.lod.config.LodConfig;
+import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.rendering.DebugMode;
+import com.seibel.lod.objects.math.Vec3i;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.LodUtil;
-import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
-
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector3i;
+import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 
 /**
  * Similar to Minecraft's AxisAlignedBoundingBox.
@@ -55,25 +54,25 @@ public class Box
 	public static final int VOID_FACE = 0;
 	
 	/** The six cardinal directions */
-	public static final Direction[] DIRECTIONS = new Direction[] {
-			Direction.UP,
-			Direction.DOWN,
-			Direction.WEST,
-			Direction.EAST,
-			Direction.NORTH,
-			Direction.SOUTH };
+	public static final LodDirection[] DIRECTIONS = new LodDirection[] {
+			LodDirection.UP,
+			LodDirection.DOWN,
+			LodDirection.WEST,
+			LodDirection.EAST,
+			LodDirection.NORTH,
+			LodDirection.SOUTH };
 	
 	/** North, South, East, West */
-	public static final Direction[] ADJ_DIRECTIONS = new Direction[] {
-			Direction.EAST,
-			Direction.WEST,
-			Direction.SOUTH,
-			Direction.NORTH };
+	public static final LodDirection[] ADJ_DIRECTIONS = new LodDirection[] {
+			LodDirection.EAST,
+			LodDirection.WEST,
+			LodDirection.SOUTH,
+			LodDirection.NORTH };
 	
 	/** All the faces and vertices of a cube. This is used to extract the vertex from the column */
-	public static final Map<Direction, int[][]> DIRECTION_VERTEX_MAP = new HashMap<Direction, int[][]>()
+	public static final Map<LodDirection, int[][]> DIRECTION_VERTEX_MAP = new HashMap<LodDirection, int[][]>()
 	{{
-		put(Direction.UP, new int[][] {
+		put(LodDirection.UP, new int[][] {
 				{ 0, 1, 0 }, // 0
 				{ 0, 1, 1 }, // 1
 				{ 1, 1, 1 }, // 2
@@ -82,7 +81,7 @@ public class Box
 				{ 1, 1, 1 }, // 2
 				{ 1, 1, 0 } // 3
 		});
-		put(Direction.DOWN, new int[][] {
+		put(LodDirection.DOWN, new int[][] {
 				{ 1, 0, 0 }, // 0
 				{ 1, 0, 1 }, // 1
 				{ 0, 0, 1 }, // 2
@@ -91,7 +90,7 @@ public class Box
 				{ 0, 0, 1 }, // 2
 				{ 0, 0, 0 } // 3
 		 });
-		put(Direction.EAST, new int[][] {
+		put(LodDirection.EAST, new int[][] {
 				{ 1, 1, 0 }, // 0
 				{ 1, 1, 1 }, // 1
 				{ 1, 0, 1 }, // 2
@@ -99,7 +98,7 @@ public class Box
 				{ 1, 1, 0 }, // 0
 				{ 1, 0, 1 }, // 2
 				{ 1, 0, 0 } }); // 3
-		put(Direction.WEST, new int[][] {
+		put(LodDirection.WEST, new int[][] {
 				{ 0, 0, 0 }, // 0
 				{ 0, 0, 1 }, // 1
 				{ 0, 1, 1 }, // 2
@@ -108,7 +107,7 @@ public class Box
 				{ 0, 1, 1 }, // 2
 				{ 0, 1, 0 } // 3
 		});
-		put(Direction.SOUTH, new int[][] {
+		put(LodDirection.SOUTH, new int[][] {
 				{ 1, 0, 1 }, // 0
 				{ 1, 1, 1 }, // 1
 				{ 0, 1, 1 }, // 2
@@ -117,7 +116,7 @@ public class Box
 				{ 0, 1, 1 }, // 2
 				{ 0, 0, 1 } // 3
 		});
-		put(Direction.NORTH, new int[][] {
+		put(LodDirection.NORTH, new int[][] {
 				{ 0, 0, 0 }, // 0
 				{ 0, 1, 0 }, // 1
 				{ 1, 1, 0 }, // 2
@@ -133,14 +132,14 @@ public class Box
 	 * This indicates which position is invariable in the DIRECTION_VERTEX_MAP.
 	 * Is used to extract the vertex
 	 */
-	public static final Map<Direction, int[]> FACE_DIRECTION = new HashMap<Direction, int[]>()
+	public static final Map<LodDirection, int[]> FACE_DIRECTION = new HashMap<LodDirection, int[]>()
 	{{
-		put(Direction.UP, new int[] { Y, MAX });
-		put(Direction.DOWN, new int[] { Y, MIN });
-		put(Direction.EAST, new int[] { X, MAX });
-		put(Direction.WEST, new int[] { X, MIN });
-		put(Direction.SOUTH, new int[] { Z, MAX });
-		put(Direction.NORTH, new int[] { Z, MIN });
+		put(LodDirection.UP, new int[] { Y, MAX });
+		put(LodDirection.DOWN, new int[] { Y, MIN });
+		put(LodDirection.EAST, new int[] { X, MAX });
+		put(LodDirection.WEST, new int[] { X, MIN });
+		put(LodDirection.SOUTH, new int[] { Z, MAX });
+		put(LodDirection.NORTH, new int[] { Z, MIN });
 	}};
 	
 	
@@ -148,33 +147,33 @@ public class Box
 	 * This is a map from Direction to the relative normal vector
 	 * we are using this since I'm not sure if the getNormal create new object at every call
 	 */
-	public static final Map<Direction, Vector3i> DIRECTION_NORMAL_MAP = new HashMap<Direction, Vector3i>()
+	public static final Map<LodDirection, Vec3i> DIRECTION_NORMAL_MAP = new HashMap<LodDirection, Vec3i>()
 	{{
-		put(Direction.UP, Direction.UP.getNormal());
-		put(Direction.DOWN, Direction.DOWN.getNormal());
-		put(Direction.EAST, Direction.EAST.getNormal());
-		put(Direction.WEST, Direction.WEST.getNormal());
-		put(Direction.SOUTH, Direction.SOUTH.getNormal());
-		put(Direction.NORTH, Direction.NORTH.getNormal());
+		put(LodDirection.UP, LodDirection.UP.getNormal());
+		put(LodDirection.DOWN, LodDirection.DOWN.getNormal());
+		put(LodDirection.EAST, LodDirection.EAST.getNormal());
+		put(LodDirection.WEST, LodDirection.WEST.getNormal());
+		put(LodDirection.SOUTH, LodDirection.SOUTH.getNormal());
+		put(LodDirection.NORTH, LodDirection.NORTH.getNormal());
 	}};
 	
 	/** We use this index for all array that are going to */
-	public static final Map<Direction, Integer> DIRECTION_INDEX = new HashMap<Direction, Integer>()
+	public static final Map<LodDirection, Integer> DIRECTION_INDEX = new HashMap<LodDirection, Integer>()
 	{{
-		put(Direction.UP, 0);
-		put(Direction.DOWN, 1);
-		put(Direction.EAST, 2);
-		put(Direction.WEST, 3);
-		put(Direction.SOUTH, 4);
-		put(Direction.NORTH, 5);
+		put(LodDirection.UP, 0);
+		put(LodDirection.DOWN, 1);
+		put(LodDirection.EAST, 2);
+		put(LodDirection.WEST, 3);
+		put(LodDirection.SOUTH, 4);
+		put(LodDirection.NORTH, 5);
 	}};
 	
-	public static final Map<Direction, Integer> ADJ_DIRECTION_INDEX = new HashMap<Direction, Integer>()
+	public static final Map<LodDirection, Integer> ADJ_DIRECTION_INDEX = new HashMap<LodDirection, Integer>()
 	{{
-		put(Direction.EAST, 0);
-		put(Direction.WEST, 1);
-		put(Direction.SOUTH, 2);
-		put(Direction.NORTH, 3);
+		put(LodDirection.EAST, 0);
+		put(LodDirection.WEST, 1);
+		put(LodDirection.SOUTH, 2);
+		put(LodDirection.NORTH, 3);
 	}};
 	/** holds the box's x, y, z offset */
 	public final int[] boxOffset;
@@ -188,9 +187,9 @@ public class Box
 	/**
 	 *
 	 */
-	public final Map<Direction, int[]> adjHeight;
-	public final Map<Direction, int[]> adjDepth;
-	public final Map<Direction, byte[]> skyLights;
+	public final Map<LodDirection, int[]> adjHeight;
+	public final Map<LodDirection, int[]> adjDepth;
+	public final Map<LodDirection, byte[]> skyLights;
 	public byte blockLight;
 	
 	/** Holds if the given direction should be culled or not */
@@ -204,28 +203,28 @@ public class Box
 		boxWidth = new int[3];
 		
 		colorMap = new int[6];
-		skyLights = new HashMap<Direction, byte[]>()
+		skyLights = new HashMap<LodDirection, byte[]>()
 		{{
-			put(Direction.UP, new byte[1]);
-			put(Direction.DOWN, new byte[1]);
-			put(Direction.EAST, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.WEST, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.SOUTH, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.NORTH, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.UP, new byte[1]);
+			put(LodDirection.DOWN, new byte[1]);
+			put(LodDirection.EAST, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.WEST, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.SOUTH, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.NORTH, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
 		}};
-		adjHeight = new HashMap<Direction, int[]>()
+		adjHeight = new HashMap<LodDirection, int[]>()
 		{{
-			put(Direction.EAST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.WEST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.SOUTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.NORTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.EAST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.WEST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.SOUTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.NORTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
 		}};
-		adjDepth = new HashMap<Direction, int[]>()
+		adjDepth = new HashMap<LodDirection, int[]>()
 		{{
-			put(Direction.EAST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.WEST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.SOUTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
-			put(Direction.NORTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.EAST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.WEST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.SOUTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.NORTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
 		}};
 		
 		culling = new boolean[6];
@@ -235,7 +234,7 @@ public class Box
 	public void setLights(int skyLight, int blockLight)
 	{
 		this.blockLight = (byte) blockLight;
-		skyLights.get(Direction.UP)[0] = (byte) skyLight;
+		skyLights.get(LodDirection.UP)[0] = (byte) skyLight;
 	}
 	
 	/**
@@ -246,35 +245,35 @@ public class Box
 	public void setColor(int color, boolean[] adjShadeDisabled)
 	{
 		this.color = color;
-		for (Direction direction : DIRECTIONS)
+		for (LodDirection lodDirection : DIRECTIONS)
 		{
-			if (!adjShadeDisabled[DIRECTION_INDEX.get(direction)])
-				colorMap[DIRECTION_INDEX.get(direction)] = ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientWorld().getShade(direction, true));
+			if (!adjShadeDisabled[DIRECTION_INDEX.get(lodDirection)])
+				colorMap[DIRECTION_INDEX.get(lodDirection)] = ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getShade(lodDirection));
 			else
-				colorMap[DIRECTION_INDEX.get(direction)] = color;
+				colorMap[DIRECTION_INDEX.get(lodDirection)] = color;
 		}
 	}
 	
 	/**
-	 * @param direction of the face of which we want to get the color
+	 * @param lodDirection of the face of which we want to get the color
 	 * @return color of the face
 	 */
-	public int getColor(Direction direction)
+	public int getColor(LodDirection lodDirection)
 	{
 		if (LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != DebugMode.SHOW_DETAIL)
-			return colorMap[DIRECTION_INDEX.get(direction)];
+			return colorMap[DIRECTION_INDEX.get(lodDirection)];
 		else
-			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getClientWorld().getShade(direction, true));
+			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getShade(lodDirection));
 	}
 	
 	/**
 	 */
-	public byte getSkyLight(Direction direction, int verticalIndex)
+	public byte getSkyLight(LodDirection lodDirection, int verticalIndex)
 	{
-		if(direction == Direction.UP || direction == Direction.DOWN)
-			return skyLights.get(direction)[0];
+		if(lodDirection == LodDirection.UP || lodDirection == LodDirection.DOWN)
+			return skyLights.get(lodDirection)[0];
 		else
-			return skyLights.get(direction)[verticalIndex];
+			return skyLights.get(lodDirection)[verticalIndex];
 	}
 	
 	/**
@@ -290,13 +289,13 @@ public class Box
 		Arrays.fill(boxOffset, 0);
 		Arrays.fill(colorMap, 0);
 		blockLight = 0;
-		for (Direction direction : ADJ_DIRECTIONS)
+		for (LodDirection lodDirection : ADJ_DIRECTIONS)
 		{
-			for (int i = 0; i < adjHeight.get(direction).length; i++)
+			for (int i = 0; i < adjHeight.get(lodDirection).length; i++)
 			{
-				adjHeight.get(direction)[i] = VOID_FACE;
-				adjDepth.get(direction)[i] = VOID_FACE;
-				skyLights.get(direction)[i] = 0;
+				adjHeight.get(lodDirection)[i] = VOID_FACE;
+				adjDepth.get(lodDirection)[i] = VOID_FACE;
+				skyLights.get(lodDirection)[i] = 0;
 			}
 		}
 	}
@@ -304,25 +303,25 @@ public class Box
 	/** determine which faces should be culled */
 	public void setUpCulling(int cullingDistance, BlockPosWrapper playerPos)
 	{
-		for (Direction direction : DIRECTIONS)
+		for (LodDirection lodDirection : DIRECTIONS)
 		{
-			if (direction == Direction.DOWN || direction == Direction.WEST || direction == Direction.NORTH)
-				culling[DIRECTION_INDEX.get(direction)] = playerPos.get(direction.getAxis()) > getFacePos(direction) + cullingDistance;
+			if (lodDirection == LodDirection.DOWN || lodDirection == LodDirection.WEST || lodDirection == LodDirection.NORTH)
+				culling[DIRECTION_INDEX.get(lodDirection)] = playerPos.get(lodDirection.getAxis()) > getFacePos(lodDirection) + cullingDistance;
 			
-			else if (direction == Direction.UP || direction == Direction.EAST || direction == Direction.SOUTH)
-				culling[DIRECTION_INDEX.get(direction)] = playerPos.get(direction.getAxis()) < getFacePos(direction) - cullingDistance;
+			else if (lodDirection == LodDirection.UP || lodDirection == LodDirection.EAST || lodDirection == LodDirection.SOUTH)
+				culling[DIRECTION_INDEX.get(lodDirection)] = playerPos.get(lodDirection.getAxis()) < getFacePos(lodDirection) - cullingDistance;
 			
-			culling[DIRECTION_INDEX.get(direction)] = false;
+			culling[DIRECTION_INDEX.get(lodDirection)] = false;
 		}
 	}
 	
 	/**
-	 * @param direction direction that we want to check if it's culled
+	 * @param lodDirection direction that we want to check if it's culled
 	 * @return true if and only if the face of the direction is culled
 	 */
-	public boolean isCulled(Direction direction)
+	public boolean isCulled(LodDirection lodDirection)
 	{
-		return culling[DIRECTION_INDEX.get(direction)];
+		return culling[DIRECTION_INDEX.get(lodDirection)];
 	}
 	
 	
@@ -330,7 +329,7 @@ public class Box
 	 * This method create all the shared face culling based on the adjacent data
 	 * @param adjData data adjacent to the column we are going to render
 	 */
-	public void setAdjData(Map<Direction, long[]> adjData)
+	public void setAdjData(Map<LodDirection, long[]> adjData)
 	{
 		int height;
 		int depth;
@@ -346,26 +345,26 @@ public class Box
 			depth = DataPointUtil.getDepth(singleAdjDataPoint);
 		}*/
 		//Down direction case
-		singleAdjDataPoint = adjData.get(Direction.DOWN)[0];
+		singleAdjDataPoint = adjData.get(LodDirection.DOWN)[0];
 		if(DataPointUtil.doesItExist(singleAdjDataPoint))
-			skyLights.get(Direction.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 		else
-			skyLights.get(Direction.DOWN)[0] = skyLights.get(Direction.UP)[0];
+			skyLights.get(LodDirection.DOWN)[0] = skyLights.get(LodDirection.UP)[0];
 		//other sided
 		//TODO clean some similar cases
-		for (Direction direction : ADJ_DIRECTIONS)
+		for (LodDirection lodDirection : ADJ_DIRECTIONS)
 		{
-			if (isCulled(direction))
+			if (isCulled(lodDirection))
 				continue;
 			
-			long[] dataPoint = adjData.get(direction);
+			long[] dataPoint = adjData.get(lodDirection);
 			if (dataPoint == null || DataPointUtil.isVoid(dataPoint[0]))
 			{
-				adjHeight.get(direction)[0] = maxY;
-				adjDepth.get(direction)[0] = minY;
-				adjHeight.get(direction)[1] = VOID_FACE;
-				adjDepth.get(direction)[1] = VOID_FACE;
-				skyLights.get(direction)[0] = 15; //in void set full sky light
+				adjHeight.get(lodDirection)[0] = maxY;
+				adjDepth.get(lodDirection)[0] = minY;
+				adjHeight.get(lodDirection)[1] = VOID_FACE;
+				adjDepth.get(lodDirection)[1] = VOID_FACE;
+				skyLights.get(lodDirection)[0] = 15; //in void set full sky light
 				continue;
 			}
 			
@@ -394,14 +393,14 @@ public class Box
 						
 						if (firstFace)
 						{
-							adjHeight.get(direction)[0] = getMaxY();
-							adjDepth.get(direction)[0] = getMinY();
-							skyLights.get(direction)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
+							adjHeight.get(lodDirection)[0] = getMaxY();
+							adjDepth.get(lodDirection)[0] = getMinY();
+							skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
 						}
 						else
 						{
-							adjDepth.get(direction)[faceToDraw] = getMinY();
-							skyLights.get(direction)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+							adjDepth.get(lodDirection)[faceToDraw] = getMinY();
+							skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 						}
 						faceToDraw++;
 						toFinish = false;
@@ -415,8 +414,8 @@ public class Box
 						{
 							// the adj data is inside the current data
 							// don't draw the face
-							adjHeight.get(direction)[0] = VOID_FACE;
-							adjDepth.get(direction)[0] = VOID_FACE;
+							adjHeight.get(lodDirection)[0] = VOID_FACE;
+							adjDepth.get(lodDirection)[0] = VOID_FACE;
 						}
 						else // height < maxY
 						{
@@ -425,14 +424,14 @@ public class Box
 							// if there was another face we finish the last one and break
 							if (firstFace)
 							{
-								adjHeight.get(direction)[0] = getMaxY();
-								adjDepth.get(direction)[0] = height;
-								skyLights.get(direction)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
+								adjHeight.get(lodDirection)[0] = getMaxY();
+								adjDepth.get(lodDirection)[0] = height;
+								skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
 							}
 							else
 							{
-								adjDepth.get(direction)[faceToDraw] = height;
-								skyLights.get(direction)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+								adjDepth.get(lodDirection)[faceToDraw] = height;
+								skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 							}
 							toFinish = false;
 							faceToDraw++;
@@ -443,7 +442,7 @@ public class Box
 					{
 						// the adj data intersects the higher part of the current data
 						// we start the creation of a new face
-						adjHeight.get(direction)[faceToDraw] = depth;
+						adjHeight.get(lodDirection)[faceToDraw] = depth;
 						//skyLights.get(direction)[faceToDraw] = (byte) DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 						firstFace = false;
 						toFinish = true;
@@ -456,13 +455,13 @@ public class Box
 						// the adj data is contained in the current data
 						if (firstFace)
 						{
-							adjHeight.get(direction)[0] = getMaxY();
+							adjHeight.get(lodDirection)[0] = getMaxY();
 						}
 						
-						adjDepth.get(direction)[faceToDraw] = height;
-						skyLights.get(direction)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+						adjDepth.get(lodDirection)[faceToDraw] = height;
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 						faceToDraw++;
-						adjHeight.get(direction)[faceToDraw] = depth;
+						adjHeight.get(lodDirection)[faceToDraw] = depth;
 						firstFace = false;
 						toFinish = true;
 						toFinishIndex = i + 1;
@@ -472,27 +471,27 @@ public class Box
 			
 			if (allAbove)
 			{
-				adjHeight.get(direction)[0] = getMaxY();
-				adjDepth.get(direction)[0] = getMinY();
-				skyLights.get(direction)[0] = skyLights.get(Direction.UP)[0];
+				adjHeight.get(lodDirection)[0] = getMaxY();
+				adjDepth.get(lodDirection)[0] = getMinY();
+				skyLights.get(lodDirection)[0] = skyLights.get(LodDirection.UP)[0];
 				faceToDraw++;
 			}
 			else if (toFinish)
 			{
-				adjDepth.get(direction)[faceToDraw] = minY;
+				adjDepth.get(lodDirection)[faceToDraw] = minY;
 				if(toFinishIndex < dataPoint.length)
 				{
 					singleAdjDataPoint = dataPoint[toFinishIndex];
 					if (DataPointUtil.doesItExist(singleAdjDataPoint))
-						skyLights.get(direction)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 					else
-						skyLights.get(direction)[faceToDraw] = skyLights.get(Direction.UP)[0];
+						skyLights.get(lodDirection)[faceToDraw] = skyLights.get(LodDirection.UP)[0];
 				}
 				faceToDraw++;
 			}
 			
-			adjHeight.get(direction)[faceToDraw] = VOID_FACE;
-			adjDepth.get(direction)[faceToDraw] = VOID_FACE;
+			adjHeight.get(lodDirection)[faceToDraw] = VOID_FACE;
+			adjDepth.get(lodDirection)[faceToDraw] = VOID_FACE;
 		}
 	}
 	
@@ -515,74 +514,74 @@ public class Box
 	/**
 	 * This method return the position of a face in the axis of the face
 	 * This is useful for the face culling
-	 * @param direction that we want to check
+	 * @param lodDirection that we want to check
 	 * @return position in the axis of the face
 	 */
-	public int getFacePos(Direction direction)
+	public int getFacePos(LodDirection lodDirection)
 	{
-		return boxOffset[FACE_DIRECTION.get(direction)[0]] + boxWidth[FACE_DIRECTION.get(direction)[0]] * FACE_DIRECTION.get(direction)[1];
+		return boxOffset[FACE_DIRECTION.get(lodDirection)[0]] + boxWidth[FACE_DIRECTION.get(lodDirection)[0]] * FACE_DIRECTION.get(lodDirection)[1];
 	}
 	
 	/**
 	 * returns true if the given direction should be rendered.
 	 */
-	public boolean shouldRenderFace(Direction direction, int adjIndex)
+	public boolean shouldRenderFace(LodDirection lodDirection, int adjIndex)
 	{
-		if (direction == Direction.UP || direction == Direction.DOWN)
+		if (lodDirection == LodDirection.UP || lodDirection == LodDirection.DOWN)
 			return adjIndex == 0;
-		return !(adjHeight.get(direction)[adjIndex] == VOID_FACE && adjDepth.get(direction)[adjIndex] == VOID_FACE);
+		return !(adjHeight.get(lodDirection)[adjIndex] == VOID_FACE && adjDepth.get(lodDirection)[adjIndex] == VOID_FACE);
 	}
 	
 	
 	/**
-	 * @param direction direction of the face we want to render
+	 * @param lodDirection direction of the face we want to render
 	 * @param vertexIndex index of the vertex of the face (0-1-2-3)
 	 * @return position x of the relative vertex
 	 */
-	public int getX(Direction direction, int vertexIndex)
+	public int getX(LodDirection lodDirection, int vertexIndex)
 	{
-		return boxOffset[X] + boxWidth[X] * DIRECTION_VERTEX_MAP.get(direction)[vertexIndex][X];
+		return boxOffset[X] + boxWidth[X] * DIRECTION_VERTEX_MAP.get(lodDirection)[vertexIndex][X];
 	}
 	
 	/**
-	 * @param direction direction of the face we want to render
+	 * @param lodDirection direction of the face we want to render
 	 * @param vertexIndex index of the vertex of the face (0-1-2-3)
 	 * @return position y of the relative vertex
 	 */
-	public int getY(Direction direction, int vertexIndex)
+	public int getY(LodDirection lodDirection, int vertexIndex)
 	{
-		return boxOffset[Y] + boxWidth[Y] * DIRECTION_VERTEX_MAP.get(direction)[vertexIndex][Y];
+		return boxOffset[Y] + boxWidth[Y] * DIRECTION_VERTEX_MAP.get(lodDirection)[vertexIndex][Y];
 	}
 	
 	/**
-	 * @param direction direction of the face we want to render
+	 * @param lodDirection direction of the face we want to render
 	 * @param vertexIndex index of the vertex of the face (0-1-2-3)
 	 * @param adjIndex, index of the n-th culled face of this direction
 	 * @return position x of the relative vertex
 	 */
-	public int getY(Direction direction, int vertexIndex, int adjIndex)
+	public int getY(LodDirection lodDirection, int vertexIndex, int adjIndex)
 	{
-		if (direction == Direction.DOWN || direction == Direction.UP)
-			return boxOffset[Y] + boxWidth[Y] * DIRECTION_VERTEX_MAP.get(direction)[vertexIndex][Y];
+		if (lodDirection == LodDirection.DOWN || lodDirection == LodDirection.UP)
+			return boxOffset[Y] + boxWidth[Y] * DIRECTION_VERTEX_MAP.get(lodDirection)[vertexIndex][Y];
 		else
 		{
 			// this could probably be cleaned up more,
 			// but it still works
-			if (1 - DIRECTION_VERTEX_MAP.get(direction)[vertexIndex][Y] == ADJACENT_HEIGHT_INDEX)
-				return adjHeight.get(direction)[adjIndex];
+			if (1 - DIRECTION_VERTEX_MAP.get(lodDirection)[vertexIndex][Y] == ADJACENT_HEIGHT_INDEX)
+				return adjHeight.get(lodDirection)[adjIndex];
 			else
-				return adjDepth.get(direction)[adjIndex];
+				return adjDepth.get(lodDirection)[adjIndex];
 		}
 	}
 	
 	/**
-	 * @param direction direction of the face we want to render
+	 * @param lodDirection direction of the face we want to render
 	 * @param vertexIndex index of the vertex of the face (0-1-2-3)
 	 * @return position z of the relative vertex
 	 */
-	public int getZ(Direction direction, int vertexIndex)
+	public int getZ(LodDirection lodDirection, int vertexIndex)
 	{
-		return boxOffset[Z] + boxWidth[Z] * DIRECTION_VERTEX_MAP.get(direction)[vertexIndex][Z];
+		return boxOffset[Z] + boxWidth[Z] * DIRECTION_VERTEX_MAP.get(lodDirection)[vertexIndex][Z];
 	}
 	
 	public int getMinX()

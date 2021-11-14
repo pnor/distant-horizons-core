@@ -1,6 +1,6 @@
 package com.seibel.lod.wrappers.Block;
 
-import net.minecraft.util.Direction;
+import com.seibel.lod.enums.LodDirection;
 import net.minecraft.util.math.BlockPos;
 import java.util.Objects;
 
@@ -38,7 +38,7 @@ public class BlockPosWrapper {
         return blockPos.getZ();
     }
 
-    public int get(Direction.Axis axis)
+    public int get(LodDirection.Axis axis)
     {
         return axis.choose(getX(), getY(), getZ());
     }

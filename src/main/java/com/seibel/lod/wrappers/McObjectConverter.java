@@ -21,12 +21,14 @@ package com.seibel.lod.wrappers;
 
 import java.nio.FloatBuffer;
 
+import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.objects.math.Mat4f;
 
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix4f;
 
 /**
- * This class converts between Minecraft objects (Ex: Matrix4f)
+ * This class converts to and from Minecraft objects (Ex: Matrix4f)
  * and objects we created (Ex: Mat4f).
  * Since we don't want to deal with a bunch of tiny changes
  * every time Minecraft renames a variable in Matrix4f or something.
@@ -52,4 +54,12 @@ public class McObjectConverter
 		matrix.transpose();
 		return matrix;
 	}
+
+
+	public static Direction Convert(LodDirection lodDirection)
+	{
+		return Direction.byName(lodDirection.name());
+	}
+	
+	
 }

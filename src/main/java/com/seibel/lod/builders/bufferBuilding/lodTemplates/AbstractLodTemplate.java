@@ -27,7 +27,7 @@ import com.seibel.lod.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.util.ColorUtil;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 
-import net.minecraft.util.Direction;
+import com.seibel.lod.enums.LodDirection;
 
 /**
  * This is the abstract class used to create different
@@ -39,7 +39,7 @@ public abstract class AbstractLodTemplate
 {
 	
 	/** Uploads the given LOD to the buffer. */
-	public abstract void addLodToBuffer(LodBufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
+	public abstract void addLodToBuffer(LodBufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled);
 	
 	/** add the given position and color to the buffer */

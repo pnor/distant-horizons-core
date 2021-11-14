@@ -29,7 +29,7 @@ import com.seibel.lod.util.DataPointUtil;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 
-import net.minecraft.util.Direction;
+import com.seibel.lod.enums.LodDirection;
 
 /**
  * Builds LODs as rectangular prisms.
@@ -45,7 +45,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	}
 	
 	@Override
-	public void addLodToBuffer(LodBufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<Direction, long[]> adjData,
+	public void addLodToBuffer(LodBufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (box == null)
@@ -81,7 +81,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
 			BlockPosWrapper bufferCenterBlockPos,
-			Map<Direction, long[]> adjData,
+			Map<LodDirection, long[]> adjData,
 			int color,
 			int skyLight,
 			int blockLight,
@@ -115,24 +115,24 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		int color;
 		int skyLight;
 		int blockLight;
-		for (Direction direction : Box.DIRECTIONS)
+		for (LodDirection lodDirection : Box.DIRECTIONS)
 		{
-			if(box.isCulled(direction))
+			if(box.isCulled(lodDirection))
 				continue;
 			
 			int verticalFaceIndex = 0;
-			while (box.shouldRenderFace(direction, verticalFaceIndex))
+			while (box.shouldRenderFace(lodDirection, verticalFaceIndex))
 			{
 				for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++)
 				{
-					color = box.getColor(direction);
-					skyLight = box.getSkyLight(direction, verticalFaceIndex);
+					color = box.getColor(lodDirection);
+					skyLight = box.getSkyLight(lodDirection, verticalFaceIndex);
 					blockLight = box.getBlockLight();
 					color = ColorUtil.applyLightValue(color, skyLight, blockLight);
 					addPosAndColor(buffer,
-							box.getX(direction, vertexIndex),
-							box.getY(direction, vertexIndex, verticalFaceIndex),
-							box.getZ(direction, vertexIndex),
+							box.getX(lodDirection, vertexIndex),
+							box.getY(lodDirection, vertexIndex, verticalFaceIndex),
+							box.getZ(lodDirection, vertexIndex),
 							color);
 				}
 				verticalFaceIndex++;

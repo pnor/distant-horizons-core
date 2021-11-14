@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.objects.Box;
 
-import net.minecraft.util.Direction;
+import com.seibel.lod.enums.LodDirection;
 
 /**
  * Holds data used by specific threads so
@@ -55,7 +55,7 @@ public class ThreadMapUtil
 	//________________________//
 	
 	public static final ConcurrentMap<String, boolean[]> adjShadeDisabled = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, Map<Direction, long[]>> adjDataMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, Map<LodDirection, long[]>> adjDataMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, Box> boxMap = new ConcurrentHashMap<>();
 	
 	
@@ -73,24 +73,24 @@ public class ThreadMapUtil
 	}
 	
 	/** returns the array NOT cleared every time */
-	public static Map<Direction, long[]> getAdjDataArray(int verticalData)
+	public static Map<LodDirection, long[]> getAdjDataArray(int verticalData)
 	{
 		if (!adjDataMap.containsKey(Thread.currentThread().getName())
 				|| (adjDataMap.get(Thread.currentThread().getName()) == null)
-				|| (adjDataMap.get(Thread.currentThread().getName()).get(Direction.NORTH) == null)
-				|| (adjDataMap.get(Thread.currentThread().getName()).get(Direction.NORTH).length != verticalData))
+				|| (adjDataMap.get(Thread.currentThread().getName()).get(LodDirection.NORTH) == null)
+				|| (adjDataMap.get(Thread.currentThread().getName()).get(LodDirection.NORTH).length != verticalData))
 		{
 			adjDataMap.put(Thread.currentThread().getName(), new HashMap<>());
-			adjDataMap.get(Thread.currentThread().getName()).put(Direction.UP, new long[1]);
-			adjDataMap.get(Thread.currentThread().getName()).put(Direction.DOWN, new long[1]);
-			for (Direction direction : Box.ADJ_DIRECTIONS)
-				adjDataMap.get(Thread.currentThread().getName()).put(direction, new long[verticalData]);
+			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.UP, new long[1]);
+			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.DOWN, new long[1]);
+			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+				adjDataMap.get(Thread.currentThread().getName()).put(lodDirection, new long[verticalData]);
 		}
 		else
 		{
 			
-			for (Direction direction : Box.ADJ_DIRECTIONS)
-				Arrays.fill(adjDataMap.get(Thread.currentThread().getName()).get(direction), DataPointUtil.EMPTY_DATA);
+			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+				Arrays.fill(adjDataMap.get(Thread.currentThread().getName()).get(lodDirection), DataPointUtil.EMPTY_DATA);
 		}
 		return adjDataMap.get(Thread.currentThread().getName());
 	}

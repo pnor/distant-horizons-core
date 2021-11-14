@@ -38,6 +38,7 @@ import org.lwjgl.opengl.GL45;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.lod.config.LodConfig;
+import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.config.GpuUploadMethod;
 import com.seibel.lod.enums.config.VanillaOverdraw;
 import com.seibel.lod.enums.rendering.GlProxyContext;
@@ -60,8 +61,6 @@ import com.seibel.lod.util.ThreadMapUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
 import com.seibel.lod.wrappers.Chunk.ChunkPosWrapper;
-
-import net.minecraft.util.Direction;
 
 /**
  * This object creates the buffers that are
@@ -280,7 +279,7 @@ public class LodBufferBuilderFactory
 							int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
 							
 							//we get or create the map that will contain the adj data
-							Map<Direction, long[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
+							Map<LodDirection, long[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
 							
 							//previous setToRender cache
 							if (setsToRender[xR][zR] == null)
@@ -335,11 +334,11 @@ public class LodBufferBuilderFactory
 								Arrays.fill(adjShadeDisabled, false);
 								
 								//We check every adj block in each direction
-								for (Direction direction : Box.ADJ_DIRECTIONS)
+								for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
 								{
 									
-									xAdj = posX + Box.DIRECTION_NORMAL_MAP.get(direction).getX();
-									zAdj = posZ + Box.DIRECTION_NORMAL_MAP.get(direction).getZ();
+									xAdj = posX + Box.DIRECTION_NORMAL_MAP.get(lodDirection).x;
+									zAdj = posZ + Box.DIRECTION_NORMAL_MAP.get(lodDirection).z;
 									long data;
 									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkPos.getX();
 									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkPos.getZ();
@@ -357,8 +356,8 @@ public class LodBufferBuilderFactory
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
 										{
 											data = lodDim.getData(detailLevel, xAdj, zAdj, verticalIndex);
-											adjShadeDisabled[Box.DIRECTION_INDEX.get(direction)] = false;
-											adjData.get(direction)[verticalIndex] = data;
+											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = false;
+											adjData.get(lodDirection)[verticalIndex] = data;
 										}
 									}
 									else
@@ -366,12 +365,12 @@ public class LodBufferBuilderFactory
 										//Otherwise, we check if this position is
 										data = lodDim.getSingleData(detailLevel, xAdj, zAdj);
 										
-										adjData.get(direction)[0] = DataPointUtil.EMPTY_DATA;
+										adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
 										
 										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkPos, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
 													&& !DataPointUtil.isVoid(data))
 										{
-											adjShadeDisabled[Box.DIRECTION_INDEX.get(direction)] = DataPointUtil.getAlpha(data) < 255;
+											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
 										}
 									}
 								}
@@ -385,16 +384,16 @@ public class LodBufferBuilderFactory
 									
 									//we get the above block as adj UP
 									if (verticalIndex > 0)
-										adjData.get(Direction.UP)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex - 1);
+										adjData.get(LodDirection.UP)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex - 1);
 									else
-										adjData.get(Direction.UP)[0] = DataPointUtil.EMPTY_DATA;
+										adjData.get(LodDirection.UP)[0] = DataPointUtil.EMPTY_DATA;
 									
 									
 									//we get the below block as adj DOWN
 									if (verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ) - 1)
-										adjData.get(Direction.DOWN)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex + 1);
+										adjData.get(LodDirection.DOWN)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex + 1);
 									else
-										adjData.get(Direction.DOWN)[0] = DataPointUtil.EMPTY_DATA;
+										adjData.get(LodDirection.DOWN)[0] = DataPointUtil.EMPTY_DATA;
 									
 									//We extract the data to render
 									data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);

@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.HashSet;
 
 import com.seibel.lod.config.LodConfig;
+import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.enums.config.VanillaOverdraw;
 import com.seibel.lod.objects.Box;
@@ -41,7 +42,6 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.CompiledChunk;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.ChunkSection;
@@ -483,10 +483,10 @@ public class LodUtil
 			return false;
 		int tempX;
 		int tempZ;
-		for (Direction direction : Box.ADJ_DIRECTIONS)
+		for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
 		{
-			tempX = x + Box.DIRECTION_NORMAL_MAP.get(direction).getX();
-			tempZ = z + Box.DIRECTION_NORMAL_MAP.get(direction).getZ();
+			tempX = x + Box.DIRECTION_NORMAL_MAP.get(lodDirection).x;
+			tempZ = z + Box.DIRECTION_NORMAL_MAP.get(lodDirection).z;
 			if (vanillaRenderedChunks[x][z] || (!(tempX < 0 || tempZ < 0 || tempX >= vanillaRenderedChunks.length || tempZ >= vanillaRenderedChunks[0].length)
 				&& !vanillaRenderedChunks[tempX][tempZ]))
 				return true;

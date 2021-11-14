@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import com.seibel.lod.ModInfo;
+import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.lodApi.ClientApi;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.Block.BlockPosWrapper;
@@ -101,9 +102,10 @@ public class MinecraftWrapper
 	// method wrappers //
 	//=================//
 	
-	public float getShading(Direction direction)
+	public float getShade(LodDirection lodDirection)
 	{
-		return mc.level.getShade(Direction.UP, true);
+		Direction mcDir = McObjectConverter.Convert(lodDirection);
+		return mc.level.getShade(mcDir, true);
 	}
 	
 	public boolean hasSinglePlayerServer()
@@ -321,6 +323,10 @@ public class MinecraftWrapper
 		CrashReport report = new CrashReport(errorMessage, exception);
 		Minecraft.crash(report);
 	}
+
+
+
+	
 	
 	
 }
