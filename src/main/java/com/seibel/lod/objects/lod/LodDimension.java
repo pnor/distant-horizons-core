@@ -37,10 +37,10 @@ import com.seibel.lod.util.LevelPosUtil;
 import com.seibel.lod.util.LodThreadFactory;
 import com.seibel.lod.util.LodUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
 
-import net.minecraft.util.math.ChunkPos;
 
 
 /**
@@ -87,9 +87,9 @@ public class LodDimension
 	private final RegionPos center;
 	
 	/** prevents the cutAndExpandThread from expanding at the same location multiple times */
-	private volatile ChunkPos lastExpandedChunk;
+	private volatile ChunkPosWrapper lastExpandedChunk;
 	/** prevents the cutAndExpandThread from cutting at the same location multiple times */
-	private volatile ChunkPos lastCutChunk;
+	private volatile ChunkPosWrapper lastCutChunk;
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand"));
 	
 	/**
@@ -313,14 +313,14 @@ public class LodDimension
 	 */
 	public void cutRegionNodesAsync(int playerPosX, int playerPosZ)
 	{
-		ChunkPos newPlayerChunk = new ChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
+		ChunkPosWrapper newPlayerChunk = new ChunkPosWrapper(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
 		
 		if (lastCutChunk == null)
-			lastCutChunk = new ChunkPos(newPlayerChunk.x + 1, newPlayerChunk.z - 1);
+			lastCutChunk = new ChunkPosWrapper(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
 		
 		// don't run the tree cutter multiple times
 		// for the same location
-		if (newPlayerChunk.x != lastCutChunk.x || newPlayerChunk.z != lastCutChunk.z)
+		if (newPlayerChunk.getX() != lastCutChunk.getX() || newPlayerChunk.getZ() != lastCutChunk.getZ())
 		{
 			lastCutChunk = newPlayerChunk;
 			
@@ -366,16 +366,16 @@ public class LodDimension
 	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ)
 	{
 		DistanceGenerationMode generationMode = LodConfig.CLIENT.worldGenerator.distanceGenerationMode.get();
-		ChunkPos newPlayerChunk = new ChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
+		ChunkPosWrapper newPlayerChunk = new ChunkPosWrapper(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
 		VerticalQuality verticalQuality = LodConfig.CLIENT.graphics.qualityOption.verticalQuality.get();
 		
 		
 		if (lastExpandedChunk == null)
-			lastExpandedChunk = new ChunkPos(newPlayerChunk.x + 1, newPlayerChunk.z - 1);
+			lastExpandedChunk = new ChunkPosWrapper(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
 		
 		// don't run the expander multiple times
 		// for the same location
-		if (newPlayerChunk.x != lastExpandedChunk.x || newPlayerChunk.z != lastExpandedChunk.z)
+		if (newPlayerChunk.getX() != lastExpandedChunk.getX() || newPlayerChunk.getZ() != lastExpandedChunk.getZ())
 		{
 			lastExpandedChunk = newPlayerChunk;
 			
@@ -810,14 +810,14 @@ public class LodDimension
 	
 	
 	/** Return true if the chunk has been pregenerated in game */
-	//public boolean isChunkPreGenerated(int xChunkPos, int zChunkPos)
+	//public boolean isChunkPreGenerated(int xChunkPosWrapper, int zChunkPosWrapper)
 	//{
 	//
-	//	LodRegion region = getRegion(LodUtil.CHUNK_DETAIL_LEVEL, xChunkPos, zChunkPos);
+	//	LodRegion region = getRegion(LodUtil.CHUNK_DETAIL_LEVEL, xChunkPosWrapper, zChunkPosWrapper);
 	//	if (region == null)
 	//		return false;
 	//
-	//	return region.isChunkPreGenerated(xChunkPos, zChunkPos);
+	//	return region.isChunkPreGenerated(xChunkPosWrapper, zChunkPosWrapper);
 	//}
 	
 	/**
