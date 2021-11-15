@@ -1,20 +1,20 @@
 package com.seibel.lod.wrappers.config;
 
 import com.seibel.lod.api.forge.ForgeConfig;
-import com.seibel.lod.enums.config.BlockToAvoid;
-import com.seibel.lod.enums.config.BufferRebuildTimes;
-import com.seibel.lod.enums.config.DistanceGenerationMode;
-import com.seibel.lod.enums.config.GenerationPriority;
-import com.seibel.lod.enums.config.GpuUploadMethod;
-import com.seibel.lod.enums.config.HorizontalQuality;
-import com.seibel.lod.enums.config.HorizontalResolution;
-import com.seibel.lod.enums.config.HorizontalScale;
-import com.seibel.lod.enums.config.LodTemplate;
-import com.seibel.lod.enums.config.VanillaOverdraw;
-import com.seibel.lod.enums.config.VerticalQuality;
-import com.seibel.lod.enums.rendering.DebugMode;
-import com.seibel.lod.enums.rendering.FogDistance;
-import com.seibel.lod.enums.rendering.FogDrawOverride;
+import com.seibel.lod.core.enums.config.BlockToAvoid;
+import com.seibel.lod.core.enums.config.BufferRebuildTimes;
+import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.GenerationPriority;
+import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.config.HorizontalQuality;
+import com.seibel.lod.core.enums.config.HorizontalResolution;
+import com.seibel.lod.core.enums.config.HorizontalScale;
+import com.seibel.lod.core.enums.config.LodTemplate;
+import com.seibel.lod.core.enums.config.VanillaOverdraw;
+import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.rendering.DebugMode;
+import com.seibel.lod.core.enums.rendering.FogDistance;
+import com.seibel.lod.core.enums.rendering.FogDrawOverride;
 
 /**
  * This holds the config defaults and setters/getters

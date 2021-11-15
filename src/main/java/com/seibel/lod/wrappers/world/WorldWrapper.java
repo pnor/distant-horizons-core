@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.seibel.lod.enums.WorldType;
+import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.client.world.ClientWorld;

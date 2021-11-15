@@ -23,13 +23,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.seibel.lod.api.forge.ForgeConfig;
-import com.seibel.lod.builders.worldGeneration.LodGenWorker;
-import com.seibel.lod.objects.lod.LodDimension;
-import com.seibel.lod.objects.math.Mat4f;
-import com.seibel.lod.render.GlProxy;
-import com.seibel.lod.render.LodRenderer;
-import com.seibel.lod.util.DetailDistanceUtil;
-import com.seibel.lod.util.ThreadMapUtil;
+import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
+import com.seibel.lod.core.objects.lod.LodDimension;
+import com.seibel.lod.core.objects.math.Mat4f;
+import com.seibel.lod.core.render.GlProxy;
+import com.seibel.lod.core.render.LodRenderer;
+import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 
 import net.minecraft.profiler.IProfiler;

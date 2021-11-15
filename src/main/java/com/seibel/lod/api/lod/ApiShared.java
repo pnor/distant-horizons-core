@@ -19,9 +19,9 @@
 
 package com.seibel.lod.api.lod;
 
-import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory;
-import com.seibel.lod.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.objects.lod.LodWorld;
+import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.objects.lod.LodWorld;
 
 /**
  * This stores objects and variables that

@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.seibel.lod.util.ColorUtil;
+import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 
 import net.minecraft.block.AbstractPlantBlock;

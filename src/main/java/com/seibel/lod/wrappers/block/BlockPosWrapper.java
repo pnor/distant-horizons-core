@@ -1,8 +1,9 @@
 package com.seibel.lod.wrappers.block;
 
-import com.seibel.lod.enums.LodDirection;
 import net.minecraft.util.math.BlockPos;
 import java.util.Objects;
+
+import com.seibel.lod.core.enums.LodDirection;
 
 public class BlockPosWrapper {
     private final BlockPos.Mutable blockPos;

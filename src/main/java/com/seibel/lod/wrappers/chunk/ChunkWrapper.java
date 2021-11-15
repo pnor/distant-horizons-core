@@ -1,6 +1,6 @@
 package com.seibel.lod.wrappers.chunk;
 
-import com.seibel.lod.util.LodUtil;
+import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.wrappers.block.BlockColorWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.block.BlockShapeWrapper;

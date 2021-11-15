@@ -21,8 +21,8 @@ package com.seibel.lod.wrappers;
 
 import java.nio.FloatBuffer;
 
-import com.seibel.lod.enums.LodDirection;
-import com.seibel.lod.objects.math.Mat4f;
+import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.objects.math.Mat4f;
 
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix4f;

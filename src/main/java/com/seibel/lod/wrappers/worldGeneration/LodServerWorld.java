@@ -25,7 +25,7 @@ import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import com.seibel.lod.util.LodUtil;
+import com.seibel.lod.core.util.LodUtil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

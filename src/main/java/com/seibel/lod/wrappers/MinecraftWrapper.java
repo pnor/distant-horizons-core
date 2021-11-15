@@ -25,8 +25,8 @@ import java.util.ArrayList;
 
 import com.seibel.lod.ModInfo;
 import com.seibel.lod.api.lod.ClientApi;
-import com.seibel.lod.enums.LodDirection;
-import com.seibel.lod.util.LodUtil;
+import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;

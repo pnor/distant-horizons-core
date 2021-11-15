@@ -8,11 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import com.seibel.lod.api.forge.ForgeConfig;
-import com.seibel.lod.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.builders.lodBuilding.LodBuilderConfig;
-import com.seibel.lod.enums.config.DistanceGenerationMode;
-import com.seibel.lod.objects.lod.LodDimension;
-import com.seibel.lod.util.LodUtil;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
+import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.objects.lod.LodDimension;
+import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
