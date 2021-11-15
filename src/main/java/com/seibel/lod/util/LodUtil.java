@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.io.File;
 import java.util.HashSet;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.enums.config.VanillaOverdraw;
@@ -352,8 +352,8 @@ public class LodUtil
 		ChunkPosWrapper centerChunk = new ChunkPosWrapper(blockPosWrapper);
 		
 		int skipRadius;
-		VanillaOverdraw overdraw = LodConfig.CLIENT.graphics.advancedGraphicsOption.vanillaOverdraw.get();
-		HorizontalResolution drawRes = LodConfig.CLIENT.graphics.qualityOption.drawResolution.get();
+		VanillaOverdraw overdraw = ForgeConfig.CLIENT.graphics.advancedGraphicsOption.vanillaOverdraw.get();
+		HorizontalResolution drawRes = ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get();
 		
 		// apply distance based rules for dynamic overdraw
 		if (overdraw == VanillaOverdraw.DYNAMIC

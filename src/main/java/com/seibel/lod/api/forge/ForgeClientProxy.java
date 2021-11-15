@@ -38,7 +38,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * @author James_Seibel
  * @version 11-12-2021
  */
-public class ClientProxy
+public class ForgeClientProxy
 {
 	private final EventApi eventApi = EventApi.INSTANCE;
 	

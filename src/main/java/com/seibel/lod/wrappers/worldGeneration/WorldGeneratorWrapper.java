@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
@@ -267,7 +267,7 @@ public class WorldGeneratorWrapper
 			}
 		}
 		
-		boolean allowUnstableFeatures = LodConfig.CLIENT.worldGenerator.allowUnstableFeatureGeneration.get();
+		boolean allowUnstableFeatures = ForgeConfig.CLIENT.worldGenerator.allowUnstableFeatureGeneration.get();
 		
 		// generate all the features related to this chunk.
 		// this may or may not be thread safe

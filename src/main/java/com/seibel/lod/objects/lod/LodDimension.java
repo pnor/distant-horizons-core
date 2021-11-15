@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.enums.config.GenerationPriority;
 import com.seibel.lod.enums.config.VerticalQuality;
@@ -365,9 +365,9 @@ public class LodDimension
 	/** Either expands or loads all regions in the rendered LOD area */
 	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ)
 	{
-		DistanceGenerationMode generationMode = LodConfig.CLIENT.worldGenerator.distanceGenerationMode.get();
+		DistanceGenerationMode generationMode = ForgeConfig.CLIENT.worldGenerator.distanceGenerationMode.get();
 		ChunkPosWrapper newPlayerChunk = new ChunkPosWrapper(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
-		VerticalQuality verticalQuality = LodConfig.CLIENT.graphics.qualityOption.verticalQuality.get();
+		VerticalQuality verticalQuality = ForgeConfig.CLIENT.graphics.qualityOption.verticalQuality.get();
 		
 		
 		if (lastExpandedChunk == null)
@@ -544,7 +544,7 @@ public class LodDimension
 		dz = -1;
 		
 		// We can use two type of generation scheduling
-		switch (LodConfig.CLIENT.worldGenerator.generationPriority.get())
+		switch (ForgeConfig.CLIENT.worldGenerator.generationPriority.get())
 		{
 		default:
 		case NEAR_FIRST:
@@ -601,7 +601,7 @@ public class LodDimension
 				//if(lodRegion.isChunkPreGenerated(xChunkToCheck,zChunkToCheck))
 				//	complexity = DistanceGenerationMode.SERVER.complexity;
 				//else
-					complexity = LodConfig.CLIENT.worldGenerator.distanceGenerationMode.get().complexity;
+					complexity = ForgeConfig.CLIENT.worldGenerator.distanceGenerationMode.get().complexity;
 					
 				
 				//we create the level position info of the chunk
@@ -676,7 +676,7 @@ public class LodDimension
 	{
 		LodRegion region = getRegion(regionPos.x, regionPos.z);
 		if (region != null)
-			region.getPosToRender(posToRender, playerPosX, playerPosZ, LodConfig.CLIENT.worldGenerator.generationPriority.get() == GenerationPriority.NEAR_FIRST);
+			region.getPosToRender(posToRender, playerPosX, playerPosZ, ForgeConfig.CLIENT.worldGenerator.generationPriority.get() == GenerationPriority.NEAR_FIRST);
 	}
 	
 	/**

@@ -22,7 +22,7 @@ package com.seibel.lod.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.enums.config.HorizontalResolution;
 import com.seibel.lod.objects.lod.LodDimension;
@@ -355,7 +355,7 @@ public class LodBuilder
 			// snow, flowers, etc. Get the above block so we can still get the color
 			// of the snow, flower, etc. that may be above this block
 			int aboveColorInt = 0;
-			if (LodConfig.CLIENT.worldGenerator.blockToAvoid.get().nonFull || LodConfig.CLIENT.worldGenerator.blockToAvoid.get().noCollision)
+			if (ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().nonFull || ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().noCollision)
 			{
 				blockPos.set(chunk.getPos().getMinBlockX() + xRel, yAbs + 1, chunk.getPos().getMinBlockZ() + zRel);
 				aboveColorInt = getColorForBlock(chunk, blockPos);
@@ -519,8 +519,8 @@ public class LodBuilder
 		if (chunk.isWaterLogged(blockPos))
 			return true;
 		
-		boolean nonFullAvoidance = LodConfig.CLIENT.worldGenerator.blockToAvoid.get().nonFull;
-		boolean noCollisionAvoidance = LodConfig.CLIENT.worldGenerator.blockToAvoid.get().noCollision;
+		boolean nonFullAvoidance = ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().nonFull;
+		boolean noCollisionAvoidance = ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().noCollision;
 		
 		BlockShapeWrapper block = chunk.getBlockShapeWrapper(blockPos);
 		return !block.isToAvoid()

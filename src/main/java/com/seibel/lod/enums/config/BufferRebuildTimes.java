@@ -20,8 +20,9 @@
 package com.seibel.lod.enums.config;
 
 /**
- * Near_First <br>
- * Far_First <br>
+ * FREQUENT <br>
+ * NORMAL <br>
+ * RARE <br>
  * <br>
  * Determines how fast the buffers need to be regenerated
  * 

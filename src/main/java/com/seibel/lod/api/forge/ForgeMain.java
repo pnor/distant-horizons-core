@@ -40,17 +40,17 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  * @version 7-3-2021
  */
 @Mod(ModInfo.ID)
-public class LodForgeMain
+public class ForgeMain
 {
-	public static ClientProxy clientProxy;
+	public static ForgeClientProxy forgeClientProxy;
 	
 	private void init(final FMLCommonSetupEvent event)
 	{
-		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, LodConfig.CLIENT_SPEC);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ForgeConfig.CLIENT_SPEC);
 	}
 	
 	
-	public LodForgeMain()
+	public ForgeMain()
 	{
 		// Register the methods
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
@@ -62,8 +62,8 @@ public class LodForgeMain
 	
 	private void onClientStart(final FMLClientSetupEvent event)
 	{
-		clientProxy = new ClientProxy();
-		MinecraftForge.EVENT_BUS.register(clientProxy);
+		forgeClientProxy = new ForgeClientProxy();
+		MinecraftForge.EVENT_BUS.register(forgeClientProxy);
 	}
 	
 	

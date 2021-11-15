@@ -36,7 +36,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL45;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.config.GpuUploadMethod;
@@ -74,7 +74,7 @@ public class LodBufferBuilderFactory
 	/** The thread used to generate new LODs off the main thread. */
 	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main"));
 	/** The threads used to generate buffers. */
-	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(LodConfig.CLIENT.advancedModOptions.threading.numberOfBufferBuilderThreads.get(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
+	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(ForgeConfig.CLIENT.advancedModOptions.threading.numberOfBufferBuilderThreads.get(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
 	
 	/**
 	 * When uploading to a buffer that is too small,
@@ -402,7 +402,7 @@ public class LodBufferBuilderFactory
 										break;
 									
 									//We send the call to create the vertices
-									LodConfig.CLIENT.graphics.advancedGraphicsOption.lodTemplate.get().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
+									ForgeConfig.CLIENT.graphics.advancedGraphicsOption.lodTemplate.get().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
 											detailLevel, posX, posZ, box, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
@@ -481,7 +481,7 @@ public class LodBufferBuilderFactory
 
 		// check if the chunk is on the border
 		boolean isItBorderPos;
-		if (LodConfig.CLIENT.graphics.advancedGraphicsOption.vanillaOverdraw.get() == VanillaOverdraw.BORDER)
+		if (ForgeConfig.CLIENT.graphics.advancedGraphicsOption.vanillaOverdraw.get() == VanillaOverdraw.BORDER)
 			isItBorderPos = LodUtil.isBorderChunk(vanillaRenderedChunks, chunkXdist + gameChunkRenderDistance + 1, chunkZdist + gameChunkRenderDistance + 1);
 		else
 			isItBorderPos = false;
@@ -759,12 +759,12 @@ public class LodBufferBuilderFactory
 			glProxy.setGlContext(GlProxyContext.LOD_BUILDER);
 			
 			// determine the upload method
-			GpuUploadMethod uploadMethod = LodConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.get();
+			GpuUploadMethod uploadMethod = ForgeConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.get();
 			if (!glProxy.bufferStorageSupported && uploadMethod == GpuUploadMethod.BUFFER_STORAGE)
 			{
 				// if buffer storage isn't supported
 				// default to SUB_DATA
-				LodConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.set(GpuUploadMethod.SUB_DATA);
+				ForgeConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.set(GpuUploadMethod.SUB_DATA);
 				uploadMethod = GpuUploadMethod.SUB_DATA;
 			}
 			

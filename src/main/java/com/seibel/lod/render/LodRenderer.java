@@ -26,7 +26,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.NVFogDistance;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.api.lod.ApiShared;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
@@ -231,7 +231,7 @@ public class LodRenderer
 		
 		// set the required open GL settings
 		
-		if (LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get() == DebugMode.SHOW_DETAIL_WIREFRAME)
+		if (ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.get() == DebugMode.SHOW_DETAIL_WIREFRAME)
 			GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_LINE);
 		else
 			GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_FILL);
@@ -251,9 +251,9 @@ public class LodRenderer
 		vanillaBlockRenderedDistance = mc.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		// required for setupFog and setupProjectionMatrix
 		if (mc.getClientWorld().dimensionType().hasCeiling())
-			farPlaneBlockDistance = Math.min(LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
+			farPlaneBlockDistance = Math.min(ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
-			farPlaneBlockDistance = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * LodUtil.CHUNK_WIDTH;
+			farPlaneBlockDistance = ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * LodUtil.CHUNK_WIDTH;
 		
 		
 		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, partialTicks);
@@ -291,7 +291,7 @@ public class LodRenderer
 			
 			// TODO re-enable once rendering is totally working
 			boolean cullingDisabled = true; //LodConfig.CLIENT.graphics.advancedGraphicsOption.disableDirectionalCulling.get();
-			boolean renderBufferStorage = LodConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.get() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
+			boolean renderBufferStorage = ForgeConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.get() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
 			
 			// used to determine what type of fog to render
 			int halfWidth = vbos.length / 2;
@@ -463,7 +463,7 @@ public class LodRenderer
 			if (fogQuality == FogQuality.FANCY)
 			{
 				// for more realistic fog when using FAR
-				if (LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.get() == FogDistance.NEAR_AND_FAR)
+				if (ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get() == FogDistance.NEAR_AND_FAR)
 					GL15.glFogf(GL15.GL_FOG_START, farPlaneBlockDistance * 1.6f * 0.9f);
 				else
 					GL15.glFogf(GL15.GL_FOG_START, Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f));
@@ -518,7 +518,7 @@ public class LodRenderer
 		// disable fog if Minecraft wasn't rendering fog
 		// or we want it disabled
 		if (!fogSettings.vanillaIsRenderingFog
-			|| LodConfig.CLIENT.graphics.fogQualityOption.disableVanillaFog.get())
+			|| ForgeConfig.CLIENT.graphics.fogQualityOption.disableVanillaFog.get())
 		{
 			// Make fog render a infinite distance away.
 			// This doesn't technically disable Minecraft's fog
@@ -572,7 +572,7 @@ public class LodRenderer
 		Mat4f lodProj = Mat4f.perspective(
 				getFov(partialTicks, true),
 				(float) this.mc.getWindow().getScreenWidth() / (float) this.mc.getWindow().getScreenHeight(),
-				LodConfig.CLIENT.graphics.advancedGraphicsOption.useExtendedNearClipPlane.get() ? vanillaBlockRenderedDistance / 5 : 1,
+				ForgeConfig.CLIENT.graphics.advancedGraphicsOption.useExtendedNearClipPlane.get() ? vanillaBlockRenderedDistance / 5 : 1,
 				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
 				
 		
@@ -698,7 +698,7 @@ public class LodRenderer
 		
 		
 		FogQuality quality = ReflectionHandler.INSTANCE.getFogQuality();
-		FogDrawOverride override = LodConfig.CLIENT.graphics.fogQualityOption.fogDrawOverride.get();
+		FogDrawOverride override = ForgeConfig.CLIENT.graphics.fogQualityOption.fogDrawOverride.get();
 		
 		
 		fogSettings.vanillaIsRenderingFog = quality != FogQuality.OFF;
@@ -739,7 +739,7 @@ public class LodRenderer
 			fogSettings.near.quality = FogQuality.FANCY;
 			fogSettings.far.quality = FogQuality.FANCY;
 			
-			switch (LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
+			switch (ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
 			{
 			case NEAR_AND_FAR:
 				fogSettings.near.distance = FogDistance.NEAR;
@@ -766,7 +766,7 @@ public class LodRenderer
 			// fog, since the LODs are separated into a near
 			// and far portion; and fast fog is rendered from the
 			// frustrum's perspective instead of the camera
-			switch (LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
+			switch (ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
 			{
 			case NEAR_AND_FAR:
 			case NEAR:
@@ -801,23 +801,23 @@ public class LodRenderer
 		//=============//
 		
 		// check if the view distance changed
-		if (ApiShared.previousLodRenderDistance != LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get()
+		if (ApiShared.previousLodRenderDistance != ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get()
 					|| chunkRenderDistance != prevRenderDistance
-					|| prevFogDistance != LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
+					|| prevFogDistance != ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
 		{
 			
 			vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 			DetailDistanceUtil.updateSettings();
 			fullRegen = true;
 			previousPos = LevelPosUtil.createLevelPos((byte) 4, mc.getPlayerChunkPos().getZ(), mc.getPlayerChunkPos().getZ());
-			prevFogDistance = LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.get();
+			prevFogDistance = ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get();
 			prevRenderDistance = chunkRenderDistance;
 		}
 		
 		// did the user change the debug setting?
-		if (LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != previousDebugMode)
+		if (ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != previousDebugMode)
 		{
-			previousDebugMode = LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get();
+			previousDebugMode = ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.get();
 			fullRegen = true;
 		}
 		
@@ -825,7 +825,7 @@ public class LodRenderer
 		long newTime = System.currentTimeMillis();
 		
 		// check if the player has moved
-		if (newTime - prevPlayerPosTime > LodConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get().playerMoveTimeout)
+		if (newTime - prevPlayerPosTime > ForgeConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get().playerMoveTimeout)
 		{
 			if (LevelPosUtil.getDetailLevel(previousPos) == 0
 						|| mc.getPlayerChunkPos().getX() != LevelPosUtil.getPosX(previousPos)
@@ -846,7 +846,7 @@ public class LodRenderer
 		// the max brightness is 1 and the minimum is 0.2
 		float skyBrightness = lodDim.dimension.hasSkyLight() ? mc.getSkyDarken(partialTicks) : 0.2f;
 		float minLightingDifference;
-		switch (LodConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get())
+		switch (ForgeConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get())
 		{
 		case FREQUENT:
 			minLightingDifference = 0.025f;
@@ -885,7 +885,7 @@ public class LodRenderer
 		
 		
 		// check if the vanilla rendered chunks changed
-		if (newTime - prevVanillaChunkTime > LodConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get().renderedChunkTimeout)
+		if (newTime - prevVanillaChunkTime > ForgeConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get().renderedChunkTimeout)
 		{
 			if (vanillaRenderedChunksChanged)
 			{
@@ -897,7 +897,7 @@ public class LodRenderer
 		
 		
 		// check if there is any newly generated terrain to show
-		if (newTime - prevChunkTime > LodConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get().chunkChangeTimeout)
+		if (newTime - prevChunkTime > ForgeConfig.CLIENT.advancedModOptions.buffers.rebuildTimes.get().chunkChangeTimeout)
 		{
 			if (lodDim.regenDimensionBuffers)
 			{

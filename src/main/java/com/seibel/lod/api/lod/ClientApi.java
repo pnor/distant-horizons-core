@@ -22,7 +22,7 @@ package com.seibel.lod.api.lod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.objects.lod.LodDimension;
 import com.seibel.lod.objects.math.Mat4f;
@@ -119,7 +119,7 @@ public class ClientApi
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
 			ApiShared.previousChunkRenderDistance = mc.getRenderDistance();
-			ApiShared.previousLodRenderDistance = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get();
+			ApiShared.previousLodRenderDistance = ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get();
 		}
 		catch (Exception e)
 		{
@@ -163,7 +163,7 @@ public class ClientApi
 		
 //		LodConfig.CLIENT.buffers.rebuildTimes.set(BufferRebuildTimes.FREQUENT);
 		
-		LodConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.set(true);
+		ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.set(true);
 //		LodConfig.CLIENT.debugging.debugMode.set(DebugMode.SHOW_DETAIL);
 	}
 	

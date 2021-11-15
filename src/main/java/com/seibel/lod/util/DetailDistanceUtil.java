@@ -19,7 +19,7 @@
 
 package com.seibel.lod.util;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.enums.config.HorizontalQuality;
 import com.seibel.lod.enums.config.HorizontalResolution;
@@ -35,12 +35,12 @@ public class DetailDistanceUtil
 	private static final double genMultiplier = 1.0;
 	private static final double treeGenMultiplier = 1.0;
 	private static final double treeCutMultiplier = 1.0;
-	private static byte minGenDetail = LodConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel;
-	private static byte minDrawDetail = (byte) Math.max(LodConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel, LodConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel);
+	private static byte minGenDetail = ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel;
+	private static byte minDrawDetail = (byte) Math.max(ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel, ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel);
 	private static final int maxDetail = LodUtil.REGION_DETAIL_LEVEL + 1;
 	private static final int minDistance = 0;
 	private static int minDetailDistance = (int) (MinecraftWrapper.INSTANCE.getRenderDistance()*16 * 1.42f);
-	private static int maxDistance = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 16 * 2;
+	private static int maxDistance = ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 16 * 2;
 	
 	
 	private static final HorizontalResolution[] lodGenDetails = {
@@ -61,9 +61,9 @@ public class DetailDistanceUtil
 	public static void updateSettings()
 	{
 		minDetailDistance = (int) (MinecraftWrapper.INSTANCE.getRenderDistance()*16 * 1.42f);
-		minGenDetail = LodConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel;
-		minDrawDetail = (byte) Math.max(LodConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel, LodConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel);
-		maxDistance = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 16 * 8;
+		minGenDetail = ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel;
+		minDrawDetail = (byte) Math.max(ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel, ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get().detailLevel);
+		maxDistance = ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 16 * 8;
 	}
 	
 	public static int baseDistanceFunction(int detail)
@@ -73,15 +73,15 @@ public class DetailDistanceUtil
 		if (detail >= maxDetail)
 			return maxDistance;
 		
-		if (LodConfig.CLIENT.graphics.advancedGraphicsOption.alwaysDrawAtMaxQuality.get())
+		if (ForgeConfig.CLIENT.graphics.advancedGraphicsOption.alwaysDrawAtMaxQuality.get())
 			return detail * 0x10000; //if you want more you are doing wrong
 		
-		int distanceUnit = LodConfig.CLIENT.graphics.qualityOption.horizontalScale.get().distanceUnit;
-		if (LodConfig.CLIENT.graphics.qualityOption.horizontalQuality.get() == HorizontalQuality.LOWEST)
+		int distanceUnit = ForgeConfig.CLIENT.graphics.qualityOption.horizontalScale.get().distanceUnit;
+		if (ForgeConfig.CLIENT.graphics.qualityOption.horizontalQuality.get() == HorizontalQuality.LOWEST)
 			return (detail * distanceUnit);
 		else
 		{
-			double base = LodConfig.CLIENT.graphics.qualityOption.horizontalQuality.get().quadraticBase;
+			double base = ForgeConfig.CLIENT.graphics.qualityOption.horizontalQuality.get().quadraticBase;
 			return (int) (Math.pow(base, detail) * distanceUnit);
 		}
 	}
@@ -96,14 +96,14 @@ public class DetailDistanceUtil
 		int detail;
 		if (distance == 0
 				|| (distance < minDetailDistance && useRenderMinDistance)
-				|| LodConfig.CLIENT.graphics.advancedGraphicsOption.alwaysDrawAtMaxQuality.get())
+				|| ForgeConfig.CLIENT.graphics.advancedGraphicsOption.alwaysDrawAtMaxQuality.get())
 			return minDetail;
-		int distanceUnit = LodConfig.CLIENT.graphics.qualityOption.horizontalScale.get().distanceUnit;
-		if (LodConfig.CLIENT.graphics.qualityOption.horizontalQuality.get() == HorizontalQuality.LOWEST)
+		int distanceUnit = ForgeConfig.CLIENT.graphics.qualityOption.horizontalScale.get().distanceUnit;
+		if (ForgeConfig.CLIENT.graphics.qualityOption.horizontalQuality.get() == HorizontalQuality.LOWEST)
 			detail = (byte) distance / distanceUnit;
 		else
 		{
-			double base = LodConfig.CLIENT.graphics.qualityOption.horizontalQuality.get().quadraticBase;
+			double base = ForgeConfig.CLIENT.graphics.qualityOption.horizontalQuality.get().quadraticBase;
 			double logBase = Math.log(base);
 			//noinspection IntegerDivisionInFloatingPointContext
 			detail = (byte) (Math.log(distance / distanceUnit) / logBase);
@@ -133,7 +133,7 @@ public class DetailDistanceUtil
 	
 	public static DistanceGenerationMode getDistanceGenerationMode(int detail)
 	{
-		return LodConfig.CLIENT.worldGenerator.distanceGenerationMode.get();
+		return ForgeConfig.CLIENT.worldGenerator.distanceGenerationMode.get();
 	}
 	
 	public static byte getLodDrawDetail(int detail)
@@ -165,7 +165,7 @@ public class DetailDistanceUtil
 	
 	public static int getMaxVerticalData(int detail)
 	{
-		return LodConfig.CLIENT.graphics.qualityOption.verticalQuality.get().maxVerticalData[LodUtil.clamp(minGenDetail, detail, LodUtil.REGION_DETAIL_LEVEL)];
+		return ForgeConfig.CLIENT.graphics.qualityOption.verticalQuality.get().maxVerticalData[LodUtil.clamp(minGenDetail, detail, LodUtil.REGION_DETAIL_LEVEL)];
 	}
 	
 }

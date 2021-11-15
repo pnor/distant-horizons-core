@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.objects.PosToGenerateContainer;
@@ -93,7 +93,7 @@ public class LodWorldGenerator
 	 */
 	public void queueGenerationRequests(LodDimension lodDim, LodRenderer renderer, LodBuilder lodBuilder)
 	{
-		if (LodConfig.CLIENT.worldGenerator.distanceGenerationMode.get() != DistanceGenerationMode.NONE
+		if (ForgeConfig.CLIENT.worldGenerator.distanceGenerationMode.get() != DistanceGenerationMode.NONE
 				&& !generatorThreadRunning
 				&& mc.hasSinglePlayerServer())
 		{
@@ -101,7 +101,7 @@ public class LodWorldGenerator
 			generatorThreadRunning = true;
 			
 			// just in case the config changed
-			maxChunkGenRequests = LodConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get() * 8;
+			maxChunkGenRequests = ForgeConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get() * 8;
 			
 			Thread generatorThread = new Thread(() ->
 			{

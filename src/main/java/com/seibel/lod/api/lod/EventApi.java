@@ -21,7 +21,7 @@ package com.seibel.lod.api.lod;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.builders.worldGeneration.LodWorldGenerator;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
 import com.seibel.lod.objects.lod.LodDimension;
@@ -163,16 +163,16 @@ public class EventApi
 	
 	public void onKeyInput(int key, int keyAction)
 	{
-		if (LodConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.get()
+		if (ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.get()
 				&& key == GLFW.GLFW_KEY_F4 && keyAction == GLFW.GLFW_PRESS)
 		{
-			LodConfig.CLIENT.advancedModOptions.debugging.debugMode.set(LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get().getNext());
+			ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.set(ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.get().getNext());
 		}
 		
-		if (LodConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.get()
+		if (ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.get()
 				&& key == GLFW.GLFW_KEY_F6 && keyAction == GLFW.GLFW_PRESS)
 		{
-			LodConfig.CLIENT.advancedModOptions.debugging.drawLods.set(!LodConfig.CLIENT.advancedModOptions.debugging.drawLods.get());
+			ForgeConfig.CLIENT.advancedModOptions.debugging.drawLods.set(!ForgeConfig.CLIENT.advancedModOptions.debugging.drawLods.get());
 		}
 	}
 	
@@ -196,9 +196,9 @@ public class EventApi
 		// calculate how wide the dimension(s) should be in regions
 		int chunksWide;
 		if (mc.getClientWorld().dimensionType().hasCeiling())
-			chunksWide = Math.min(LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
+			chunksWide = Math.min(ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
 		else
-			chunksWide = LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 2 + 1;
+			chunksWide = ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 2 + 1;
 		
 		int newWidth = (int) Math.ceil(chunksWide / (float) LodUtil.REGION_WIDTH_IN_CHUNKS);
 		// make sure we have an odd number of regions

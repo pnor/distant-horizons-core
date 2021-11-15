@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.enums.config.DistanceGenerationMode;
@@ -43,7 +43,7 @@ import net.minecraftforge.common.WorldWorkerManager.IWorker;
  */
 public class LodGenWorker implements IWorker // TODO is there a way to have this fabric/forge independent?
 {
-	public static ExecutorService genThreads = Executors.newFixedThreadPool(LodConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+	public static ExecutorService genThreads = Executors.newFixedThreadPool(ForgeConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	
 	private boolean threadStarted = false;
 	private final LodChunkGenThread thread;
@@ -79,7 +79,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 	{
 		if (!threadStarted)
 		{
-			if (LodConfig.CLIENT.worldGenerator.distanceGenerationMode.get() == DistanceGenerationMode.SERVER)
+			if (ForgeConfig.CLIENT.worldGenerator.distanceGenerationMode.get() == DistanceGenerationMode.SERVER)
 			{
 				// if we are using SERVER generation that has to be done
 				// synchronously to prevent crashing and harmful
@@ -217,7 +217,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 		{
 			genThreads.shutdownNow();
 		}
-		genThreads = Executors.newFixedThreadPool(LodConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+		genThreads = Executors.newFixedThreadPool(ForgeConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	}
 	
 }

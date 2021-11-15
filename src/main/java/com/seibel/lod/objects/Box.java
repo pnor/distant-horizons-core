@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.seibel.lod.api.forge.LodConfig;
+import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.enums.LodDirection;
 import com.seibel.lod.enums.rendering.DebugMode;
 import com.seibel.lod.objects.math.Vec3i;
@@ -260,7 +260,7 @@ public class Box
 	 */
 	public int getColor(LodDirection lodDirection)
 	{
-		if (LodConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != DebugMode.SHOW_DETAIL)
+		if (ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != DebugMode.SHOW_DETAIL)
 			return colorMap[DIRECTION_INDEX.get(lodDirection)];
 		else
 			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getShade(lodDirection));
