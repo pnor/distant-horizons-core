@@ -1,20 +1,25 @@
 package com.seibel.lod.wrappers.world;
 
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import com.seibel.lod.core.util.ColorUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
 import com.seibel.lod.wrappers.block.BlockColorWrapper;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.world.biome.Biome;
 
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-
-//This class wraps the minecraft BlockPos.Mutable (and BlockPos) class
-public class BiomeWrapper
+/**
+ * This class wraps the minecraft BlockPos.Mutable (and BlockPos) class
+ * 
+ * @author James Seibel
+ * @version 11-15-2021
+ */
+public class BiomeWrapper implements IBiomeWrapper
 {
-	
 	public static final ConcurrentMap<Biome, BiomeWrapper> biomeWrapperMap = new ConcurrentHashMap<>();
 	private final Biome biome;
 	
@@ -40,6 +45,7 @@ public class BiomeWrapper
 	
 	
 	/** Returns a color int for the given biome. */
+	@Override
 	public int getColorForBiome(int x, int z)
 	{
 		int colorInt;
@@ -114,16 +120,19 @@ public class BiomeWrapper
 		return colorInt;
 	}
 	
+	@Override
 	public int getGrassTint(int x, int z)
 	{
 		return biome.getGrassColor(x, z);
 	}
 	
+	@Override
 	public int getFolliageTint()
 	{
 		return biome.getFoliageColor();
 	}
 	
+	@Override
 	public int getWaterTint()
 	{
 		return biome.getWaterColor();

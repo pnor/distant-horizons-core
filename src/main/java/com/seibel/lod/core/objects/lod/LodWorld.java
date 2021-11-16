@@ -23,7 +23,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import com.seibel.lod.api.lod.ClientApi;
-import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 
 /**
  * This stores all LODs for a given world.
@@ -38,7 +38,7 @@ public class LodWorld
 	private String worldName;
 	
 	/** dimensions in this world */
-	private Map<DimensionTypeWrapper, LodDimension> lodDimensions;
+	private Map<IDimensionTypeWrapper, LodDimension> lodDimensions;
 	
 	/** If true then the LOD world is setup and ready to use */
 	private boolean isWorldLoaded = false;
@@ -112,7 +112,7 @@ public class LodWorld
 	/**
 	 * Returns null if no LodDimension exists for the given dimension
 	 */
-	public LodDimension getLodDimension(DimensionTypeWrapper dimType)
+	public LodDimension getLodDimension(IDimensionTypeWrapper dimType)
 	{
 		if (lodDimensions == null)
 			return null;
@@ -131,7 +131,7 @@ public class LodWorld
 		
 		saveAllDimensions();
 		
-		for (DimensionTypeWrapper key : lodDimensions.keySet())
+		for (IDimensionTypeWrapper key : lodDimensions.keySet())
 			lodDimensions.get(key).setRegionWidth(newRegionWidth);
 	}
 	
@@ -147,7 +147,7 @@ public class LodWorld
 		// but that requires a LodDimension.hasDirtyRegions() method or something similar
 		ClientApi.LOGGER.info("Saving LODs");
 		
-		for (DimensionTypeWrapper key : lodDimensions.keySet())
+		for (IDimensionTypeWrapper key : lodDimensions.keySet())
 			lodDimensions.get(key).saveDirtyRegionsToFileAsync();
 	}
 	

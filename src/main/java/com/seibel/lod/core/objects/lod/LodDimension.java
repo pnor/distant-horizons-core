@@ -36,10 +36,10 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.world.WorldWrapper;
 
 
 
@@ -57,7 +57,7 @@ import com.seibel.lod.wrappers.world.WorldWrapper;
  */
 public class LodDimension
 {
-	public final DimensionTypeWrapper dimension;
+	public final IDimensionTypeWrapper dimension;
 	
 	/** measured in regions */
 	private volatile int width;
@@ -96,7 +96,7 @@ public class LodDimension
 	 * Creates the dimension centered at (0,0)
 	 * @param newWidth in regions
 	 */
-	public LodDimension(DimensionTypeWrapper newDimension, LodWorld lodWorld, int newWidth)
+	public LodDimension(IDimensionTypeWrapper newDimension, LodWorld lodWorld, int newWidth)
 	{
 		lastCutChunk = null;
 		lastExpandedChunk = null;
@@ -115,7 +115,7 @@ public class LodDimension
 				{
 					// local world
 					
-					WorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(newDimension);
+					IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(newDimension);
 					saveDir = new File(serverWorld.getSaveFolder().getCanonicalFile().getPath() + File.separatorChar + "lod");
 				}
 				else

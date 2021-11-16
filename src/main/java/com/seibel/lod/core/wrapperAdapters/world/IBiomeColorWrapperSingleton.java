@@ -17,33 +17,22 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.wrappers.world;
+package com.seibel.lod.core.wrapperAdapters.world;
 
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
-
-import net.minecraft.world.biome.BiomeColors;
+import com.seibel.lod.wrappers.world.WorldWrapper;
 
 
 /**
  * 
  * @author Cola?
- * @version 11-12-2021
+ * @version 11-15-2021
  */
-public class BiomeColorWrapper
+public interface IBiomeColorWrapperSingleton
 {
+	public IBiomeColorWrapperSingleton getInstance(); 
 	
-	public static int getGrassColor(WorldWrapper world, BlockPosWrapper blockPos)
-	{
-		return BiomeColors.getAverageGrassColor(world.getWorld(), blockPos.getBlockPos());
-	}
-	public static int getWaterColor(WorldWrapper world, BlockPosWrapper blockPos)
-	{
-		
-		return BiomeColors.getAverageWaterColor(world.getWorld(), blockPos.getBlockPos());
-	}
-	public static int getFoliageColor(WorldWrapper world, BlockPosWrapper blockPos)
-	{
-		
-		return BiomeColors.getAverageFoliageColor(world.getWorld(), blockPos.getBlockPos());
-	}
+	public int getGrassColor(WorldWrapper world, BlockPosWrapper blockPos);
+	public int getWaterColor(WorldWrapper world, BlockPosWrapper blockPos);
+	public int getFoliageColor(WorldWrapper world, BlockPosWrapper blockPos);
 }

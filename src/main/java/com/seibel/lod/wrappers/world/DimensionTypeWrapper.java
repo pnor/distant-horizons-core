@@ -3,9 +3,16 @@ package com.seibel.lod.wrappers.world;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
+
 import net.minecraft.world.DimensionType;
 
-public class DimensionTypeWrapper
+/**
+ * 
+ * @author ??
+ * @version 11-15-2021
+ */
+public class DimensionTypeWrapper implements IDimensionTypeWrapper
 {
 	private static final ConcurrentMap<DimensionType, DimensionTypeWrapper> dimensionTypeWrapperMap = new ConcurrentHashMap<>();
 	private final DimensionType dimensionType;
@@ -30,21 +37,19 @@ public class DimensionTypeWrapper
 		return dimensionTypeWrapper;
 	}
 	
-	public static void clearMap()
-	{
-		dimensionTypeWrapperMap.clear();
-	}
-	
+	@Override
 	public String getDimensionName()
 	{
 		return dimensionType.effectsLocation().getPath();
 	}
 	
+	@Override
 	public boolean hasCeiling()
 	{
 		return dimensionType.hasCeiling();
 	}
 
+	@Override
 	public boolean hasSkyLight()
 	{
 		return dimensionType.hasSkyLight();

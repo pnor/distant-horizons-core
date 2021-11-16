@@ -32,11 +32,11 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -178,16 +178,16 @@ public class LodUtil
 	 * Gets the ServerWorld for the relevant dimension.
 	 * @return null if there is no ServerWorld for the given dimension
 	 */
-	public static WorldWrapper getServerWorldFromDimension(DimensionTypeWrapper newDimension)
+	public static IWorldWrapper getServerWorldFromDimension(IDimensionTypeWrapper newDimension)
 	{
 		IntegratedServer server = mc.getSinglePlayerServer();
 		if (server == null)
 			return null;
 		
-		Iterable<WorldWrapper> worlds = mc.getAllServerWorlds();
-		WorldWrapper returnWorld = null;
+		Iterable<IWorldWrapper> worlds = mc.getAllServerWorlds();
+		IWorldWrapper returnWorld = null;
 		
-		for (WorldWrapper world : worlds)
+		for (IWorldWrapper world : worlds)
 		{
 			if (world.getDimensionType() == newDimension)
 			{
@@ -237,7 +237,7 @@ public class LodUtil
 	 * world, if in multiplayer it will return the server name, IP,
 	 * and game version.
 	 */
-	public static String getWorldID(WorldWrapper world)
+	public static String getWorldID(IWorldWrapper world)
 	{
 		if (mc.hasSinglePlayerServer())
 		{
@@ -265,14 +265,14 @@ public class LodUtil
 	 * This can be used to determine where to save files for a given
 	 * dimension.
 	 */
-	public static String getDimensionIDFromWorld(WorldWrapper world)
+	public static String getDimensionIDFromWorld(IWorldWrapper world)
 	{
 		if (mc.hasSinglePlayerServer())
 		{
 			// this will return the world save location
 			// and the dimension folder
 			
-			WorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(world.getDimensionType());
+			IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(world.getDimensionType());
 			if (serverWorld == null)
 				throw new NullPointerException("getDimensionIDFromWorld wasn't able to get the WorldWrapper for the dimension " + world.getDimensionType().getDimensionName());
 			

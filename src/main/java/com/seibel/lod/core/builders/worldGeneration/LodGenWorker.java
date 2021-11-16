@@ -29,8 +29,8 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.world.WorldWrapper;
 import com.seibel.lod.wrappers.worldGeneration.WorldGeneratorWrapper;
 
 import net.minecraftforge.common.WorldWorkerManager.IWorker;
@@ -52,7 +52,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 	
 	public LodGenWorker(ChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
 			LodBuilder newLodBuilder,
-			LodDimension newLodDimension, WorldWrapper serverWorld)
+			LodDimension newLodDimension, IWorldWrapper serverWorld)
 	{
 		// just a few sanity checks
 		if (newPos == null)
@@ -125,7 +125,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 		
 		public LodChunkGenThread(ChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
 				LodBuilder newLodBuilder,
-				LodDimension newLodDimension, WorldWrapper worldWrapper)
+				LodDimension newLodDimension, IWorldWrapper worldWrapper)
 		{
 			worldGenWrapper = new WorldGeneratorWrapper(newLodBuilder, newLodDimension, worldWrapper);
 			

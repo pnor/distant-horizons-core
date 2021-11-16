@@ -31,10 +31,10 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
-import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.world.WorldWrapper;
 
 /**
  * This holds the methods that should be called
@@ -74,7 +74,7 @@ public class EventApi
 		if (mc.getPlayer() == null || ApiShared.lodWorld.getIsWorldNotLoaded())
 			return;
 		
-		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(DimensionTypeWrapper.getDimensionTypeWrapper(mc.getPlayer().level.dimensionType()));
+		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(mc.getCurrentDimension());
 		if (lodDim == null)
 			return;
 		
@@ -88,7 +88,7 @@ public class EventApi
 	// world events //
 	//==============//
 	
-	public void chunkLoadEvent(ChunkWrapper chunk, DimensionTypeWrapper dimType)
+	public void chunkLoadEvent(ChunkWrapper chunk, IDimensionTypeWrapper dimType)
 	{
 		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.SERVER);
 	}
@@ -99,7 +99,7 @@ public class EventApi
 	}
 	
 	/** This is also called when a new dimension loads */
-	public void worldLoadEvent(WorldWrapper world)
+	public void worldLoadEvent(IWorldWrapper world)
 	{
 		DataPointUtil.worldHeight = world.getHeight();
 		//LodNodeGenWorker.restartExecutorService();
@@ -148,7 +148,7 @@ public class EventApi
 		}
 	}
 	
-	public void blockChangeEvent(ChunkWrapper chunk, DimensionTypeWrapper dimType)
+	public void blockChangeEvent(ChunkWrapper chunk, IDimensionTypeWrapper dimType)
 	{
 		// recreate the LOD where the blocks were changed
 		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType);		
@@ -212,7 +212,7 @@ public class EventApi
 			// update the dimensions to fit the new width
 			ApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
 			ApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
-			ClientApi.renderer.setupBuffers(ApiShared.lodWorld.getLodDimension(DimensionTypeWrapper.getDimensionTypeWrapper(mc.getClientWorld().dimensionType())));
+			ClientApi.renderer.setupBuffers(ApiShared.lodWorld.getLodDimension(mc.getCurrentDimension()));
 			
 			recalculateWidths = false;
 			//LOGGER.info("new dimension width in regions: " + newWidth + "\t potential: " + newWidth );

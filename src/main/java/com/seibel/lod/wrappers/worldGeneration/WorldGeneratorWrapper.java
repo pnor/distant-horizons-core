@@ -13,6 +13,7 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
@@ -55,14 +56,11 @@ public class WorldGeneratorWrapper
 	public final LodDimension lodDim;
 	public final LodBuilder lodBuilder;
 	
-	// TODO should we have everything static?
-	// it could potentially remove some (minor) garbage collections
-	// by just passing in these 3 references
-	public WorldGeneratorWrapper(LodBuilder newLodBuilder, LodDimension newLodDimension, WorldWrapper worldWrapper)
+	public WorldGeneratorWrapper(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper)
 	{
 		lodBuilder = newLodBuilder;
 		lodDim = newLodDimension;
-		serverWorld = worldWrapper.getServerWorld();
+		serverWorld = ((WorldWrapper) worldWrapper).getServerWorld();
 	}
 	
 	

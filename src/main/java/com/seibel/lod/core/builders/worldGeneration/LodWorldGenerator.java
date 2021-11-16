@@ -35,9 +35,9 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraftforge.common.WorldWorkerManager;
 
@@ -116,7 +116,7 @@ public class LodWorldGenerator
 					// fill in positionsWaitingToBeGenerated //
 					//=======================================//
 					
-					WorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
+					IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 					
 					PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(
 							maxChunkGenRequests,

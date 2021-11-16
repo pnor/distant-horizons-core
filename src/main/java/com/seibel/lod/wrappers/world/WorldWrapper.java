@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.enums.WorldType;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.client.world.ClientWorld;
@@ -16,9 +17,9 @@ import net.minecraft.world.server.ServerWorld;
  * 
  * @author James Seibel
  * @author ??
- * @version 11-12-2021
+ * @version 11-15-2021
  */
-public class WorldWrapper
+public class WorldWrapper implements IWorldWrapper
 {
 	private static final ConcurrentMap<IWorld, WorldWrapper> worldWrapperMap = new ConcurrentHashMap<>();
 	private final IWorld world;
@@ -59,21 +60,25 @@ public class WorldWrapper
 		worldWrapperMap.clear();
 	}
 	
+	@Override
 	public DimensionTypeWrapper getDimensionType()
 	{
 		return DimensionTypeWrapper.getDimensionTypeWrapper(world.dimensionType());
 	}
 	
+	@Override
 	public int getBlockLight(BlockPosWrapper blockPos)
 	{
 		return world.getLightEngine().blockEngine.getLightValue(blockPos.getBlockPos());
 	}
 	
+	@Override
 	public int getSkyLight(BlockPosWrapper blockPos)
 	{
 		return world.getLightEngine().skyEngine.getLightValue(blockPos.getBlockPos());
 	}
 	
+	@Override
 	public BiomeWrapper getBiome(BlockPosWrapper blockPos)
 	{
 		return BiomeWrapper.getBiomeWrapper(world.getBiome(blockPos.getBlockPos()));
@@ -84,27 +89,32 @@ public class WorldWrapper
 		return world;
 	}
 	
+	@Override
 	public boolean hasCeiling()
 	{
 		return world.dimensionType().hasCeiling();
 	}
 	
+	@Override
 	public boolean hasSkyLight()
 	{
 		return world.dimensionType().hasSkyLight();
 	}
 	
+	@Override
 	public boolean isEmpty()
 	{
 		return world == null;
 	}
 	
+	@Override
 	public int getHeight()
 	{
 		return world.getHeight();
 	}
 	
 	/** @throws UnsupportedOperationException if the WorldWrapper isn't for a ServerWorld */
+	@Override
 	public File getSaveFolder() throws UnsupportedOperationException
 	{
 		if (worldType != WorldType.ServerWorld)

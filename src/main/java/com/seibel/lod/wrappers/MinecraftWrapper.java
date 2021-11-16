@@ -27,6 +27,7 @@ import com.seibel.lod.ModInfo;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
@@ -113,6 +114,7 @@ public class MinecraftWrapper
 		return mc.hasSingleplayerServer();
 	}
 	
+	/** Returns the dimension the player is currently in */
 	public DimensionTypeWrapper getCurrentDimension()
 	{
 		return DimensionTypeWrapper.getDimensionTypeWrapper(mc.player.level.dimensionType());
@@ -294,9 +296,9 @@ public class MinecraftWrapper
 	}
 	
 	/** Returns all worlds available to the server */
-	public ArrayList<WorldWrapper> getAllServerWorlds()
+	public ArrayList<IWorldWrapper> getAllServerWorlds()
 	{
-		ArrayList<WorldWrapper> worlds = new ArrayList<WorldWrapper>();
+		ArrayList<IWorldWrapper> worlds = new ArrayList<IWorldWrapper>();
 		
 		Iterable<ServerWorld> serverWorlds = mc.getSingleplayerServer().getAllLevels();
 		for (ServerWorld world : serverWorlds)

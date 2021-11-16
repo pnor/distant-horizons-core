@@ -35,15 +35,15 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockColorWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.block.BlockShapeWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
-import com.seibel.lod.wrappers.world.BiomeWrapper;
-import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
-import com.seibel.lod.wrappers.world.WorldWrapper;
 
 /**
  * This object is in charge of creating Lod related objects.
@@ -84,12 +84,12 @@ public class LodBuilder
 	
 	}
 	
-	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, DimensionTypeWrapper dim)
+	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
 	{
 		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.SERVER);
 	}
 	
-	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, DimensionTypeWrapper dim, DistanceGenerationMode generationMode)
+	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode)
 	{
 		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
 			return;
@@ -382,7 +382,7 @@ public class LodBuilder
 		// 1 means the lighting is a guess
 		int isDefault = 0;
 		
-		WorldWrapper world = MinecraftWrapper.INSTANCE.getWrappedServerWorld();
+		IWorldWrapper world = MinecraftWrapper.INSTANCE.getWrappedServerWorld();
 		
 		int blockBrightness = chunk.getEmittedBrightness(blockPos);
 		// get the air block above or below this block
@@ -492,7 +492,7 @@ public class LodBuilder
 		
 		if (blockColorWrapper.hasTint())
 		{
-			BiomeWrapper biome = chunk.getBiome(xRel, y, zRel);
+			IBiomeWrapper biome = chunk.getBiome(xRel, y, zRel);
 			int tintValue;
 			if (blockColorWrapper.hasGrassTint())
 				// grass and green plants
