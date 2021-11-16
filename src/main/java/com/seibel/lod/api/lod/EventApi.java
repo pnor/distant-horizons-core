@@ -33,8 +33,8 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * This holds the methods that should be called

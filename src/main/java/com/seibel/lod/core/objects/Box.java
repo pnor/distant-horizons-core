@@ -30,8 +30,8 @@ import com.seibel.lod.core.objects.math.Vec3i;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * Similar to Minecraft's AxisAlignedBoundingBox.

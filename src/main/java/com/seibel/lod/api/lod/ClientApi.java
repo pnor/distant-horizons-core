@@ -22,7 +22,6 @@ package com.seibel.lod.api.lod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -30,7 +29,9 @@ import com.seibel.lod.core.render.GlProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.util.text.StringTextComponent;
@@ -50,9 +51,9 @@ public class ClientApi
 	
 	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 	
-	
 	private final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
 	private final EventApi eventApi = EventApi.INSTANCE;
+	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
 	 * there is some setup that should only happen once,
@@ -74,7 +75,7 @@ public class ClientApi
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
-		// applyConfigOverrides();
+		applyConfigOverrides();
 		
 		// clear any out of date objects
 		mc.clearFrameObjectCache();
@@ -119,7 +120,7 @@ public class ClientApi
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
 			ApiShared.previousChunkRenderDistance = mc.getRenderDistance();
-			ApiShared.previousLodRenderDistance = ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get();
+			ApiShared.previousLodRenderDistance = config.getClient().getGraphics().getQualityOption().getLodChunkRenderDistance();
 		}
 		catch (Exception e)
 		{
@@ -142,29 +143,9 @@ public class ClientApi
 			configOverrideReminderPrinted = true;
 		}
 		
-//		LodConfig.CLIENT.graphics.drawResolution.set(HorizontalResolution.BLOCK);
-//		LodConfig.CLIENT.worldGenerator.generationResolution.set(HorizontalResolution.BLOCK);
-		// requires a world restart?
-//		LodConfig.CLIENT.worldGenerator.lodQualityMode.set(VerticalQuality.VOXEL);
 		
-//		LodConfig.CLIENT.graphics.fogQualityOption.fogDistance.set(FogDistance.FAR);
-//		LodConfig.CLIENT.graphics.fogQualityOption.fogDrawOverride.set(FogDrawOverride.FANCY);
-//		LodConfig.CLIENT.graphics.fogQualityOption.disableVanillaFog.set(true);
-//		LodConfig.CLIENT.graphics.shadingMode.set(ShadingMode.DARKEN_SIDES);
 		
-//		LodConfig.CLIENT.graphics.advancedGraphicsOption.vanillaOverdraw.set(VanillaOverdraw.DYNAMIC);
-		
-//		LodConfig.CLIENT.graphics.advancedGraphicsOption.gpuUploadMethod.set(GpuUploadMethod.BUFFER_STORAGE);
-		
-//		LodConfig.CLIENT.worldGenerator.distanceGenerationMode.set(DistanceGenerationMode.SURFACE);
-//		LodConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.set(128);
-//		LodConfig.CLIENT.worldGenerator.lodDistanceCalculatorType.set(DistanceCalculatorType.LINEAR);
-//		LodConfig.CLIENT.worldGenerator.allowUnstableFeatureGeneration.set(false);
-		
-//		LodConfig.CLIENT.buffers.rebuildTimes.set(BufferRebuildTimes.FREQUENT);
-		
-		ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.set(true);
-//		LodConfig.CLIENT.debugging.debugMode.set(DebugMode.SHOW_DETAIL);
+		config.getClient().getAdvancedModOptions().getDebugging().setEnableDebugKeybindings(true);
 	}
 	
 	

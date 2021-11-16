@@ -23,7 +23,7 @@ import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
-import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * 

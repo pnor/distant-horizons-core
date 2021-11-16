@@ -1,4 +1,4 @@
-package com.seibel.lod.wrappers;
+package com.seibel.lod.wrappers.misc;
 
 import net.minecraft.client.renderer.texture.NativeImage;
 

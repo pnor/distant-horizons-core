@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.enums.rendering.FogQuality;
 import com.seibel.lod.core.objects.math.Mat4f;
-import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * This object is used to get variables from methods

@@ -21,7 +21,7 @@ package com.seibel.lod.core.util;
 
 import java.awt.Color;
 
-import com.seibel.lod.wrappers.MinecraftWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * 

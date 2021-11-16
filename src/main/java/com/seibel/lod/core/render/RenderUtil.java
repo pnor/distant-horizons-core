@@ -20,9 +20,9 @@
 package com.seibel.lod.core.render;
 
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.wrappers.MinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3f;

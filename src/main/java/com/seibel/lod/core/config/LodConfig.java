@@ -16,7 +16,7 @@ import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawOverride;
 import com.seibel.lod.core.objects.MinDefaultMax;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.wrappers.config.LodConfigWrapper;
+import com.seibel.lod.wrappers.config.LodConfigWrapperSingleton;
 
 /**
  * Interacts with the LodConfigWrapper to get the config
@@ -82,11 +82,11 @@ public class LodConfig
 				
 				public HorizontalResolution getDrawResolution()
 				{
-					return LodConfigWrapper.CLIENT.graphics.qualityOption.getDrawResolution();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.getDrawResolution();
 				}
 				public void setDrawResolution(HorizontalResolution newHorizontalResolution)
 				{
-					LodConfigWrapper.CLIENT.graphics.qualityOption.setDrawResolution(newHorizontalResolution);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.setDrawResolution(newHorizontalResolution);
 				}
 				
 				
@@ -97,11 +97,11 @@ public class LodConfig
 				
 				public int getLodChunkRenderDistance()
 				{
-					return LodConfigWrapper.CLIENT.graphics.qualityOption.getLodChunkRenderDistance();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.getLodChunkRenderDistance();
 				}
 				public void setLodChunkRenderDistance(int newLodChunkRenderDistance)
 				{
-					LodConfigWrapper.CLIENT.graphics.qualityOption.setLodChunkRenderDistance(newLodChunkRenderDistance);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.setLodChunkRenderDistance(newLodChunkRenderDistance);
 				}
 				
 				
@@ -117,11 +117,11 @@ public class LodConfig
 				
 				public VerticalQuality getVerticalQuality()
 				{
-					return LodConfigWrapper.CLIENT.graphics.qualityOption.getVerticalQuality();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.getVerticalQuality();
 				}
 				public void setVerticalQuality(VerticalQuality newVerticalQuality)
 				{
-					LodConfigWrapper.CLIENT.graphics.qualityOption.setVerticalQuality(newVerticalQuality);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.setVerticalQuality(newVerticalQuality);
 				}
 				
 				
@@ -135,11 +135,11 @@ public class LodConfig
 				
 				public HorizontalScale getHorizontalScale()
 				{
-					return LodConfigWrapper.CLIENT.graphics.qualityOption.getHorizontalScale();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.getHorizontalScale();
 				}
 				public void setLodChunkRenderDistance(HorizontalScale newHorizontalScale)
 				{
-					LodConfigWrapper.CLIENT.graphics.qualityOption.setHorizontalScale(newHorizontalScale);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.setHorizontalScale(newHorizontalScale);
 				}
 				
 				
@@ -154,11 +154,11 @@ public class LodConfig
 				
 				public HorizontalQuality getHorizontalQuality()
 				{
-					return LodConfigWrapper.CLIENT.graphics.qualityOption.getHorizontalQuality();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.getHorizontalQuality();
 				}
 				public void setLodChunkRenderDistance(HorizontalQuality newHorizontalQuality)
 				{
-					LodConfigWrapper.CLIENT.graphics.qualityOption.setHorizontalQuality(newHorizontalQuality);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.qualityOption.setHorizontalQuality(newHorizontalQuality);
 				}
 			}
 			
@@ -177,11 +177,11 @@ public class LodConfig
 				
 				public FogDistance getFogDistance()
 				{
-					return LodConfigWrapper.CLIENT.graphics.fogQualityOption.getFogDistance();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.fogQualityOption.getFogDistance();
 				}
 				public void setFogDistance(FogDistance newFogDistance)
 				{
-					LodConfigWrapper.CLIENT.graphics.fogQualityOption.setFogDistance(newFogDistance);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.fogQualityOption.setFogDistance(newFogDistance);
 				}
 				
 				
@@ -196,11 +196,11 @@ public class LodConfig
 				
 				public FogDrawOverride getFogDrawOverride()
 				{
-					return LodConfigWrapper.CLIENT.graphics.fogQualityOption.getFogDrawOverride();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.fogQualityOption.getFogDrawOverride();
 				}
 				public void setFogDrawOverride(FogDrawOverride newFogDrawOverride)
 				{
-					LodConfigWrapper.CLIENT.graphics.fogQualityOption.setFogDrawOverride(newFogDrawOverride);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.fogQualityOption.setFogDrawOverride(newFogDrawOverride);
 				}
 				
 				
@@ -217,11 +217,11 @@ public class LodConfig
 				
 				public boolean getDisableVanillaFog()
 				{
-					return LodConfigWrapper.CLIENT.graphics.fogQualityOption.getDisableVanillaFog();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.fogQualityOption.getDisableVanillaFog();
 				}
 				public void setDisableVanillaFog(boolean newDisableVanillaFog)
 				{
-					LodConfigWrapper.CLIENT.graphics.fogQualityOption.setDisableVanillaFog(newDisableVanillaFog);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.fogQualityOption.setDisableVanillaFog(newDisableVanillaFog);
 				}
 			}
 			
@@ -244,11 +244,11 @@ public class LodConfig
 				
 				public LodTemplate getLodTemplate()
 				{
-					return LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.getLodTemplate();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.getLodTemplate();
 				}
 				public void setLodTemplate(LodTemplate newLodTemplate)
 				{
-					LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.setLodTemplate(newLodTemplate);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.setLodTemplate(newLodTemplate);
 				}
 				
 				
@@ -266,11 +266,11 @@ public class LodConfig
 				
 				public boolean getDisableDirectionalCulling()
 				{
-					return LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.getDisableDirectionalCulling();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.getDisableDirectionalCulling();
 				}
 				public void setDisableDirectionalCulling(boolean newDisableDirectionalCulling)
 				{
-					LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.setDisableDirectionalCulling(newDisableDirectionalCulling);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.setDisableDirectionalCulling(newDisableDirectionalCulling);
 				}
 				
 				
@@ -287,11 +287,11 @@ public class LodConfig
 				
 				public boolean getAlwaysDrawAtMaxQuality()
 				{
-					return LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.getAlwaysDrawAtMaxQuality();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.getAlwaysDrawAtMaxQuality();
 				}
 				public void setAlwaysDrawAtMaxQuality(boolean newAlwaysDrawAtMaxQuality)
 				{
-					LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.setAlwaysDrawAtMaxQuality(newAlwaysDrawAtMaxQuality);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.setAlwaysDrawAtMaxQuality(newAlwaysDrawAtMaxQuality);
 				}
 				
 				
@@ -310,11 +310,11 @@ public class LodConfig
 				
 				public VanillaOverdraw getVanillaOverdraw()
 				{
-					return LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.getVanillaOverdraw();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.getVanillaOverdraw();
 				}
 				public void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw)
 				{
-					LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.setVanillaOverdraw(newVanillaOverdraw);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.setVanillaOverdraw(newVanillaOverdraw);
 				}
 				
 				
@@ -329,11 +329,11 @@ public class LodConfig
 				
 				public GpuUploadMethod getGpuUploadMethod()
 				{
-					return LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.getGpuUploadMethod();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.getGpuUploadMethod();
 				}
 				public void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog)
 				{
-					LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.setGpuUploadMethod(newDisableVanillaFog);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.setGpuUploadMethod(newDisableVanillaFog);
 				}
 				
 				
@@ -345,11 +345,11 @@ public class LodConfig
 				
 				public boolean getUseExtendedNearClipPlane()
 				{
-					return LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.getUseExtendedNearClipPlane();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.getUseExtendedNearClipPlane();
 				}
 				public void setGpuUploadMethod(boolean newUseExtendedNearClipPlane)
 				{
-					LodConfigWrapper.CLIENT.graphics.advancedGraphicsOption.setUseExtendedNearClipPlane(newUseExtendedNearClipPlane);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.advancedGraphicsOption.setUseExtendedNearClipPlane(newUseExtendedNearClipPlane);
 				}
 			}
 		}
@@ -379,11 +379,11 @@ public class LodConfig
 			
 			public GenerationPriority getGenerationPriority()
 			{
-				return LodConfigWrapper.CLIENT.worldGenerator.getGenerationPriority();
+				return LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.getGenerationPriority();
 			}
 			public void setGenerationPriority(GenerationPriority newGenerationPriority)
 			{
-				LodConfigWrapper.CLIENT.worldGenerator.setGenerationPriority(newGenerationPriority);
+				LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.setGenerationPriority(newGenerationPriority);
 			}
 			
 			
@@ -437,11 +437,11 @@ public class LodConfig
 			
 			public DistanceGenerationMode getDistanceGenerationMode()
 			{
-				return LodConfigWrapper.CLIENT.worldGenerator.getDistanceGenerationMode();
+				return LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.getDistanceGenerationMode();
 			}
 			public void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode)
 			{
-				LodConfigWrapper.CLIENT.worldGenerator.setDistanceGenerationMode(newDistanceGenerationMode);
+				LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.setDistanceGenerationMode(newDistanceGenerationMode);
 			}
 			
 			
@@ -466,11 +466,11 @@ public class LodConfig
 			
 			public boolean getAllowUnstableFeatureGeneration()
 			{
-				return LodConfigWrapper.CLIENT.worldGenerator.getAllowUnstableFeatureGeneration();
+				return LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.getAllowUnstableFeatureGeneration();
 			}
 			public void setAllowUnstableFeatureGeneration(boolean newAllowUnstableFeatureGeneration)
 			{
-				LodConfigWrapper.CLIENT.worldGenerator.setAllowUnstableFeatureGeneration(newAllowUnstableFeatureGeneration);
+				LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.setAllowUnstableFeatureGeneration(newAllowUnstableFeatureGeneration);
 			}
 			
 			
@@ -487,11 +487,11 @@ public class LodConfig
 			
 			public BlockToAvoid getBlockToAvoid()
 			{
-				return LodConfigWrapper.CLIENT.worldGenerator.getBlockToAvoid();
+				return LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.getBlockToAvoid();
 			}
 			public void setBlockToAvoid(BlockToAvoid newBlockToAvoid)
 			{
-				LodConfigWrapper.CLIENT.worldGenerator.setBlockToAvoid(newBlockToAvoid);
+				LodConfigWrapperSingleton.INSTANCE.LodConfigWrapperSingleton.INSTANCE.worldGenerator.setBlockToAvoid(newBlockToAvoid);
 			}
 		}
 		
@@ -534,11 +534,11 @@ public class LodConfig
 				
 				public int getNumberOfWorldGenerationThreads()
 				{
-					return LodConfigWrapper.CLIENT.advancedModOptions.threading.getNumberOfWorldGenerationThreads();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.threading.getNumberOfWorldGenerationThreads();
 				}
 				public void setNumberOfWorldGenerationThreads(int newNumberOfWorldGenerationThreads)
 				{
-					LodConfigWrapper.CLIENT.advancedModOptions.threading.setNumberOfWorldGenerationThreads(newNumberOfWorldGenerationThreads);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.threading.setNumberOfWorldGenerationThreads(newNumberOfWorldGenerationThreads);
 				}
 				
 				
@@ -555,11 +555,11 @@ public class LodConfig
 				
 				public int getNumberOfBufferBuilderThreads()
 				{
-					return LodConfigWrapper.CLIENT.advancedModOptions.threading.getNumberOfBufferBuilderThreads();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.threading.getNumberOfBufferBuilderThreads();
 				}
 				public void setNumberOfBufferBuilderThreads(int newNumberOfWorldBuilderThreads)
 				{
-					LodConfigWrapper.CLIENT.advancedModOptions.threading.setNumberOfBufferBuilderThreads(newNumberOfWorldBuilderThreads);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.threading.setNumberOfBufferBuilderThreads(newNumberOfWorldBuilderThreads);
 				}
 			}
 			
@@ -583,11 +583,11 @@ public class LodConfig
 				
 				public boolean getDrawLods()
 				{
-					return LodConfigWrapper.CLIENT.advancedModOptions.debugging.getDrawLods();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.debugging.getDrawLods();
 				}
 				public void setDrawLods(boolean newDrawLods)
 				{
-					LodConfigWrapper.CLIENT.advancedModOptions.debugging.setDrawLods(newDrawLods);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.debugging.setDrawLods(newDrawLods);
 				}
 				
 				
@@ -600,11 +600,11 @@ public class LodConfig
 				
 				public DebugMode getDebugMode()
 				{
-					return LodConfigWrapper.CLIENT.advancedModOptions.debugging.getDebugMode();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.debugging.getDebugMode();
 				}
 				public void setDebugMode(DebugMode newDebugMode)
 				{
-					LodConfigWrapper.CLIENT.advancedModOptions.debugging.setDebugMode(newDebugMode);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.debugging.setDebugMode(newDebugMode);
 				}
 				
 				
@@ -616,11 +616,11 @@ public class LodConfig
 				
 				public boolean getEnableDebugKeybindings()
 				{
-					return LodConfigWrapper.CLIENT.advancedModOptions.debugging.getEnableDebugKeybindings();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.debugging.getEnableDebugKeybindings();
 				}
 				public void setEnableDebugKeybindings(boolean newEnableDebugKeybindings)
 				{
-					LodConfigWrapper.CLIENT.advancedModOptions.debugging.setEnableDebugKeybindings(newEnableDebugKeybindings);
+					LodConfigWrapperSingleton.INSTANCE.getClient().LodConfigWrapperSingleton.INSTANCE.debugging.setEnableDebugKeybindings(newEnableDebugKeybindings);
 				}
 			}
 			
@@ -638,11 +638,11 @@ public class LodConfig
 				
 				public BufferRebuildTimes getDrawLods()
 				{
-					return LodConfigWrapper.CLIENT.advancedModOptions.buffers.getRebuildTimes();
+					return LodConfigWrapperSingleton.INSTANCE.getClient().getAdvancedModOptions().getBuffers().getRebuildTimes();
 				}
 				public void setDrawLods(BufferRebuildTimes newBufferRebuildTimes)
 				{
-					LodConfigWrapper.CLIENT.advancedModOptions.buffers.setRebuildTimes(newBufferRebuildTimes);
+					LodConfigWrapperSingleton.INSTANCE.getClient().getAdvancedModOptions().getBuffers().setRebuildTimes(newBufferRebuildTimes);
 				}
 			}
 		}
