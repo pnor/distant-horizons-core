@@ -22,21 +22,16 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
  * that should be hooked into the host mod loader (Fabric, Forge, etc.).
  * 
  * @author James Seibel
- * @version 11-14-2021
+ * @version 11-16-2021
  */
 public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 {
 	public static final LodConfigWrapperSingleton INSTANCE = new LodConfigWrapperSingleton();
-	@Override
-	public ILodConfigWrapperSingleton getInstance()
-	{
-		return INSTANCE;
-	}
 	
 	
 	private static final Client client = new Client();
 	@Override
-	public IClient getClient()
+	public IClient client()
 	{
 		return client;
 	}
@@ -45,25 +40,25 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 	{
 		public final IGraphics graphics;
 		public final IWorldGenerator worldGenerator;
-		public final IAdvancedModOptions advancedModOptions;
+		public final IAdvanced advanced;
 		
 
 		@Override
-		public IGraphics getGraphics()
+		public IGraphics graphics()
 		{
 			return graphics;
 		}
 		
 		@Override
-		public IWorldGenerator getWorldGenerator()
+		public IWorldGenerator worldGenerator()
 		{
 			return worldGenerator;
 		}
 		
 		@Override
-		public IAdvancedModOptions getAdvancedModOptions()
+		public IAdvanced advanced()
 		{
-			return advancedModOptions;
+			return advanced;
 		}
 		
 		
@@ -75,7 +70,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		{
 			graphics = new Graphics();
 			worldGenerator = new WorldGenerator();
-			advancedModOptions = new AdvancedModOptions();
+			advanced = new Advanced();
 		}
 		
 		
@@ -84,40 +79,40 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		//==================//
 		public static class Graphics implements IGraphics
 		{
-			public final IQualityOption qualityOption;
-			public final IFogQualityOption fogQualityOption;
-			public final IAdvancedGraphicsOption advancedGraphicsOption;
+			public final IQuality quality;
+			public final IFogQuality fogQuality;
+			public final IAdvancedGraphics advancedGraphics;
 			
 			
 
 			@Override
-			public IQualityOption getQualityOption()
+			public IQuality quality()
 			{
-				return qualityOption;
+				return quality;
 			}
 
 			@Override
-			public IFogQualityOption getFogQualityOption()
+			public IFogQuality fogQuality()
 			{
-				return fogQualityOption;
+				return fogQuality;
 			}
 
 			@Override
-			public IAdvancedGraphicsOption getAdvancedGraphicsOption()
+			public IAdvancedGraphics advancedGraphics()
 			{
-				return advancedGraphicsOption;
+				return advancedGraphics;
 			}
 			
 			
 			Graphics()
 			{
-				qualityOption = new QualityOption();
-				advancedGraphicsOption = new AdvancedGraphicsOption();
-				fogQualityOption = new FogQualityOption();
+				quality = new Quality();
+				advancedGraphics = new AdvancedGraphics();
+				fogQuality = new FogQuality();
 			}
 			
 			
-			public static class QualityOption implements IQualityOption
+			public static class Quality implements IQuality
 			{
 				@Override
 				public HorizontalResolution getDrawResolution()
@@ -180,46 +175,46 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			}
 			
 			
-			public static class FogQualityOption implements IFogQualityOption
+			public static class FogQuality implements IFogQuality
 			{
 				@Override
 				public FogDistance getFogDistance()
 				{
-					return ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get();
+					return ForgeConfig.CLIENT.graphics.fogQuality.fogDistance.get();
 				}
 				@Override
 				public void setFogDistance(FogDistance newFogDistance)
 				{
-					ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.set(newFogDistance);
+					ForgeConfig.CLIENT.graphics.fogQuality.fogDistance.set(newFogDistance);
 				}
 				
 				
 				@Override
 				public FogDrawOverride getFogDrawOverride()
 				{
-					return ForgeConfig.CLIENT.graphics.fogQualityOption.fogDrawOverride.get();
+					return ForgeConfig.CLIENT.graphics.fogQuality.fogDrawOverride.get();
 				}
 				@Override
 				public void setFogDrawOverride(FogDrawOverride newFogDrawOverride)
 				{
-					ForgeConfig.CLIENT.graphics.fogQualityOption.fogDrawOverride.set(newFogDrawOverride);
+					ForgeConfig.CLIENT.graphics.fogQuality.fogDrawOverride.set(newFogDrawOverride);
 				}
 				
 				
 				@Override
 				public boolean getDisableVanillaFog()
 				{
-					return ForgeConfig.CLIENT.graphics.fogQualityOption.disableVanillaFog.get();
+					return ForgeConfig.CLIENT.graphics.fogQuality.disableVanillaFog.get();
 				}
 				@Override
 				public void setDisableVanillaFog(boolean newDisableVanillaFog)
 				{
-					ForgeConfig.CLIENT.graphics.fogQualityOption.disableVanillaFog.set(newDisableVanillaFog);
+					ForgeConfig.CLIENT.graphics.fogQuality.disableVanillaFog.set(newDisableVanillaFog);
 				}
 			}
 			
 			
-			public static class AdvancedGraphicsOption implements IAdvancedGraphicsOption
+			public static class AdvancedGraphics implements IAdvancedGraphics
 			{
 				@Override
 				public LodTemplate getLodTemplate()
@@ -356,7 +351,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		//============================//
 		// AdvancedModOptions Configs //
 		//============================//
-		public static class AdvancedModOptions implements IAdvancedModOptions
+		public static class Advanced implements IAdvanced
 		{
 			public final IThreading threading;
 			public final IDebugging debugging;
@@ -364,27 +359,27 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			
 			
 			@Override
-			public IThreading getThreading()
+			public IThreading threading()
 			{
 				return threading;
 			}
 
 
 			@Override
-			public IDebugging getDebugging()
+			public IDebugging debugging()
 			{
 				return debugging;
 			}
 
 
 			@Override
-			public IBuffers getBuffers()
+			public IBuffers buffers()
 			{
 				return buffers;
 			}
 			
 			
-			public AdvancedModOptions()
+			public Advanced()
 			{
 				threading = new Threading();
 				debugging = new Debugging();

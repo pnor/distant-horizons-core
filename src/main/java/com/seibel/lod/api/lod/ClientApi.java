@@ -120,7 +120,7 @@ public class ClientApi
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
 			ApiShared.previousChunkRenderDistance = mc.getRenderDistance();
-			ApiShared.previousLodRenderDistance = config.getClient().getGraphics().getQualityOption().getLodChunkRenderDistance();
+			ApiShared.previousLodRenderDistance = config.client().graphics().quality().getLodChunkRenderDistance();
 		}
 		catch (Exception e)
 		{
@@ -145,7 +145,7 @@ public class ClientApi
 		
 		
 		
-		config.getClient().getAdvancedModOptions().getDebugging().setEnableDebugKeybindings(true);
+		config.client().advanced().debugging().setEnableDebugKeybindings(true);
 	}
 	
 	

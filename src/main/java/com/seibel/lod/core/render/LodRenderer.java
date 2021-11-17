@@ -463,7 +463,7 @@ public class LodRenderer
 			if (fogQuality == FogQuality.FANCY)
 			{
 				// for more realistic fog when using FAR
-				if (ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get() == FogDistance.NEAR_AND_FAR)
+				if (ForgeConfig.CLIENT.graphics.fogQuality.fogDistance.get() == FogDistance.NEAR_AND_FAR)
 					GL15.glFogf(GL15.GL_FOG_START, farPlaneBlockDistance * 1.6f * 0.9f);
 				else
 					GL15.glFogf(GL15.GL_FOG_START, Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f));
@@ -518,7 +518,7 @@ public class LodRenderer
 		// disable fog if Minecraft wasn't rendering fog
 		// or we want it disabled
 		if (!fogSettings.vanillaIsRenderingFog
-			|| ForgeConfig.CLIENT.graphics.fogQualityOption.disableVanillaFog.get())
+			|| ForgeConfig.CLIENT.graphics.fogQuality.disableVanillaFog.get())
 		{
 			// Make fog render a infinite distance away.
 			// This doesn't technically disable Minecraft's fog
@@ -698,7 +698,7 @@ public class LodRenderer
 		
 		
 		FogQuality quality = ReflectionHandler.INSTANCE.getFogQuality();
-		FogDrawOverride override = ForgeConfig.CLIENT.graphics.fogQualityOption.fogDrawOverride.get();
+		FogDrawOverride override = ForgeConfig.CLIENT.graphics.fogQuality.fogDrawOverride.get();
 		
 		
 		fogSettings.vanillaIsRenderingFog = quality != FogQuality.OFF;
@@ -739,7 +739,7 @@ public class LodRenderer
 			fogSettings.near.quality = FogQuality.FANCY;
 			fogSettings.far.quality = FogQuality.FANCY;
 			
-			switch (ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
+			switch (ForgeConfig.CLIENT.graphics.fogQuality.fogDistance.get())
 			{
 			case NEAR_AND_FAR:
 				fogSettings.near.distance = FogDistance.NEAR;
@@ -766,7 +766,7 @@ public class LodRenderer
 			// fog, since the LODs are separated into a near
 			// and far portion; and fast fog is rendered from the
 			// frustrum's perspective instead of the camera
-			switch (ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
+			switch (ForgeConfig.CLIENT.graphics.fogQuality.fogDistance.get())
 			{
 			case NEAR_AND_FAR:
 			case NEAR:
@@ -803,14 +803,14 @@ public class LodRenderer
 		// check if the view distance changed
 		if (ApiShared.previousLodRenderDistance != ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get()
 					|| chunkRenderDistance != prevRenderDistance
-					|| prevFogDistance != ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get())
+					|| prevFogDistance != ForgeConfig.CLIENT.graphics.fogQuality.fogDistance.get())
 		{
 			
 			vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 			DetailDistanceUtil.updateSettings();
 			fullRegen = true;
 			previousPos = LevelPosUtil.createLevelPos((byte) 4, mc.getPlayerChunkPos().getZ(), mc.getPlayerChunkPos().getZ());
-			prevFogDistance = ForgeConfig.CLIENT.graphics.fogQualityOption.fogDistance.get();
+			prevFogDistance = ForgeConfig.CLIENT.graphics.fogQuality.fogDistance.get();
 			prevRenderDistance = chunkRenderDistance;
 		}
 		
