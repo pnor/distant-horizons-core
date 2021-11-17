@@ -23,12 +23,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.worldGeneration.WorldGeneratorWrapper;
@@ -43,7 +44,9 @@ import net.minecraftforge.common.WorldWorkerManager.IWorker;
  */
 public class LodGenWorker implements IWorker // TODO is there a way to have this fabric/forge independent?
 {
-	public static ExecutorService genThreads = Executors.newFixedThreadPool(ForgeConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	
+	public static ExecutorService genThreads = Executors.newFixedThreadPool(config.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	
 	private boolean threadStarted = false;
 	private final LodChunkGenThread thread;
@@ -79,7 +82,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 	{
 		if (!threadStarted)
 		{
-			if (ForgeConfig.CLIENT.worldGenerator.distanceGenerationMode.get() == DistanceGenerationMode.SERVER)
+			if (config.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.SERVER)
 			{
 				// if we are using SERVER generation that has to be done
 				// synchronously to prevent crashing and harmful
@@ -217,7 +220,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 		{
 			genThreads.shutdownNow();
 		}
-		genThreads = Executors.newFixedThreadPool(ForgeConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+		genThreads = Executors.newFixedThreadPool(config.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	}
 	
 }

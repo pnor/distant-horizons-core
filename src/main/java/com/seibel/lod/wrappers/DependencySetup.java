@@ -5,15 +5,17 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.wrappers.config.LodConfigWrapperSingleton;
 
 /**
- * Binds all necessary singletons so we
- * can access them in Core.
+ * Binds all necessary dependencies so we
+ * can access them in Core. <br>
+ * This needs to be called before any Core classes
+ * are loaded.
  * 
  * @author James Seibel
- * @version 11-15-2021
+ * @version 11-16-2021
  */
 public class DependencySetup
 {
-	static
+	public static void createInitialBindings()
 	{
 		SingletonHandler.bind(ILodConfigWrapperSingleton.class, LodConfigWrapperSingleton.INSTANCE);
 	}

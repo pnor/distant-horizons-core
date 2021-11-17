@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.seibel.lod.ModInfo;
-import com.seibel.lod.core.enums.config.BlockToAvoid;
+import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.BufferRebuildTimes;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
@@ -262,7 +262,7 @@ public class ForgeConfig
 			public final ForgeConfigSpec.EnumValue<GenerationPriority> generationPriority;
 			public final ForgeConfigSpec.EnumValue<DistanceGenerationMode> distanceGenerationMode;
 			public final ForgeConfigSpec.BooleanValue allowUnstableFeatureGeneration;
-			public final ForgeConfigSpec.EnumValue<BlockToAvoid> blockToAvoid;
+			public final ForgeConfigSpec.EnumValue<BlocksToAvoid> blocksToAvoid;
 			//public final ForgeConfigSpec.BooleanValue useExperimentalPreGenLoading;
 			
 			WorldGenerator(ForgeConfigSpec.Builder builder)
@@ -284,10 +284,10 @@ public class ForgeConfig
 								+ IWorldGenerator.ALLOW_UNSTABLE_FEATURE_GENERATION_DESC)
 						.define("Allow Unstable Feature Generation", IWorldGenerator.ALLOW_UNSTABLE_FEATURE_GENERATION_DEFAULT);
 				
-				blockToAvoid = builder
+				blocksToAvoid = builder
 						.comment("\n\n"
-								+ IWorldGenerator.BLOCK_TO_AVOID_DESC)
-						.defineEnum("Block to avoid", IWorldGenerator.BLOCK_TO_AVOID_DEFAULT);
+								+ IWorldGenerator.BLOCKS_TO_AVOID_DESC)
+						.defineEnum("Blocks to avoid", IWorldGenerator.BLOCKS_TO_AVOID_DEFAULT);
 				
 				/*useExperimentalPreGenLoading = builder
 						 .comment("\n\n"
@@ -375,8 +375,8 @@ public class ForgeConfig
 					
 					enableDebugKeybindings = builder
 							.comment("\n\n"
-									+ IDebugging.ENABLE_DEBUG_KEYBINDINGS_DESC)
-							.define("Enable Debug Keybinding", IDebugging.ENABLE_DEBUG_KEYBINDINGS_DEFAULT);
+									+ IDebugging.DEBUG_KEYBINDINGS_ENABLED_DESC)
+							.define("Enable Debug Keybinding", IDebugging.DEBUG_KEYBINDINGS_ENABLED_DEFAULT);
 					
 					builder.pop();
 				}

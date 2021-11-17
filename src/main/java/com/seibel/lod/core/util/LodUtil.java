@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.HashSet;
 
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
@@ -32,6 +31,8 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
@@ -58,6 +59,7 @@ import net.minecraft.world.server.ServerWorld;
 public class LodUtil
 {
 	private static final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
 	 * Vanilla render distances less than or equal to this will not allow partial
@@ -352,8 +354,8 @@ public class LodUtil
 		ChunkPosWrapper centerChunk = new ChunkPosWrapper(blockPosWrapper);
 		
 		int skipRadius;
-		VanillaOverdraw overdraw = ForgeConfig.CLIENT.graphics.advancedGraphicsOption.vanillaOverdraw.get();
-		HorizontalResolution drawRes = ForgeConfig.CLIENT.graphics.qualityOption.drawResolution.get();
+		VanillaOverdraw overdraw = config.client().graphics().advancedGraphics().getVanillaOverdraw();
+		HorizontalResolution drawRes = config.client().graphics().quality().getDrawResolution();
 		
 		// apply distance based rules for dynamic overdraw
 		if (overdraw == VanillaOverdraw.DYNAMIC

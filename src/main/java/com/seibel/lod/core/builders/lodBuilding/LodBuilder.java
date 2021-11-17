@@ -22,7 +22,6 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -35,6 +34,8 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
@@ -58,7 +59,7 @@ public class LodBuilder
 	private static final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
 	
 	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
-	
+	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/** If no blocks are found in the area in determineBottomPointForArea return this */
 	public static final short DEFAULT_DEPTH = 0;
@@ -337,10 +338,10 @@ public class LodBuilder
 	 * Generate the color for the given chunk using biome water color, foliage
 	 * color, and grass color.
 	 */
-	private int generateLodColor(ChunkWrapper chunk, LodBuilderConfig config, int xRel, int yAbs, int zRel, BlockPosWrapper blockPos)
+	private int generateLodColor(ChunkWrapper chunk, LodBuilderConfig builderConfig, int xRel, int yAbs, int zRel, BlockPosWrapper blockPos)
 	{
 		int colorInt;
-		if (config.useBiomeColors)
+		if (builderConfig.useBiomeColors)
 		{
 			// I have no idea why I need to bit shift to the right, but
 			// if I don't the biomes don't show up correctly.
@@ -355,7 +356,7 @@ public class LodBuilder
 			// snow, flowers, etc. Get the above block so we can still get the color
 			// of the snow, flower, etc. that may be above this block
 			int aboveColorInt = 0;
-			if (ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().nonFull || ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().noCollision)
+			if (config.client().worldGenerator().getBlocksToAvoid().nonFull || config.client().worldGenerator().getBlocksToAvoid().noCollision)
 			{
 				blockPos.set(chunk.getPos().getMinBlockX() + xRel, yAbs + 1, chunk.getPos().getMinBlockZ() + zRel);
 				aboveColorInt = getColorForBlock(chunk, blockPos);
@@ -519,8 +520,8 @@ public class LodBuilder
 		if (chunk.isWaterLogged(blockPos))
 			return true;
 		
-		boolean nonFullAvoidance = ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().nonFull;
-		boolean noCollisionAvoidance = ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get().noCollision;
+		boolean nonFullAvoidance = config.client().worldGenerator().getBlocksToAvoid().nonFull;
+		boolean noCollisionAvoidance = config.client().worldGenerator().getBlocksToAvoid().noCollision;
 		
 		BlockShapeWrapper block = chunk.getBlockShapeWrapper(blockPos);
 		return !block.isToAvoid()

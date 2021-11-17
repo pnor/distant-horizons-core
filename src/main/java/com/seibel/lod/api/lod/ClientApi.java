@@ -145,7 +145,7 @@ public class ClientApi
 		
 		
 		
-		config.client().advanced().debugging().setEnableDebugKeybindings(true);
+		config.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}
 	
 	

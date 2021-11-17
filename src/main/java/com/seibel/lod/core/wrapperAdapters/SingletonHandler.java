@@ -12,7 +12,9 @@ import java.util.Map;
  */
 public class SingletonHandler
 {
-private static final Map<Class<?>, Object> singletons = new HashMap<Class<?>, Object>();
+	private static final Map<Class<?>, Object> singletons = new HashMap<Class<?>, Object>();
+	
+	
 	
 	
 

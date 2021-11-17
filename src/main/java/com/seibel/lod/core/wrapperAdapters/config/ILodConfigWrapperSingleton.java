@@ -1,6 +1,6 @@
 package com.seibel.lod.core.wrapperAdapters.config;
 
-import com.seibel.lod.core.enums.config.BlockToAvoid;
+import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.BufferRebuildTimes;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
@@ -295,17 +295,17 @@ public interface ILodConfigWrapperSingleton
 			public boolean getAllowUnstableFeatureGeneration();
 			public void setAllowUnstableFeatureGeneration(boolean newAllowUnstableFeatureGeneration);
 			
-			BlockToAvoid BLOCK_TO_AVOID_DEFAULT = BlockToAvoid.BOTH;
-			String BLOCK_TO_AVOID_DESC = ""
-					+ " " + BlockToAvoid.NONE + ": Use all blocks when generating fake chunks \n\n"
+			BlocksToAvoid BLOCKS_TO_AVOID_DEFAULT = BlocksToAvoid.BOTH;
+			String BLOCKS_TO_AVOID_DESC = ""
+					+ " " + BlocksToAvoid.NONE + ": Use all blocks when generating fake chunks \n\n"
 					+ ""
-					+ " " + BlockToAvoid.NON_FULL + ": Only use full blocks when generating fake chunks (ignores slabs, lanterns, torches, grass, etc.) \n\n"
+					+ " " + BlocksToAvoid.NON_FULL + ": Only use full blocks when generating fake chunks (ignores slabs, lanterns, torches, grass, etc.) \n\n"
 					+ ""
-					+ " " + BlockToAvoid.NO_COLLISION + ": Only use solid blocks when generating fake chunks (ignores grass, torches, etc.) \n"
+					+ " " + BlocksToAvoid.NO_COLLISION + ": Only use solid blocks when generating fake chunks (ignores grass, torches, etc.) \n"
 					+ ""
-					+ " " + BlockToAvoid.BOTH + ": Only use full solid blocks when generating fake chunks \n";
-			public BlockToAvoid getBlockToAvoid();
-			public void setBlockToAvoid(BlockToAvoid newBlockToAvoid);
+					+ " " + BlocksToAvoid.BOTH + ": Only use full solid blocks when generating fake chunks \n";
+			public BlocksToAvoid getBlocksToAvoid();
+			public void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
 		}
 		
 		
@@ -379,12 +379,12 @@ public interface ILodConfigWrapperSingleton
 				public DebugMode getDebugMode();
 				public void setDebugMode(DebugMode newDebugMode);
 				
-				boolean ENABLE_DEBUG_KEYBINDINGS_DEFAULT = true;
-				String ENABLE_DEBUG_KEYBINDINGS_DESC = ""
+				boolean DEBUG_KEYBINDINGS_ENABLED_DEFAULT = true;
+				String DEBUG_KEYBINDINGS_ENABLED_DESC = ""
 						+ " If true the F4 key can be used to cycle through the different debug modes. \n"
 						+ " and the F6 key can be used to enable and disable LOD rendering.";
-				public boolean getEnableDebugKeybindings();
-				public void setEnableDebugKeybindings(boolean newEnableDebugKeybindings);
+				public boolean getDebugKeybindingsEnabled();
+				public void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings);
 			}
 			
 			public interface IBuffers

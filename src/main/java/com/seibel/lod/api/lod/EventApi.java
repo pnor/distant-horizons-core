@@ -21,7 +21,6 @@ package com.seibel.lod.api.lod;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -31,6 +30,8 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
@@ -49,6 +50,7 @@ public class EventApi
 	public static final EventApi INSTANCE = new EventApi();
 	
 	private final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
 	 * can be set if we want to recalculate variables related
@@ -163,16 +165,17 @@ public class EventApi
 	
 	public void onKeyInput(int key, int keyAction)
 	{
-		if (ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.get()
-				&& key == GLFW.GLFW_KEY_F4 && keyAction == GLFW.GLFW_PRESS)
+		if (config.client().advanced().debugging().getDebugKeybindingsEnabled())
 		{
-			ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.set(ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.get().getNext());
-		}
-		
-		if (ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.get()
-				&& key == GLFW.GLFW_KEY_F6 && keyAction == GLFW.GLFW_PRESS)
-		{
-			ForgeConfig.CLIENT.advancedModOptions.debugging.drawLods.set(!ForgeConfig.CLIENT.advancedModOptions.debugging.drawLods.get());
+			if (key == GLFW.GLFW_KEY_F4 && keyAction == GLFW.GLFW_PRESS)
+			{
+				config.client().advanced().debugging().setDebugMode(config.client().advanced().debugging().getDebugMode().getNext());
+			}
+			
+			if (key == GLFW.GLFW_KEY_F6 && keyAction == GLFW.GLFW_PRESS)
+			{
+				config.client().advanced().debugging().setDrawLods(!config.client().advanced().debugging().getDrawLods());
+			}
 		}
 	}
 	
@@ -196,9 +199,9 @@ public class EventApi
 		// calculate how wide the dimension(s) should be in regions
 		int chunksWide;
 		if (mc.getClientWorld().dimensionType().hasCeiling())
-			chunksWide = Math.min(ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
+			chunksWide = Math.min(config.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
 		else
-			chunksWide = ForgeConfig.CLIENT.graphics.qualityOption.lodChunkRenderDistance.get() * 2 + 1;
+			chunksWide = config.client().graphics().quality().getLodChunkRenderDistance() * 2 + 1;
 		
 		int newWidth = (int) Math.ceil(chunksWide / (float) LodUtil.REGION_WIDTH_IN_CHUNKS);
 		// make sure we have an odd number of regions

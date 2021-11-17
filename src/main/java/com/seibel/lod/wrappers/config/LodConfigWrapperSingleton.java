@@ -1,7 +1,7 @@
 package com.seibel.lod.wrappers.config;
 
 import com.seibel.lod.api.forge.ForgeConfig;
-import com.seibel.lod.core.enums.config.BlockToAvoid;
+import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.BufferRebuildTimes;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
@@ -334,14 +334,14 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			
 			
 			@Override
-			public BlockToAvoid getBlockToAvoid()
+			public BlocksToAvoid getBlocksToAvoid()
 			{
-				return ForgeConfig.CLIENT.worldGenerator.blockToAvoid.get();
+				return ForgeConfig.CLIENT.worldGenerator.blocksToAvoid.get();
 			}
 			@Override
-			public void setBlockToAvoid(BlockToAvoid newBlockToAvoid)
+			public void setBlockToAvoid(BlocksToAvoid newBlockToAvoid)
 			{
-				ForgeConfig.CLIENT.worldGenerator.blockToAvoid.set(newBlockToAvoid);
+				ForgeConfig.CLIENT.worldGenerator.blocksToAvoid.set(newBlockToAvoid);
 			}
 		}
 		
@@ -445,12 +445,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				
 				
 				@Override
-				public boolean getEnableDebugKeybindings()
+				public boolean getDebugKeybindingsEnabled()
 				{
 					return ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.get();
 				}
 				@Override
-				public void setEnableDebugKeybindings(boolean newEnableDebugKeybindings)
+				public void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings)
 				{
 					ForgeConfig.CLIENT.advancedModOptions.debugging.enableDebugKeybindings.set(newEnableDebugKeybindings);
 				}

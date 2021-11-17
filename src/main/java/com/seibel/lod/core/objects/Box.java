@@ -23,13 +23,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.math.Vec3i;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
@@ -40,6 +41,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class Box
 {
+	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	public static final int ADJACENT_HEIGHT_INDEX = 0;
 	public static final int ADJACENT_DEPTH_INDEX = 1;
@@ -70,6 +72,7 @@ public class Box
 			LodDirection.NORTH };
 	
 	/** All the faces and vertices of a cube. This is used to extract the vertex from the column */
+	@SuppressWarnings("serial")
 	public static final Map<LodDirection, int[][]> DIRECTION_VERTEX_MAP = new HashMap<LodDirection, int[][]>()
 	{{
 		put(LodDirection.UP, new int[][] {
@@ -132,6 +135,7 @@ public class Box
 	 * This indicates which position is invariable in the DIRECTION_VERTEX_MAP.
 	 * Is used to extract the vertex
 	 */
+	@SuppressWarnings("serial")
 	public static final Map<LodDirection, int[]> FACE_DIRECTION = new HashMap<LodDirection, int[]>()
 	{{
 		put(LodDirection.UP, new int[] { Y, MAX });
@@ -147,6 +151,7 @@ public class Box
 	 * This is a map from Direction to the relative normal vector
 	 * we are using this since I'm not sure if the getNormal create new object at every call
 	 */
+	@SuppressWarnings("serial")
 	public static final Map<LodDirection, Vec3i> DIRECTION_NORMAL_MAP = new HashMap<LodDirection, Vec3i>()
 	{{
 		put(LodDirection.UP, LodDirection.UP.getNormal());
@@ -158,6 +163,7 @@ public class Box
 	}};
 	
 	/** We use this index for all array that are going to */
+	@SuppressWarnings("serial")
 	public static final Map<LodDirection, Integer> DIRECTION_INDEX = new HashMap<LodDirection, Integer>()
 	{{
 		put(LodDirection.UP, 0);
@@ -168,6 +174,7 @@ public class Box
 		put(LodDirection.NORTH, 5);
 	}};
 	
+	@SuppressWarnings("serial")
 	public static final Map<LodDirection, Integer> ADJ_DIRECTION_INDEX = new HashMap<LodDirection, Integer>()
 	{{
 		put(LodDirection.EAST, 0);
@@ -197,6 +204,7 @@ public class Box
 	
 	
 	/** creates an empty box */
+	@SuppressWarnings("serial")
 	public Box()
 	{
 		boxOffset = new int[3];
@@ -260,7 +268,7 @@ public class Box
 	 */
 	public int getColor(LodDirection lodDirection)
 	{
-		if (ForgeConfig.CLIENT.advancedModOptions.debugging.debugMode.get() != DebugMode.SHOW_DETAIL)
+		if (config.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_DETAIL)
 			return colorMap[DIRECTION_INDEX.get(lodDirection)];
 		else
 			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getShade(lodDirection));

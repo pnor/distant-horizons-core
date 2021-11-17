@@ -24,9 +24,9 @@ package com.seibel.lod.core.enums.config;
  * multi_lod <br>
  * 
  * @author Leonardo Amato
- * @version 19-10-2021
+ * @version 11-16-2021
  */
-public enum BlockToAvoid
+public enum BlocksToAvoid
 {
 	NONE(false, false),
 	
@@ -39,7 +39,7 @@ public enum BlockToAvoid
 	public final boolean nonFull;
 	public final boolean noCollision;
 	
-	BlockToAvoid(boolean nonFull, boolean noCollision)
+	BlocksToAvoid(boolean nonFull, boolean noCollision)
 	{
 		this.nonFull = nonFull;
 		this.noCollision = noCollision;

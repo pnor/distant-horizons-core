@@ -25,7 +25,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
@@ -35,6 +34,8 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
@@ -53,6 +54,8 @@ public class LodWorldGenerator
 	
 	/** This holds the thread used to generate new LODs off the main thread. */
 	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator"));
+	
+	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/** we only want to queue up one generator thread at a time */
 	private boolean generatorThreadRunning = false;
@@ -93,7 +96,7 @@ public class LodWorldGenerator
 	 */
 	public void queueGenerationRequests(LodDimension lodDim, LodRenderer renderer, LodBuilder lodBuilder)
 	{
-		if (ForgeConfig.CLIENT.worldGenerator.distanceGenerationMode.get() != DistanceGenerationMode.NONE
+		if (config.client().worldGenerator().getDistanceGenerationMode() != DistanceGenerationMode.NONE
 				&& !generatorThreadRunning
 				&& mc.hasSinglePlayerServer())
 		{
@@ -101,7 +104,7 @@ public class LodWorldGenerator
 			generatorThreadRunning = true;
 			
 			// just in case the config changed
-			maxChunkGenRequests = ForgeConfig.CLIENT.advancedModOptions.threading.numberOfWorldGenerationThreads.get() * 8;
+			maxChunkGenRequests = config.client().advanced().threading().getNumberOfWorldGenerationThreads() * 8;
 			
 			Thread generatorThread = new Thread(() ->
 			{

@@ -20,6 +20,7 @@
 package com.seibel.lod.api.forge;
 
 import com.seibel.lod.ModInfo;
+import com.seibel.lod.wrappers.DependencySetup;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -37,7 +38,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
  * check out the ClientProxy.
  * 
  * @author James Seibel
- * @version 7-3-2021
+ * @version 11-16-2021
  */
 @Mod(ModInfo.ID)
 public class ForgeMain
@@ -46,6 +47,8 @@ public class ForgeMain
 	
 	private void init(final FMLCommonSetupEvent event)
 	{
+		// make sure the dependencies are set up before the mod needs them
+		DependencySetup.createInitialBindings();
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ForgeConfig.CLIENT_SPEC);
 	}
 	

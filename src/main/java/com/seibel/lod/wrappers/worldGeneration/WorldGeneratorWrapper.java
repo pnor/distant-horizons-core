@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import com.seibel.lod.api.forge.ForgeConfig;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
@@ -49,7 +50,7 @@ public class WorldGeneratorWrapper
 	 * features that could cause issues down the line.
 	 */
 	private static final ConcurrentHashMap<Integer, ConfiguredFeature<?, ?>> configuredFeaturesToAvoid = new ConcurrentHashMap<>();
-	
+	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	
 	public final ServerWorld serverWorld;
@@ -265,7 +266,7 @@ public class WorldGeneratorWrapper
 			}
 		}
 		
-		boolean allowUnstableFeatures = ForgeConfig.CLIENT.worldGenerator.allowUnstableFeatureGeneration.get();
+		boolean allowUnstableFeatures = config.client().worldGenerator().getAllowUnstableFeatureGeneration();
 		
 		// generate all the features related to this chunk.
 		// this may or may not be thread safe
