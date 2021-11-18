@@ -1,7 +1,9 @@
 package com.seibel.lod.wrappers;
 
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.wrappers.block.BlockColorSingletonWrapper;
 import com.seibel.lod.wrappers.config.LodConfigWrapperSingleton;
 
 /**
@@ -18,5 +20,6 @@ public class DependencySetup
 	public static void createInitialBindings()
 	{
 		SingletonHandler.bind(ILodConfigWrapperSingleton.class, LodConfigWrapperSingleton.INSTANCE);
+		SingletonHandler.bind(IBlockColorSingletonWrapper.class, BlockColorSingletonWrapper.INSTANCE);
 	}
 }

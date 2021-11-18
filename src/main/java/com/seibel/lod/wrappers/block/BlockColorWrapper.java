@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.util.ColorUtil;
+import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 import net.minecraft.block.AbstractPlantBlock;
@@ -27,8 +28,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.model.data.ModelDataMap;
 
 
-//This class wraps the minecraft Block class
-public class BlockColorWrapper
+/**
+ * This class wraps the minecraft Block class
+ * 
+ * @author ??
+ * @version 11-17-2021
+ */
+public class BlockColorWrapper implements IBlockColorWrapper
 {
 	//set of block which require tint
 	public static final ConcurrentMap<Block, BlockColorWrapper> blockColorWrapperMap = new ConcurrentHashMap<>();
@@ -73,17 +79,10 @@ public class BlockColorWrapper
 	}
 	
 	/**
-	 * return base color of water (grey value)
-	 */
-	static public BlockColorWrapper getWaterColor()
-	{
-		return getBlockColorWrapper(Blocks.WATER);
-	}
-	/**
 	 * this return a wrapper of the block in input
 	 * @param block object of the block to wrap
 	 */
-	static public BlockColorWrapper getBlockColorWrapper(Block block)
+	public static IBlockColorWrapper getBlockColorWrapper(Block block)
 	{
 		//first we check if the block has already been wrapped
 		if (blockColorWrapperMap.containsKey(block) && blockColorWrapperMap.get(block) != null)
@@ -253,11 +252,13 @@ public class BlockColorWrapper
 //Colors getters//
 //--------------//
 	
+	@Override
 	public boolean hasColor()
 	{
 		return isColored;
 	}
 	
+	@Override
 	public int getColor()
 	{
 		return color;
@@ -268,21 +269,25 @@ public class BlockColorWrapper
 //------------//
 	
 	
+	@Override
 	public boolean hasTint()
 	{
 		return toTint;
 	}
 	
+	@Override
 	public boolean hasGrassTint()
 	{
 		return grassTint;
 	}
 	
+	@Override
 	public boolean hasFolliageTint()
 	{
 		return foliageTint;
 	}
 	
+	@Override
 	public boolean hasWaterTint()
 	{
 		return waterTint;

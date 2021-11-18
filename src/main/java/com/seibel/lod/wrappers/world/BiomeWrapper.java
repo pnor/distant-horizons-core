@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
+import com.seibel.lod.wrappers.block.BlockColorSingletonWrapper;
 import com.seibel.lod.wrappers.block.BlockColorWrapper;
 
 import net.minecraft.block.Blocks;
@@ -85,7 +86,7 @@ public class BiomeWrapper implements IBiomeWrapper
 		
 		case OCEAN:
 		case RIVER:
-			colorInt = BlockColorWrapper.getWaterColor().getColor();
+			colorInt = BlockColorSingletonWrapper.INSTANCE.getWaterColor().getColor();
 			tintValue = biome.getWaterColor();
 			break;
 		

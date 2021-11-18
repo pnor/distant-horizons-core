@@ -1,6 +1,7 @@
 package com.seibel.lod.wrappers.chunk;
 
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.wrappers.block.BlockColorWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.block.BlockShapeWrapper;
@@ -40,7 +41,7 @@ public class ChunkWrapper
 		return BiomeWrapper.getBiomeWrapper(chunk.getBiomes().getNoiseBiome(xRel >> 2, yAbs >> 2, zRel >> 2));
 	}
 	
-	public BlockColorWrapper getBlockColorWrapper(BlockPosWrapper blockPos)
+	public IBlockColorWrapper getBlockColorWrapper(BlockPosWrapper blockPos)
 	{
 		return BlockColorWrapper.getBlockColorWrapper(chunk.getBlockState(blockPos.getBlockPos()).getBlock());
 	}

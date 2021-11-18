@@ -35,11 +35,12 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.block.BlockColorWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.block.BlockShapeWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
@@ -57,6 +58,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 public class LodBuilder
 {
 	private static final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private static final IBlockColorSingletonWrapper blockColorSingleton = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
 	
 	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
@@ -477,11 +479,11 @@ public class LodBuilder
 		int y = blockPos.getY();
 		//int z = blockPos.getZ();
 		
-		BlockColorWrapper blockColorWrapper;
+		IBlockColorWrapper blockColorWrapper;
 		BlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(blockPos);
 		
 		if (chunk.isWaterLogged(blockPos))
-			blockColorWrapper = BlockColorWrapper.getWaterColor();
+			blockColorWrapper = blockColorSingleton.getWaterColor();
 		else
 			blockColorWrapper = chunk.getBlockColorWrapper(blockPos);
 		
