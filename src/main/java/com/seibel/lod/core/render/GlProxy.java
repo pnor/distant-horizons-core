@@ -33,6 +33,8 @@ import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.enums.rendering.GlProxyContext;
 import com.seibel.lod.core.render.shader.LodShader;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
@@ -53,7 +55,7 @@ public class GlProxy
 {
 	private static GlProxy instance = null;
 	
-	private static MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private static IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	
 	
 	/** Minecraft's GLFW window */

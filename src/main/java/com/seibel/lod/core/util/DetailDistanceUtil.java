@@ -24,6 +24,7 @@ import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
@@ -34,6 +35,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 public class DetailDistanceUtil
 {
 	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	
 	private static final double genMultiplier = 1.0;
 	private static final double treeGenMultiplier = 1.0;
@@ -42,7 +44,7 @@ public class DetailDistanceUtil
 	private static byte minDrawDetail = (byte) Math.max(config.client().graphics().quality().getDrawResolution().detailLevel, config.client().graphics().quality().getDrawResolution().detailLevel);
 	private static final int maxDetail = LodUtil.REGION_DETAIL_LEVEL + 1;
 	private static final int minDistance = 0;
-	private static int minDetailDistance = (int) (MinecraftWrapper.INSTANCE.getRenderDistance()*16 * 1.42f);
+	private static int minDetailDistance = (int) (mc.getRenderDistance()*16 * 1.42f);
 	private static int maxDistance = config.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
 	
 	
@@ -63,7 +65,7 @@ public class DetailDistanceUtil
 	
 	public static void updateSettings()
 	{
-		minDetailDistance = (int) (MinecraftWrapper.INSTANCE.getRenderDistance()*16 * 1.42f);
+		minDetailDistance = (int) (mc.getRenderDistance()*16 * 1.42f);
 		minGenDetail = config.client().graphics().quality().getDrawResolution().detailLevel;
 		minDrawDetail = (byte) Math.max(config.client().graphics().quality().getDrawResolution().detailLevel, config.client().graphics().quality().getDrawResolution().detailLevel);
 		maxDistance = config.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;

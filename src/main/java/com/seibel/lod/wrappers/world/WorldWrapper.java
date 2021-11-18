@@ -134,5 +134,11 @@ public class WorldWrapper implements IWorldWrapper
 		return (ServerWorld) world;
 	}
 	
+	public int getSeaLevel()
+	{
+		// TODO this is depreciated, what should we use instead?
+		return world.getSeaLevel();
+	}
+	
 	
 }

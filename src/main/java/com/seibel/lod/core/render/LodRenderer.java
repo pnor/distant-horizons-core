@@ -34,7 +34,6 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawOverride;
 import com.seibel.lod.core.enums.rendering.FogQuality;
-import com.seibel.lod.core.handlers.ReflectionHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -46,8 +45,10 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.handlers.ReflectionHandler;
 import com.seibel.lod.wrappers.minecraft.McObjectConverter;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
@@ -80,7 +81,7 @@ public class LodRenderer
 	 */
 	public DebugMode previousDebugMode = DebugMode.OFF;
 	
-	private final MinecraftWrapper mc;
+	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	private final GameRenderer gameRender;
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private IProfiler profiler;
@@ -252,7 +253,7 @@ public class LodRenderer
 		Mat4f modelViewMatrix = offsetTheModelViewMatrix(mcModelViewMatrix, partialTicks);
 		vanillaBlockRenderedDistance = mc.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		// required for setupFog and setupProjectionMatrix
-		if (mc.getClientWorld().dimensionType().hasCeiling())
+		if (mc.getWrappedClientWorld().getDimensionType().hasCeiling())
 			farPlaneBlockDistance = Math.min(config.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
 			farPlaneBlockDistance = config.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
@@ -943,7 +944,7 @@ public class LodRenderer
 		
 		
 		// if the player is high enough, draw all LODs
-		if (chunkPosToSkip.isEmpty() && mc.getPlayer().position().y > 256 && !vanillaRenderedChunksEmptySkip)
+		if (chunkPosToSkip.isEmpty() && mc.getPlayerBlockPos().getY() > 256 && !vanillaRenderedChunksEmptySkip)
 		{
 			vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 			vanillaRenderedChunksChanged = true;

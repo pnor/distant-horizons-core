@@ -27,9 +27,12 @@ import com.seibel.lod.ModInfo;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.misc.LightMapWrapper;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
 
@@ -51,6 +54,7 @@ import net.minecraft.profiler.IProfiler;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
@@ -61,7 +65,7 @@ import net.minecraft.world.server.ServerWorld;
  * @author James Seibel
  * @version 9-16-2021
  */
-public class MinecraftWrapper
+public class MinecraftWrapper implements IMinecraftWrapper
 {
 	public static final MinecraftWrapper INSTANCE = new MinecraftWrapper();
 	
@@ -92,6 +96,7 @@ public class MinecraftWrapper
 	 * <p>
 	 * This doesn't affect OpenGL objects in any way.
 	 */
+	@Override
 	public void clearFrameObjectCache()
 	{
 		lightMap = null;
@@ -103,32 +108,35 @@ public class MinecraftWrapper
 	// method wrappers //
 	//=================//
 	
+	@Override
 	public float getShade(LodDirection lodDirection)
 	{
 		Direction mcDir = McObjectConverter.Convert(lodDirection);
 		return mc.level.getShade(mcDir, true);
 	}
 	
+	@Override
 	public boolean hasSinglePlayerServer()
 	{
 		return mc.hasSingleplayerServer();
 	}
 	
 	/** Returns the dimension the player is currently in */
+	@Override
 	public DimensionTypeWrapper getCurrentDimension()
 	{
 		return DimensionTypeWrapper.getDimensionTypeWrapper(mc.player.level.dimensionType());
 	}
 	
+	@Override
 	public String getCurrentDimensionId()
 	{
 		return LodUtil.getDimensionIDFromWorld(WorldWrapper.getWorldWrapper(mc.level));
 	}
 	
-	/**
-	 * This texture changes every frame
-	 */
-	public NativeImage getCurrentLightMap()
+	/** This texture changes every frame */
+	@Override
+	public ILightMapWrapper getCurrentLightMap()
 	{
 		// get the current lightMap if the cache is empty
 		if (lightMap == null)
@@ -136,7 +144,7 @@ public class MinecraftWrapper
 			LightTexture tex = mc.gameRenderer.lightTexture();
 			lightMap = tex.lightPixels;
 		}
-		return lightMap;
+		return new LightMapWrapper(lightMap);
 	}
 	
 	/**
@@ -145,6 +153,7 @@ public class MinecraftWrapper
 	 * @param u x location in texture space
 	 * @param v z location in texture space
 	 */
+	@Override
 	public int getColorIntFromLightMap(int u, int v)
 	{
 		if (lightMap == null)
@@ -162,6 +171,7 @@ public class MinecraftWrapper
 	 * @param u x location in texture space
 	 * @param v z location in texture space
 	 */
+	@Override
 	public Color getColorFromLightMap(int u, int v)
 	{
 		return LodUtil.intToColor(lightMap.getPixelRGBA(u, v));
@@ -179,12 +189,20 @@ public class MinecraftWrapper
 		return mc.player;
 	}
 	
+	@Override
+	public boolean playerExists()
+	{
+		return mc.player != null;
+	}
+	
+	@Override
 	public BlockPosWrapper getPlayerBlockPos()
 	{
 		BlockPos playerPos = getPlayer().blockPosition();
 		return new BlockPosWrapper(playerPos.getX(), playerPos.getY(), playerPos.getZ());
 	}
 	
+	@Override
 	public ChunkPosWrapper getPlayerChunkPos()
 	{
 		return new ChunkPosWrapper(getPlayer().xChunk, getPlayer().zChunk);
@@ -210,6 +228,7 @@ public class MinecraftWrapper
 	 * the user is currently in.
 	 * @returns null if no ServerWorld is available
 	 */
+	@Override
 	public WorldWrapper getWrappedServerWorld()
 	{
 		if (mc.level == null)
@@ -234,22 +253,26 @@ public class MinecraftWrapper
 		return WorldWrapper.getWorldWrapper(serverWorld);
 	}
 	
+	@Override
 	public WorldWrapper getWrappedClientWorld()
 	{
 		return WorldWrapper.getWorldWrapper(mc.level);
 	}
 	
 	/** Measured in chunks */
+	@Override
 	public int getRenderDistance()
 	{
 		return mc.options.renderDistance;
 	}
 	
+	@Override
 	public File getGameDirectory()
 	{
 		return mc.gameDirectory;
 	}
 	
+	@Override
 	public IProfiler getProfiler()
 	{
 		return mc.getProfiler();
@@ -275,6 +298,7 @@ public class MinecraftWrapper
 		return mc.getWindow();
 	}
 	
+	@Override
 	public float getSkyDarken(float partialTicks)
 	{
 		return mc.level.getSkyDarken(partialTicks);
@@ -283,6 +307,12 @@ public class MinecraftWrapper
 	public IntegratedServer getSinglePlayerServer()
 	{
 		return mc.getSingleplayerServer();
+	}
+	
+	@Override
+	public boolean connectedToServer()
+	{
+		return mc.getCurrentServer() != null;
 	}
 	
 	public ServerData getCurrentServer()
@@ -296,6 +326,7 @@ public class MinecraftWrapper
 	}
 	
 	/** Returns all worlds available to the server */
+	@Override
 	public ArrayList<IWorldWrapper> getAllServerWorlds()
 	{
 		ArrayList<IWorldWrapper> worlds = new ArrayList<IWorldWrapper>();
@@ -311,6 +342,12 @@ public class MinecraftWrapper
 	
 	
 	
+	@Override
+	public void sendChatMessage(String string)
+	{
+		getPlayer().sendMessage(new StringTextComponent("Debug settings enabled!"), getPlayer().getUUID());
+	}
+	
 	/**
 	 * Crashes Minecraft, displaying the given errorMessage <br> <br>
 	 * In the following format: <br>
@@ -319,13 +356,14 @@ public class MinecraftWrapper
 	 * Error: <strong>ExceptionClass: exceptionErrorMessage</strong>  <br>
 	 * Exit Code: -1  <br>
 	 */
+	@Override
 	public void crashMinecraft(String errorMessage, Throwable exception)
 	{
 		ClientApi.LOGGER.error(ModInfo.READABLE_NAME + " had the following error: [" + errorMessage + "]. Crashing Minecraft...");
 		CrashReport report = new CrashReport(errorMessage, exception);
 		Minecraft.crash(report);
 	}
-
+	
 
 
 	

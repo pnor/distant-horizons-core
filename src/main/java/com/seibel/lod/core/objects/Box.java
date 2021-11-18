@@ -31,6 +31,7 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
@@ -42,6 +43,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 public class Box
 {
 	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	
 	public static final int ADJACENT_HEIGHT_INDEX = 0;
 	public static final int ADJACENT_DEPTH_INDEX = 1;
@@ -256,7 +258,7 @@ public class Box
 		for (LodDirection lodDirection : DIRECTIONS)
 		{
 			if (!adjShadeDisabled[DIRECTION_INDEX.get(lodDirection)])
-				colorMap[DIRECTION_INDEX.get(lodDirection)] = ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getShade(lodDirection));
+				colorMap[DIRECTION_INDEX.get(lodDirection)] = ColorUtil.applyShade(color, mc.getShade(lodDirection));
 			else
 				colorMap[DIRECTION_INDEX.get(lodDirection)] = color;
 		}
@@ -271,7 +273,7 @@ public class Box
 		if (config.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_DETAIL)
 			return colorMap[DIRECTION_INDEX.get(lodDirection)];
 		else
-			return ColorUtil.applyShade(color, MinecraftWrapper.INSTANCE.getShade(lodDirection));
+			return ColorUtil.applyShade(color, mc.getShade(lodDirection));
 	}
 	
 	/**

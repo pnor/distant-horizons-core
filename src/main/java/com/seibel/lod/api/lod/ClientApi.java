@@ -31,10 +31,10 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 import net.minecraft.profiler.IProfiler;
-import net.minecraft.util.text.StringTextComponent;
 
 /**
  * This holds the methods that should be called
@@ -51,7 +51,7 @@ public class ClientApi
 	
 	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 	
-	private final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	private final EventApi eventApi = EventApi.INSTANCE;
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
@@ -87,7 +87,7 @@ public class ClientApi
 				firstFrameSetup();
 			
 			
-			if (mc.getPlayer() == null || ApiShared.lodWorld.getIsWorldNotLoaded())
+			if (!mc.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
 				return;
 			
 			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(mc.getCurrentDimension());
@@ -98,8 +98,8 @@ public class ClientApi
 			eventApi.viewDistanceChangedEvent();
 			eventApi.playerMoveEvent(lodDim);
 			
-			lodDim.cutRegionNodesAsync((int) mc.getPlayer().getX(), (int) mc.getPlayer().getZ());
-			lodDim.expandOrLoadRegionsAsync((int) mc.getPlayer().getX(), (int) mc.getPlayer().getZ());
+			lodDim.cutRegionNodesAsync(mc.getPlayerBlockPos().getX(), mc.getPlayerBlockPos().getZ());
+			lodDim.expandOrLoadRegionsAsync(mc.getPlayerBlockPos().getX(), mc.getPlayerBlockPos().getZ());
 			
 			
 			// Note to self:
@@ -139,7 +139,7 @@ public class ClientApi
 //			mc.getPlayer().sendMessage(new StringTextComponent("LOD experimental build 1.5.1"), mc.getPlayer().getUUID());
 //			mc.getPlayer().sendMessage(new StringTextComponent("Here be dragons!"), mc.getPlayer().getUUID());
 			
-			mc.getPlayer().sendMessage(new StringTextComponent("Debug settings enabled!"), mc.getPlayer().getUUID());
+			mc.sendChatMessage("Debug settings enabled!");
 			configOverrideReminderPrinted = true;
 		}
 		

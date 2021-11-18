@@ -33,6 +33,7 @@ import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
@@ -49,7 +50,7 @@ public class EventApi
 {
 	public static final EventApi INSTANCE = new EventApi();
 	
-	private final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
@@ -73,7 +74,7 @@ public class EventApi
 	
 	public void serverTickEvent()
 	{
-		if (mc.getPlayer() == null || ApiShared.lodWorld.getIsWorldNotLoaded())
+		if (!mc.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
 			return;
 		
 		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(mc.getCurrentDimension());
@@ -121,7 +122,7 @@ public class EventApi
 		ThreadMapUtil.clearMaps();
 		
 		
-		if (mc.getConnection().getLevel() == null)
+		if (mc.getWrappedClientWorld() == null)
 		{
 			// the player just left the server
 			
@@ -198,7 +199,7 @@ public class EventApi
 	{
 		// calculate how wide the dimension(s) should be in regions
 		int chunksWide;
-		if (mc.getClientWorld().dimensionType().hasCeiling())
+		if (mc.getWrappedClientWorld().getDimensionType().hasCeiling())
 			chunksWide = Math.min(config.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
 		else
 			chunksWide = config.client().graphics().quality().getLodChunkRenderDistance() * 2 + 1;

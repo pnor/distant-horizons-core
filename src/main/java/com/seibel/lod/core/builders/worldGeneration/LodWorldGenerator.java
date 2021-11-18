@@ -36,6 +36,7 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
@@ -50,7 +51,7 @@ import net.minecraftforge.common.WorldWorkerManager;
  */
 public class LodWorldGenerator
 {
-	public final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	
 	/** This holds the thread used to generate new LODs off the main thread. */
 	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator"));
@@ -111,8 +112,8 @@ public class LodWorldGenerator
 				try
 				{
 					// round the player's block position down to the nearest chunk BlockPos
-					int playerPosX = mc.getPlayer().blockPosition().getX();
-					int playerPosZ = mc.getPlayer().blockPosition().getZ();
+					int playerPosX = mc.getPlayerBlockPos().getX();
+					int playerPosZ = mc.getPlayerBlockPos().getZ();
 					
 					
 					//=======================================//

@@ -37,6 +37,7 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
@@ -59,6 +60,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 public class LodDimension
 {
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	
 	public final IDimensionTypeWrapper dimension;
 	
@@ -106,7 +108,6 @@ public class LodDimension
 		dimension = newDimension;
 		width = newWidth;
 		halfWidth = width / 2;
-		MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
 		
 		if (newDimension != null && lodWorld != null)
 		{

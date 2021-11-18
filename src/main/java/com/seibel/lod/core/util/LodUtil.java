@@ -33,6 +33,7 @@ import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
@@ -42,13 +43,11 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.CompiledChunk;
-import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
 
 /**
  * This class holds methods and constants that may be used in multiple places.
@@ -58,7 +57,7 @@ import net.minecraft.world.server.ServerWorld;
  */
 public class LodUtil
 {
-	private static final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
@@ -163,18 +162,18 @@ public class LodUtil
 	 * Gets the first valid ServerWorld.
 	 * @return null if there are no ServerWorlds
 	 */
-	public static ServerWorld getFirstValidServerWorld()
-	{
-		if (mc.hasSinglePlayerServer())
-			return null;
-		
-		Iterable<ServerWorld> worlds = mc.getSinglePlayerServer().getAllLevels();
-		
-		for (ServerWorld world : worlds)
-			return world;
-		
-		return null;
-	}
+//	public static ServerWorld getFirstValidServerWorld()
+//	{
+//		if (mc.hasSinglePlayerServer())
+//			return null;
+//		
+//		Iterable<ServerWorld> worlds = mc.getSinglePlayerServer().getAllLevels();
+//		
+//		for (ServerWorld world : worlds)
+//			return world;
+//		
+//		return null;
+//	}
 	
 	/**
 	 * Gets the ServerWorld for the relevant dimension.
@@ -182,8 +181,7 @@ public class LodUtil
 	 */
 	public static IWorldWrapper getServerWorldFromDimension(IDimensionTypeWrapper newDimension)
 	{
-		IntegratedServer server = mc.getSinglePlayerServer();
-		if (server == null)
+		if(!mc.hasSinglePlayerServer())
 			return null;
 		
 		Iterable<IWorldWrapper> worlds = mc.getAllServerWorlds();

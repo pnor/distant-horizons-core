@@ -21,6 +21,8 @@ package com.seibel.lod.core.util;
 
 import java.awt.Color;
 
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
@@ -31,6 +33,9 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class ColorUtil
 {
+	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	
+	
 	public static int rgbToInt(int red, int green, int blue)
 	{
 		return (0xFF << 24) | (red << 16) | (green << 8) | blue;
@@ -84,7 +89,7 @@ public class ColorUtil
 	/** This method apply the lightmap to the color to use */
 	public static int applyLightValue(int color, int skyLight, int blockLight)
 	{
-		int lightColor = MinecraftWrapper.INSTANCE.getColorIntFromLightMap(blockLight, skyLight);
+		int lightColor = mc.getColorIntFromLightMap(blockLight, skyLight);
 		int red = ColorUtil.getBlue(lightColor);
 		int green = ColorUtil.getGreen(lightColor);
 		int blue = ColorUtil.getRed(lightColor);

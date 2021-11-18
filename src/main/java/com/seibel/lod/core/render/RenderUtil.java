@@ -20,6 +20,8 @@
 package com.seibel.lod.core.render;
 
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
@@ -36,7 +38,7 @@ import net.minecraft.util.math.vector.Vector3f;
  */
 public class RenderUtil
 {
-	private static final MinecraftWrapper mc = MinecraftWrapper.INSTANCE;
+	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
 	
 	
 	/**
