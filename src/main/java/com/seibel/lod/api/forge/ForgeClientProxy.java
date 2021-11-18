@@ -20,6 +20,7 @@
 package com.seibel.lod.api.forge;
 
 import com.seibel.lod.api.lod.EventApi;
+import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
@@ -85,7 +86,7 @@ public class ForgeClientProxy
 				event.getClass() == BlockEvent.FluidPlaceBlockEvent.class ||
 				event.getClass() == BlockEvent.PortalSpawnEvent.class)
 		{
-			ChunkWrapper chunk = new ChunkWrapper(event.getWorld().getChunk(event.getPos()));
+			IChunkWrapper chunk = new ChunkWrapper(event.getWorld().getChunk(event.getPos()));
 			DimensionTypeWrapper dimType = DimensionTypeWrapper.getDimensionTypeWrapper(event.getWorld().dimensionType());
 			
 			// recreate the LOD where the blocks were changed

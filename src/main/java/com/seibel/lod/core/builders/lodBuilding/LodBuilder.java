@@ -38,13 +38,13 @@ import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
@@ -87,12 +87,12 @@ public class LodBuilder
 	
 	}
 	
-	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
+	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
 	{
 		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.SERVER);
 	}
 	
-	public void generateLodNodeAsync(ChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode)
+	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode)
 	{
 		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
 			return;
@@ -145,7 +145,7 @@ public class LodBuilder
 	 * Creates a LodNode for a chunk in the given world.
 	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
 	 */
-	public void generateLodNodeFromChunk(LodDimension lodDim, ChunkWrapper chunk) throws IllegalArgumentException
+	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk) throws IllegalArgumentException
 	{
 		generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig());
 	}
@@ -154,7 +154,7 @@ public class LodBuilder
 	 * Creates a LodNode for a chunk in the given world.
 	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
 	 */
-	public void generateLodNodeFromChunk(LodDimension lodDim, ChunkWrapper chunk, LodBuilderConfig config)
+	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config)
 			throws IllegalArgumentException
 	{
 		if (chunk == null)
@@ -207,7 +207,7 @@ public class LodBuilder
 	}
 	
 	/** creates a vertical DataPoint */
-	private long[] createVerticalDataToMerge(HorizontalResolution detail, ChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
+	private long[] createVerticalDataToMerge(HorizontalResolution detail, IChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
 	{
 		// equivalent to 2^detailLevel
 		int size = 1 << detail.detailLevel;
@@ -293,7 +293,7 @@ public class LodBuilder
 	 * Find the lowest valid point from the bottom.
 	 * Used when creating a vertical LOD.
 	 */
-	private short determineBottomPointFrom(ChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, BlockPosWrapper blockPos)
+	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, BlockPosWrapper blockPos)
 	{
 		short depth = DEFAULT_DEPTH;
 		
@@ -310,7 +310,7 @@ public class LodBuilder
 	}
 	
 	/** Find the highest valid point from the Top */
-	private short determineHeightPointFrom(ChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, BlockPosWrapper blockPos)
+	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, BlockPosWrapper blockPos)
 	{
 		short height = DEFAULT_HEIGHT;
 		if (config.useHeightmap)
@@ -340,7 +340,7 @@ public class LodBuilder
 	 * Generate the color for the given chunk using biome water color, foliage
 	 * color, and grass color.
 	 */
-	private int generateLodColor(ChunkWrapper chunk, LodBuilderConfig builderConfig, int xRel, int yAbs, int zRel, BlockPosWrapper blockPos)
+	private int generateLodColor(IChunkWrapper chunk, LodBuilderConfig builderConfig, int xRel, int yAbs, int zRel, BlockPosWrapper blockPos)
 	{
 		int colorInt;
 		if (builderConfig.useBiomeColors)
@@ -378,7 +378,7 @@ public class LodBuilder
 	}
 	
 	/** Gets the light value for the given block position */
-	private int getLightValue(ChunkWrapper chunk, BlockPosWrapper blockPos, boolean hasCeiling, boolean hasSkyLight, boolean topBlock)
+	private int getLightValue(IChunkWrapper chunk, BlockPosWrapper blockPos, boolean hasCeiling, boolean hasSkyLight, boolean topBlock)
 	{
 		int skyLight = 0;
 		int blockLight;
@@ -466,7 +466,7 @@ public class LodBuilder
 	}
 	
 	/** Returns a color int for the given block. */
-	private int getColorForBlock(ChunkWrapper chunk, BlockPosWrapper blockPos)
+	private int getColorForBlock(IChunkWrapper chunk, BlockPosWrapper blockPos)
 	{
 		
 		
@@ -515,7 +515,7 @@ public class LodBuilder
 	
 	
 	/** Is the block at the given blockPos a valid LOD point? */
-	private boolean isLayerValidLodPoint(ChunkWrapper chunk, BlockPosWrapper blockPos)
+	private boolean isLayerValidLodPoint(IChunkWrapper chunk, BlockPosWrapper blockPos)
 	{
 		
 		

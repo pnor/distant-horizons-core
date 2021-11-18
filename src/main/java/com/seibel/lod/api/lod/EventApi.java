@@ -31,10 +31,10 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
@@ -90,7 +90,7 @@ public class EventApi
 	// world events //
 	//==============//
 	
-	public void chunkLoadEvent(ChunkWrapper chunk, IDimensionTypeWrapper dimType)
+	public void chunkLoadEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
 	{
 		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.SERVER);
 	}
@@ -150,7 +150,7 @@ public class EventApi
 		}
 	}
 	
-	public void blockChangeEvent(ChunkWrapper chunk, IDimensionTypeWrapper dimType)
+	public void blockChangeEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
 	{
 		// recreate the LOD where the blocks were changed
 		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType);		
