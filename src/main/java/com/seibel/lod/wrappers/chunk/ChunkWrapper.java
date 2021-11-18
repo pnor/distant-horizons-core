@@ -2,6 +2,7 @@ package com.seibel.lod.wrappers.chunk;
 
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
 import com.seibel.lod.wrappers.block.BlockColorWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.block.BlockShapeWrapper;
@@ -46,7 +47,7 @@ public class ChunkWrapper
 		return BlockColorWrapper.getBlockColorWrapper(chunk.getBlockState(blockPos.getBlockPos()).getBlock());
 	}
 	
-	public BlockShapeWrapper getBlockShapeWrapper(BlockPosWrapper blockPos)
+	public IBlockShapeWrapper getBlockShapeWrapper(BlockPosWrapper blockPos)
 	{
 		return BlockShapeWrapper.getBlockShapeWrapper(chunk.getBlockState(blockPos.getBlockPos()).getBlock(), this, blockPos);
 	}

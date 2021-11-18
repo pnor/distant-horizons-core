@@ -1,6 +1,13 @@
 
 package com.seibel.lod.wrappers.block;
 
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
+import com.seibel.lod.wrappers.chunk.ChunkWrapper;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SixWayBlock;
@@ -9,15 +16,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import com.seibel.lod.wrappers.chunk.ChunkWrapper;
-
 
 //This class wraps the minecraft Block class
-public class BlockShapeWrapper
+public class BlockShapeWrapper implements IBlockShapeWrapper
 {
 	//set of block which require tint
 	public static final ConcurrentMap<Block, BlockShapeWrapper> blockShapeWrapperMap = new ConcurrentHashMap<>();

@@ -37,12 +37,12 @@ import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
-import com.seibel.lod.wrappers.block.BlockShapeWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
@@ -480,7 +480,7 @@ public class LodBuilder
 		//int z = blockPos.getZ();
 		
 		IBlockColorWrapper blockColorWrapper;
-		BlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(blockPos);
+		IBlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(blockPos);
 		
 		if (chunk.isWaterLogged(blockPos))
 			blockColorWrapper = blockColorSingleton.getWaterColor();
@@ -525,7 +525,7 @@ public class LodBuilder
 		boolean nonFullAvoidance = config.client().worldGenerator().getBlocksToAvoid().nonFull;
 		boolean noCollisionAvoidance = config.client().worldGenerator().getBlocksToAvoid().noCollision;
 		
-		BlockShapeWrapper block = chunk.getBlockShapeWrapper(blockPos);
+		IBlockShapeWrapper block = chunk.getBlockShapeWrapper(blockPos);
 		return !block.isToAvoid()
 					   && !(nonFullAvoidance && block.isNonFull())
 					   && !(noCollisionAvoidance && block.hasNoCollision());
