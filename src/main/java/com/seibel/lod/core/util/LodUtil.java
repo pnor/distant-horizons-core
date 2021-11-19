@@ -38,13 +38,8 @@ import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher.CompiledChunk;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
@@ -57,8 +52,9 @@ import net.minecraft.world.gen.Heightmap;
  */
 public class LodUtil
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
 	 * Vanilla render distances less than or equal to this will not allow partial
@@ -159,32 +155,15 @@ public class LodUtil
 	
 	
 	/**
-	 * Gets the first valid ServerWorld.
-	 * @return null if there are no ServerWorlds
-	 */
-//	public static ServerWorld getFirstValidServerWorld()
-//	{
-//		if (mc.hasSinglePlayerServer())
-//			return null;
-//		
-//		Iterable<ServerWorld> worlds = mc.getSinglePlayerServer().getAllLevels();
-//		
-//		for (ServerWorld world : worlds)
-//			return world;
-//		
-//		return null;
-//	}
-	
-	/**
 	 * Gets the ServerWorld for the relevant dimension.
 	 * @return null if there is no ServerWorld for the given dimension
 	 */
 	public static IWorldWrapper getServerWorldFromDimension(IDimensionTypeWrapper newDimension)
 	{
-		if(!mc.hasSinglePlayerServer())
+		if(!MC.hasSinglePlayerServer())
 			return null;
 		
-		Iterable<IWorldWrapper> worlds = mc.getAllServerWorlds();
+		Iterable<IWorldWrapper> worlds = MC.getAllServerWorlds();
 		IWorldWrapper returnWorld = null;
 		
 		for (IWorldWrapper world : worlds)
@@ -239,7 +218,7 @@ public class LodUtil
 	 */
 	public static String getWorldID(IWorldWrapper world)
 	{
-		if (mc.hasSinglePlayerServer())
+		if (MC.hasSinglePlayerServer())
 		{
 			// chop off the dimension ID as it is not needed/wanted
 			String dimId = getDimensionIDFromWorld(world);
@@ -267,7 +246,7 @@ public class LodUtil
 	 */
 	public static String getDimensionIDFromWorld(IWorldWrapper world)
 	{
-		if (mc.hasSinglePlayerServer())
+		if (MC.hasSinglePlayerServer())
 		{
 			// this will return the world save location
 			// and the dimension folder
@@ -287,10 +266,9 @@ public class LodUtil
 	/** returns the server name, IP and game version. */
 	public static String getServerId()
 	{
-		ServerData server = mc.getCurrentServer();
-		String serverName = server.name.replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
-		String serverIp = server.ip.replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
-		String serverMcVersion = server.version.getString().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
+		String serverName = MC.getCurrentServerName().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
+		String serverIp = MC.getCurrentServerIp().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
+		String serverMcVersion = MC.getCurrentServerVersion().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
 		
 		return serverName + ", IP " + serverIp + ", GameVersion " + serverMcVersion;
 	}
@@ -346,14 +324,14 @@ public class LodUtil
 	 * Get a HashSet of all ChunkPos within the normal render distance
 	 * that should not be rendered.
 	 */
-	public static HashSet<ChunkPos> getNearbyLodChunkPosToSkip(LodDimension lodDim, BlockPosWrapper blockPosWrapper)
+	public static HashSet<ChunkPosWrapper> getNearbyLodChunkPosToSkip(LodDimension lodDim, BlockPosWrapper blockPosWrapper)
 	{
-		int chunkRenderDist = mc.getRenderDistance();
+		int chunkRenderDist = MC_RENDER.getRenderDistance();
 		ChunkPosWrapper centerChunk = new ChunkPosWrapper(blockPosWrapper);
 		
 		int skipRadius;
-		VanillaOverdraw overdraw = config.client().graphics().advancedGraphics().getVanillaOverdraw();
-		HorizontalResolution drawRes = config.client().graphics().quality().getDrawResolution();
+		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
+		HorizontalResolution drawRes = CONFIG.client().graphics().quality().getDrawResolution();
 		
 		// apply distance based rules for dynamic overdraw
 		if (overdraw == VanillaOverdraw.DYNAMIC
@@ -416,7 +394,7 @@ public class LodUtil
 		
 		
 		// get the chunks that are going to be rendered by Minecraft
-		HashSet<ChunkPos> posToSkip = getRenderedChunks();
+		HashSet<ChunkPosWrapper> posToSkip = MC_RENDER.getRenderedChunks();
 		
 		
 		// remove everything outside the skipRadius,
@@ -429,46 +407,13 @@ public class LodUtil
 				{
 					if (x <= centerChunk.getX() - skipRadius || x >= centerChunk.getX() + skipRadius
 							|| z <= centerChunk.getZ() - skipRadius || z >= centerChunk.getZ() + skipRadius)
-						posToSkip.remove(new ChunkPos(x, z));
-					
+						posToSkip.remove(new ChunkPosWrapper(x, z));
 				}
 			}
 		}
 		return posToSkip;
 	}
 	
-	
-	/**
-	 * This method returns the ChunkPos of all chunks that Minecraft
-	 * is going to render this frame. <br><br>
-	 * <p>
-	 * Note: This isn't perfect. It will return some chunks that are outside
-	 * the clipping plane. (For example, if you are high above the ground some chunks
-	 * will be incorrectly added, even though they are outside render range).
-	 */
-	public static HashSet<ChunkPos> getRenderedChunks()
-	{
-		HashSet<ChunkPos> loadedPos = new HashSet<>();
-		
-		// Wow, those are some long names!
-		
-		// go through every RenderInfo to get the compiled chunks
-		WorldRenderer renderer = mc.getLevelRenderer();
-		for (WorldRenderer.LocalRenderInformationContainer worldRenderer$LocalRenderInformationContainer : renderer.renderChunks)
-		{
-			CompiledChunk compiledChunk = worldRenderer$LocalRenderInformationContainer.chunk.getCompiledChunk();
-			if (!compiledChunk.hasNoRenderableLayers())
-			{
-				// add the ChunkPos for every rendered chunk
-				BlockPos bpos = worldRenderer$LocalRenderInformationContainer.chunk.getOrigin();
-				
-				loadedPos.add(new ChunkPos(bpos));
-			}
-		}
-		
-		
-		return loadedPos;
-	}
 	
 	/**
 	 * This method find if a given chunk is a border chunk of the renderable ones
@@ -498,10 +443,10 @@ public class LodUtil
 	/** This is copied from Minecraft's MathHelper class */
 	public static float fastInvSqrt(float numb)
 	{
-	      float half = 0.5F * numb;
-	      int i = Float.floatToIntBits(numb);
-	      i = 1597463007 - (i >> 1);
-	      numb = Float.intBitsToFloat(i);
-	      return numb * (1.5F - half * numb * numb);
-	   }
+		float half = 0.5F * numb;
+		int i = Float.floatToIntBits(numb);
+		i = 1597463007 - (i >> 1);
+		numb = Float.intBitsToFloat(i);
+		return numb * (1.5F - half * numb * numb);
+	}
 }

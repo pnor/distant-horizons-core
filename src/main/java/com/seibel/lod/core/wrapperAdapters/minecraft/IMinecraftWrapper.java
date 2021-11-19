@@ -66,6 +66,10 @@ public interface IMinecraftWrapper
 	
 	public boolean hasSinglePlayerServer();
 	
+	public String getCurrentServerName();
+	public String getCurrentServerIp();
+	public String getCurrentServerVersion();
+	
 	/** Returns the dimension the player is currently in */
 	public DimensionTypeWrapper getCurrentDimension();
 	
@@ -112,9 +116,6 @@ public interface IMinecraftWrapper
 	
 	public WorldWrapper getWrappedClientWorld();
 	
-	/** Measured in chunks */
-	public int getRenderDistance();
-	
 	public File getGameDirectory();
 	
 	public IProfiler getProfiler();
@@ -140,8 +141,12 @@ public interface IMinecraftWrapper
 	 */
 	public void crashMinecraft(String errorMessage, Throwable exception);
 
-
-
+	
+	
+	
+	
+	
+	
 	
 	
 	

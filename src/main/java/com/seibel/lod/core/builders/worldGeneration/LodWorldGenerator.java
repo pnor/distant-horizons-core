@@ -51,7 +51,7 @@ import net.minecraftforge.common.WorldWorkerManager;
  */
 public class LodWorldGenerator
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	/** This holds the thread used to generate new LODs off the main thread. */
 	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator"));

@@ -36,7 +36,6 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * This holds the methods that should be called
@@ -50,7 +49,7 @@ public class EventApi
 {
 	public static final EventApi INSTANCE = new EventApi();
 	
-	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**

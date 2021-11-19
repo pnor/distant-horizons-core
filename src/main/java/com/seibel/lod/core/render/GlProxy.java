@@ -55,7 +55,7 @@ public class GlProxy
 {
 	private static GlProxy instance = null;
 	
-	private static IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private static IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	
 	/** Minecraft's GLFW window */

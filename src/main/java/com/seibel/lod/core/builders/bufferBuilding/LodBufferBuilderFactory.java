@@ -61,7 +61,6 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * This object creates the buffers that are
@@ -73,7 +72,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 public class LodBufferBuilderFactory
 {
 	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	/** The thread used to generate new LODs off the main thread. */
 	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main"));

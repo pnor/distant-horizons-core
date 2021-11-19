@@ -31,8 +31,8 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 import net.minecraft.profiler.IProfiler;
 
@@ -51,7 +51,8 @@ public class ClientApi
 	
 	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 	
-	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
+	private final IMinecraftRenderWrapper mcRender = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private final EventApi eventApi = EventApi.INSTANCE;
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
@@ -119,7 +120,7 @@ public class ClientApi
 			
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
-			ApiShared.previousChunkRenderDistance = mc.getRenderDistance();
+			ApiShared.previousChunkRenderDistance = mcRender.getRenderDistance();
 			ApiShared.previousLodRenderDistance = config.client().graphics().quality().getLodChunkRenderDistance();
 		}
 		catch (Exception e)

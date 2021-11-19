@@ -121,6 +121,24 @@ public class MinecraftWrapper implements IMinecraftWrapper
 		return mc.hasSingleplayerServer();
 	}
 	
+	@Override
+	public String getCurrentServerName()
+	{
+		return mc.getCurrentServer().name;
+	}
+	
+	@Override
+	public String getCurrentServerIp()
+	{
+		return mc.getCurrentServer().ip;
+	}
+	
+	@Override
+	public String getCurrentServerVersion()
+	{
+		return mc.getCurrentServer().version.getString();
+	}
+	
 	/** Returns the dimension the player is currently in */
 	@Override
 	public DimensionTypeWrapper getCurrentDimension()
@@ -259,13 +277,6 @@ public class MinecraftWrapper implements IMinecraftWrapper
 		return WorldWrapper.getWorldWrapper(mc.level);
 	}
 	
-	/** Measured in chunks */
-	@Override
-	public int getRenderDistance()
-	{
-		return mc.options.renderDistance;
-	}
-	
 	@Override
 	public File getGameDirectory()
 	{
@@ -363,6 +374,7 @@ public class MinecraftWrapper implements IMinecraftWrapper
 		CrashReport report = new CrashReport(errorMessage, exception);
 		Minecraft.crash(report);
 	}
+	
 	
 
 

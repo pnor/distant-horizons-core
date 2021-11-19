@@ -58,7 +58,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class LodBuilder
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final IBlockColorSingletonWrapper blockColorSingleton = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
 	
 	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));

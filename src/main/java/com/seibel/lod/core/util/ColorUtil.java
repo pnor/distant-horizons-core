@@ -33,7 +33,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class ColorUtil
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	
 	public static int rgbToInt(int red, int green, int blue)

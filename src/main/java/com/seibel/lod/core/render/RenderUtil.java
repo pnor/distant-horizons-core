@@ -19,15 +19,11 @@
 
 package com.seibel.lod.core.render;
 
+import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3f;
+import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 
 /**
  * This holds miscellaneous helper code
@@ -38,7 +34,7 @@ import net.minecraft.util.math.vector.Vector3f;
  */
 public class RenderUtil
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
 	
 	
 	/**
@@ -47,11 +43,11 @@ public class RenderUtil
 	 */
 	public static boolean isChunkPosInLoadedArea(ChunkPosWrapper pos, ChunkPosWrapper center)
 	{
-		return (pos.getX() >= center.getX() - mc.getRenderDistance()
-				&& pos.getX() <= center.getX() + mc.getRenderDistance())
+		return (pos.getX() >= center.getX() - MC_RENDER.getRenderDistance()
+				&& pos.getX() <= center.getX() + MC_RENDER.getRenderDistance())
 				&&
-				(pos.getZ() >= center.getZ() - mc.getRenderDistance()
-						&& pos.getZ() <= center.getZ() + mc.getRenderDistance());
+				(pos.getZ() >= center.getZ() - MC_RENDER.getRenderDistance()
+				&& pos.getZ() <= center.getZ() + MC_RENDER.getRenderDistance());
 	}
 	
 	/**
@@ -60,11 +56,11 @@ public class RenderUtil
 	 */
 	public static boolean isCoordinateInLoadedArea(int x, int z, int centerCoordinate)
 	{
-		return (x >= centerCoordinate - mc.getRenderDistance()
-				&& x <= centerCoordinate + mc.getRenderDistance())
+		return (x >= centerCoordinate - MC_RENDER.getRenderDistance()
+				&& x <= centerCoordinate + MC_RENDER.getRenderDistance())
 				&&
-				(z >= centerCoordinate - mc.getRenderDistance()
-						&& z <= centerCoordinate + mc.getRenderDistance());
+				(z >= centerCoordinate - MC_RENDER.getRenderDistance()
+						&& z <= centerCoordinate + MC_RENDER.getRenderDistance());
 	}
 	
 	
@@ -88,24 +84,24 @@ public class RenderUtil
 	 * Returns true if one of the region's 4 corners is in front
 	 * of the camera.
 	 */
-	public static boolean isRegionInViewFrustum(BlockPos playerBlockPos, Vector3f cameraDir, BlockPosWrapper vboCenterPos)
+	public static boolean isRegionInViewFrustum(AbstractBlockPosWrapper playerBlockPos, Vec3f cameraDir, AbstractBlockPosWrapper vboCenterPos)
 	{
 		// convert the vbo position into a direction vector
 		// starting from the player's position
-		Vector3f vboVec = new Vector3f(vboCenterPos.getX(), 0, vboCenterPos.getZ());
-		Vector3f playerVec = new Vector3f(playerBlockPos.getX(), playerBlockPos.getY(), playerBlockPos.getZ());
+		Vec3f vboVec = new Vec3f(vboCenterPos.getX(), 0, vboCenterPos.getZ());
+		Vec3f playerVec = new Vec3f(playerBlockPos.getX(), playerBlockPos.getY(), playerBlockPos.getZ());
 		
-		vboVec.sub(playerVec);
-		Vector3f vboCenterVec = vboVec;
+		vboVec.subtract(playerVec);
+		Vec3f vboCenterVec = vboVec;
 		
 		
 		int halfRegionWidth = LodUtil.REGION_WIDTH / 2;
 		
 		// calculate the 4 corners
-		Vector3f vboSeVec = new Vector3f(vboCenterVec.x() + halfRegionWidth, vboCenterVec.y(), vboCenterVec.z() + halfRegionWidth);
-		Vector3f vboSwVec = new Vector3f(vboCenterVec.x() - halfRegionWidth, vboCenterVec.y(), vboCenterVec.z() + halfRegionWidth);
-		Vector3f vboNwVec = new Vector3f(vboCenterVec.x() - halfRegionWidth, vboCenterVec.y(), vboCenterVec.z() - halfRegionWidth);
-		Vector3f vboNeVec = new Vector3f(vboCenterVec.x() + halfRegionWidth, vboCenterVec.y(), vboCenterVec.z() - halfRegionWidth);
+		Vec3f vboSeVec = new Vec3f(vboCenterVec.x + halfRegionWidth, vboCenterVec.y, vboCenterVec.z + halfRegionWidth);
+		Vec3f vboSwVec = new Vec3f(vboCenterVec.x - halfRegionWidth, vboCenterVec.y, vboCenterVec.z + halfRegionWidth);
+		Vec3f vboNwVec = new Vec3f(vboCenterVec.x - halfRegionWidth, vboCenterVec.y, vboCenterVec.z - halfRegionWidth);
+		Vec3f vboNeVec = new Vec3f(vboCenterVec.x + halfRegionWidth, vboCenterVec.y, vboCenterVec.z - halfRegionWidth);
 		
 		// if any corner is visible, this region should be rendered
 		return isNormalizedVectorInViewFrustum(vboSeVec, cameraDir) ||
@@ -118,11 +114,11 @@ public class RenderUtil
 	 * Currently takes the dot product of the two vectors,
 	 * but in the future could do more complicated frustum culling tests.
 	 */
-	private static boolean isNormalizedVectorInViewFrustum(Vector3f objectVector, Vector3f cameraDir)
+	private static boolean isNormalizedVectorInViewFrustum(Vec3f objectVector, Vec3f cameraDir)
 	{
 		// the -0.1 is to offer a slight buffer, so we are
 		// more likely to render LODs and thus, hopefully prevent
 		// flickering or odd disappearances
-		return objectVector.dot(cameraDir) > -0.1;
+		return objectVector.dotProduct(cameraDir) > -0.1;
 	}
 }

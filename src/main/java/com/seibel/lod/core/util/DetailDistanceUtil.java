@@ -25,6 +25,7 @@ import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
+import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
@@ -34,18 +35,19 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class DetailDistanceUtil
 {
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
 	
 	private static final double genMultiplier = 1.0;
 	private static final double treeGenMultiplier = 1.0;
 	private static final double treeCutMultiplier = 1.0;
-	private static byte minGenDetail = config.client().graphics().quality().getDrawResolution().detailLevel;
-	private static byte minDrawDetail = (byte) Math.max(config.client().graphics().quality().getDrawResolution().detailLevel, config.client().graphics().quality().getDrawResolution().detailLevel);
+	private static byte minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
+	private static byte minDrawDetail = (byte) Math.max(CONFIG.client().graphics().quality().getDrawResolution().detailLevel, CONFIG.client().graphics().quality().getDrawResolution().detailLevel);
 	private static final int maxDetail = LodUtil.REGION_DETAIL_LEVEL + 1;
 	private static final int minDistance = 0;
-	private static int minDetailDistance = (int) (mc.getRenderDistance()*16 * 1.42f);
-	private static int maxDistance = config.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
+	private static int minDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
+	private static int maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
 	
 	
 	private static final HorizontalResolution[] lodGenDetails = {
@@ -65,10 +67,10 @@ public class DetailDistanceUtil
 	
 	public static void updateSettings()
 	{
-		minDetailDistance = (int) (mc.getRenderDistance()*16 * 1.42f);
-		minGenDetail = config.client().graphics().quality().getDrawResolution().detailLevel;
-		minDrawDetail = (byte) Math.max(config.client().graphics().quality().getDrawResolution().detailLevel, config.client().graphics().quality().getDrawResolution().detailLevel);
-		maxDistance = config.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;
+		minDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
+		minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
+		minDrawDetail = (byte) Math.max(CONFIG.client().graphics().quality().getDrawResolution().detailLevel, CONFIG.client().graphics().quality().getDrawResolution().detailLevel);
+		maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;
 	}
 	
 	public static int baseDistanceFunction(int detail)
@@ -78,15 +80,15 @@ public class DetailDistanceUtil
 		if (detail >= maxDetail)
 			return maxDistance;
 		
-		if (config.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
+		if (CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
 			return detail * 0x10000; //if you want more you are doing wrong
 		
-		int distanceUnit = config.client().graphics().quality().getHorizontalScale().distanceUnit;
-		if (config.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
+		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale().distanceUnit;
+		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
 			return (detail * distanceUnit);
 		else
 		{
-			double base = config.client().graphics().quality().getHorizontalQuality().quadraticBase;
+			double base = CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase;
 			return (int) (Math.pow(base, detail) * distanceUnit);
 		}
 	}
@@ -101,14 +103,14 @@ public class DetailDistanceUtil
 		int detail;
 		if (distance == 0
 				|| (distance < minDetailDistance && useRenderMinDistance)
-				|| config.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
+				|| CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
 			return minDetail;
-		int distanceUnit = config.client().graphics().quality().getHorizontalScale().distanceUnit;
-		if (config.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
+		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale().distanceUnit;
+		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
 			detail = (byte) distance / distanceUnit;
 		else
 		{
-			double base = config.client().graphics().quality().getHorizontalQuality().quadraticBase;
+			double base = CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase;
 			double logBase = Math.log(base);
 			//noinspection IntegerDivisionInFloatingPointContext
 			detail = (byte) (Math.log(distance / distanceUnit) / logBase);
@@ -138,7 +140,7 @@ public class DetailDistanceUtil
 	
 	public static DistanceGenerationMode getDistanceGenerationMode(int detail)
 	{
-		return config.client().worldGenerator().getDistanceGenerationMode();
+		return CONFIG.client().worldGenerator().getDistanceGenerationMode();
 	}
 	
 	public static byte getLodDrawDetail(int detail)
@@ -170,7 +172,7 @@ public class DetailDistanceUtil
 	
 	public static int getMaxVerticalData(int detail)
 	{
-		return config.client().graphics().quality().getVerticalQuality().maxVerticalData[LodUtil.clamp(minGenDetail, detail, LodUtil.REGION_DETAIL_LEVEL)];
+		return CONFIG.client().graphics().quality().getVerticalQuality().maxVerticalData[LodUtil.clamp(minGenDetail, detail, LodUtil.REGION_DETAIL_LEVEL)];
 	}
 	
 }

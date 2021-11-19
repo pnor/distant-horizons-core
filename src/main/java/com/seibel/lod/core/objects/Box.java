@@ -43,7 +43,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 public class Box
 {
 	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	public static final int ADJACENT_HEIGHT_INDEX = 0;
 	public static final int ADJACENT_DEPTH_INDEX = 1;

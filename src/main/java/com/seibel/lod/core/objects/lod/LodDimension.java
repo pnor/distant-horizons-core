@@ -60,7 +60,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 public class LodDimension
 {
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private final IMinecraftWrapper mc = SingletonHandler.get(MinecraftWrapper.class);
+	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	public final IDimensionTypeWrapper dimension;
 	
