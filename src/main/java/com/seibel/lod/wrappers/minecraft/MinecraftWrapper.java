@@ -248,7 +248,7 @@ public class MinecraftWrapper implements IMinecraftWrapper
 	 * @returns null if no ServerWorld is available
 	 */
 	@Override
-	public WorldWrapper getWrappedServerWorld()
+	public IWorldWrapper getWrappedServerWorld()
 	{
 		if (mc.level == null)
 			return null;
@@ -273,7 +273,7 @@ public class MinecraftWrapper implements IMinecraftWrapper
 	}
 	
 	@Override
-	public WorldWrapper getWrappedClientWorld()
+	public IWorldWrapper getWrappedClientWorld()
 	{
 		return WorldWrapper.getWorldWrapper(mc.level);
 	}

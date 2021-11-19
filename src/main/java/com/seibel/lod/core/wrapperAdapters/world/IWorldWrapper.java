@@ -28,8 +28,10 @@ public interface IWorldWrapper
 	
 	public int getHeight();
 	
+	public int getSeaLevel();
+	
 	/** @throws UnsupportedOperationException if the WorldWrapper isn't for a ServerWorld */
 	public File getSaveFolder() throws UnsupportedOperationException;
-	
+
 	
 }

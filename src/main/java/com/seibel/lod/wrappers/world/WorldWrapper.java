@@ -135,6 +135,7 @@ public class WorldWrapper implements IWorldWrapper
 		return (ServerWorld) world;
 	}
 	
+	@Override
 	public int getSeaLevel()
 	{
 		// TODO this is depreciated, what should we use instead?

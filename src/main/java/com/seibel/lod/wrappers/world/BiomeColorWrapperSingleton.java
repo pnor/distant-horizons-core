@@ -21,6 +21,7 @@ package com.seibel.lod.wrappers.world;
 
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeColorWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.world.biome.BiomeColors;
@@ -43,18 +44,18 @@ public class BiomeColorWrapperSingleton implements IBiomeColorWrapperSingleton
 	
 	
 	@Override
-	public int getGrassColor(WorldWrapper world, AbstractBlockPosWrapper blockPos)
+	public int getGrassColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos)
 	{
-		return BiomeColors.getAverageGrassColor(world.getWorld(), ((BlockPosWrapper) blockPos).getBlockPos());
+		return BiomeColors.getAverageGrassColor(((WorldWrapper)world).getWorld(), ((BlockPosWrapper) blockPos).getBlockPos());
 	}
 	@Override
-	public int getWaterColor(WorldWrapper world, AbstractBlockPosWrapper blockPos)
+	public int getWaterColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos)
 	{
-		return BiomeColors.getAverageWaterColor(world.getWorld(), ((BlockPosWrapper) blockPos).getBlockPos());
+		return BiomeColors.getAverageWaterColor(((WorldWrapper)world).getWorld(), ((BlockPosWrapper) blockPos).getBlockPos());
 	}
 	@Override
-	public int getFoliageColor(WorldWrapper world, AbstractBlockPosWrapper blockPos)
+	public int getFoliageColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos)
 	{
-		return BiomeColors.getAverageFoliageColor(world.getWorld(), ((BlockPosWrapper) blockPos).getBlockPos());
+		return BiomeColors.getAverageFoliageColor(((WorldWrapper)world).getWorld(), ((BlockPosWrapper) blockPos).getBlockPos());
 	}
 }

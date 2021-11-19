@@ -29,7 +29,6 @@ import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.profiler.IProfiler;
 
@@ -112,9 +111,9 @@ public interface IMinecraftWrapper
 	 * the user is currently in.
 	 * @returns null if no ServerWorld is available
 	 */
-	public WorldWrapper getWrappedServerWorld();
+	public IWorldWrapper getWrappedServerWorld();
 	
-	public WorldWrapper getWrappedClientWorld();
+	public IWorldWrapper getWrappedClientWorld();
 	
 	public File getGameDirectory();
 	
