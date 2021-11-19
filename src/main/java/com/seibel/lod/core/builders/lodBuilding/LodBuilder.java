@@ -34,7 +34,9 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
@@ -44,9 +46,7 @@ import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * This object is in charge of creating Lod related objects.
@@ -60,6 +60,7 @@ public class LodBuilder
 {
 	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final IBlockColorSingletonWrapper blockColorSingleton = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
+	private final IWrapperFactory wrapperFactory = SingletonHandler.get(IWrapperFactory.class);
 	
 	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
@@ -233,7 +234,7 @@ public class LodBuilder
 		boolean hasCeiling = mc.getWrappedClientWorld().getDimensionType().hasCeiling();
 		boolean hasSkyLight = mc.getWrappedClientWorld().getDimensionType().hasSkyLight();
 		boolean isDefault;
-		BlockPosWrapper blockPos = new BlockPosWrapper();
+		AbstractBlockPosWrapper blockPos = wrapperFactory.createBlockPos();
 		int index;
 		
 		for (index = 0; index < size * size; index++)
@@ -294,7 +295,7 @@ public class LodBuilder
 	 * Find the lowest valid point from the bottom.
 	 * Used when creating a vertical LOD.
 	 */
-	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, BlockPosWrapper blockPos)
+	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, AbstractBlockPosWrapper blockPos)
 	{
 		short depth = DEFAULT_DEPTH;
 		
@@ -311,7 +312,7 @@ public class LodBuilder
 	}
 	
 	/** Find the highest valid point from the Top */
-	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, BlockPosWrapper blockPos)
+	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, AbstractBlockPosWrapper blockPos)
 	{
 		short height = DEFAULT_HEIGHT;
 		if (config.useHeightmap)
@@ -341,7 +342,7 @@ public class LodBuilder
 	 * Generate the color for the given chunk using biome water color, foliage
 	 * color, and grass color.
 	 */
-	private int generateLodColor(IChunkWrapper chunk, LodBuilderConfig builderConfig, int xRel, int yAbs, int zRel, BlockPosWrapper blockPos)
+	private int generateLodColor(IChunkWrapper chunk, LodBuilderConfig builderConfig, int xRel, int yAbs, int zRel, AbstractBlockPosWrapper blockPos)
 	{
 		int colorInt;
 		if (builderConfig.useBiomeColors)
@@ -379,7 +380,7 @@ public class LodBuilder
 	}
 	
 	/** Gets the light value for the given block position */
-	private int getLightValue(IChunkWrapper chunk, BlockPosWrapper blockPos, boolean hasCeiling, boolean hasSkyLight, boolean topBlock)
+	private int getLightValue(IChunkWrapper chunk, AbstractBlockPosWrapper blockPos, boolean hasCeiling, boolean hasSkyLight, boolean topBlock)
 	{
 		int skyLight = 0;
 		int blockLight;
@@ -467,10 +468,8 @@ public class LodBuilder
 	}
 	
 	/** Returns a color int for the given block. */
-	private int getColorForBlock(IChunkWrapper chunk, BlockPosWrapper blockPos)
+	private int getColorForBlock(IChunkWrapper chunk, AbstractBlockPosWrapper blockPos)
 	{
-		
-		
 		int colorOfBlock;
 		int colorInt;
 		
@@ -516,10 +515,8 @@ public class LodBuilder
 	
 	
 	/** Is the block at the given blockPos a valid LOD point? */
-	private boolean isLayerValidLodPoint(IChunkWrapper chunk, BlockPosWrapper blockPos)
+	private boolean isLayerValidLodPoint(IChunkWrapper chunk, AbstractBlockPosWrapper blockPos)
 	{
-		
-		
 		if (chunk.isWaterLogged(blockPos))
 			return true;
 		

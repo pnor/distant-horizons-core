@@ -24,9 +24,9 @@ import java.io.File;
 import java.util.ArrayList;
 
 import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
@@ -103,7 +103,7 @@ public interface IMinecraftWrapper
 	
 	public boolean playerExists();
 	
-	public BlockPosWrapper getPlayerBlockPos();
+	public AbstractBlockPosWrapper getPlayerBlockPos();
 	
 	public ChunkPosWrapper getPlayerChunkPos();
 	

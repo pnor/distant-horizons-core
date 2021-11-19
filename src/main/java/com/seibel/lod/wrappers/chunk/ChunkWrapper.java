@@ -1,6 +1,7 @@
 package com.seibel.lod.wrappers.chunk;
 
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
@@ -32,9 +33,9 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	
 	@Override
-	public boolean isPositionInWater(BlockPosWrapper blockPos)
+	public boolean isPositionInWater(AbstractBlockPosWrapper blockPos)
 	{
-		BlockState blockState = chunk.getBlockState(blockPos.getBlockPos());
+		BlockState blockState = chunk.getBlockState(((BlockPosWrapper) blockPos).getBlockPos());
 		
 		//This type of block is always in water
 		return ((blockState.getBlock() instanceof ILiquidContainer) && !(blockState.getBlock() instanceof IWaterLoggable))
@@ -54,15 +55,15 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	
 	@Override
-	public IBlockColorWrapper getBlockColorWrapper(BlockPosWrapper blockPos)
+	public IBlockColorWrapper getBlockColorWrapper(AbstractBlockPosWrapper blockPos)
 	{
-		return BlockColorWrapper.getBlockColorWrapper(chunk.getBlockState(blockPos.getBlockPos()).getBlock());
+		return BlockColorWrapper.getBlockColorWrapper(chunk.getBlockState(((BlockPosWrapper) blockPos).getBlockPos()).getBlock());
 	}
 	
 	@Override
-	public IBlockShapeWrapper getBlockShapeWrapper(BlockPosWrapper blockPos)
+	public IBlockShapeWrapper getBlockShapeWrapper(AbstractBlockPosWrapper blockPos)
 	{
-		return BlockShapeWrapper.getBlockShapeWrapper(chunk.getBlockState(blockPos.getBlockPos()).getBlock(), this, blockPos);
+		return BlockShapeWrapper.getBlockShapeWrapper(chunk.getBlockState(((BlockPosWrapper) blockPos).getBlockPos()).getBlock(), this, blockPos);
 	}
 	
 	public ChunkWrapper(IChunk chunk)
@@ -89,9 +90,9 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	
 	@Override
-	public boolean isWaterLogged(BlockPosWrapper blockPos)
+	public boolean isWaterLogged(AbstractBlockPosWrapper blockPos)
 	{
-		BlockState blockState = chunk.getBlockState(blockPos.getBlockPos());
+		BlockState blockState = chunk.getBlockState(((BlockPosWrapper)blockPos).getBlockPos());
 		
 		//This type of block is always in water
 		return ((blockState.getBlock() instanceof ILiquidContainer) && !(blockState.getBlock() instanceof IWaterLoggable))
@@ -99,8 +100,8 @@ public class ChunkWrapper implements IChunkWrapper
 	}
 	
 	@Override
-	public int getEmittedBrightness(BlockPosWrapper blockPos)
+	public int getEmittedBrightness(AbstractBlockPosWrapper blockPos)
 	{
-		return chunk.getLightEmission(blockPos.getBlockPos());
+		return chunk.getLightEmission(((BlockPosWrapper)blockPos).getBlockPos());
 	}
 }

@@ -1,11 +1,12 @@
 package com.seibel.lod.wrappers.chunk;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-
 import java.util.Objects;
 
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
+
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 
 
 //This class wraps the minecraft ChunkPos class
@@ -29,9 +30,9 @@ public class ChunkPosWrapper
         this.chunkPos = newChunkPos.chunkPos;
     }
 
-    public ChunkPosWrapper(BlockPosWrapper blockPos)
+    public ChunkPosWrapper(AbstractBlockPosWrapper blockPos)
 	{
-        this.chunkPos = new ChunkPos(blockPos.getBlockPos());
+        this.chunkPos = new ChunkPos(((BlockPosWrapper) blockPos).getBlockPos());
     }
 
     public ChunkPosWrapper(int chunkX, int chunkZ)

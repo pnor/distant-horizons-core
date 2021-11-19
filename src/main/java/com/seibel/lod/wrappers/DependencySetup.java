@@ -1,5 +1,6 @@
 package com.seibel.lod.wrappers;
 
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
@@ -27,5 +28,6 @@ public class DependencySetup
 		SingletonHandler.bind(IBlockColorSingletonWrapper.class, BlockColorSingletonWrapper.INSTANCE);
 		SingletonHandler.bind(IMinecraftWrapper.class, MinecraftWrapper.INSTANCE);
 		SingletonHandler.bind(IMinecraftRenderWrapper.class, MinecraftRenderWrapper.INSTANCE);
+		SingletonHandler.bind(IWrapperFactory.class, WrapperFactory.INSTANCE);
 	}
 }

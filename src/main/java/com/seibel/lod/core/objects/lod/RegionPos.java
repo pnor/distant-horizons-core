@@ -20,7 +20,7 @@
 package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 
 /**
@@ -54,7 +54,7 @@ public class RegionPos
 	}
 	
 	/** Converts from a BlockPos to a RegionPos */
-	public RegionPos(BlockPosWrapper pos)
+	public RegionPos(AbstractBlockPosWrapper pos)
 	{
 		this(new ChunkPosWrapper(pos));
 	}
@@ -75,7 +75,7 @@ public class RegionPos
 	}
 	
 	/** Returns the BlockPos at the center of this region */
-	public BlockPosWrapper blockPos()
+	public AbstractBlockPosWrapper blockPos()
 	{
 		return chunkPos().getWorldPosition()
 				.offset(LodUtil.CHUNK_WIDTH / 2, 0, LodUtil.CHUNK_WIDTH / 2);

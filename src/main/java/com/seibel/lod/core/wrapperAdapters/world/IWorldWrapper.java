@@ -2,7 +2,7 @@ package com.seibel.lod.core.wrapperAdapters.world;
 
 import java.io.File;
 
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 
 /**
  * 
@@ -14,11 +14,11 @@ public interface IWorldWrapper
 {
 	public IDimensionTypeWrapper getDimensionType();
 	
-	public int getBlockLight(BlockPosWrapper blockPos);
+	public int getBlockLight(AbstractBlockPosWrapper blockPos);
 	
-	public int getSkyLight(BlockPosWrapper blockPos);
+	public int getSkyLight(AbstractBlockPosWrapper blockPos);
 	
-	public IBiomeWrapper getBiome(BlockPosWrapper blockPos);
+	public IBiomeWrapper getBiome(AbstractBlockPosWrapper blockPos);
 	
 	public boolean hasCeiling();
 	

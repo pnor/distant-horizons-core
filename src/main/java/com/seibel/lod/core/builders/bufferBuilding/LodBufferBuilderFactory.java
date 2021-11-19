@@ -57,9 +57,9 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 
 /**
@@ -167,7 +167,7 @@ public class LodBufferBuilderFactory
 	 * swapped with the drawable buffers in the LodRenderer to be drawn.
 	 */
 	public void generateLodBuffersAsync(LodRenderer renderer, LodDimension lodDim,
-			BlockPosWrapper playerBlockPos, boolean fullRegen)
+			AbstractBlockPosWrapper playerBlockPos, boolean fullRegen)
 	{
 		
 		// only allow one generation process to happen at a time
@@ -190,7 +190,7 @@ public class LodBufferBuilderFactory
 	// more easily edited by hot swapping. Because, As far as James is aware
 	// you can't hot swap lambda expressions.
 	private void generateLodBuffersThread(LodRenderer renderer, LodDimension lodDim,
-			BlockPosWrapper playerBlockPos, boolean fullRegen)
+			AbstractBlockPosWrapper playerBlockPos, boolean fullRegen)
 	{
 		bufferLock.lock();
 		
@@ -198,7 +198,7 @@ public class LodBufferBuilderFactory
 		{
 			// round the player's block position down to the nearest chunk BlockPos
 			ChunkPosWrapper playerChunkPos = new ChunkPosWrapper(playerBlockPos);
-			BlockPosWrapper playerBlockPosRounded = playerChunkPos.getWorldPosition();
+			AbstractBlockPosWrapper playerBlockPosRounded = playerChunkPos.getWorldPosition();
 			
 			
 			//long startTime = System.currentTimeMillis();

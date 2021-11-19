@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
@@ -31,13 +32,13 @@ public class BlockShapeWrapper implements IBlockShapeWrapper
 	private boolean noCollision;
 	
 	/**Constructor only require for the block instance we are wrapping**/
-	public BlockShapeWrapper(Block block, IChunkWrapper chunkWrapper, BlockPosWrapper blockPosWrapper)
+	public BlockShapeWrapper(Block block, IChunkWrapper chunkWrapper, AbstractBlockPosWrapper blockPosWrapper)
 	{
 		this.block = block;
 		this.nonFull = false;
 		this.noCollision = false;
 		this.toAvoid = ofBlockToAvoid();
-		setupShapes((ChunkWrapper) chunkWrapper, blockPosWrapper);
+		setupShapes((ChunkWrapper) chunkWrapper, (BlockPosWrapper) blockPosWrapper);
 		//System.out.println(block + " non full " + nonFull + " no collision " + noCollision + " to avoid " + toAvoid);
 	}
 	
@@ -53,7 +54,7 @@ public class BlockShapeWrapper implements IBlockShapeWrapper
 	 * this return a wrapper of the block in input
 	 * @param block Block object to wrap
 	 */
-	static public BlockShapeWrapper getBlockShapeWrapper(Block block, IChunkWrapper chunkWrapper, BlockPosWrapper blockPosWrapper)
+	static public BlockShapeWrapper getBlockShapeWrapper(Block block, IChunkWrapper chunkWrapper, AbstractBlockPosWrapper blockPosWrapper)
 	{
 		//first we check if the block has already been wrapped
 		if (blockShapeWrapperMap.containsKey(block) && blockShapeWrapperMap.get(block) != null)

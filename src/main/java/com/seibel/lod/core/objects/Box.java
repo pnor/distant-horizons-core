@@ -30,10 +30,9 @@ import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * Similar to Minecraft's AxisAlignedBoundingBox.
@@ -311,7 +310,7 @@ public class Box
 	}
 	
 	/** determine which faces should be culled */
-	public void setUpCulling(int cullingDistance, BlockPosWrapper playerPos)
+	public void setUpCulling(int cullingDistance, AbstractBlockPosWrapper playerPos)
 	{
 		for (LodDirection lodDirection : DIRECTIONS)
 		{

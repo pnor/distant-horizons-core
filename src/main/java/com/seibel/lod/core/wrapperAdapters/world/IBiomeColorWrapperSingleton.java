@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.wrapperAdapters.world;
 
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
 
 
@@ -32,7 +32,7 @@ public interface IBiomeColorWrapperSingleton
 {
 	public IBiomeColorWrapperSingleton getInstance(); 
 	
-	public int getGrassColor(WorldWrapper world, BlockPosWrapper blockPos);
-	public int getWaterColor(WorldWrapper world, BlockPosWrapper blockPos);
-	public int getFoliageColor(WorldWrapper world, BlockPosWrapper blockPos);
+	public int getGrassColor(WorldWrapper world, AbstractBlockPosWrapper blockPos);
+	public int getWaterColor(WorldWrapper world, AbstractBlockPosWrapper blockPos);
+	public int getFoliageColor(WorldWrapper world, AbstractBlockPosWrapper blockPos);
 }

@@ -45,9 +45,9 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.handlers.ReflectionHandler;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
@@ -547,7 +547,7 @@ public class LodRenderer
 		// translate the camera relative to the regions' center
 		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
 		// accuracy vs the model view matrix, which only uses floats)
-		BlockPosWrapper bufferPos = vbosCenter.getWorldPosition();
+		AbstractBlockPosWrapper bufferPos = vbosCenter.getWorldPosition();
 		double xDiff = projectedView.x - bufferPos.getX();
 		double zDiff = projectedView.z - bufferPos.getZ();
 		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);

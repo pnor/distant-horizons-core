@@ -26,7 +26,7 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.Box;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
-import com.seibel.lod.wrappers.block.BlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 
 /**
  * This is the abstract class used to create different
@@ -36,9 +36,8 @@ import com.seibel.lod.wrappers.block.BlockPosWrapper;
  */
 public abstract class AbstractLodTemplate
 {
-	
 	/** Uploads the given LOD to the buffer. */
-	public abstract void addLodToBuffer(LodBufferBuilder buffer, BlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
+	public abstract void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled);
 	
 	/** add the given position and color to the buffer */

@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.enums.WorldType;
+import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
@@ -67,21 +68,21 @@ public class WorldWrapper implements IWorldWrapper
 	}
 	
 	@Override
-	public int getBlockLight(BlockPosWrapper blockPos)
+	public int getBlockLight(AbstractBlockPosWrapper blockPos)
 	{
-		return world.getLightEngine().blockEngine.getLightValue(blockPos.getBlockPos());
+		return world.getLightEngine().blockEngine.getLightValue(((BlockPosWrapper) blockPos).getBlockPos());
 	}
 	
 	@Override
-	public int getSkyLight(BlockPosWrapper blockPos)
+	public int getSkyLight(AbstractBlockPosWrapper blockPos)
 	{
-		return world.getLightEngine().skyEngine.getLightValue(blockPos.getBlockPos());
+		return world.getLightEngine().skyEngine.getLightValue(((BlockPosWrapper) blockPos).getBlockPos());
 	}
 	
 	@Override
-	public BiomeWrapper getBiome(BlockPosWrapper blockPos)
+	public BiomeWrapper getBiome(AbstractBlockPosWrapper blockPos)
 	{
-		return BiomeWrapper.getBiomeWrapper(world.getBiome(blockPos.getBlockPos()));
+		return BiomeWrapper.getBiomeWrapper(world.getBiome(((BlockPosWrapper) blockPos).getBlockPos()));
 	}
 	
 	public IWorld getWorld()
