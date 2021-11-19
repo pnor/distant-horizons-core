@@ -27,8 +27,8 @@ import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.world.DimensionTypeWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.profiler.IProfiler;
@@ -71,7 +71,7 @@ public interface IMinecraftWrapper
 	public String getCurrentServerVersion();
 	
 	/** Returns the dimension the player is currently in */
-	public DimensionTypeWrapper getCurrentDimension();
+	public IDimensionTypeWrapper getCurrentDimension();
 	
 	public String getCurrentDimensionId();
 	

@@ -29,6 +29,7 @@ import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
@@ -141,7 +142,7 @@ public class MinecraftWrapper implements IMinecraftWrapper
 	
 	/** Returns the dimension the player is currently in */
 	@Override
-	public DimensionTypeWrapper getCurrentDimension()
+	public IDimensionTypeWrapper getCurrentDimension()
 	{
 		return DimensionTypeWrapper.getDimensionTypeWrapper(mc.player.level.dimensionType());
 	}
