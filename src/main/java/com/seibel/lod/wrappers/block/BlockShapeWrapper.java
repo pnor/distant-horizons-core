@@ -19,7 +19,12 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 
 
-//This class wraps the minecraft Block class
+/**
+ * This class wraps Minecraft's Block class
+ * 
+ * @author ??
+ * @version 11-18-2021
+ */
 public class BlockShapeWrapper implements IBlockShapeWrapper
 {
 	//set of block which require tint

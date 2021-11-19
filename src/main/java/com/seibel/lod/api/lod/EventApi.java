@@ -49,8 +49,8 @@ public class EventApi
 {
 	public static final EventApi INSTANCE = new EventApi();
 	
-	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
-	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
 	 * can be set if we want to recalculate variables related
@@ -73,10 +73,10 @@ public class EventApi
 	
 	public void serverTickEvent()
 	{
-		if (!mc.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
+		if (!MC.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
 			return;
 		
-		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(mc.getCurrentDimension());
+		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension());
 		if (lodDim == null)
 			return;
 		
@@ -121,7 +121,7 @@ public class EventApi
 		ThreadMapUtil.clearMaps();
 		
 		
-		if (mc.getWrappedClientWorld() == null)
+		if (MC.getWrappedClientWorld() == null)
 		{
 			// the player just left the server
 			
@@ -165,16 +165,16 @@ public class EventApi
 	
 	public void onKeyInput(int key, int keyAction)
 	{
-		if (config.client().advanced().debugging().getDebugKeybindingsEnabled())
+		if (CONFIG.client().advanced().debugging().getDebugKeybindingsEnabled())
 		{
 			if (key == GLFW.GLFW_KEY_F4 && keyAction == GLFW.GLFW_PRESS)
 			{
-				config.client().advanced().debugging().setDebugMode(config.client().advanced().debugging().getDebugMode().getNext());
+				CONFIG.client().advanced().debugging().setDebugMode(CONFIG.client().advanced().debugging().getDebugMode().getNext());
 			}
 			
 			if (key == GLFW.GLFW_KEY_F6 && keyAction == GLFW.GLFW_PRESS)
 			{
-				config.client().advanced().debugging().setDrawLods(!config.client().advanced().debugging().getDrawLods());
+				CONFIG.client().advanced().debugging().setDrawLods(!CONFIG.client().advanced().debugging().getDrawLods());
 			}
 		}
 	}
@@ -183,7 +183,7 @@ public class EventApi
 	public void playerMoveEvent(LodDimension lodDim)
 	{
 		// make sure the dimension is centered
-		RegionPos playerRegionPos = new RegionPos(mc.getPlayerBlockPos());
+		RegionPos playerRegionPos = new RegionPos(MC.getPlayerBlockPos());
 		RegionPos worldRegionOffset = new RegionPos(playerRegionPos.x - lodDim.getCenterRegionPosX(), playerRegionPos.z - lodDim.getCenterRegionPosZ());
 		if (worldRegionOffset.x != 0 || worldRegionOffset.z != 0)
 		{
@@ -198,10 +198,10 @@ public class EventApi
 	{
 		// calculate how wide the dimension(s) should be in regions
 		int chunksWide;
-		if (mc.getWrappedClientWorld().getDimensionType().hasCeiling())
-			chunksWide = Math.min(config.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
+		if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
+			chunksWide = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
 		else
-			chunksWide = config.client().graphics().quality().getLodChunkRenderDistance() * 2 + 1;
+			chunksWide = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 2 + 1;
 		
 		int newWidth = (int) Math.ceil(chunksWide / (float) LodUtil.REGION_WIDTH_IN_CHUNKS);
 		// make sure we have an odd number of regions
@@ -215,7 +215,7 @@ public class EventApi
 			// update the dimensions to fit the new width
 			ApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
 			ApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
-			ClientApi.renderer.setupBuffers(ApiShared.lodWorld.getLodDimension(mc.getCurrentDimension()));
+			ClientApi.renderer.setupBuffers(ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension()));
 			
 			recalculateWidths = false;
 			//LOGGER.info("new dimension width in regions: " + newWidth + "\t potential: " + newWidth );

@@ -31,13 +31,14 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 
 import net.minecraft.world.chunk.ChunkSection;
@@ -55,6 +56,7 @@ public class LodUtil
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/**
 	 * Vanilla render distances less than or equal to this will not allow partial
@@ -324,10 +326,10 @@ public class LodUtil
 	 * Get a HashSet of all ChunkPos within the normal render distance
 	 * that should not be rendered.
 	 */
-	public static HashSet<ChunkPosWrapper> getNearbyLodChunkPosToSkip(LodDimension lodDim, AbstractBlockPosWrapper blockPosWrapper)
+	public static HashSet<AbstractChunkPosWrapper> getNearbyLodChunkPosToSkip(LodDimension lodDim, AbstractBlockPosWrapper blockPosWrapper)
 	{
 		int chunkRenderDist = MC_RENDER.getRenderDistance();
-		ChunkPosWrapper centerChunk = new ChunkPosWrapper(blockPosWrapper);
+		AbstractChunkPosWrapper centerChunk = FACTORY.createChunkPos(blockPosWrapper);
 		
 		int skipRadius;
 		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
@@ -394,7 +396,7 @@ public class LodUtil
 		
 		
 		// get the chunks that are going to be rendered by Minecraft
-		HashSet<ChunkPosWrapper> posToSkip = MC_RENDER.getRenderedChunks();
+		HashSet<AbstractChunkPosWrapper> posToSkip = MC_RENDER.getRenderedChunks();
 		
 		
 		// remove everything outside the skipRadius,
@@ -407,7 +409,7 @@ public class LodUtil
 				{
 					if (x <= centerChunk.getX() - skipRadius || x >= centerChunk.getX() + skipRadius
 							|| z <= centerChunk.getZ() - skipRadius || z >= centerChunk.getZ() + skipRadius)
-						posToSkip.remove(new ChunkPosWrapper(x, z));
+						posToSkip.remove(FACTORY.createChunkPos(x, z));
 				}
 			}
 		}

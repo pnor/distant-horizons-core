@@ -29,7 +29,7 @@ import net.minecraftforge.client.model.data.ModelDataMap;
 
 
 /**
- * This class wraps the minecraft Block class
+ * This class wraps the minecraft Block color class
  * 
  * @author ??
  * @version 11-17-2021

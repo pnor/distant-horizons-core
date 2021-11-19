@@ -3,7 +3,6 @@ package com.seibel.lod.core.wrapperAdapters.chunk;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.world.BiomeWrapper;
 
 /**
@@ -25,7 +24,7 @@ public interface IChunkWrapper
 	
 	public IBlockShapeWrapper getBlockShapeWrapper(AbstractBlockPosWrapper blockPos);
 	
-	public ChunkPosWrapper getPos();
+	public AbstractChunkPosWrapper getPos();
 	
 	public boolean isLightCorrect();
 	

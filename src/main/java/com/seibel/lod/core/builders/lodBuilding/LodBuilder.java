@@ -40,13 +40,13 @@ import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 
 /**
  * This object is in charge of creating Lod related objects.
@@ -58,12 +58,9 @@ import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
  */
 public class LodBuilder
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final IBlockColorSingletonWrapper blockColorSingleton = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
-	private final IWrapperFactory wrapperFactory = SingletonHandler.get(IWrapperFactory.class);
-	
-	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
-	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** If no blocks are found in the area in determineBottomPointForArea return this */
 	public static final short DEFAULT_DEPTH = 0;
@@ -71,6 +68,11 @@ public class LodBuilder
 	public static final short DEFAULT_HEIGHT = 0;
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
+	
+	
+	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
+	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	
 	
 	
 	/**
@@ -111,12 +113,12 @@ public class LodBuilder
 			{
 				// we need a loaded client world in order to
 				// get the textures for blocks
-				if (mc.getWrappedClientWorld() == null)
+				if (MC.getWrappedClientWorld() == null)
 					return;
 				
 				// don't try to generate LODs if the user isn't in the world anymore
 				// (this happens a lot when the user leaves a world/server)
-				if (!mc.hasSinglePlayerServer() && !mc.connectedToServer())
+				if (!MC.hasSinglePlayerServer() && !MC.connectedToServer())
 					return;
 				
 				// make sure the dimension exists
@@ -171,7 +173,7 @@ public class LodBuilder
 			return;
 		
 		// this happens if a LOD is generated after the user leaves the world.
-		if (mc.getWrappedClientWorld() == null)
+		if (MC.getWrappedClientWorld() == null)
 			return;
 		
 		// determine how many LODs to generate horizontally
@@ -217,7 +219,7 @@ public class LodBuilder
 		long[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
 		int verticalData = DataPointUtil.worldHeight / 2 + 1;
 		
-		ChunkPosWrapper chunkPos = chunk.getPos();
+		AbstractChunkPosWrapper chunkPos = chunk.getPos();
 		int height;
 		int depth;
 		int color;
@@ -231,10 +233,10 @@ public class LodBuilder
 		int xAbs;
 		int yAbs;
 		int zAbs;
-		boolean hasCeiling = mc.getWrappedClientWorld().getDimensionType().hasCeiling();
-		boolean hasSkyLight = mc.getWrappedClientWorld().getDimensionType().hasSkyLight();
+		boolean hasCeiling = MC.getWrappedClientWorld().getDimensionType().hasCeiling();
+		boolean hasSkyLight = MC.getWrappedClientWorld().getDimensionType().hasSkyLight();
 		boolean isDefault;
-		AbstractBlockPosWrapper blockPos = wrapperFactory.createBlockPos();
+		AbstractBlockPosWrapper blockPos = FACTORY.createBlockPos();
 		int index;
 		
 		for (index = 0; index < size * size; index++)
@@ -387,7 +389,7 @@ public class LodBuilder
 		// 1 means the lighting is a guess
 		int isDefault = 0;
 		
-		IWorldWrapper world = mc.getWrappedServerWorld();
+		IWorldWrapper world = MC.getWrappedServerWorld();
 		
 		int blockBrightness = chunk.getEmittedBrightness(blockPos);
 		// get the air block above or below this block
@@ -415,7 +417,7 @@ public class LodBuilder
 			{
 				// we are on predicted terrain, and we don't know what the light here is,
 				// lets just take a guess
-				if (blockPos.getY() >= mc.getWrappedClientWorld().getSeaLevel() - 5)
+				if (blockPos.getY() >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 				{
 					skyLight = 12;
 					isDefault = 1;
@@ -426,7 +428,7 @@ public class LodBuilder
 		}
 		else
 		{
-			world = mc.getWrappedServerWorld();
+			world = MC.getWrappedServerWorld();
 			if (world.isEmpty())
 				return 0;
 			// client world sky light (almost never accurate)
@@ -448,7 +450,7 @@ public class LodBuilder
 					{
 						// we don't know what the light here is,
 						// lets just take a guess
-						if (blockPos.getY() >= mc.getWrappedClientWorld().getSeaLevel() - 5)
+						if (blockPos.getY() >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 						{
 							skyLight = 12;
 							isDefault = 1;
@@ -483,7 +485,7 @@ public class LodBuilder
 		IBlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(blockPos);
 		
 		if (chunk.isWaterLogged(blockPos))
-			blockColorWrapper = blockColorSingleton.getWaterColor();
+			blockColorWrapper = BLOCK_COLOR.getWaterColor();
 		else
 			blockColorWrapper = chunk.getBlockColorWrapper(blockPos);
 		

@@ -13,6 +13,7 @@ import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
@@ -44,13 +45,14 @@ import net.minecraft.world.server.ServerWorldLightManager;
  */
 public class WorldGeneratorWrapper
 {
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	
 	/**
 	 * If a configured feature fails for whatever reason,
 	 * add it to this list. This is to hopefully remove any
 	 * features that could cause issues down the line.
 	 */
-	private static final ConcurrentHashMap<Integer, ConfiguredFeature<?, ?>> configuredFeaturesToAvoid = new ConcurrentHashMap<>();
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final ConcurrentHashMap<Integer, ConfiguredFeature<?, ?>> FEATURES_TO_AVOID = new ConcurrentHashMap<>();
 	
 	
 	public final ServerWorld serverWorld;
@@ -71,10 +73,10 @@ public class WorldGeneratorWrapper
 
 	
 	/** takes about 2-5 ms */
-	public void generateUsingBiomesOnly(ChunkPosWrapper pos, DistanceGenerationMode generationMode)
+	public void generateUsingBiomesOnly(AbstractChunkPosWrapper pos, DistanceGenerationMode generationMode)
 	{
 		List<IChunk> chunkList = new LinkedList<>();
-		ChunkPrimer chunk = new ChunkPrimer(pos.getChunkPos(), UpgradeData.EMPTY);
+		ChunkPrimer chunk = new ChunkPrimer(((ChunkPosWrapper) pos).getChunkPos(), UpgradeData.EMPTY);
 		chunkList.add(chunk);
 		
 		ServerChunkProvider chunkSource = serverWorld.getChunkSource();
@@ -181,10 +183,10 @@ public class WorldGeneratorWrapper
 	
 	
 	/** takes about 10 - 20 ms */
-	public void generateUsingSurface(ChunkPosWrapper pos)
+	public void generateUsingSurface(AbstractChunkPosWrapper pos)
 	{
 		List<IChunk> chunkList = new LinkedList<>();
-		ChunkPrimer chunk = new ChunkPrimer(pos.getChunkPos(), UpgradeData.EMPTY);
+		ChunkPrimer chunk = new ChunkPrimer(((ChunkPosWrapper) pos).getChunkPos(), UpgradeData.EMPTY);
 		chunkList.add(chunk);
 		LodServerWorld lodServerWorld = new LodServerWorld(serverWorld, chunk);
 		
@@ -221,10 +223,10 @@ public class WorldGeneratorWrapper
 	 * Causes concurrentModification Exceptions,
 	 * which could cause instability or world generation bugs
 	 */
-	public void generateUsingFeatures(ChunkPosWrapper pos)
+	public void generateUsingFeatures(AbstractChunkPosWrapper pos)
 	{
 		List<IChunk> chunkList = new LinkedList<>();
-		ChunkPrimer chunk = new ChunkPrimer(pos.getChunkPos(), UpgradeData.EMPTY);
+		ChunkPrimer chunk = new ChunkPrimer(((ChunkPosWrapper) pos).getChunkPos(), UpgradeData.EMPTY);
 		chunkList.add(chunk);
 		LodServerWorld lodServerWorld = new LodServerWorld(serverWorld, chunk);
 		
@@ -266,7 +268,7 @@ public class WorldGeneratorWrapper
 			}
 		}
 		
-		boolean allowUnstableFeatures = config.client().worldGenerator().getAllowUnstableFeatureGeneration();
+		boolean allowUnstableFeatures = CONFIG.client().worldGenerator().getAllowUnstableFeatureGeneration();
 		
 		// generate all the features related to this chunk.
 		// this may or may not be thread safe
@@ -281,7 +283,7 @@ public class WorldGeneratorWrapper
 					ConfiguredFeature<?, ?> configuredFeature = featureSupplier.get();
 					
 					if (!allowUnstableFeatures &&
-								configuredFeaturesToAvoid.containsKey(configuredFeature.hashCode()))
+								FEATURES_TO_AVOID.containsKey(configuredFeature.hashCode()))
 						continue;
 					
 					
@@ -306,7 +308,7 @@ public class WorldGeneratorWrapper
 						//   https://github.com/EsotericSoftware/kryo )
 						
 						if (!allowUnstableFeatures)
-							configuredFeaturesToAvoid.put(configuredFeature.hashCode(), configuredFeature);
+							FEATURES_TO_AVOID.put(configuredFeature.hashCode(), configuredFeature);
 //						ClientProxy.LOGGER.info(configuredFeaturesToAvoid.mappingCount());
 					}
 					// This will happen when the LodServerWorld
@@ -319,7 +321,7 @@ public class WorldGeneratorWrapper
 						e.printStackTrace();
 						
 						if (!allowUnstableFeatures)
-							configuredFeaturesToAvoid.put(configuredFeature.hashCode(), configuredFeature);
+							FEATURES_TO_AVOID.put(configuredFeature.hashCode(), configuredFeature);
 //						ClientProxy.LOGGER.info(configuredFeaturesToAvoid.mappingCount());
 					}
 				}
@@ -340,7 +342,7 @@ public class WorldGeneratorWrapper
 	 * Note this should not be multithreaded and does cause server/simulation lag
 	 * (Higher lag for generating than loading)
 	 */
-	public void generateWithServer(ChunkPosWrapper pos)
+	public void generateWithServer(AbstractChunkPosWrapper pos)
 	{
 		lodBuilder.generateLodNodeFromChunk(lodDim,  new ChunkWrapper(serverWorld.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FEATURES)), new LodBuilderConfig(DistanceGenerationMode.SERVER));
 	}

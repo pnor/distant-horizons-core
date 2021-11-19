@@ -35,7 +35,6 @@ import com.seibel.lod.core.render.shader.LodShader;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * A singleton that holds references to different openGL contexts
@@ -53,10 +52,10 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class GlProxy
 {
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	
+	
 	private static GlProxy instance = null;
-	
-	private static IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
-	
 	
 	/** Minecraft's GLFW window */
 	public final long minecraftGlContext;
@@ -140,7 +139,7 @@ public class GlProxy
 			// Note: as of MC 1.17 this shouldn't happen since MC
 			// requires OpenGL 3.3, but just in case.
 			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GlProxy.class.getSimpleName() + " and discoverd this GPU doesn't support OpenGL 2.0 or greater.";
-			mc.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 2.0 or greater."));
+			MC.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 2.0 or greater."));
 		}
 		
 		

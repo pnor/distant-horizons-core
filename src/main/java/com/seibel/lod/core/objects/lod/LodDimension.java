@@ -35,13 +35,13 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 
 
@@ -59,8 +59,9 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class LodDimension
 {
-	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	public final IDimensionTypeWrapper dimension;
 	
@@ -92,9 +93,9 @@ public class LodDimension
 	private final RegionPos center;
 	
 	/** prevents the cutAndExpandThread from expanding at the same location multiple times */
-	private volatile ChunkPosWrapper lastExpandedChunk;
+	private volatile AbstractChunkPosWrapper lastExpandedChunk;
 	/** prevents the cutAndExpandThread from cutting at the same location multiple times */
-	private volatile ChunkPosWrapper lastCutChunk;
+	private volatile AbstractChunkPosWrapper lastCutChunk;
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand"));
 	
 	/**
@@ -115,7 +116,7 @@ public class LodDimension
 			{
 				// determine the save folder
 				File saveDir;
-				if (mc.hasSinglePlayerServer())
+				if (MC.hasSinglePlayerServer())
 				{
 					// local world
 					
@@ -126,8 +127,8 @@ public class LodDimension
 				{
 					// connected to server
 					
-					saveDir = new File(mc.getGameDirectory().getCanonicalFile().getPath() +
-											   File.separatorChar + "lod server data" + File.separatorChar + mc.getCurrentDimensionId());
+					saveDir = new File(MC.getGameDirectory().getCanonicalFile().getPath() +
+											   File.separatorChar + "lod server data" + File.separatorChar + MC.getCurrentDimensionId());
 				}
 				
 				fileHandler = new LodDimensionFileHandler(saveDir, this);
@@ -317,10 +318,10 @@ public class LodDimension
 	 */
 	public void cutRegionNodesAsync(int playerPosX, int playerPosZ)
 	{
-		ChunkPosWrapper newPlayerChunk = new ChunkPosWrapper(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
+		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
 		
 		if (lastCutChunk == null)
-			lastCutChunk = new ChunkPosWrapper(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
+			lastCutChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
 		
 		// don't run the tree cutter multiple times
 		// for the same location
@@ -369,13 +370,13 @@ public class LodDimension
 	/** Either expands or loads all regions in the rendered LOD area */
 	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ)
 	{
-		DistanceGenerationMode generationMode = config.client().worldGenerator().getDistanceGenerationMode();
-		ChunkPosWrapper newPlayerChunk = new ChunkPosWrapper(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
-		VerticalQuality verticalQuality = config.client().graphics().quality().getVerticalQuality();
+		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
+		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
+		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
 		
 		
 		if (lastExpandedChunk == null)
-			lastExpandedChunk = new ChunkPosWrapper(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
+			lastExpandedChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
 		
 		// don't run the expander multiple times
 		// for the same location
@@ -548,7 +549,7 @@ public class LodDimension
 		dz = -1;
 		
 		// We can use two type of generation scheduling
-		switch (config.client().worldGenerator().getGenerationPriority())
+		switch (CONFIG.client().worldGenerator().getGenerationPriority())
 		{
 		default:
 		case NEAR_FIRST:
@@ -605,7 +606,7 @@ public class LodDimension
 				//if(lodRegion.isChunkPreGenerated(xChunkToCheck,zChunkToCheck))
 				//	complexity = DistanceGenerationMode.SERVER.complexity;
 				//else
-					complexity = config.client().worldGenerator().getDistanceGenerationMode().complexity;
+					complexity = CONFIG.client().worldGenerator().getDistanceGenerationMode().complexity;
 					
 				
 				//we create the level position info of the chunk
@@ -680,7 +681,7 @@ public class LodDimension
 	{
 		LodRegion region = getRegion(regionPos.x, regionPos.z);
 		if (region != null)
-			region.getPosToRender(posToRender, playerPosX, playerPosZ, config.client().worldGenerator().getGenerationPriority() == GenerationPriority.NEAR_FIRST);
+			region.getPosToRender(posToRender, playerPosX, playerPosZ, CONFIG.client().worldGenerator().getGenerationPriority() == GenerationPriority.NEAR_FIRST);
 	}
 	
 	/**

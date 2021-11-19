@@ -44,11 +44,12 @@ import com.seibel.lod.core.render.shader.LodShaderProgram;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.handlers.ReflectionHandler;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 
@@ -63,6 +64,12 @@ import net.minecraft.profiler.IProfiler;
  */
 public class LodRenderer
 {
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
+	
+	
 //	/**
 //	 * this is the light used when rendering the LODs,
 //	 * it should be something different from what is used by Minecraft
@@ -74,10 +81,6 @@ public class LodRenderer
 	 * a checkerboard, this can be used for debugging.
 	 */
 	public DebugMode previousDebugMode = DebugMode.OFF;
-	
-	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
-	private final MinecraftRenderWrapper mcRenderer = MinecraftRenderWrapper.INSTANCE;
-	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	private IProfiler profiler;
 	private int farPlaneBlockDistance;
@@ -96,7 +99,7 @@ public class LodRenderer
 	@SuppressWarnings("unused")
 	private int[][][] storageBufferIds;
 	
-	private ChunkPosWrapper vbosCenter = new ChunkPosWrapper(0, 0);
+	private AbstractChunkPosWrapper vbosCenter = FACTORY.createChunkPos();
 	
 	
 	/** This is used to determine if the LODs should be regenerated */
@@ -165,7 +168,7 @@ public class LodRenderer
 			return;
 		}
 		
-		if (mcRenderer.playerHasBlindnessEffect())
+		if (MC_RENDER.playerHasBlindnessEffect())
 		{
 			// if the player is blind don't render LODs,
 			// and don't change minecraft's fog
@@ -193,7 +196,7 @@ public class LodRenderer
 		if ((partialRegen || fullRegen) && !lodBufferBuilderFactory.generatingBuffers && !lodBufferBuilderFactory.newBuffersAvailable())
 		{
 			// generate the LODs on a separate thread to prevent stuttering or freezing
-			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, mc.getPlayerBlockPos(), true);
+			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos(), true);
 			
 			// the regen process has been started,
 			// it will be done when lodBufferBuilder.newBuffersAvailable()
@@ -227,7 +230,7 @@ public class LodRenderer
 		
 		// set the required open GL settings
 		
-		if (config.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME)
+		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME)
 			GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_LINE);
 		else
 			GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_FILL);
@@ -244,12 +247,12 @@ public class LodRenderer
 		
 		
 		Mat4f modelViewMatrix = offsetTheModelViewMatrix(mcModelViewMatrix, partialTicks);
-		vanillaBlockRenderedDistance = mcRenderer.getRenderDistance() * LodUtil.CHUNK_WIDTH;
+		vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		// required for setupFog and setupProjectionMatrix
-		if (mc.getWrappedClientWorld().getDimensionType().hasCeiling())
-			farPlaneBlockDistance = Math.min(config.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
+		if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
+			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
-			farPlaneBlockDistance = config.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
+			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
 		
 		
 		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, partialTicks);
@@ -282,7 +285,7 @@ public class LodRenderer
 		
 		if (vbos != null)
 		{
-			Vec3f cameraDir = mcRenderer.getLookAtVector();
+			Vec3f cameraDir = MC_RENDER.getLookAtVector();
 			
 			// TODO re-enable once rendering is totally working
 			boolean cullingDisabled = true; //LodConfig.client().graphics.advancedGraphicsOption.disableDirectionalCulling.get();
@@ -330,7 +333,7 @@ public class LodRenderer
 							x + vboCenterRegionPos.x - (lodDim.getWidth() / 2),
 							z + vboCenterRegionPos.z - (lodDim.getWidth() / 2));
 					
-					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(mcRenderer.getCameraBlockPosition(), cameraDir, vboPos.blockPos()))
+					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(), cameraDir, vboPos.blockPos()))
 					{
 						// TODO add fog to the fragment shader
 //						if ((x > halfWidth - quarterWidth && x < halfWidth + quarterWidth) 
@@ -459,7 +462,7 @@ public class LodRenderer
 			if (fogQuality == FogQuality.FANCY)
 			{
 				// for more realistic fog when using FAR
-				if (config.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
+				if (CONFIG.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
 					GL15.glFogf(GL15.GL_FOG_START, farPlaneBlockDistance * 1.6f * 0.9f);
 				else
 					GL15.glFogf(GL15.GL_FOG_START, Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f));
@@ -515,7 +518,7 @@ public class LodRenderer
 		// disable fog if Minecraft wasn't rendering fog
 		// or we want it disabled
 		if (!fogSettings.vanillaIsRenderingFog
-			|| config.client().graphics().fogQuality().getDisableVanillaFog())
+			|| CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
 		{
 			// Make fog render a infinite distance away.
 			// This doesn't technically disable Minecraft's fog
@@ -542,7 +545,7 @@ public class LodRenderer
 	private Mat4f offsetTheModelViewMatrix(Mat4f mcModelViewMatrix, float partialTicks)
 	{
 		// get all relevant camera info
-		Vec3d projectedView = mcRenderer.getCameraExactPosition();
+		Vec3d projectedView = MC_RENDER.getCameraExactPosition();
 		
 		// translate the camera relative to the regions' center
 		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
@@ -566,15 +569,15 @@ public class LodRenderer
 		// create the new projection matrix
 		
 		Mat4f lodProj = Mat4f.perspective(
-				mcRenderer.getFov(partialTicks),
-				(float) this.mcRenderer.getScreenWidth() / (float) this.mcRenderer.getScreenHeight(),
-				config.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ? vanillaBlockRenderedDistance / 5 : 1,
+				MC_RENDER.getFov(partialTicks),
+				(float) this.MC_RENDER.getScreenWidth() / (float) this.MC_RENDER.getScreenHeight(),
+				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ? vanillaBlockRenderedDistance / 5 : 1,
 				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
 				
 		
 		// get Minecraft's un-edited projection matrix
 		// (this is before it is zoomed, distorted, etc.)
-		Mat4f defaultMcProj = mcRenderer.getDefaultProjectionMatrix(partialTicks);
+		Mat4f defaultMcProj = MC_RENDER.getDefaultProjectionMatrix(partialTicks);
 		// true here means use "use fov setting" (probably)
 		
 		// this logic strips away the defaultMcProj matrix, so we
@@ -688,7 +691,7 @@ public class LodRenderer
 		
 		
 		FogQuality quality = ReflectionHandler.INSTANCE.getFogQuality();
-		FogDrawOverride override = config.client().graphics().fogQuality().getFogDrawOverride();
+		FogDrawOverride override = CONFIG.client().graphics().fogQuality().getFogDrawOverride();
 		
 		
 		fogSettings.vanillaIsRenderingFog = quality != FogQuality.OFF;
@@ -729,7 +732,7 @@ public class LodRenderer
 			fogSettings.near.quality = FogQuality.FANCY;
 			fogSettings.far.quality = FogQuality.FANCY;
 			
-			switch (config.client().graphics().fogQuality().getFogDistance())
+			switch (CONFIG.client().graphics().fogQuality().getFogDistance())
 			{
 			case NEAR_AND_FAR:
 				fogSettings.near.distance = FogDistance.NEAR;
@@ -756,7 +759,7 @@ public class LodRenderer
 			// fog, since the LODs are separated into a near
 			// and far portion; and fast fog is rendered from the
 			// frustrum's perspective instead of the camera
-			switch (config.client().graphics().fogQuality().getFogDistance())
+			switch (CONFIG.client().graphics().fogQuality().getFogDistance())
 			{
 			case NEAR_AND_FAR:
 			case NEAR:
@@ -783,7 +786,7 @@ public class LodRenderer
 	/** Determines if the LODs should have a fullRegen or partialRegen */
 	private void determineIfLodsShouldRegenerate(LodDimension lodDim, float partialTicks)
 	{
-		short chunkRenderDistance = (short) mcRenderer.getRenderDistance();
+		short chunkRenderDistance = (short) MC_RENDER.getRenderDistance();
 		int vanillaRenderedChunksWidth = chunkRenderDistance * 2 + 2;
 		
 		//=============//
@@ -791,23 +794,23 @@ public class LodRenderer
 		//=============//
 		
 		// check if the view distance changed
-		if (ApiShared.previousLodRenderDistance != config.client().graphics().quality().getLodChunkRenderDistance()
+		if (ApiShared.previousLodRenderDistance != CONFIG.client().graphics().quality().getLodChunkRenderDistance()
 					|| chunkRenderDistance != prevRenderDistance
-					|| prevFogDistance != config.client().graphics().fogQuality().getFogDistance())
+					|| prevFogDistance != CONFIG.client().graphics().fogQuality().getFogDistance())
 		{
 			
 			vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 			DetailDistanceUtil.updateSettings();
 			fullRegen = true;
-			previousPos = LevelPosUtil.createLevelPos((byte) 4, mc.getPlayerChunkPos().getZ(), mc.getPlayerChunkPos().getZ());
-			prevFogDistance = config.client().graphics().fogQuality().getFogDistance();
+			previousPos = LevelPosUtil.createLevelPos((byte) 4, MC.getPlayerChunkPos().getZ(), MC.getPlayerChunkPos().getZ());
+			prevFogDistance = CONFIG.client().graphics().fogQuality().getFogDistance();
 			prevRenderDistance = chunkRenderDistance;
 		}
 		
 		// did the user change the debug setting?
-		if (config.client().advanced().debugging().getDebugMode() != previousDebugMode)
+		if (CONFIG.client().advanced().debugging().getDebugMode() != previousDebugMode)
 		{
-			previousDebugMode = config.client().advanced().debugging().getDebugMode();
+			previousDebugMode = CONFIG.client().advanced().debugging().getDebugMode();
 			fullRegen = true;
 		}
 		
@@ -815,15 +818,15 @@ public class LodRenderer
 		long newTime = System.currentTimeMillis();
 		
 		// check if the player has moved
-		if (newTime - prevPlayerPosTime > config.client().advanced().buffers().getRebuildTimes().playerMoveTimeout)
+		if (newTime - prevPlayerPosTime > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveTimeout)
 		{
 			if (LevelPosUtil.getDetailLevel(previousPos) == 0
-						|| mc.getPlayerChunkPos().getX() != LevelPosUtil.getPosX(previousPos)
-						|| mc.getPlayerChunkPos().getZ() != LevelPosUtil.getPosZ(previousPos))
+						|| MC.getPlayerChunkPos().getX() != LevelPosUtil.getPosX(previousPos)
+						|| MC.getPlayerChunkPos().getZ() != LevelPosUtil.getPosZ(previousPos))
 			{
 				vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 				fullRegen = true;
-				previousPos = LevelPosUtil.createLevelPos((byte) 4, mc.getPlayerChunkPos().getX(), mc.getPlayerChunkPos().getZ());
+				previousPos = LevelPosUtil.createLevelPos((byte) 4, MC.getPlayerChunkPos().getX(), MC.getPlayerChunkPos().getZ());
 			}
 			prevPlayerPosTime = newTime;
 		}
@@ -834,9 +837,9 @@ public class LodRenderer
 		// change in order to rebuild the buffers
 		
 		// the max brightness is 1 and the minimum is 0.2
-		float skyBrightness = lodDim.dimension.hasSkyLight() ? mc.getSkyDarken(partialTicks) : 0.2f;
+		float skyBrightness = lodDim.dimension.hasSkyLight() ? MC.getSkyDarken(partialTicks) : 0.2f;
 		float minLightingDifference;
-		switch (config.client().advanced().buffers().getRebuildTimes())
+		switch (CONFIG.client().advanced().buffers().getRebuildTimes())
 		{
 		case FREQUENT:
 			minLightingDifference = 0.025f;
@@ -856,10 +859,10 @@ public class LodRenderer
 					// (just in case the minLightingDifference is too large to notice the change)
 					|| (skyBrightness == 1.0f && prevSkyBrightness != 1.0f) // noon
 					|| (skyBrightness == 0.2f && prevSkyBrightness != 0.2f) // midnight
-					|| mcRenderer.getGamma() != prevBrightness)
+					|| MC_RENDER.getGamma() != prevBrightness)
 		{
 			fullRegen = true;
-			prevBrightness = mcRenderer.getGamma();
+			prevBrightness = MC_RENDER.getGamma();
 			prevSkyBrightness = skyBrightness;
 		}
 		
@@ -875,7 +878,7 @@ public class LodRenderer
 		
 		
 		// check if the vanilla rendered chunks changed
-		if (newTime - prevVanillaChunkTime > config.client().advanced().buffers().getRebuildTimes().renderedChunkTimeout)
+		if (newTime - prevVanillaChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().renderedChunkTimeout)
 		{
 			if (vanillaRenderedChunksChanged)
 			{
@@ -887,7 +890,7 @@ public class LodRenderer
 		
 		
 		// check if there is any newly generated terrain to show
-		if (newTime - prevChunkTime > config.client().advanced().buffers().getRebuildTimes().chunkChangeTimeout)
+		if (newTime - prevChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().chunkChangeTimeout)
 		{
 			if (lodDim.regenDimensionBuffers)
 			{
@@ -904,15 +907,15 @@ public class LodRenderer
 		//==============//
 		
 		// determine which LODs should not be rendered close to the player
-		HashSet<ChunkPosWrapper> chunkPosToSkip = LodUtil.getNearbyLodChunkPosToSkip(lodDim, mc.getPlayerBlockPos());
+		HashSet<AbstractChunkPosWrapper> chunkPosToSkip = LodUtil.getNearbyLodChunkPosToSkip(lodDim, MC.getPlayerBlockPos());
 		int xIndex;
 		int zIndex;
-		for (ChunkPosWrapper pos : chunkPosToSkip)
+		for (AbstractChunkPosWrapper pos : chunkPosToSkip)
 		{
 			vanillaRenderedChunksEmptySkip = false;
 			
-			xIndex = (pos.getX() - mc.getPlayerChunkPos().getX()) + (chunkRenderDistance + 1);
-			zIndex = (pos.getZ() - mc.getPlayerChunkPos().getZ()) + (chunkRenderDistance + 1);
+			xIndex = (pos.getX() - MC.getPlayerChunkPos().getX()) + (chunkRenderDistance + 1);
+			zIndex = (pos.getZ() - MC.getPlayerChunkPos().getZ()) + (chunkRenderDistance + 1);
 			
 			// sometimes we are given chunks that are outside the render distance,
 			// This prevents index out of bounds exceptions
@@ -931,7 +934,7 @@ public class LodRenderer
 		
 		
 		// if the player is high enough, draw all LODs
-		if (chunkPosToSkip.isEmpty() && mc.getPlayerBlockPos().getY() > 256 && !vanillaRenderedChunksEmptySkip)
+		if (chunkPosToSkip.isEmpty() && MC.getPlayerBlockPos().getY() > 256 && !vanillaRenderedChunksEmptySkip)
 		{
 			vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 			vanillaRenderedChunksChanged = true;

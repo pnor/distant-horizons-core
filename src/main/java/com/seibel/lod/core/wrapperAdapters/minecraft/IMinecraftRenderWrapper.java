@@ -6,7 +6,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 
 /**
  * Contains everything related to
@@ -39,11 +39,7 @@ public interface IMinecraftRenderWrapper
 	
 	/**
 	 * This method returns the ChunkPos of all chunks that Minecraft
-	 * is going to render this frame. <br><br>
-	 * <p>
-	 * Note: This isn't perfect. It will return some chunks that are outside
-	 * the clipping plane. (For example, if you are high above the ground some chunks
-	 * will be incorrectly added, even though they are outside render range).
+	 * is going to render this frame.
 	 */
-	public HashSet<ChunkPosWrapper> getRenderedChunks();
+	public HashSet<AbstractChunkPosWrapper> getRenderedChunks();
 }

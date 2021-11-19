@@ -4,15 +4,10 @@ import com.seibel.lod.core.enums.LodDirection;
 
 public abstract class AbstractBlockPosWrapper
 {
-	public AbstractBlockPosWrapper()
-	{
-		
-	}
+	public AbstractBlockPosWrapper() { }
+	public AbstractBlockPosWrapper(int x, int y, int z) { }
 	
-	public AbstractBlockPosWrapper(int x, int y, int z)
-	{
-		
-	}
+	
 	
 	public abstract void set(int x, int y, int z);
 	

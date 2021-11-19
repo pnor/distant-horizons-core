@@ -51,10 +51,10 @@ public class ClientApi
 	
 	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 	
-	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
-	private final IMinecraftRenderWrapper mcRender = SingletonHandler.get(IMinecraftRenderWrapper.class);
-	private final EventApi eventApi = EventApi.INSTANCE;
-	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final EventApi EVENT_API = EventApi.INSTANCE;
 	
 	/**
 	 * there is some setup that should only happen once,
@@ -79,7 +79,7 @@ public class ClientApi
 		applyConfigOverrides();
 		
 		// clear any out of date objects
-		mc.clearFrameObjectCache();
+		MC.clearFrameObjectCache();
 		
 		try
 		{
@@ -88,31 +88,31 @@ public class ClientApi
 				firstFrameSetup();
 			
 			
-			if (!mc.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
+			if (!MC.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
 				return;
 			
-			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(mc.getCurrentDimension());
+			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension());
 			if (lodDim == null)
 				return;
 			
 			DetailDistanceUtil.updateSettings();
-			eventApi.viewDistanceChangedEvent();
-			eventApi.playerMoveEvent(lodDim);
+			EVENT_API.viewDistanceChangedEvent();
+			EVENT_API.playerMoveEvent(lodDim);
 			
-			lodDim.cutRegionNodesAsync(mc.getPlayerBlockPos().getX(), mc.getPlayerBlockPos().getZ());
-			lodDim.expandOrLoadRegionsAsync(mc.getPlayerBlockPos().getX(), mc.getPlayerBlockPos().getZ());
+			lodDim.cutRegionNodesAsync(MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getZ());
+			lodDim.expandOrLoadRegionsAsync(MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getZ());
 			
 			
 			// Note to self:
 			// if "unspecified" shows up in the pie chart, it is
 			// possibly because the amount of time between sections
 			// is too small for the profiler to measure
-			IProfiler profiler = mc.getProfiler();
+			IProfiler profiler = MC.getProfiler();
 			profiler.pop(); // get out of "terrain"
 			profiler.push("LOD");
 			
 			
-			ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, mc.getProfiler());
+			ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
 			
 			profiler.pop(); // end LOD
 			profiler.push("terrain"); // go back into "terrain"
@@ -120,8 +120,8 @@ public class ClientApi
 			
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
-			ApiShared.previousChunkRenderDistance = mcRender.getRenderDistance();
-			ApiShared.previousLodRenderDistance = config.client().graphics().quality().getLodChunkRenderDistance();
+			ApiShared.previousChunkRenderDistance = MC_RENDER.getRenderDistance();
+			ApiShared.previousLodRenderDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance();
 		}
 		catch (Exception e)
 		{
@@ -140,13 +140,13 @@ public class ClientApi
 //			mc.getPlayer().sendMessage(new StringTextComponent("LOD experimental build 1.5.1"), mc.getPlayer().getUUID());
 //			mc.getPlayer().sendMessage(new StringTextComponent("Here be dragons!"), mc.getPlayer().getUUID());
 			
-			mc.sendChatMessage("Debug settings enabled!");
+			MC.sendChatMessage("Debug settings enabled!");
 			configOverrideReminderPrinted = true;
 		}
 		
 		
 		
-		config.client().advanced().debugging().setDebugKeybindingsEnabled(true);
+		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}
 	
 	

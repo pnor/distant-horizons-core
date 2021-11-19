@@ -22,7 +22,7 @@ package com.seibel.lod.core.render;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 
 /**
@@ -41,7 +41,7 @@ public class RenderUtil
 	 * Returns if the given ChunkPos is in the loaded area of the world.
 	 * @param center the center of the loaded world (probably the player's ChunkPos)
 	 */
-	public static boolean isChunkPosInLoadedArea(ChunkPosWrapper pos, ChunkPosWrapper center)
+	public static boolean isChunkPosInLoadedArea(AbstractChunkPosWrapper pos, AbstractChunkPosWrapper center)
 	{
 		return (pos.getX() >= center.getX() - MC_RENDER.getRenderDistance()
 				&& pos.getX() <= center.getX() + MC_RENDER.getRenderDistance())

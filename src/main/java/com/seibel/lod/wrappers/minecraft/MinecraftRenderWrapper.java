@@ -6,6 +6,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
@@ -112,9 +113,9 @@ public class MinecraftRenderWrapper implements IMinecraftRenderWrapper
 	 * will be incorrectly added, even though they are outside render range).
 	 */
 	@Override
-	public HashSet<ChunkPosWrapper> getRenderedChunks()
+	public HashSet<AbstractChunkPosWrapper> getRenderedChunks()
 	{
-		HashSet<ChunkPosWrapper> loadedPos = new HashSet<>();
+		HashSet<AbstractChunkPosWrapper> loadedPos = new HashSet<>();
 		
 		// Wow, those are some long names!
 		

@@ -41,8 +41,8 @@ import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
  */
 public class Box
 {
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	public static final int ADJACENT_HEIGHT_INDEX = 0;
 	public static final int ADJACENT_DEPTH_INDEX = 1;
@@ -257,7 +257,7 @@ public class Box
 		for (LodDirection lodDirection : DIRECTIONS)
 		{
 			if (!adjShadeDisabled[DIRECTION_INDEX.get(lodDirection)])
-				colorMap[DIRECTION_INDEX.get(lodDirection)] = ColorUtil.applyShade(color, mc.getShade(lodDirection));
+				colorMap[DIRECTION_INDEX.get(lodDirection)] = ColorUtil.applyShade(color, MC.getShade(lodDirection));
 			else
 				colorMap[DIRECTION_INDEX.get(lodDirection)] = color;
 		}
@@ -269,10 +269,10 @@ public class Box
 	 */
 	public int getColor(LodDirection lodDirection)
 	{
-		if (config.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_DETAIL)
+		if (CONFIG.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_DETAIL)
 			return colorMap[DIRECTION_INDEX.get(lodDirection)];
 		else
-			return ColorUtil.applyShade(color, mc.getShade(lodDirection));
+			return ColorUtil.applyShade(color, MC.getShade(lodDirection));
 	}
 	
 	/**

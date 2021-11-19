@@ -3,14 +3,20 @@ package com.seibel.lod.wrappers.chunk;
 import java.util.Objects;
 
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 
-//This class wraps the minecraft ChunkPos class
-public class ChunkPosWrapper
+/**
+ * This class wraps minecraft's ChunkPos class
+ * 
+ * @author James Seibel
+ * @version 11-18-2021
+ */
+public class ChunkPosWrapper extends AbstractChunkPosWrapper
 {
 	private final ChunkPos chunkPos;
 	
@@ -25,9 +31,9 @@ public class ChunkPosWrapper
     }
 
 
-    public ChunkPosWrapper(ChunkPosWrapper newChunkPos)
+    public ChunkPosWrapper(AbstractChunkPosWrapper newChunkPos)
     {
-        this.chunkPos = newChunkPos.chunkPos;
+        this.chunkPos = ((ChunkPosWrapper) newChunkPos).chunkPos;
     }
 
     public ChunkPosWrapper(AbstractBlockPosWrapper blockPos)
@@ -40,31 +46,44 @@ public class ChunkPosWrapper
         this.chunkPos = new ChunkPos(chunkX, chunkZ);
 	}
 	
+    public ChunkPosWrapper()
+    {
+        this.chunkPos = new ChunkPos(0, 0);
+	}
+    
+    
+    
+	@Override
 	public int getX()
 	{
 		return chunkPos.x;
 	}
 	
+	@Override
 	public int getZ()
 	{
 		return chunkPos.z;
 	}
 	
+	@Override
 	public int getMinBlockX()
 	{
 		return chunkPos.getMinBlockX();
 	}
 	
+	@Override
 	public int getMinBlockZ()
 	{
 		return chunkPos.getMinBlockZ();
 	}
 	
+	@Override
 	public int getRegionX()
 	{
 		return chunkPos.getRegionX();
 	}
 	
+	@Override
 	public int getRegionZ()
 	{
 		return chunkPos.getRegionZ();
@@ -75,19 +94,25 @@ public class ChunkPosWrapper
 		return chunkPos;
 	}
 	
-	@Override public boolean equals(Object o)
+	
+	
+	@Override
+	public boolean equals(Object o)
 	{
 		return chunkPos.equals(o);
 	}
 	
-	@Override public int hashCode()
+	@Override
+	public int hashCode()
 	{
 		return Objects.hash(chunkPos);
 	}
 	
-    public BlockPosWrapper getWorldPosition()
-    {
-        BlockPos blockPos = chunkPos.getWorldPosition();
-        return new BlockPosWrapper(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-    }
+	@Override
+	public BlockPosWrapper getWorldPosition()
+	{
+		BlockPos blockPos = chunkPos.getWorldPosition();
+		return new BlockPosWrapper(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+	}
+	
 }

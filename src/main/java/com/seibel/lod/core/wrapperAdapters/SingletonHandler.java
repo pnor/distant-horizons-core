@@ -66,10 +66,12 @@ public class SingletonHandler
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Class<T> objectClass) throws NullPointerException, ClassCastException
 	{
+		//
 		if (!singletons.containsKey(objectClass))
 		{
 			throw new NullPointerException("The singleton [" + objectClass.getSimpleName() + "] was never bound.");
 		}
+		
 		
 		return (T) singletons.get(objectClass);
 	}

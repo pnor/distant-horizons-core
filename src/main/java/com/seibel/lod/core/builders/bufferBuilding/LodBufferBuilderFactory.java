@@ -56,11 +56,12 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 
 /**
  * This object creates the buffers that are
@@ -71,13 +72,14 @@ import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
  */
 public class LodBufferBuilderFactory
 {
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** The thread used to generate new LODs off the main thread. */
 	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main"));
 	/** The threads used to generate buffers. */
-	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(config.client().advanced().threading().getNumberOfBufferBuilderThreads(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
+	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
 	
 	/**
 	 * When uploading to a buffer that is too small,
@@ -144,8 +146,8 @@ public class LodBufferBuilderFactory
 	 * This is the ChunkPosWrapper the player was at the last time the buffers were built.
 	 * IE the center of the buffers last time they were built
 	 */
-	private volatile ChunkPosWrapper drawableCenterChunkPos = new ChunkPosWrapper(0, 0);
-	private volatile ChunkPosWrapper buildableCenterChunkPos = new ChunkPosWrapper(0, 0);
+	private volatile AbstractChunkPosWrapper drawableCenterChunkPos = WRAPPER_FACTORY.createChunkPos();
+	private volatile AbstractChunkPosWrapper buildableCenterChunkPos = WRAPPER_FACTORY.createChunkPos();
 	
 	
 	
@@ -197,7 +199,7 @@ public class LodBufferBuilderFactory
 		try
 		{
 			// round the player's block position down to the nearest chunk BlockPos
-			ChunkPosWrapper playerChunkPos = new ChunkPosWrapper(playerBlockPos);
+			AbstractChunkPosWrapper playerChunkPos = WRAPPER_FACTORY.createChunkPos(playerBlockPos);
 			AbstractBlockPosWrapper playerBlockPosRounded = playerChunkPos.getWorldPosition();
 			
 			
@@ -232,7 +234,7 @@ public class LodBufferBuilderFactory
 			// create the nodeToRenderThreads //
 			//================================//
 			
-			skyLightPlayer = mc.getWrappedClientWorld().getSkyLight(playerBlockPos);
+			skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerBlockPos);
 			
 			for (int xRegion = 0; xRegion < lodDim.getWidth(); xRegion++)
 			{
@@ -405,7 +407,7 @@ public class LodBufferBuilderFactory
 										break;
 									
 									//We send the call to create the vertices
-									config.client().graphics().advancedGraphics().getLodTemplate().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
+									CONFIG.client().graphics().advancedGraphics().getLodTemplate().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
 											detailLevel, posX, posZ, box, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
@@ -475,7 +477,7 @@ public class LodBufferBuilderFactory
 		}
 	}
 	
-	private boolean isThisPositionGoingToBeRendered(byte detailLevel, int posX, int posZ, ChunkPosWrapper playerChunkPos, boolean[][] vanillaRenderedChunks, int gameChunkRenderDistance){
+	private boolean isThisPositionGoingToBeRendered(byte detailLevel, int posX, int posZ, AbstractChunkPosWrapper playerChunkPos, boolean[][] vanillaRenderedChunks, int gameChunkRenderDistance){
 		
 		
 		// skip any chunks that Minecraft is going to render
@@ -484,7 +486,7 @@ public class LodBufferBuilderFactory
 
 		// check if the chunk is on the border
 		boolean isItBorderPos;
-		if (config.client().graphics().advancedGraphics().getVanillaOverdraw() == VanillaOverdraw.BORDER)
+		if (CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw() == VanillaOverdraw.BORDER)
 			isItBorderPos = LodUtil.isBorderChunk(vanillaRenderedChunks, chunkXdist + gameChunkRenderDistance + 1, chunkZdist + gameChunkRenderDistance + 1);
 		else
 			isItBorderPos = false;
@@ -762,12 +764,12 @@ public class LodBufferBuilderFactory
 			glProxy.setGlContext(GlProxyContext.LOD_BUILDER);
 			
 			// determine the upload method
-			GpuUploadMethod uploadMethod = config.client().graphics().advancedGraphics().getGpuUploadMethod();
+			GpuUploadMethod uploadMethod = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod();
 			if (!glProxy.bufferStorageSupported && uploadMethod == GpuUploadMethod.BUFFER_STORAGE)
 			{
 				// if buffer storage isn't supported
 				// default to SUB_DATA
-				config.client().graphics().advancedGraphics().setGpuUploadMethod(GpuUploadMethod.SUB_DATA);
+				CONFIG.client().graphics().advancedGraphics().setGpuUploadMethod(GpuUploadMethod.SUB_DATA);
 				uploadMethod = GpuUploadMethod.SUB_DATA;
 			}
 			
@@ -958,9 +960,9 @@ public class LodBufferBuilderFactory
 	{
 		public final LodVertexBuffer[][][] vbos;
 		public final int[][][] storageBufferIds;
-		public final ChunkPosWrapper drawableCenterChunkPos;
+		public final AbstractChunkPosWrapper drawableCenterChunkPos;
 		
-		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, ChunkPosWrapper newDrawableCenterChunkPos)
+		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, AbstractChunkPosWrapper newDrawableCenterChunkPos)
 		{
 			vbos = newVbos;
 			storageBufferIds = newStorageBufferIds;

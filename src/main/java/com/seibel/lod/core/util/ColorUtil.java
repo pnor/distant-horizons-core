@@ -23,7 +23,6 @@ import java.awt.Color;
 
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * 
@@ -33,7 +32,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  */
 public class ColorUtil
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	
 	public static int rgbToInt(int red, int green, int blue)
@@ -89,7 +88,7 @@ public class ColorUtil
 	/** This method apply the lightmap to the color to use */
 	public static int applyLightValue(int color, int skyLight, int blockLight)
 	{
-		int lightColor = mc.getColorIntFromLightMap(blockLight, skyLight);
+		int lightColor = MC.getColorIntFromLightMap(blockLight, skyLight);
 		int red = ColorUtil.getBlue(lightColor);
 		int green = ColorUtil.getGreen(lightColor);
 		int blue = ColorUtil.getRed(lightColor);

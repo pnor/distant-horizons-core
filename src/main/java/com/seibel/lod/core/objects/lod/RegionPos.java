@@ -20,8 +20,10 @@
 package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
+import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 
 /**
  * This object is similar to ChunkPos or BlockPos.
@@ -31,15 +33,14 @@ import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
  */
 public class RegionPos
 {
+	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
+	
+	
 	public int x;
 	public int z;
 	
 	
-	/**
-	 * Default Constructor <br><br>
-	 * <p>
-	 * Sets x and z to 0
-	 */
+	/** Sets x and z to 0 */
 	public RegionPos()
 	{
 		x = 0;
@@ -56,20 +57,20 @@ public class RegionPos
 	/** Converts from a BlockPos to a RegionPos */
 	public RegionPos(AbstractBlockPosWrapper pos)
 	{
-		this(new ChunkPosWrapper(pos));
+		this(WRAPPER_FACTORY.createChunkPos(pos));
 	}
 	
 	/** Converts from a ChunkPos to a RegionPos */
-	public RegionPos(ChunkPosWrapper pos)
+	public RegionPos(AbstractChunkPosWrapper pos)
 	{
 		x = Math.floorDiv(pos.getX(), LodUtil.REGION_WIDTH_IN_CHUNKS);
 		z = Math.floorDiv(pos.getZ(), LodUtil.REGION_WIDTH_IN_CHUNKS);
 	}
 	
 	/** Returns the ChunkPos at the center of this region */
-	public ChunkPosWrapper chunkPos()
+	public AbstractChunkPosWrapper chunkPos()
 	{
-		return new ChunkPosWrapper(
+		return WRAPPER_FACTORY.createChunkPos(
 				(x * LodUtil.REGION_WIDTH_IN_CHUNKS) + LodUtil.REGION_WIDTH_IN_CHUNKS / 2,
 				(z * LodUtil.REGION_WIDTH_IN_CHUNKS) + LodUtil.REGION_WIDTH_IN_CHUNKS / 2);
 	}

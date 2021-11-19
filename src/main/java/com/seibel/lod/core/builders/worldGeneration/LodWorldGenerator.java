@@ -34,12 +34,12 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 import net.minecraftforge.common.WorldWorkerManager;
 
@@ -51,12 +51,13 @@ import net.minecraftforge.common.WorldWorkerManager;
  */
 public class LodWorldGenerator
 {
-	private static final IMinecraftWrapper mc = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
+	
 	
 	/** This holds the thread used to generate new LODs off the main thread. */
 	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator"));
-	
-	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/** we only want to queue up one generator thread at a time */
 	private boolean generatorThreadRunning = false;
@@ -77,12 +78,13 @@ public class LodWorldGenerator
 	 */
 	public final AtomicInteger numberOfChunksWaitingToGenerate = new AtomicInteger(0);
 	
-	public final Set<ChunkPosWrapper> positionsWaitingToBeGenerated = new HashSet<>();
+	public final Set<AbstractChunkPosWrapper> positionsWaitingToBeGenerated = new HashSet<>();
 	
 	/**
 	 * Singleton copy of this object
 	 */
 	public static final LodWorldGenerator INSTANCE = new LodWorldGenerator();
+	
 	
 	
 	private LodWorldGenerator()
@@ -97,23 +99,23 @@ public class LodWorldGenerator
 	 */
 	public void queueGenerationRequests(LodDimension lodDim, LodRenderer renderer, LodBuilder lodBuilder)
 	{
-		if (config.client().worldGenerator().getDistanceGenerationMode() != DistanceGenerationMode.NONE
+		if (CONFIG.client().worldGenerator().getDistanceGenerationMode() != DistanceGenerationMode.NONE
 				&& !generatorThreadRunning
-				&& mc.hasSinglePlayerServer())
+				&& MC.hasSinglePlayerServer())
 		{
 			// the thread is now running, don't queue up another thread
 			generatorThreadRunning = true;
 			
 			// just in case the config changed
-			maxChunkGenRequests = config.client().advanced().threading().getNumberOfWorldGenerationThreads() * 8;
+			maxChunkGenRequests = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads() * 8;
 			
 			Thread generatorThread = new Thread(() ->
 			{
 				try
 				{
 					// round the player's block position down to the nearest chunk BlockPos
-					int playerPosX = mc.getPlayerBlockPos().getX();
-					int playerPosZ = mc.getPlayerBlockPos().getZ();
+					int playerPosX = MC.getPlayerBlockPos().getX();
+					int playerPosZ = MC.getPlayerBlockPos().getZ();
 					
 					
 					//=======================================//
@@ -147,7 +149,7 @@ public class LodWorldGenerator
 							posZ = posToGenerate.getNthPosZ(nearIndex, true);
 							nearIndex++;
 							
-							ChunkPosWrapper chunkPos = new ChunkPosWrapper(LevelPosUtil.getChunkPos(detailLevel, posX), LevelPosUtil.getChunkPos(detailLevel, posZ));
+							AbstractChunkPosWrapper chunkPos = WRAPPER_FACTORY.createChunkPos(LevelPosUtil.getChunkPos(detailLevel, posX), LevelPosUtil.getChunkPos(detailLevel, posZ));
 							
 							// prevent generating the same chunk multiple times
 							if (positionsWaitingToBeGenerated.contains(chunkPos))
@@ -172,7 +174,7 @@ public class LodWorldGenerator
 							posZ = posToGenerate.getNthPosZ(farIndex, false);
 							farIndex++;
 							
-							ChunkPosWrapper chunkPos = new ChunkPosWrapper(LevelPosUtil.getChunkPos(detailLevel, posX), LevelPosUtil.getChunkPos(detailLevel, posZ));
+							AbstractChunkPosWrapper chunkPos = WRAPPER_FACTORY.createChunkPos(LevelPosUtil.getChunkPos(detailLevel, posX), LevelPosUtil.getChunkPos(detailLevel, posZ));
 							
 							// don't add more to the generation queue then allowed
 							if (numberOfChunksWaitingToGenerate.get() >= maxChunkGenRequests)

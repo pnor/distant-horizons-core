@@ -29,9 +29,9 @@ import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
+import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.worldGeneration.WorldGeneratorWrapper;
 
 import net.minecraftforge.common.WorldWorkerManager.IWorker;
@@ -44,16 +44,16 @@ import net.minecraftforge.common.WorldWorkerManager.IWorker;
  */
 public class LodGenWorker implements IWorker // TODO is there a way to have this fabric/forge independent?
 {
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
-	public static ExecutorService genThreads = Executors.newFixedThreadPool(config.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+	public static ExecutorService genThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	
 	private boolean threadStarted = false;
 	private final LodChunkGenThread thread;
 	
 	
 	
-	public LodGenWorker(ChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
+	public LodGenWorker(AbstractChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
 			LodBuilder newLodBuilder,
 			LodDimension newLodDimension, IWorldWrapper serverWorld)
 	{
@@ -82,7 +82,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 	{
 		if (!threadStarted)
 		{
-			if (config.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.SERVER)
+			if (CONFIG.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.SERVER)
 			{
 				// if we are using SERVER generation that has to be done
 				// synchronously to prevent crashing and harmful
@@ -124,9 +124,9 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 		public final LodDimension lodDim;
 		public final DistanceGenerationMode generationMode;
 		
-		private final ChunkPosWrapper pos;
+		private final AbstractChunkPosWrapper pos;
 		
-		public LodChunkGenThread(ChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
+		public LodChunkGenThread(AbstractChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
 				LodBuilder newLodBuilder,
 				LodDimension newLodDimension, IWorldWrapper worldWrapper)
 		{
@@ -220,7 +220,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 		{
 			genThreads.shutdownNow();
 		}
-		genThreads = Executors.newFixedThreadPool(config.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+		genThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	}
 	
 }
