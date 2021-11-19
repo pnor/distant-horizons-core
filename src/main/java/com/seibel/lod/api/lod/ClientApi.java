@@ -22,6 +22,7 @@ package com.seibel.lod.api.lod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.seibel.lod.ModInfo;
 import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -47,7 +48,7 @@ import net.minecraft.profiler.IProfiler;
 public class ClientApi
 {
 	public static final ClientApi INSTANCE = new ClientApi();
-	public static final Logger LOGGER = LogManager.getLogger("LOD");
+	public static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME);
 	
 	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 	

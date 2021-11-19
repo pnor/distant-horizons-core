@@ -49,8 +49,8 @@ import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperAdapters.handlers.IReflectionHandler;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.wrappers.handlers.ReflectionHandler;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 
 import net.minecraft.profiler.IProfiler;
@@ -67,6 +67,7 @@ public class LodRenderer
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	
@@ -175,7 +176,6 @@ public class LodRenderer
 			// which blindness relies on.
 			return;
 		}
-		
 		
 		
 		
@@ -690,7 +690,7 @@ public class LodRenderer
 		NearFarFogSettings fogSettings = new NearFarFogSettings();
 		
 		
-		FogQuality quality = ReflectionHandler.INSTANCE.getFogQuality();
+		FogQuality quality = REFLECTION_HANDLER.getFogQuality();
 		FogDrawOverride override = CONFIG.client().graphics().fogQuality().getFogDrawOverride();
 		
 		

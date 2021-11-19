@@ -22,20 +22,28 @@ package com.seibel.lod.wrappers.handlers;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import com.seibel.lod.api.lod.ClientApi;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.seibel.lod.ModInfo;
 import com.seibel.lod.core.enums.rendering.FogQuality;
 import com.seibel.lod.core.objects.math.Mat4f;
+import com.seibel.lod.core.wrapperAdapters.handlers.IReflectionHandler;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
- * This object is used to get variables from methods
- * where they are private. Specifically the fog setting
- * in Optifine.
+ * A singleton used to get variables from methods
+ * where they are private or potentially absent. 
+ * Specifically the fog setting in Optifine or the
+ * presence/absence of other mods.
+ * 
  * @author James Seibel
- * @version 9 -25-2021
+ * @version 11-18-2021
  */
-public class ReflectionHandler
+public class ReflectionHandler implements IReflectionHandler
 {
+	private static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME + "-" + ReflectionHandler.class.getSimpleName());
+	
 	public static final ReflectionHandler INSTANCE = new ReflectionHandler();
 	
 	public Field ofFogField = null;
@@ -49,9 +57,7 @@ public class ReflectionHandler
 	}
 	
 	
-	/**
-	 * finds the Optifine fog type field
-	 */
+	/** finds the Optifine fog type field */
 	private void setupFogField()
 	{
 		// get every variable from the entity renderer
@@ -70,7 +76,7 @@ public class ReflectionHandler
 		// we didn't find the field,
 		// either optifine isn't installed, or
 		// optifine changed the name of the variable
-		ClientApi.LOGGER.info(ReflectionHandler.class.getSimpleName() + ": unable to find the Optifine fog field. If Optifine isn't installed this can be ignored.");
+		LOGGER.info(ReflectionHandler.class.getSimpleName() + ": unable to find the Optifine fog field. If Optifine isn't installed this can be ignored.");
 	}
 	
 	
@@ -78,6 +84,7 @@ public class ReflectionHandler
 	 * Get what type of fog optifine is currently set to render.
 	 * @return the fog quality
 	 */
+	@Override
 	public FogQuality getFogQuality()
 	{
 		if (ofFogField == null)
@@ -116,8 +123,11 @@ public class ReflectionHandler
 		}
 	}
 	
-	/** Detect if Vivecraft is present using reflection. Attempts to find the "VRRenderer" class. */
-	public boolean detectVivecraft()
+	
+	
+	/** Detect if Vivecraft is present. Attempts to find the "VRRenderer" class. */
+	@Override
+	public boolean vivecraftPresent()
 	{
 		try
 		{
@@ -126,31 +136,32 @@ public class ReflectionHandler
 		}
 		catch (ClassNotFoundException ignored)
 		{
-			System.out.println("Vivecraft not detected.");
+			LOGGER.info(ReflectionHandler.class.getSimpleName() + ": Vivecraft not detected.");
 		}
 		return false;
 	}
 	
 	/**
-	 * Modifies a projection matrix's clip planes.
-	 * The projection matrix must be in a column-major format.
+	 * Modifies the projection matrix's clip planes.
+	 * The projection matrix must be in column-major format.
 	 * 
 	 * @param projectionMatrix The projection matrix to be modified.
-	 * @param nearClipPlane the new near clip plane value.
-	 * @param farClipPlane the new far clip plane value.
+	 * @param newNearClipPlane the new near clip plane value.
+	 * @param newFarClipPlane the new far clip plane value.
 	 * @return The modified matrix.
 	 */
-	public Mat4f Matrix4fModifyClipPlanes(Mat4f projectionMatrix, float nearClipPlane, float farClipPlane)
+	@Override
+	public Mat4f ModifyProjectionClipPlanes(Mat4f projectionMatrix, float newNearClipPlane, float newFarClipPlane)
 	{
 		// find the matrix values.
-		float nearMatrixValue = -((farClipPlane + nearClipPlane) / (farClipPlane - nearClipPlane));
-		float farMatrixValue = -((2 * farClipPlane * nearClipPlane) / (farClipPlane - nearClipPlane));
+		float nearMatrixValue = -((newFarClipPlane + newNearClipPlane) / (newFarClipPlane - newNearClipPlane));
+		float farMatrixValue = -((2 * newFarClipPlane * newNearClipPlane) / (newFarClipPlane - newNearClipPlane));
 		
 		try
 		{
 			// TODO this was originally created before we had the Mat4f object,
 			// so this doesn't need to be done with reflection anymore.
-			// And should be moved to the LodRenderer
+			// And should be moved to RenderUtil
 			
 			// get the fields of the projectionMatrix
 			Field[] fields = projectionMatrix.getClass().getDeclaredFields();
