@@ -28,12 +28,15 @@ import java.util.stream.Stream;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.wrappers.WrapperUtil;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -85,7 +88,7 @@ public class LodServerWorld implements ISeedReader
 	
 	
 	@Override
-	public int getHeight(Type heightmapType, int x, int z)
+	public int getHeight(Heightmap.Type heightmapType, int x, int z)
 	{
 		// make sure the block position is set relative to the chunk
 		x = x % LodUtil.CHUNK_WIDTH;

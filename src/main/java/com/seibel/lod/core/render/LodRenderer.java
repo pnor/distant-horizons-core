@@ -51,9 +51,8 @@ import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.handlers.IReflectionHandler;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IProfilerWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
-
-import net.minecraft.profiler.IProfiler;
 
 /**
  * This is where all the magic happens. <br>
@@ -155,7 +154,7 @@ public class LodRenderer
 	 * @param mcProjectionMatrix 
 	 * @param partialTicks how far into the current tick this method was called.
 	 */
-	public void drawLODs(LodDimension lodDim, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfiler profiler)
+	public void drawLODs(LodDimension lodDim, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfilerWrapper profiler)
 	{
 		//=================================//
 		// determine if LODs should render //

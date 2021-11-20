@@ -28,6 +28,7 @@ import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IProfilerWrapper;
 import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
@@ -52,7 +53,6 @@ import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
-import net.minecraft.profiler.IProfiler;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -78,6 +78,9 @@ public class MinecraftWrapper implements IMinecraftWrapper
 	 * Time, dimension, brightness setting, etc.
 	 */
 	private NativeImage lightMap = null;
+	
+	private ProfilerWrapper profilerWrapper;
+	
 	
 	private MinecraftWrapper()
 	{
@@ -286,9 +289,14 @@ public class MinecraftWrapper implements IMinecraftWrapper
 	}
 	
 	@Override
-	public IProfiler getProfiler()
+	public IProfilerWrapper getProfiler()
 	{
-		return mc.getProfiler();
+		if (profilerWrapper == null)
+			profilerWrapper = new ProfilerWrapper(mc.getProfiler());
+		else if (mc.getProfiler() != profilerWrapper.profiler)
+			profilerWrapper.profiler = mc.getProfiler();
+		
+		return profilerWrapper;
 	}
 	
 	public ClientPlayNetHandler getConnection()

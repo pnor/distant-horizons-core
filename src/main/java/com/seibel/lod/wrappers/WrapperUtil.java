@@ -1,5 +1,7 @@
 package com.seibel.lod.wrappers;
 
+import net.minecraft.world.gen.Heightmap;
+
 public class WrapperUtil
 {
 

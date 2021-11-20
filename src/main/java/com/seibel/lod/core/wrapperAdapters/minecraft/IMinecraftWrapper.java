@@ -30,8 +30,6 @@ import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 
-import net.minecraft.profiler.IProfiler;
-
 /**
  * A singleton that wraps the Minecraft class
  * to allow for easier movement between Minecraft versions.
@@ -117,7 +115,7 @@ public interface IMinecraftWrapper
 	
 	public File getGameDirectory();
 	
-	public IProfiler getProfiler();
+	public IProfilerWrapper getProfiler();
 	
 	public float getSkyDarken(float partialTicks);
 	

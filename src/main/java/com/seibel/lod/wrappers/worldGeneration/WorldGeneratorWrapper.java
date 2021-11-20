@@ -23,6 +23,7 @@ import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.util.palette.UpgradeData;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -163,7 +164,7 @@ public class WorldGeneratorWrapper extends AbstractWorldGeneratorWrapper
 			}// z
 		}// x
 		
-		chunk.setHeightmap(LodUtil.DEFAULT_HEIGHTMAP, heightmap.getRawData());
+		chunk.setHeightmap(WrapperUtil.DEFAULT_HEIGHTMAP, heightmap.getRawData());
 		
 		
 		if (!inTheEnd)

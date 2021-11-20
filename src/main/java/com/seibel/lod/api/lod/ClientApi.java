@@ -34,8 +34,7 @@ import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-
-import net.minecraft.profiler.IProfiler;
+import com.seibel.lod.core.wrapperAdapters.minecraft.IProfilerWrapper;
 
 /**
  * This holds the methods that should be called
@@ -108,7 +107,7 @@ public class ClientApi
 			// if "unspecified" shows up in the pie chart, it is
 			// possibly because the amount of time between sections
 			// is too small for the profiler to measure
-			IProfiler profiler = MC.getProfiler();
+			IProfilerWrapper profiler = MC.getProfiler();
 			profiler.pop(); // get out of "terrain"
 			profiler.push("LOD");
 			
