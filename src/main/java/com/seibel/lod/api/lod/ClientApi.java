@@ -22,7 +22,7 @@ package com.seibel.lod.api.lod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.seibel.lod.ModInfo;
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;

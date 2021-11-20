@@ -27,7 +27,7 @@ import org.apache.logging.log4j.LogManager;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
-import com.seibel.lod.ModInfo;
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.BufferRebuildTimes;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;

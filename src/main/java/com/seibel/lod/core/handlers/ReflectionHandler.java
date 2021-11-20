@@ -24,7 +24,7 @@ import java.lang.reflect.Field;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.seibel.lod.ModInfo;
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.FogQuality;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.wrapperAdapters.handlers.IReflectionHandler;

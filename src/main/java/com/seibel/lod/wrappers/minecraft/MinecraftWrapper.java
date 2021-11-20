@@ -23,8 +23,8 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 
-import com.seibel.lod.ModInfo;
 import com.seibel.lod.api.lod.ClientApi;
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;

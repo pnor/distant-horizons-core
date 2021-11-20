@@ -19,7 +19,7 @@
 
 package com.seibel.lod.api.forge;
 
-import com.seibel.lod.ModInfo;
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.wrappers.DependencySetup;
 
 import net.minecraftforge.common.MinecraftForge;

@@ -28,8 +28,8 @@ import org.lwjgl.opengl.GLCapabilities;
 
 import com.mojang.blaze3d.systems.IRenderCall;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.seibel.lod.ModInfo;
 import com.seibel.lod.api.lod.ClientApi;
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.GlProxyContext;
 import com.seibel.lod.core.render.shader.LodShader;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
