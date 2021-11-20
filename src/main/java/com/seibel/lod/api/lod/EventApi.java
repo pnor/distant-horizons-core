@@ -92,7 +92,7 @@ public class EventApi
 	
 	public void chunkLoadEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
 	{
-		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.SERVER);
+		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.FULL);
 	}
 	
 	public void worldSaveEvent()

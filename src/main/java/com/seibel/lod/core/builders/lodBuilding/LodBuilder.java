@@ -93,7 +93,7 @@ public class LodBuilder
 	
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
 	{
-		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.SERVER);
+		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL);
 	}
 	
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode)

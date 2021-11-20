@@ -77,10 +77,10 @@ public enum DistanceGenerationMode
 	 * Ask the server to generate/load each chunk.
 	 * This is the most compatible, but causes server/simulation lag.
 	 * This will also show player made structures if you
-	 * are adding the mod to a pre-existing world.
+	 * are adding the mod on a pre-existing world.
 	 * Singlethreaded - Slow (15-50 ms, with spikes up to 200 ms)
 	 */
-	SERVER((byte) 5);
+	FULL((byte) 5);
 	
 	
 	/**

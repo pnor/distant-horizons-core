@@ -52,7 +52,7 @@ public class LodBuilderConfig
 		useHeightmap = false;
 		useBiomeColors = false;
 		useSolidBlocksInColorGen = true;
-		distanceGenerationMode = DistanceGenerationMode.SERVER;
+		distanceGenerationMode = DistanceGenerationMode.FULL;
 	}
 	
 	/**

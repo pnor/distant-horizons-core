@@ -16,6 +16,7 @@ import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperAdapters.worldGeneration.IWorldGeneratorWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
@@ -43,7 +44,7 @@ import net.minecraft.world.server.ServerWorldLightManager;
  * @author James Seibel
  * @version 11-13-2021
  */
-public class WorldGeneratorWrapper
+public class WorldGeneratorWrapper implements IWorldGeneratorWrapper
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
@@ -73,7 +74,8 @@ public class WorldGeneratorWrapper
 
 	
 	/** takes about 2-5 ms */
-	public void generateUsingBiomesOnly(AbstractChunkPosWrapper pos, DistanceGenerationMode generationMode)
+	@Override
+	public void generateBiomesOnly(AbstractChunkPosWrapper pos, DistanceGenerationMode generationMode)
 	{
 		List<IChunk> chunkList = new LinkedList<>();
 		ChunkPrimer chunk = new ChunkPrimer(((ChunkPosWrapper) pos).getChunkPos(), UpgradeData.EMPTY);
@@ -183,7 +185,8 @@ public class WorldGeneratorWrapper
 	
 	
 	/** takes about 10 - 20 ms */
-	public void generateUsingSurface(AbstractChunkPosWrapper pos)
+	@Override
+	public void generateSurface(AbstractChunkPosWrapper pos)
 	{
 		List<IChunk> chunkList = new LinkedList<>();
 		ChunkPrimer chunk = new ChunkPrimer(((ChunkPosWrapper) pos).getChunkPos(), UpgradeData.EMPTY);
@@ -223,7 +226,8 @@ public class WorldGeneratorWrapper
 	 * Causes concurrentModification Exceptions,
 	 * which could cause instability or world generation bugs
 	 */
-	public void generateUsingFeatures(AbstractChunkPosWrapper pos)
+	@Override
+	public void generateFeatures(AbstractChunkPosWrapper pos)
 	{
 		List<IChunk> chunkList = new LinkedList<>();
 		ChunkPrimer chunk = new ChunkPrimer(((ChunkPosWrapper) pos).getChunkPos(), UpgradeData.EMPTY);
@@ -334,17 +338,20 @@ public class WorldGeneratorWrapper
 	
 	
 	/**
-	 * on pre generated chunks 0 - 1 ms
-	 * on un generated chunks 0 - 50 ms
-	 * with the median seeming to hover around 15 - 30 ms
-	 * and outliers in the 100 - 200 ms range
+	 * Generates using MC's ServerWorld. 
+	 * <p>
+	 * on pre generated chunks 0 - 1 ms <br>
+	 * on un generated chunks 0 - 50 ms <br>
+	 * with the median seeming to hover around 15 - 30 ms <br>
+	 * and outliers in the 100 - 200 ms range <br>
 	 * <p>
 	 * Note this should not be multithreaded and does cause server/simulation lag
 	 * (Higher lag for generating than loading)
 	 */
-	public void generateWithServer(AbstractChunkPosWrapper pos)
+	@Override
+	public void generateFull(AbstractChunkPosWrapper pos)
 	{
-		lodBuilder.generateLodNodeFromChunk(lodDim,  new ChunkWrapper(serverWorld.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FEATURES)), new LodBuilderConfig(DistanceGenerationMode.SERVER));
+		lodBuilder.generateLodNodeFromChunk(lodDim, new ChunkWrapper(serverWorld.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FEATURES)), new LodBuilderConfig(DistanceGenerationMode.FULL));
 	}
 	
 	

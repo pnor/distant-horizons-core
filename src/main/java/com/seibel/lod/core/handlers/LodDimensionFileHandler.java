@@ -129,7 +129,7 @@ public class LodDimensionFileHandler
 				{
 					//there is no file for current gen mode
 					//search others above current from the most to the least detailed
-					DistanceGenerationMode tempGenMode = DistanceGenerationMode.SERVER;
+					DistanceGenerationMode tempGenMode = DistanceGenerationMode.FULL;
 					while (tempGenMode != generationMode)
 					{
 						fileName = getFileNameAndPathForRegion(regionX, regionZ, tempGenMode, tempDetailLevel, verticalQuality);
@@ -140,7 +140,7 @@ public class LodDimensionFileHandler
 								break;
 						}
 						//decrease gen mode
-						if (tempGenMode == DistanceGenerationMode.SERVER)
+						if (tempGenMode == DistanceGenerationMode.FULL)
 							tempGenMode = DistanceGenerationMode.FEATURES;
 						else if (tempGenMode == DistanceGenerationMode.FEATURES)
 							tempGenMode = DistanceGenerationMode.SURFACE;

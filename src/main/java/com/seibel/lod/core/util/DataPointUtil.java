@@ -271,7 +271,7 @@ public class DataPointUtil
 		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
 		
 		
-		int genMode = DistanceGenerationMode.SERVER.complexity;
+		int genMode = DistanceGenerationMode.FULL.complexity;
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		boolean allDefault;
@@ -446,7 +446,7 @@ public class DataPointUtil
 			int tempBlue = 0;
 			int tempLightBlock = 0;
 			int tempLightSky = 0;
-			byte tempGenMode = DistanceGenerationMode.SERVER.complexity;
+			byte tempGenMode = DistanceGenerationMode.FULL.complexity;
 			allEmpty = true;
 			allVoid = true;
 			allDefault = true;

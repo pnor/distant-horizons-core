@@ -82,7 +82,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 	{
 		if (!threadStarted)
 		{
-			if (CONFIG.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.SERVER)
+			if (CONFIG.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.FULL)
 			{
 				// if we are using SERVER generation that has to be done
 				// synchronously to prevent crashing and harmful
@@ -155,19 +155,19 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 					case BIOME_ONLY:
 					case BIOME_ONLY_SIMULATE_HEIGHT:
 						// fastest
-						worldGenWrapper.generateUsingBiomesOnly(pos, generationMode);
+						worldGenWrapper.generateBiomesOnly(pos, generationMode);
 						break;
 					case SURFACE:
 						// faster
-						worldGenWrapper.generateUsingSurface(pos);
+						worldGenWrapper.generateSurface(pos);
 						break;
 					case FEATURES:
 						// fast
-						worldGenWrapper.generateUsingFeatures(pos);
+						worldGenWrapper.generateFeatures(pos);
 						break;
-					case SERVER:
+					case FULL:
 						// very slow
-						worldGenWrapper.generateWithServer(pos);
+						worldGenWrapper.generateFull(pos);
 						break;
 					}
 					
