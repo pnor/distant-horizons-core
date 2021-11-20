@@ -490,9 +490,6 @@ public class LodRenderer
 		
 		GL15.glEnable(GL15.GL_FOG);
 		GL15.glFogi(GL15.GL_FOG_MODE, GL15.GL_LINEAR);
-		
-		if (GlProxy.getInstance().fancyFogAvailable)
-			GL15.glFogi(NVFogDistance.GL_FOG_DISTANCE_MODE_NV, glFogDistanceMode);
 	}
 	
 	/** 
@@ -507,10 +504,6 @@ public class LodRenderer
 		GL15.glFogf(GL15.GL_FOG_START, defaultFogStartDist);
 		GL15.glFogf(GL15.GL_FOG_END, defaultFogEndDist);
 		GL15.glFogi(GL15.GL_FOG_MODE, defaultFogMode);
-		
-		// this setting is only valid if the GPU supports fancy fog
-		if (GlProxy.getInstance().fancyFogAvailable)
-			GL15.glFogi(NVFogDistance.GL_FOG_DISTANCE_MODE_NV, defaultFogDistance);
 		
 		// disable fog if Minecraft wasn't rendering fog
 		// or we want it disabled
@@ -712,13 +705,6 @@ public class LodRenderer
 		case OPTIFINE_SETTING:
 			// don't override anything
 			break;
-		}
-		
-		
-		// only use fancy fog if the user's GPU can deliver
-		if (!GlProxy.getInstance().fancyFogAvailable && quality == FogQuality.FANCY)
-		{
-			quality = FogQuality.FAST;
 		}
 		
 		
