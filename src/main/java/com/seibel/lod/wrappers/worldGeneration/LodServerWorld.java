@@ -64,9 +64,10 @@ import net.minecraft.world.storage.IWorldInfo;
 
 /**
  * This is a fake ServerWorld used when generating features.
- * This allows us to keep each LodChunk generation independent
- * of the actual ServerWorld, allowing us
- * to multithread generation.
+ * It allows us to keep each LodChunk generation independent
+ * of the actual ServerWorld, allowing
+ * multithread generation.
+ * 
  * @author James Seibel
  * @version 7-26-2021
  */
