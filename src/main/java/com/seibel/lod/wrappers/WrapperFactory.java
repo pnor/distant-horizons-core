@@ -1,16 +1,21 @@
 package com.seibel.lod.wrappers;
 
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperAdapters.worldGeneration.AbstractWorldGeneratorWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
+import com.seibel.lod.wrappers.worldGeneration.WorldGeneratorWrapper;
 
 /**
  * This handles creating abstract wrapper objects.
  * 
  * @author James Seibel
- * @version 11-18-2021
+ * @version 11-20-2021
  */
 public class WrapperFactory implements IWrapperFactory
 {
@@ -58,5 +63,10 @@ public class WrapperFactory implements IWrapperFactory
 	
 	
 	
+	@Override
+	public AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper)
+	{
+		return new WorldGeneratorWrapper(newLodBuilder, newLodDimension, worldWrapper);
+	}
 	
 }

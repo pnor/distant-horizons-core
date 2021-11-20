@@ -28,11 +28,12 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.worldGeneration.WorldGeneratorWrapper;
+import com.seibel.lod.core.wrapperAdapters.worldGeneration.AbstractWorldGeneratorWrapper;
 
 import net.minecraftforge.common.WorldWorkerManager.IWorker;
 
@@ -45,6 +46,7 @@ import net.minecraftforge.common.WorldWorkerManager.IWorker;
 public class LodGenWorker implements IWorker // TODO is there a way to have this fabric/forge independent?
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	public static ExecutorService genThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	
@@ -119,7 +121,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 	
 	private static class LodChunkGenThread implements Runnable
 	{
-		private WorldGeneratorWrapper worldGenWrapper; 
+		private AbstractWorldGeneratorWrapper worldGenWrapper; 
 		
 		public final LodDimension lodDim;
 		public final DistanceGenerationMode generationMode;
@@ -130,7 +132,7 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 				LodBuilder newLodBuilder,
 				LodDimension newLodDimension, IWorldWrapper worldWrapper)
 		{
-			worldGenWrapper = new WorldGeneratorWrapper(newLodBuilder, newLodDimension, worldWrapper);
+			worldGenWrapper = FACTORY.createWorldGenerator(newLodBuilder, newLodDimension, worldWrapper);
 			
 			pos = newPos;
 			generationMode = newGenerationMode;

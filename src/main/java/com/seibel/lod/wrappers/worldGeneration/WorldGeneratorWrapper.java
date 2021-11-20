@@ -16,7 +16,7 @@ import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.core.wrapperAdapters.worldGeneration.IWorldGeneratorWrapper;
+import com.seibel.lod.core.wrapperAdapters.worldGeneration.AbstractWorldGeneratorWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
@@ -38,19 +38,19 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.server.ServerWorldLightManager;
 
 /**
- * This class contains all the information to generate
- * chunks.
+ * This is used for generating chunks
+ * in a variety of detail and threading levels.
  * 
  * @author James Seibel
  * @version 11-13-2021
  */
-public class WorldGeneratorWrapper implements IWorldGeneratorWrapper
+public class WorldGeneratorWrapper extends AbstractWorldGeneratorWrapper
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/**
 	 * If a configured feature fails for whatever reason,
-	 * add it to this list. This is to hopefully remove any
+	 * add it to this list. This will hopefully remove any
 	 * features that could cause issues down the line.
 	 */
 	private static final ConcurrentHashMap<Integer, ConfiguredFeature<?, ?>> FEATURES_TO_AVOID = new ConcurrentHashMap<>();
@@ -62,6 +62,8 @@ public class WorldGeneratorWrapper implements IWorldGeneratorWrapper
 	
 	public WorldGeneratorWrapper(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper)
 	{
+		super(newLodBuilder, newLodDimension, worldWrapper);
+		
 		lodBuilder = newLodBuilder;
 		lodDim = newLodDimension;
 		serverWorld = ((WorldWrapper) worldWrapper).getServerWorld();

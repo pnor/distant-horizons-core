@@ -20,7 +20,7 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  * are loaded.
  * 
  * @author James Seibel
- * @version 11-16-2021
+ * @version 11-20-2021
  */
 public class DependencySetup
 {
