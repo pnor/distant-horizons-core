@@ -17,10 +17,9 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.wrappers.handlers;
+package com.seibel.lod.core.handlers;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +28,6 @@ import com.seibel.lod.ModInfo;
 import com.seibel.lod.core.enums.rendering.FogQuality;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.wrapperAdapters.handlers.IReflectionHandler;
-import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
 /**
  * A singleton used to get variables from methods
@@ -38,31 +36,49 @@ import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
  * presence/absence of other mods.
  * 
  * @author James Seibel
- * @version 11-18-2021
+ * @version 11-20-2021
  */
 public class ReflectionHandler implements IReflectionHandler
 {
 	private static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME + "-" + ReflectionHandler.class.getSimpleName());
 	
-	public static final ReflectionHandler INSTANCE = new ReflectionHandler();
+	private static ReflectionHandler instance;
 	
-	public Field ofFogField = null;
-	public Method vertexBufferUploadMethod = null;
+	private Field ofFogField = null;
+	private final Object mcOptionsObject;
 	
 	
 	
-	private ReflectionHandler()
+	private ReflectionHandler(Field[] optionFields, Object newMcOptionsObject)
 	{
-		setupFogField();
+		mcOptionsObject = newMcOptionsObject;
+		
+		setupFogField(optionFields);
+	}
+	
+	/**
+	 * @param optionFields the fields that should contain "ofFogType"
+	 * @param newMcOptionsObject the object instance that contains "ofFogType"
+	 * @return the ReflectionHandler just created
+	 * @throws IllegalStateException if a ReflectionHandler already exists
+	 */
+	public static ReflectionHandler createSingleton(Field[] optionFields, Object newMcOptionsObject) throws IllegalStateException
+	{
+		if (instance != null)
+		{
+			throw new IllegalStateException();	
+		}
+		
+		instance = new ReflectionHandler(optionFields, newMcOptionsObject);
+		return instance;
 	}
 	
 	
+	
+	
 	/** finds the Optifine fog type field */
-	private void setupFogField()
+	private void setupFogField(Field[] optionFields)
 	{
-		// get every variable from the entity renderer
-		Field[] optionFields = MinecraftWrapper.INSTANCE.getOptions().getClass().getDeclaredFields();
-		
 		// try and find the ofFogType variable in gameSettings
 		for (Field field : optionFields)
 		{
@@ -99,7 +115,7 @@ public class ReflectionHandler implements IReflectionHandler
 		
 		try
 		{
-			returnNum = (int) ofFogField.get(MinecraftWrapper.INSTANCE.getOptions());
+			returnNum = (int) ofFogField.get(mcOptionsObject);
 		}
 		catch (IllegalArgumentException | IllegalAccessException e)
 		{
@@ -149,7 +165,7 @@ public class ReflectionHandler implements IReflectionHandler
 	 * @param newNearClipPlane the new near clip plane value.
 	 * @param newFarClipPlane the new far clip plane value.
 	 * @return The modified matrix.
-	 */
+	 */ 
 	@Override
 	public Mat4f ModifyProjectionClipPlanes(Mat4f projectionMatrix, float newNearClipPlane, float newFarClipPlane)
 	{

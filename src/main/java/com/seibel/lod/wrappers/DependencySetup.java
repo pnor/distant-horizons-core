@@ -1,5 +1,6 @@
 package com.seibel.lod.wrappers;
 
+import com.seibel.lod.core.handlers.ReflectionHandler;
 import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
 import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
@@ -9,7 +10,6 @@ import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.wrappers.block.BlockColorSingletonWrapper;
 import com.seibel.lod.wrappers.config.LodConfigWrapperSingleton;
-import com.seibel.lod.wrappers.handlers.ReflectionHandler;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftWrapper;
 
@@ -31,6 +31,7 @@ public class DependencySetup
 		SingletonHandler.bind(IMinecraftWrapper.class, MinecraftWrapper.INSTANCE);
 		SingletonHandler.bind(IMinecraftRenderWrapper.class, MinecraftRenderWrapper.INSTANCE);
 		SingletonHandler.bind(IWrapperFactory.class, WrapperFactory.INSTANCE);
-		SingletonHandler.bind(IReflectionHandler.class, ReflectionHandler.INSTANCE);
+		
+		SingletonHandler.bind(IReflectionHandler.class, ReflectionHandler.createSingleton(MinecraftWrapper.INSTANCE.getOptions().getClass().getDeclaredFields(), MinecraftWrapper.INSTANCE.getOptions()));
 	}
 }
