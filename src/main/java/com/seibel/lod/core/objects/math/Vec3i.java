@@ -21,8 +21,6 @@ package com.seibel.lod.core.objects.math;
 
 import com.seibel.lod.core.util.LodUtil;
 
-import net.minecraft.util.math.vector.Vector3i;
-
 /**
  * A (almost) exact copy of Minecraft's 1.16.5
  * implementation of a 3 element vector.
@@ -153,11 +151,11 @@ public class Vec3i
 		return (xAdd * xAdd) + (yAdd * yAdd) + (zAdd * zAdd);
 	}
 	
-	public int distManhattan(Vector3i otherVec)
+	public int distManhattan(Vec3i otherVec)
 	{
-		float xSub = Math.abs(otherVec.getX() - this.x);
-		float ySub = Math.abs(otherVec.getY() - this.y);
-		float zSub = Math.abs(otherVec.getZ() - this.z);
+		float xSub = Math.abs(otherVec.x - this.x);
+		float ySub = Math.abs(otherVec.y - this.y);
+		float zSub = Math.abs(otherVec.z - this.z);
 		return (int) (xSub + ySub + zSub);
 	}
 	

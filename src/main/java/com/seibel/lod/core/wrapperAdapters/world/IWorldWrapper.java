@@ -6,7 +6,6 @@ import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 
 /**
  * 
- * @author James Seibel
  * @author ??
  * @version 11-15-2021
  */

@@ -83,7 +83,6 @@ public class LodRenderer
 	 */
 	public DebugMode previousDebugMode = DebugMode.OFF;
 	
-	private IProfiler profiler;
 	private int farPlaneBlockDistance;
 	
 	
@@ -156,7 +155,7 @@ public class LodRenderer
 	 * @param mcProjectionMatrix 
 	 * @param partialTicks how far into the current tick this method was called.
 	 */
-	public void drawLODs(LodDimension lodDim, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfiler newProfiler)
+	public void drawLODs(LodDimension lodDim, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfiler profiler)
 	{
 		//=================================//
 		// determine if LODs should render //
@@ -221,7 +220,6 @@ public class LodRenderer
 		// initial setup //
 		//===============//
 		
-		profiler = newProfiler;
 		profiler.push("LOD setup");
 		
 		GlProxy glProxy = GlProxy.getInstance();

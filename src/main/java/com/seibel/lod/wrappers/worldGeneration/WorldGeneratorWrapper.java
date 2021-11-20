@@ -17,12 +17,12 @@ import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.core.wrapperAdapters.worldGeneration.AbstractWorldGeneratorWrapper;
+import com.seibel.lod.wrappers.WrapperUtil;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkWrapper;
 import com.seibel.lod.wrappers.world.WorldWrapper;
 
 import net.minecraft.util.palette.UpgradeData;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -103,7 +103,7 @@ public class WorldGeneratorWrapper extends AbstractWorldGeneratorWrapper
 		boolean inTheEnd = false;
 		
 		// add fake heightmap data so our LODs aren't at height 0
-		Heightmap heightmap = new Heightmap(chunk, LodUtil.DEFAULT_HEIGHTMAP);
+		Heightmap heightmap = new Heightmap(chunk, WrapperUtil.DEFAULT_HEIGHTMAP);
 		for (int x = 0; x < LodUtil.CHUNK_WIDTH && !inTheEnd; x++)
 		{
 			for (int z = 0; z < LodUtil.CHUNK_WIDTH && !inTheEnd; z++)

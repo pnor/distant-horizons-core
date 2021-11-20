@@ -26,8 +26,6 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLCapabilities;
 
-import com.mojang.blaze3d.systems.IRenderCall;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.GlProxyContext;
@@ -92,7 +90,7 @@ public class GlProxy
 		
 		// getting Minecraft's context has to be done on the render thread,
 		// where the GL context is
-		if (!RenderSystem.isOnRenderThread())
+		if (GLFW.glfwGetCurrentContext() == 0L)
 			throw new IllegalStateException(GlProxy.class.getSimpleName() + " was created outside the render thread!");
 				
 		
@@ -285,7 +283,7 @@ public class GlProxy
 	 * Useful for creating/destroying OpenGL objects in a thread
 	 * that doesn't normally have access to a OpenGL context.
 	 */
-	public void recordOpenGlCall(IRenderCall renderCall) //(Runnable renderCall)
+	public void recordOpenGlCall(Runnable renderCall) //(Runnable renderCall)
 	{
 		// TODO this shouldn't rely on Minecraft's RenderSystem and should just run 
 		// on a executer thread with a separate context

@@ -36,8 +36,6 @@ public class PosToRenderContainer
 	private int regionPosZ;
 	private int numberOfPosToRender;
 	private int[] posToRender;
-	/*TODO this population matrix could be converted to boolean to improve memory use
-	 *  no since bools are stored as bytes anyway - cola*/
 	private byte[][] population;
 	
 	public PosToRenderContainer(byte minDetail, int regionPosX, int regionPosZ)

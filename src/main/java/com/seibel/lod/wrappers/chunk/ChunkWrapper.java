@@ -1,10 +1,10 @@
 package com.seibel.lod.wrappers.chunk;
 
-import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
+import com.seibel.lod.wrappers.WrapperUtil;
 import com.seibel.lod.wrappers.block.BlockColorWrapper;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.block.BlockShapeWrapper;
@@ -45,7 +45,7 @@ public class ChunkWrapper implements IChunkWrapper
 	@Override
 	public int getHeightMapValue(int xRel, int zRel)
 	{
-		return chunk.getOrCreateHeightmapUnprimed(LodUtil.DEFAULT_HEIGHTMAP).getFirstAvailable(xRel, zRel);
+		return chunk.getOrCreateHeightmapUnprimed(WrapperUtil.DEFAULT_HEIGHTMAP).getFirstAvailable(xRel, zRel);
 	}
 	
 	@Override

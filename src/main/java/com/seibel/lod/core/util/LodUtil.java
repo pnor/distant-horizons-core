@@ -41,10 +41,6 @@ import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
 
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.Heightmap;
-
 /**
  * This class holds methods and constants that may be used in multiple places.
  * 
@@ -126,11 +122,6 @@ public class LodUtil
 	
 	
 	/**
-	 * If we ever need to use a heightmap for any reason, use this one.
-	 */
-	public static final Heightmap.Type DEFAULT_HEIGHTMAP = Heightmap.Type.WORLD_SURFACE_WG;
-	
-	/**
 	 * This regex finds any characters that are invalid for use in a windows
 	 * (and by extension mac and linux) file path
 	 */
@@ -193,23 +184,6 @@ public class LodUtil
 	public static int convertLevelPos(int pos, int currentDetailLevel, int targetDetailLevel)
 	{
 		return pos / (1 << (targetDetailLevel - currentDetailLevel));
-	}
-	
-	/**
-	 * Return whether the given chunk
-	 * has any data in it.
-	 */
-	public static boolean chunkHasBlockData(IChunk chunk)
-	{
-		ChunkSection[] blockStorage = chunk.getSections();
-		
-		for (ChunkSection section : blockStorage)
-		{
-			if (section != null && !section.isEmpty())
-				return true;
-		}
-		
-		return false;
 	}
 	
 	
