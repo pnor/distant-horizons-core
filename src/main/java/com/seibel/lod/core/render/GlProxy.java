@@ -19,6 +19,9 @@
 
 package com.seibel.lod.core.render;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -26,6 +29,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLCapabilities;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.GlProxyContext;
@@ -46,11 +50,13 @@ import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
  * https://gamedev.stackexchange.com/questions/91995/edit-vbo-data-or-create-a-new-one <br><br>
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 11-20-2021
  */
 public class GlProxy
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	
+	private static ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GlProxy.class.getSimpleName() + "-Worker-Thread").build());
 	
 	
 	private static GlProxy instance = null;
@@ -64,6 +70,12 @@ public class GlProxy
 	public final long lodBuilderGlContext;
 	/** the LodBuilder's GL capabilities */
 	public final GLCapabilities lodBuilderGlCapabilities;
+
+	/** the proxyWorker's GLFW window */
+	public final long proxyWorkerGlContext;
+	/** the proxyWorker's GL capabilities */
+	public final GLCapabilities proxyWorkerGlCapabilities;
+	
 	
 	
 	/** This program contains all shaders required when rendering LODs */
@@ -71,9 +83,6 @@ public class GlProxy
 	/** This is the VAO that is used when rendering */
 	public final int vertexArrayObjectId;
 	
-	
-	/** Does this computer's GPU support fancy fog? */
-	public final boolean fancyFogAvailable;
 	
 	/** Requires OpenGL 4.5, and offers the best buffer uploading */
 	public final boolean bufferStorageSupported;
@@ -120,6 +129,11 @@ public class GlProxy
 		lodBuilderGlCapabilities = GL.createCapabilities();
 		
 		
+		// create the proxyWorker's context
+		proxyWorkerGlContext = GLFW.glfwCreateWindow(64, 48, "LOD proxy worker Window", 0L, minecraftGlContext);
+		GLFW.glfwMakeContextCurrent(proxyWorkerGlContext);
+		proxyWorkerGlCapabilities = GL.createCapabilities();
+		
 		
 		
 		
@@ -128,6 +142,8 @@ public class GlProxy
 		//==================================//
 		// get any GPU related capabilities //
 		//==================================//
+		
+		setGlContext(GlProxyContext.LOD_BUILDER);
 		
 		ClientApi.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
 		
@@ -146,7 +162,6 @@ public class GlProxy
 		// TODO re-add buffer storage support
 		bufferStorageSupported = false; //lodBuilderGlCapabilities.glBufferStorage != 0;
 		mapBufferRangeSupported = lodBuilderGlCapabilities.glMapBufferRange != 0;
-		fancyFogAvailable = minecraftGlCapabilities.GL_NV_fog_distance;
 		
 		
 		// display the capabilities
@@ -155,9 +170,6 @@ public class GlProxy
 			String fallBackVersion = mapBufferRangeSupported ? "3.0" : "1.5";  
 			ClientApi.LOGGER.error("This GPU doesn't support Buffer Storage (OpenGL 4.5), falling back to OpenGL " + fallBackVersion + ". This may cause stuttering and reduced performance.");			
 		}
-		
-		if (!fancyFogAvailable)
-			ClientApi.LOGGER.info("This GPU does not support GL_NV_fog_distance. This means that the fancy fog option will not be available.");
 		
 		
 		
@@ -172,9 +184,8 @@ public class GlProxy
 		
 		createShaderProgram();
         
-        
         // Note: VAO objects can not be shared between contexts,
-        // this must be created on the LOD render context to work correctly
+        // this must be created on minecraft's render context to work correctly
         vertexArrayObjectId = GL30.glGenVertexArrays();
         
         
@@ -266,6 +277,11 @@ public class GlProxy
 			newGlCapabilities = minecraftGlCapabilities;
 			break;
 		
+		case PROXY_WORKER:
+			contextPointer = proxyWorkerGlContext;
+			newGlCapabilities = proxyWorkerGlCapabilities;
+			break;
+			
 		default: // default should never happen, it is just here to make the compiler happy
 		case NONE:
 			// 0L is equivalent to null
@@ -277,21 +293,6 @@ public class GlProxy
 		GL.setCapabilities(newGlCapabilities);
 	}
 	
-	
-	/** 
-	 * Asynchronously calls the given runnable on a valid OpenGL context.
-	 * Useful for creating/destroying OpenGL objects in a thread
-	 * that doesn't normally have access to a OpenGL context.
-	 */
-	public void recordOpenGlCall(Runnable renderCall) //(Runnable renderCall)
-	{
-		// TODO this shouldn't rely on Minecraft's RenderSystem and should just run 
-		// on a executer thread with a separate context
-		RenderSystem.recordRenderCall(renderCall);
-	}
-	
-	
-	
 	/** Returns this thread's OpenGL context. */
 	public GlProxyContext getGlContext()
 	{
@@ -302,6 +303,8 @@ public class GlProxy
 			return GlProxyContext.LOD_BUILDER;
 		else if (currentContext == minecraftGlContext)
 			return GlProxyContext.MINECRAFT;
+		else if (currentContext == proxyWorkerGlContext)
+			return GlProxyContext.PROXY_WORKER;
 		else if (currentContext == 0L)
 			return GlProxyContext.NONE;
 		else
@@ -310,6 +313,7 @@ public class GlProxy
 					" has a unknown OpenGl context: [" + currentContext + "]. "
 					+ "Minecraft context [" + minecraftGlContext + "], "
 					+ "LodBuilder context [" + lodBuilderGlContext + "], "
+					+ "ProxyWorker context [" + proxyWorkerGlContext + "], "
 					+ "no context [0].");
 	}
 	
@@ -326,6 +330,39 @@ public class GlProxy
 	
 	
 	
+	
+
+	
+	/** 
+	 * Asynchronously calls the given runnable on proxy's OpenGL context.
+	 * Useful for creating/destroying OpenGL objects in a thread
+	 * that doesn't normally have access to a OpenGL context. <br>
+	 * No rendering can be done through this method.
+	 */
+	public void recordOpenGlCall(Runnable renderCall)
+	{
+		workerThread.execute(new Thread(() -> { runnableContainer(renderCall); }));
+	}
+	private void runnableContainer(Runnable renderCall)
+	{
+		try
+		{
+			// set up the context...
+			setGlContext(GlProxyContext.PROXY_WORKER);
+			// ...run the actual code...
+			renderCall.run();
+		}
+		catch (Exception e)
+		{
+			ClientApi.LOGGER.error(Thread.currentThread().getName() + " ran into a issue: " + e.getMessage());
+			e.printStackTrace();
+		}
+		finally
+		{
+			// ...and make sure the context is released when the thread finishes
+			setGlContext(GlProxyContext.NONE);	
+		}
+	}
 	
 	
 	

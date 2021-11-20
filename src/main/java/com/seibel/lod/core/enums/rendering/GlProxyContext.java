@@ -33,6 +33,9 @@ public enum GlProxyContext
 	/** The context we send buffers to the GPU on */
 	LOD_BUILDER,
 	
+	/** A context that can be used for miscellaneous tasks, owned by the GlProxy */
+	PROXY_WORKER,
+	
 	/** used to un-bind threads */
 	NONE,
 }

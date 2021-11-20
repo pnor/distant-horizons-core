@@ -649,10 +649,7 @@ public class LodBufferBuilderFactory
 						int buildableId = buildableStorageBufferIds[x][z][i];
 						int drawableId = drawableStorageBufferIds[x][z][i];
 						
-						// Send this over to the render thread, if this is being
-						// called we aren't worried about stuttering anyway.
-						// This way we don't have to worry about what context this
-						// was called from (if any).
+						// make sure the buffers are deleted in a openGL context
 						GlProxy.getInstance().recordOpenGlCall(() ->
 						{
 							GL15.glDeleteBuffers(buildableId);
