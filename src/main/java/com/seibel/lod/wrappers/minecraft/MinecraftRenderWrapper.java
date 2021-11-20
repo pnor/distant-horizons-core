@@ -8,6 +8,7 @@ import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftRenderWrapper;
+import com.seibel.lod.wrappers.McObjectConverter;
 import com.seibel.lod.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.wrappers.chunk.ChunkPosWrapper;
 

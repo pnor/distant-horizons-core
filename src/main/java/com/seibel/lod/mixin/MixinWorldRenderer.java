@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.objects.math.Mat4f;
-import com.seibel.lod.wrappers.minecraft.McObjectConverter;
+import com.seibel.lod.wrappers.McObjectConverter;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.WorldRenderer;
