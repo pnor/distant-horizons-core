@@ -32,7 +32,7 @@ import org.lwjgl.opengl.GLCapabilities;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.enums.rendering.GlProxyContext;
+import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.render.shader.LodShader;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
 import com.seibel.lod.core.util.SingletonHandler;
@@ -52,14 +52,14 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * @author James Seibel
  * @version 11-20-2021
  */
-public class GlProxy
+public class GLProxy
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
-	private static ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GlProxy.class.getSimpleName() + "-Worker-Thread").build());
+	private static ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 	
 	
-	private static GlProxy instance = null;
+	private static GLProxy instance = null;
 	
 	/** Minecraft's GLFW window */
 	public final long minecraftGlContext;
@@ -93,14 +93,14 @@ public class GlProxy
 	
 	
 	
-	private GlProxy()
+	private GLProxy()
 	{
-		ClientApi.LOGGER.error("Creating " + GlProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
+		ClientApi.LOGGER.error("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
 		
 		// getting Minecraft's context has to be done on the render thread,
 		// where the GL context is
 		if (GLFW.glfwGetCurrentContext() == 0L)
-			throw new IllegalStateException(GlProxy.class.getSimpleName() + " was created outside the render thread!");
+			throw new IllegalStateException(GLProxy.class.getSimpleName() + " was created outside the render thread!");
 				
 		
 		
@@ -143,7 +143,7 @@ public class GlProxy
 		// get any GPU related capabilities //
 		//==================================//
 		
-		setGlContext(GlProxyContext.LOD_BUILDER);
+		setGlContext(GLProxyContext.LOD_BUILDER);
 		
 		ClientApi.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
 		
@@ -152,7 +152,7 @@ public class GlProxy
 		{
 			// Note: as of MC 1.17 this shouldn't happen since MC
 			// requires OpenGL 3.3, but just in case.
-			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GlProxy.class.getSimpleName() + " and discoverd this GPU doesn't support OpenGL 2.0 or greater.";
+			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GLProxy.class.getSimpleName() + " and discoverd this GPU doesn't support OpenGL 2.0 or greater.";
 			MC.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 2.0 or greater."));
 		}
 		
@@ -179,8 +179,8 @@ public class GlProxy
 		// shader setup //
 		//==============//
 		
-		//setGlContext(GlProxyContext.LOD_RENDER);
-		setGlContext(GlProxyContext.MINECRAFT);
+		//setGlContext(GLProxyContext.LOD_RENDER);
+		setGlContext(GLProxyContext.MINECRAFT);
 		
 		createShaderProgram();
         
@@ -197,11 +197,11 @@ public class GlProxy
 		//==========//
 		
 		// Since this is created on the render thread, make sure the Minecraft context is used in the end
-        setGlContext(GlProxyContext.MINECRAFT);
+        setGlContext(GLProxyContext.MINECRAFT);
 		
 		
-		// GlProxy creation success
-		ClientApi.LOGGER.error(GlProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
+		// GLProxy creation success
+		ClientApi.LOGGER.error(GLProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
 	}
 	
 	/** Creates all required shaders */
@@ -252,9 +252,9 @@ public class GlProxy
 	 * A wrapper function to make switching contexts easier. <br>
 	 * Does nothing if the calling thread is already using newContext.
 	 */
-	public void setGlContext(GlProxyContext newContext)
+	public void setGlContext(GLProxyContext newContext)
 	{
-		GlProxyContext currentContext = getGlContext();
+		GLProxyContext currentContext = getGlContext();
 		
 		// we don't have to change the context, we are already there.
 		if (currentContext == newContext)
@@ -294,19 +294,19 @@ public class GlProxy
 	}
 	
 	/** Returns this thread's OpenGL context. */
-	public GlProxyContext getGlContext()
+	public GLProxyContext getGlContext()
 	{
 		long currentContext = GLFW.glfwGetCurrentContext();
 		
 		
 		if (currentContext == lodBuilderGlContext)
-			return GlProxyContext.LOD_BUILDER;
+			return GLProxyContext.LOD_BUILDER;
 		else if (currentContext == minecraftGlContext)
-			return GlProxyContext.MINECRAFT;
+			return GLProxyContext.MINECRAFT;
 		else if (currentContext == proxyWorkerGlContext)
-			return GlProxyContext.PROXY_WORKER;
+			return GLProxyContext.PROXY_WORKER;
 		else if (currentContext == 0L)
-			return GlProxyContext.NONE;
+			return GLProxyContext.NONE;
 		else
 			// hopefully this shouldn't happen
 			throw new IllegalStateException(Thread.currentThread().getName() + 
@@ -318,10 +318,10 @@ public class GlProxy
 	}
 	
 	
-	public static GlProxy getInstance()
+	public static GLProxy getInstance()
 	{
 		if (instance == null)
-			instance = new GlProxy();
+			instance = new GLProxy();
 		
 		return instance;
 	}
@@ -348,7 +348,7 @@ public class GlProxy
 		try
 		{
 			// set up the context...
-			setGlContext(GlProxyContext.PROXY_WORKER);
+			setGlContext(GLProxyContext.PROXY_WORKER);
 			// ...run the actual code...
 			renderCall.run();
 		}
@@ -360,7 +360,7 @@ public class GlProxy
 		finally
 		{
 			// ...and make sure the context is released when the thread finishes
-			setGlContext(GlProxyContext.NONE);	
+			setGlContext(GLProxyContext.NONE);	
 		}
 	}
 	

@@ -25,7 +25,7 @@ package com.seibel.lod.core.enums.rendering;
  * @author James Seibel
  * @version 10-1-2021
  */
-public enum GlProxyContext
+public enum GLProxyContext
 {
 	/** Minecraft's render thread */
 	MINECRAFT,
@@ -33,7 +33,7 @@ public enum GlProxyContext
 	/** The context we send buffers to the GPU on */
 	LOD_BUILDER,
 	
-	/** A context that can be used for miscellaneous tasks, owned by the GlProxy */
+	/** A context that can be used for miscellaneous tasks, owned by the GLProxy */
 	PROXY_WORKER,
 	
 	/** used to un-bind threads */

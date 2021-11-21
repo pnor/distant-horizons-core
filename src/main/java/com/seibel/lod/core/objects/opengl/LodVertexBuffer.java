@@ -21,8 +21,8 @@ package com.seibel.lod.core.objects.opengl;
 
 import org.lwjgl.opengl.GL15;
 
-import com.seibel.lod.core.enums.rendering.GlProxyContext;
-import com.seibel.lod.core.render.GlProxy;
+import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.render.GLProxy;
 
 /**
  * This is a container for a OpenGL
@@ -38,7 +38,7 @@ public class LodVertexBuffer implements AutoCloseable
 	
 	public LodVertexBuffer()
 	{
-		if (GlProxy.getInstance().getGlContext() == GlProxyContext.NONE)
+		if (GLProxy.getInstance().getGlContext() == GLProxyContext.NONE)
 			throw new IllegalStateException("Thread [" +Thread.currentThread().getName() + "] tried to create a [" + LodVertexBuffer.class.getSimpleName() + "] outside a OpenGL contex.");
 		
 		this.id = GL15.glGenBuffers();
@@ -50,7 +50,7 @@ public class LodVertexBuffer implements AutoCloseable
 	{
 		if (this.id >= 0)
 		{
-			GlProxy.getInstance().recordOpenGlCall(() -> GL15.glDeleteBuffers(this.id));
+			GLProxy.getInstance().recordOpenGlCall(() -> GL15.glDeleteBuffers(this.id));
 			this.id = -1;
 		}
 	}

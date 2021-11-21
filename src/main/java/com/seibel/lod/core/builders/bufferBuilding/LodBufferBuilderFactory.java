@@ -40,7 +40,7 @@ import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
-import com.seibel.lod.core.enums.rendering.GlProxyContext;
+import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.objects.Box;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -48,7 +48,7 @@ import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
-import com.seibel.lod.core.render.GlProxy;
+import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
@@ -525,9 +525,9 @@ public class LodBufferBuilderFactory
 		long regionMemoryRequired;
 		int numberOfBuffers;
 		
-		GlProxy glProxy = GlProxy.getInstance();
-		GlProxyContext oldContext = glProxy.getGlContext();
-		glProxy.setGlContext(GlProxyContext.LOD_BUILDER);
+		GLProxy glProxy = GLProxy.getInstance();
+		GLProxyContext oldContext = glProxy.getGlContext();
+		glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
 		
 		
 		previousRegionWidth = numbRegionsWide;
@@ -650,7 +650,7 @@ public class LodBufferBuilderFactory
 						int drawableId = drawableStorageBufferIds[x][z][i];
 						
 						// make sure the buffers are deleted in a openGL context
-						GlProxy.getInstance().recordOpenGlCall(() ->
+						GLProxy.getInstance().recordOpenGlCall(() ->
 						{
 							GL15.glDeleteBuffers(buildableId);
 							GL15.glDeleteBuffers(drawableId);
@@ -692,7 +692,7 @@ public class LodBufferBuilderFactory
 							drawableId = 0;
 						
 						
-						GlProxy.getInstance().recordOpenGlCall(() ->
+						GLProxy.getInstance().recordOpenGlCall(() ->
 						{
 							if (buildableId != 0)
 								GL15.glDeleteBuffers(buildableId);
@@ -752,13 +752,13 @@ public class LodBufferBuilderFactory
 	/** Upload all buildableBuffers to the GPU. */
 	private void uploadBuffers(boolean fullRegen, LodDimension lodDim)
 	{
-		GlProxy glProxy = GlProxy.getInstance();
+		GLProxy glProxy = GLProxy.getInstance();
 		
 		try
 		{
 			// make sure we are uploading to the builder context,
 			// this helps prevent interference (IE stuttering) with the Minecraft context.
-			glProxy.setGlContext(GlProxyContext.LOD_BUILDER);
+			glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
 			
 			// determine the upload method
 			GpuUploadMethod uploadMethod = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod();
@@ -804,7 +804,7 @@ public class LodBufferBuilderFactory
 			// close the context so it can be re-used later.
 			// I'm guessing we can't just leave it because the executor service
 			// does something that invalidates the OpenGL context.
-			glProxy.setGlContext(GlProxyContext.NONE);
+			glProxy.setGlContext(GLProxyContext.NONE);
 		}
 	}
 	
@@ -813,7 +813,7 @@ public class LodBufferBuilderFactory
 			boolean allowBufferExpansion, GpuUploadMethod uploadMethod)
 	{
 		// this shouldn't happen, but just to be safe
-		if (vbo.id != -1 && GlProxy.getInstance().getGlContext() == GlProxyContext.LOD_BUILDER)
+		if (vbo.id != -1 && GLProxy.getInstance().getGlContext() == GLProxyContext.LOD_BUILDER)
 		{
 			// this is how many points will be rendered
 			vbo.vertexCount = (uploadBuffer.capacity() / (Float.BYTES * 3) + (Byte.BYTES * 4)); // TODO make this change with the LodTemplate
@@ -882,7 +882,7 @@ public class LodBufferBuilderFactory
 					ByteBuffer vboBuffer;
 					
 					// map buffer range is better since it can be explicitly unsynchronized 
-					if (GlProxy.getInstance().mapBufferRangeSupported)
+					if (GLProxy.getInstance().mapBufferRangeSupported)
 						vboBuffer = GL30.glMapBufferRange(GL30.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(), GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT);
 					else
 						vboBuffer = GL15.glMapBuffer(GL30.GL_ARRAY_BUFFER, uploadBuffer.capacity());

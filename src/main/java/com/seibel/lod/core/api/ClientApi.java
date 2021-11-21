@@ -26,7 +26,7 @@ import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
-import com.seibel.lod.core.render.GlProxy;
+import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.SingletonHandler;
@@ -159,8 +159,8 @@ public class ClientApi
 	/** This event is called once during the first frame Minecraft renders in the world. */
 	public void firstFrameSetup()
 	{
-		// make sure the GlProxy is created before the LodBufferBuilder needs it
-		GlProxy.getInstance();
+		// make sure the GLProxy is created before the LodBufferBuilder needs it
+		GLProxy.getInstance();
 		
 		firstTimeSetupComplete = true;
 	}

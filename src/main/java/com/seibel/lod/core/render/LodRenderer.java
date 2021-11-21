@@ -221,7 +221,7 @@ public class LodRenderer
 		
 		profiler.push("LOD setup");
 		
-		GlProxy glProxy = GlProxy.getInstance();
+		GLProxy glProxy = GLProxy.getInstance();
 		
 		
 		
@@ -392,7 +392,7 @@ public class LodRenderer
 		
         // bind the buffer we are going to draw
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glBufferId);
-		GL30.glBindVertexArray(GlProxy.getInstance().vertexArrayObjectId);
+		GL30.glBindVertexArray(GLProxy.getInstance().vertexArrayObjectId);
         
 		// let OpenGL know how our buffer is set up
 		int vertexByteCount = (Float.BYTES * 3) + (Byte.BYTES * 4);
