@@ -35,22 +35,19 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 import com.seibel.lod.core.wrapperAdapters.worldGeneration.AbstractWorldGeneratorWrapper;
 
-import net.minecraftforge.common.WorldWorkerManager.IWorker;
-
 /**
  * This is used to generate a LodChunk at a given ChunkPos.
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 11-20-2021
  */
-public class LodGenWorker implements IWorker // TODO is there a way to have this fabric/forge independent?
+public class LodGenWorker
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	public static ExecutorService genThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(), new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	
-	private boolean threadStarted = false;
 	private final LodChunkGenThread thread;
 	
 	
@@ -79,41 +76,28 @@ public class LodGenWorker implements IWorker // TODO is there a way to have this
 				newLodDimension, serverWorld);
 	}
 	
-	@Override
-	public boolean doWork()
+	public void queueWork()
 	{
-		if (!threadStarted)
+		if (CONFIG.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.FULL)
 		{
-			if (CONFIG.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.FULL)
-			{
-				// if we are using SERVER generation that has to be done
-				// synchronously to prevent crashing and harmful
-				// interactions with the normal world generator
-				thread.run();
-			}
-			else
-			{
-				// Every other method can
-				// be done asynchronously
-				Thread newThread = new Thread(thread);
-				newThread.setPriority(5);
-				genThreads.execute(newThread);
-			}
-			
-			threadStarted = true;
-			
-			// useful for debugging
-//        	ClientProxy.LOGGER.info(thread.lodDim.getNumberOfLods());
-//        	ClientProxy.LOGGER.info(genThreads.toString());
+			// if we are using FULL generation there is no reason
+			// to queue up a bunch of generation requests,
+			// because MC's internal server (as of 1.16.5) only
+			// responds with a single thread. And we don't
+			// want to cause more lag then necessary or queue up
+			// requests that may end up being unneeded.
+			thread.run();
+		}
+		else
+		{
+			// Every other method can
+			// be done asynchronously
+			genThreads.execute(thread);
 		}
 		
-		return false;
-	}
-	
-	@Override
-	public boolean hasWork()
-	{
-		return !threadStarted;
+		// useful for debugging
+//    	ClientProxy.LOGGER.info(thread.lodDim.getNumberOfLods());
+//    	ClientProxy.LOGGER.info(genThreads.toString());
 	}
 	
 	

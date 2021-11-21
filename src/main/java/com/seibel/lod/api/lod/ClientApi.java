@@ -144,6 +144,7 @@ public class ClientApi
 			configOverrideReminderPrinted = true;
 		}
 		
+//		CONFIG.client().worldGenerator().setDistanceGenerationMode(DistanceGenerationMode.SURFACE);
 		
 		
 		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);

@@ -41,8 +41,6 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
 
-import net.minecraftforge.common.WorldWorkerManager;
-
 /**
  * A singleton that handles all long distance LOD world generation.
  * @author Leonardo Amato
@@ -56,7 +54,7 @@ public class LodWorldGenerator
 	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	
-	/** This holds the thread used to generate new LODs off the main thread. */
+	/** This holds the thread used to create LOD generation requests off the main thread. */
 	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator"));
 	
 	/** we only want to queue up one generator thread at a time */
@@ -162,7 +160,7 @@ public class LodWorldGenerator
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
 							LodGenWorker genWorker = new LodGenWorker(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
-							WorldWorkerManager.addWorker(genWorker);
+							genWorker.queueWork();
 						}
 						
 						
@@ -188,7 +186,7 @@ public class LodWorldGenerator
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
 							LodGenWorker genWorker = new LodGenWorker(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
-							WorldWorkerManager.addWorker(genWorker);
+							genWorker.queueWork();
 						}
 					}
 					
