@@ -136,11 +136,10 @@ public class ClientApi
 		// remind the developer(s) that the config override is active
 		if (!configOverrideReminderPrinted)
 		{
-			// TODO add a send message method to the MC wrapper
-//			mc.getPlayer().sendMessage(new StringTextComponent("LOD experimental build 1.5.1"), mc.getPlayer().getUUID());
-//			mc.getPlayer().sendMessage(new StringTextComponent("Here be dragons!"), mc.getPlayer().getUUID());
+			MC.sendChatMessage(ModInfo.READABLE_NAME + " experimental build " + ModInfo.VERSION);
+			MC.sendChatMessage("You are running a unsupported version of the mod!");
+			MC.sendChatMessage("Here be dragons!");
 			
-			MC.sendChatMessage("Debug settings enabled!");
 			configOverrideReminderPrinted = true;
 		}
 		

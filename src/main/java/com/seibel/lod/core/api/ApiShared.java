@@ -25,7 +25,7 @@ import com.seibel.lod.core.objects.lod.LodWorld;
 
 /**
  * This stores objects and variables that
- * are shared between the different LodApi classes.
+ * are shared between the different Core api classes.
  * 
  * @author James Seibel
  * @version 11-12-2021
