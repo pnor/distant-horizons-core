@@ -816,7 +816,7 @@ public class LodBufferBuilderFactory
 		if (vbo.id != -1 && GLProxy.getInstance().getGlContext() == GLProxyContext.LOD_BUILDER)
 		{
 			// this is how many points will be rendered
-			vbo.vertexCount = (uploadBuffer.capacity() / (Float.BYTES * 3) + (Byte.BYTES * 4)); // TODO make this change with the LodTemplate
+			vbo.vertexCount = (uploadBuffer.capacity() / ((Float.BYTES * 3) + (Byte.BYTES * 4))); // TODO make this change with the LodTemplate
 			
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo.id);
 			try
