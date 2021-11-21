@@ -30,8 +30,8 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLCapabilities;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.seibel.lod.api.lod.ClientApi;
 import com.seibel.lod.core.ModInfo;
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.rendering.GlProxyContext;
 import com.seibel.lod.core.render.shader.LodShader;
 import com.seibel.lod.core.render.shader.LodShaderProgram;

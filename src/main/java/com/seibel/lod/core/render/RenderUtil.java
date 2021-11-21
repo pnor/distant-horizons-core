@@ -23,7 +23,7 @@ import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
+import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
 
 /**
  * This holds miscellaneous helper code

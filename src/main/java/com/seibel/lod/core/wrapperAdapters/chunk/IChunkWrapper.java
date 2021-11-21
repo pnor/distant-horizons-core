@@ -3,7 +3,7 @@ package com.seibel.lod.core.wrapperAdapters.chunk;
 import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
-import com.seibel.lod.wrappers.world.BiomeWrapper;
+import com.seibel.lod.forge.wrappers.world.BiomeWrapper;
 
 /**
  * 

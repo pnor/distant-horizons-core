@@ -26,7 +26,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.NVFogDistance;
 
-import com.seibel.lod.api.lod.ApiShared;
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -52,7 +52,7 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.handlers.IReflectionHandler;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IProfilerWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
+import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
 
 /**
  * This is where all the magic happens. <br>

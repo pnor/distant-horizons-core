@@ -27,7 +27,7 @@ import java.io.InputStreamReader;
 
 import org.lwjgl.opengl.GL20;
 
-import com.seibel.lod.api.lod.ClientApi;
+import com.seibel.lod.core.api.ClientApi;
 
 /**
  * This object holds a OpenGL reference to a shader

@@ -39,7 +39,7 @@ import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.wrappers.minecraft.MinecraftRenderWrapper;
+import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
 
 /**
  * This class holds methods and constants that may be used in multiple places.

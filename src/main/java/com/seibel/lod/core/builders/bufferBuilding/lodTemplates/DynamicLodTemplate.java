@@ -21,7 +21,7 @@ package com.seibel.lod.core.builders.bufferBuilding.lodTemplates;
 
 import java.util.Map;
 
-import com.seibel.lod.api.lod.ClientApi;
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.Box;
