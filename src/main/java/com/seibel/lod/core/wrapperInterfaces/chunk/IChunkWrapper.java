@@ -22,7 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.chunk;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
-import com.seibel.lod.forge.wrappers.world.BiomeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 
 /**
  * @author James Seibel
@@ -36,7 +36,7 @@ public interface IChunkWrapper
 	
 	public int getHeightMapValue(int xRel, int zRel);
 	
-	public BiomeWrapper getBiome(int xRel, int yAbs, int zRel);
+	public IBiomeWrapper getBiome(int xRel, int yAbs, int zRel);
 	
 	public IBlockColorWrapper getBlockColorWrapper(AbstractBlockPosWrapper blockPos);
 	
