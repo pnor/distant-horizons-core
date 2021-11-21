@@ -366,7 +366,7 @@ public class MinecraftWrapper implements IMinecraftWrapper
 	@Override
 	public void sendChatMessage(String string)
 	{
-		getPlayer().sendMessage(new StringTextComponent("Debug settings enabled!"), getPlayer().getUUID());
+		getPlayer().sendMessage(new StringTextComponent(string), getPlayer().getUUID());
 	}
 	
 	/**
