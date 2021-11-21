@@ -23,7 +23,7 @@ import com.seibel.lod.core.util.LodUtil;
 
 /**
  * A (almost) exact copy of Minecraft's 1.16.5
- * implementation of a 3 element vector.
+ * implementation of a 3 element integer vector.
  * 
  * @author James Seibel
  * @version 11-11-2021

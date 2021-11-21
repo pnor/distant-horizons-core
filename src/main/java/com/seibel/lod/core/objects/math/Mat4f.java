@@ -23,7 +23,7 @@ import java.nio.FloatBuffer;
 
 /**
  * A (almost) exact copy of Minecraft's 1.16.5
- * implementation of a 4x4 matrix.
+ * implementation of a 4x4 float matrix.
  * 
  * @author James Seibel
  * @version 11-11-2021

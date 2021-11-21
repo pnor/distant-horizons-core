@@ -1,6 +1,6 @@
 package com.seibel.lod.forge.wrappers.minecraft;
 
-import com.seibel.lod.core.wrapperAdapters.minecraft.IProfilerWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
 
 import net.minecraft.profiler.IProfiler;
 

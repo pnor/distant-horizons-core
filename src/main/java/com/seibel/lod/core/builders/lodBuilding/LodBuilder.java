@@ -33,20 +33,20 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.block.IBlockColorSingletonWrapper;
-import com.seibel.lod.core.wrapperAdapters.block.IBlockColorWrapper;
-import com.seibel.lod.core.wrapperAdapters.block.IBlockShapeWrapper;
-import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
  * This object is in charge of creating Lod related objects.

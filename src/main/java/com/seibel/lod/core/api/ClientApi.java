@@ -29,12 +29,12 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GlProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftRenderWrapper;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IProfilerWrapper;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
 
 /**
  * This holds the methods that should be called

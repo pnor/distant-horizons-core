@@ -3,12 +3,11 @@ package com.seibel.lod.forge.wrappers.world;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 
 import net.minecraft.world.DimensionType;
 
 /**
- * 
  * @author ??
  * @version 11-15-2021
  */

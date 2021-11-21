@@ -17,21 +17,34 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.wrapperAdapters.world;
-
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-
+package com.seibel.lod.core.wrapperInterfaces.block;
 
 /**
- * 
- * @author Cola?
- * @version 11-15-2021
+ * @author James Seibel
+ * @version 11-17-2021
  */
-public interface IBiomeColorWrapperSingleton
+public interface IBlockColorWrapper
 {
-	public IBiomeColorWrapperSingleton getInstance(); 
+	//--------------//
+	//Colors getters//
+	//--------------//
 	
-	public int getGrassColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
-	public int getWaterColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
-	public int getFoliageColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
+	public boolean hasColor();
+	
+	public int getColor();
+	
+	
+	//------------//
+	//Tint getters//
+	//------------//
+	
+	public boolean hasTint();
+	
+	public boolean hasGrassTint();
+	
+	public boolean hasFolliageTint();
+	
+	public boolean hasWaterTint();
+	
 }
+

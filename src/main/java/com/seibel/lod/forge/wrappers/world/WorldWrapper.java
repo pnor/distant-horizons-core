@@ -5,8 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.enums.WorldType;
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import com.seibel.lod.forge.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.client.world.ClientWorld;
@@ -15,10 +15,9 @@ import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 
 /**
- * 
  * @author James Seibel
  * @author ??
- * @version 11-15-2021
+ * @version 11-20-2021
  */
 public class WorldWrapper implements IWorldWrapper
 {
@@ -59,6 +58,12 @@ public class WorldWrapper implements IWorldWrapper
 	public static void clearMap()
 	{
 		worldWrapperMap.clear();
+	}
+	
+	@Override
+	public WorldType getWorldType()
+	{
+		return worldType;
 	}
 	
 	@Override

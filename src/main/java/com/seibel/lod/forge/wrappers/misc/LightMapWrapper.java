@@ -1,6 +1,6 @@
 package com.seibel.lod.forge.wrappers.misc;
 
-import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
+import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
 
 import net.minecraft.client.renderer.texture.NativeImage;
 

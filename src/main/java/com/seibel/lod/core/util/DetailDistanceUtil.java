@@ -22,8 +22,7 @@ package com.seibel.lod.core.util;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
 
 /**

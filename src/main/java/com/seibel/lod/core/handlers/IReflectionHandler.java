@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.wrapperAdapters.handlers;
+package com.seibel.lod.core.handlers;
 
 import com.seibel.lod.core.enums.rendering.FogQuality;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -25,21 +25,24 @@ import com.seibel.lod.core.objects.math.Mat4f;
 /**
  * A singleton used to get variables from methods
  * where they are private or potentially absent. 
- * Specifically the fog setting in Optifine or the
+ * Specifically the fog setting used by Optifine or the
  * presence/absence of other mods.
+ * <p>
+ * This interface doesn't necessarily have to exist, but
+ * it makes using the singleton handler more uniform (always
+ * passing in interfaces), and it may be needed in the future if
+ * we find that reflection handlers need to be different for
+ * different MC versions.
  * 
  * @author James Seibel
- * @version 11-18-2021
+ * @version 11-20-2021
  */
 public interface IReflectionHandler
 {
-	/**
-	 * Get what type of fog optifine is currently set to render.
-	 * @return the fog quality
-	 */
+	/** @returns the type of fog optifine is currently set to render. */
 	public FogQuality getFogQuality();
 	
-	/** Detect if Vivecraft is present. Attempts to find the "VRRenderer" class. */
+	/** @returns if Vivecraft is present. Attempts to find the "VRRenderer" class. */
 	public boolean vivecraftPresent();
 	
 	/**

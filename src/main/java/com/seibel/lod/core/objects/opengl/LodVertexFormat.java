@@ -1,3 +1,22 @@
+/*
+ *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
+ *    licensed under the GNU GPL v3 License.
+ *
+ *    Copyright (C) 2020  James Seibel
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, version 3.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.seibel.lod.core.objects.opengl;
 
 import java.util.stream.Collectors;
@@ -8,6 +27,9 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
+ * This is used to represent a single vertex
+ * stored in GPU memory,
+ * <p>
  * A (almost) exact copy of Minecraft's
  * VertexFormat class, several methods
  * were commented out since we didn't need them.
@@ -139,7 +161,7 @@ public class LodVertexFormat
 	*/
 	
 	
-	/* not currently needed has Position/Normal/Color/UV
+	/* not currently needed has-Position/Normal/Color/UV
 	public boolean hasPosition()
 	{
 		return elements.stream().anyMatch(e -> e.getUsage() == LodVertexFormatElement.Usage.POSITION);

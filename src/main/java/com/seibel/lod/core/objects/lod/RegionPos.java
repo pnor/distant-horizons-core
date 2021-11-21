@@ -20,10 +20,10 @@
 package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 
 /**
  * This object is similar to ChunkPos or BlockPos.

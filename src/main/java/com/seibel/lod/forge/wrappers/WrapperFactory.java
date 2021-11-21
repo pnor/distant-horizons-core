@@ -1,12 +1,31 @@
+/*
+ *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
+ *    licensed under the GNU GPL v3 License.
+ *
+ *    Copyright (C) 2020  James Seibel
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, version 3.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.seibel.lod.forge.wrappers;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.wrapperAdapters.IWrapperFactory;
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
-import com.seibel.lod.core.wrapperAdapters.worldGeneration.AbstractWorldGeneratorWrapper;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGeneratorWrapper;
 import com.seibel.lod.forge.wrappers.block.BlockPosWrapper;
 import com.seibel.lod.forge.wrappers.chunk.ChunkPosWrapper;
 import com.seibel.lod.forge.wrappers.worldGeneration.WorldGeneratorWrapper;

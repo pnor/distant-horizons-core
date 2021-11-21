@@ -29,13 +29,14 @@ import com.seibel.lod.core.objects.math.Vec3i;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
 /**
  * Similar to Minecraft's AxisAlignedBoundingBox.
+ * 
  * @author Leonardo Amato
  * @version 10-2-2021
  */

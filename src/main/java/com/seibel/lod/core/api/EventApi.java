@@ -29,13 +29,13 @@ import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperAdapters.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
  * This holds the methods that should be called

@@ -35,8 +35,8 @@ import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.rendering.GlProxyContext;
 import com.seibel.lod.core.render.shader.LodShader;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
-import com.seibel.lod.core.wrapperAdapters.SingletonHandler;
-import com.seibel.lod.core.wrapperAdapters.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
 /**
  * A singleton that holds references to different openGL contexts

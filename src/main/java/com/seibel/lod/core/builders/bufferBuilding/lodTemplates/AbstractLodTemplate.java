@@ -26,7 +26,7 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.Box;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 
 /**
  * This is the abstract class used to create different

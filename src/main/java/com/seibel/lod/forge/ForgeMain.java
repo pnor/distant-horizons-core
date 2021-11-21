@@ -20,7 +20,7 @@
 package com.seibel.lod.forge;
 
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.forge.wrappers.DependencySetup;
+import com.seibel.lod.forge.wrappers.ForgeDependencySetup;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -48,7 +48,7 @@ public class ForgeMain
 	private void init(final FMLCommonSetupEvent event)
 	{
 		// make sure the dependencies are set up before the mod needs them
-		DependencySetup.createInitialBindings();
+		ForgeDependencySetup.createInitialBindings();
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ForgeConfig.CLIENT_SPEC);
 	}
 	

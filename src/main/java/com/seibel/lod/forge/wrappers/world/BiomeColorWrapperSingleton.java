@@ -19,16 +19,15 @@
 
 package com.seibel.lod.forge.wrappers.world;
 
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IBiomeColorWrapperSingleton;
-import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IBiomeColorWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import com.seibel.lod.forge.wrappers.block.BlockPosWrapper;
 
 import net.minecraft.world.biome.BiomeColors;
 
 
 /**
- * 
  * @author Cola?
  * @version 11-15-2021
  */

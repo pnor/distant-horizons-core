@@ -17,22 +17,21 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.wrapperAdapters.minecraft;
+package com.seibel.lod.core.wrapperInterfaces.minecraft;
 
 import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 
 import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.wrapperAdapters.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.chunk.AbstractChunkPosWrapper;
-import com.seibel.lod.core.wrapperAdapters.misc.ILightMapWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperAdapters.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
- * A singleton that wraps the Minecraft class
- * to allow for easier movement between Minecraft versions.
+ * Contains everything related to the Minecraft object.
  * 
  * @author James Seibel
  * @version 9-16-2021

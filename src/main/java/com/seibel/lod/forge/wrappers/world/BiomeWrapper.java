@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.util.ColorUtil;
-import com.seibel.lod.core.wrapperAdapters.world.IBiomeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 import com.seibel.lod.forge.wrappers.block.BlockColorSingletonWrapper;
 import com.seibel.lod.forge.wrappers.block.BlockColorWrapper;
 
@@ -14,8 +14,6 @@ import net.minecraft.world.biome.Biome;
 
 
 /**
- * This class wraps the minecraft BlockPos.Mutable (and BlockPos) class
- * 
  * @author James Seibel
  * @version 11-15-2021
  */
@@ -43,6 +41,7 @@ public class BiomeWrapper implements IBiomeWrapper
 		//we return the newly created wrapper
 		return biomeWrapper;
 	}
+	
 	
 	
 	/** Returns a color int for the given biome. */

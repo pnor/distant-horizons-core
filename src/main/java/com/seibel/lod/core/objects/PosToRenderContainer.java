@@ -26,6 +26,8 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 
 /**
+ * Holds a levelPos that needs to be rendered.
+ * 
  * @author Leonardo Amato
  * @version 9-18-2021
  */

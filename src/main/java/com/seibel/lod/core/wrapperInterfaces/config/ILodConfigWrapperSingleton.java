@@ -1,4 +1,23 @@
-package com.seibel.lod.core.wrapperAdapters.config;
+/*
+ *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
+ *    licensed under the GNU GPL v3 License.
+ *
+ *    Copyright (C) 2020  James Seibel
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, version 3.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.seibel.lod.core.wrapperInterfaces.config;
 
 import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.BufferRebuildTimes;
@@ -18,8 +37,9 @@ import com.seibel.lod.core.objects.MinDefaultMax;
 import com.seibel.lod.core.util.LodUtil;
 
 /**
- * This holds the config defaults and setters/getters
- * that should be hooked into the host mod loader (Fabric, Forge, etc.).
+ * This holds the config defaults, setters/getters
+ * that should be hooked into the host mod loader (Fabric, Forge, etc.), and
+ * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
  * @version 11-16-2021

@@ -1,10 +1,31 @@
+/*
+ *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
+ *    licensed under the GNU GPL v3 License.
+ *
+ *    Copyright (C) 2020  James Seibel
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, version 3.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.seibel.lod.core.objects.opengl;
 
 import org.lwjgl.opengl.GL11;
 
 /**
+ * This object is used to build LodVertexFormats.
+ * <p>
  * A (almost) exact copy of Minecraft's
- * VertexFormatElement class.
+ * VertexFormatElement class. <br>
  * A number of things were removed from the original
  * object since we didn't need them, specifically "usage".
  * 
