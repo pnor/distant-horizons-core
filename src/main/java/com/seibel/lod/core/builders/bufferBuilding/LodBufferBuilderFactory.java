@@ -68,7 +68,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * rendered by the LodRenderer.
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 11-21-2021
  */
 public class LodBufferBuilderFactory
 {
@@ -868,6 +868,11 @@ public class LodBufferBuilderFactory
 						// (uploading into GPU memory directly can only be done 
 						// through the glCopyBufferSubData/glCopyNamed... methods)
 						GL45.glCopyNamedBufferSubData(vbo.id, storageBufferId, 0, 0, uploadBuffer.capacity());
+						
+						// alternative way that doesn't require GL45
+//						GL15.glBindBuffer(GL45.GL_COPY_WRITE_BUFFER, storageBufferId);
+//						GL45.glCopyBufferSubData(GL15.GL_ARRAY_BUFFER, GL45.GL_COPY_WRITE_BUFFER, 0, 0, uploadBuffer.capacity());
+//						GL15.glBindBuffer(GL45.GL_COPY_WRITE_BUFFER, 0);
 					}
 				}
 				else if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
@@ -897,6 +902,14 @@ public class LodBufferBuilderFactory
 					{
 						vboBuffer.put(uploadBuffer);
 					}
+				}
+				else if (uploadMethod == GpuUploadMethod.DATA)
+				{
+					// hybrid bufferData //
+					// high stutter, low GPU usage
+					// But simplest/most compatible
+					
+					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uploadBuffer, GL15.GL_DYNAMIC_DRAW);
 				}
 				else
 				{

@@ -50,7 +50,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * https://gamedev.stackexchange.com/questions/91995/edit-vbo-data-or-create-a-new-one <br><br>
  * 
  * @author James Seibel
- * @version 11-20-2021
+ * @version 11-21-2021
  */
 public class GLProxy
 {
@@ -160,7 +160,7 @@ public class GLProxy
 		
 		// get specific capabilities
 		// TODO re-add buffer storage support
-		bufferStorageSupported = false; //lodBuilderGlCapabilities.glBufferStorage != 0;
+		bufferStorageSupported = lodBuilderGlCapabilities.glBufferStorage != 0;
 		mapBufferRangeSupported = lodBuilderGlCapabilities.glMapBufferRange != 0;
 		
 		

@@ -145,6 +145,9 @@ public class ClientApi
 		
 //		CONFIG.client().worldGenerator().setDistanceGenerationMode(DistanceGenerationMode.SURFACE);
 		
+//		CONFIG.client().graphics().advancedGraphics().setGpuUploadMethod(GpuUploadMethod.BUFFER_STORAGE);
+		
+		
 		
 		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}

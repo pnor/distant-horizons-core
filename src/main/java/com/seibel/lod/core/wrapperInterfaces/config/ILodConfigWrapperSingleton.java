@@ -42,7 +42,7 @@ import com.seibel.lod.core.util.LodUtil;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 11-16-2021
+ * @version 11-21-2021
  */
 public interface ILodConfigWrapperSingleton
 {
@@ -212,10 +212,12 @@ public interface ILodConfigWrapperSingleton
 				
 				GpuUploadMethod GPU_UPLOAD_METHOD_DEFAULT = GpuUploadMethod.BUFFER_STORAGE;
 				String GPU_UPLOAD_METHOD_DESC = ""
-						+ " What method should be used to upload geometry to the GPU? \n\n"
+						+ " What method should be used to upload geometry to the GPU? \n"
+						+ " Listed in the suggested order of best to worst. \n\n"
 						+ ""
 						+ " " + GpuUploadMethod.BUFFER_STORAGE + ": Default if OpenGL 4.5 is supported. Fast rendering, no stuttering. \n"
 						+ " " + GpuUploadMethod.SUB_DATA + ": Default if OpenGL 4.5 is NOT supported. Fast rendering but may stutter when uploading. \n"
+						+ " " + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
 						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly better than " + GpuUploadMethod.SUB_DATA + " if using a integrated GPU. \n";
 				public GpuUploadMethod getGpuUploadMethod();
 				public void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog);
