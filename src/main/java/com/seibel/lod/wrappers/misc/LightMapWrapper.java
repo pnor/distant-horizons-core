@@ -18,7 +18,6 @@ public class LightMapWrapper implements ILightMapWrapper
 		lightMap = newlightMap;
 	}
 	
-	@Override
 	public void setLightMap(NativeImage newlightMap)
 	{
 		lightMap = newlightMap;
