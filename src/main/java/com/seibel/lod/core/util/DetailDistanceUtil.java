@@ -23,7 +23,7 @@ import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 
 /**
  * 
@@ -33,7 +33,7 @@ import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
 public class DetailDistanceUtil
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
+	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	
 	private static final double genMultiplier = 1.0;
 	private static final double treeGenMultiplier = 1.0;

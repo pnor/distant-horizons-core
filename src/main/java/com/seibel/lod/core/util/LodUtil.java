@@ -35,10 +35,10 @@ import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
-import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
 
 /**
  * This class holds methods and constants that may be used in multiple places.
@@ -49,7 +49,7 @@ import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
 public class LodUtil
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
+	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	

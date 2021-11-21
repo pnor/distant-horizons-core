@@ -21,9 +21,10 @@ package com.seibel.lod.core.render;
 
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
-import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 
 /**
  * This holds miscellaneous helper code
@@ -34,7 +35,7 @@ import com.seibel.lod.forge.wrappers.minecraft.MinecraftRenderWrapper;
  */
 public class RenderUtil
 {
-	private static final MinecraftRenderWrapper MC_RENDER = MinecraftRenderWrapper.INSTANCE;
+	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	
 	
 	/**
