@@ -103,19 +103,24 @@ public class ClientApi
 			lodDim.expandOrLoadRegionsAsync(MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getZ());
 			
 			
-			// Note to self:
-			// if "unspecified" shows up in the pie chart, it is
-			// possibly because the amount of time between sections
-			// is too small for the profiler to measure
-			IProfilerWrapper profiler = MC.getProfiler();
-			profiler.pop(); // get out of "terrain"
-			profiler.push("LOD");
 			
+			if (CONFIG.client().advanced().debugging().getDrawLods())
+			{
+				// Note to self:
+				// if "unspecified" shows up in the pie chart, it is
+				// possibly because the amount of time between sections
+				// is too small for the profiler to measure
+				IProfilerWrapper profiler = MC.getProfiler();
+				profiler.pop(); // get out of "terrain"
+				profiler.push("LOD");
+				
+				
+				ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
+				
+				profiler.pop(); // end LOD
+				profiler.push("terrain"); // go back into "terrain"
+			}
 			
-			ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
-			
-			profiler.pop(); // end LOD
-			profiler.push("terrain"); // go back into "terrain"
 			
 			
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
