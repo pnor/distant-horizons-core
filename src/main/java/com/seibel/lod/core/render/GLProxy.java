@@ -43,11 +43,14 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * and GPU capabilities.
  *
  * <p>
- * Helpful OpenGL resources: <br><br>
+ * Helpful OpenGL resources:
  * <p>
  * https://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf <br>
  * https://learnopengl.com/Advanced-OpenGL/Advanced-Data <br>
- * https://gamedev.stackexchange.com/questions/91995/edit-vbo-data-or-create-a-new-one <br><br>
+ * https://www.slideshare.net/CassEveritt/approaching-zero-driver-overhead <br><br>
+ * 
+ * https://gamedev.stackexchange.com/questions/91995/edit-vbo-data-or-create-a-new-one <br>
+ * https://stackoverflow.com/questions/63509735/massive-performance-loss-with-glmapbuffer <br><br>
  * 
  * @author James Seibel
  * @version 11-21-2021
