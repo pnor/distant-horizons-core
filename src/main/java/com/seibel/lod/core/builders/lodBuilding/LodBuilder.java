@@ -400,7 +400,7 @@ public class LodBuilder
 		
 		
 		
-		if (world != null && !world.isEmpty())
+		if (world != null)
 		{
 			// server world sky light (always accurate)
 			blockLight = world.getBlockLight(blockPos);
@@ -429,7 +429,7 @@ public class LodBuilder
 		else
 		{
 			world = MC.getWrappedServerWorld();
-			if (world.isEmpty())
+			if (world==null)
 				return 0;
 			// client world sky light (almost never accurate)
 			blockLight = world.getBlockLight(blockPos);

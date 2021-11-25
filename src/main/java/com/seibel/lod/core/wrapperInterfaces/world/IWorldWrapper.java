@@ -46,6 +46,8 @@ public interface IWorldWrapper
 	
 	public boolean hasSkyLight();
 	
+	// Pls dont use this
+	// If the world is null then this cant be called and gives an error
 	public boolean isEmpty();
 	
 	public int getHeight();
