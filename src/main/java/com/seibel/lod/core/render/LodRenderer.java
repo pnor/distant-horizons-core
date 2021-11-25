@@ -29,6 +29,7 @@ import org.lwjgl.opengl.NVFogDistance;
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
+import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawOverride;
@@ -286,7 +287,7 @@ public class LodRenderer
 			
 			// TODO re-enable once rendering is totally working
 			boolean cullingDisabled = true; //LodConfig.client().graphics.advancedGraphicsOption.disableDirectionalCulling.get();
-//			boolean renderBufferStorage = config.client().graphics().advancedGraphics().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
+			boolean renderBufferStorage = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
 			
 			// used to determine what type of fog to render
 //			int halfWidth = vbos.length / 2;
@@ -339,10 +340,10 @@ public class LodRenderer
 //						else
 //							setupFog(fogSettings.far.distance, fogSettings.far.quality);
 						
-//						if (storageBufferIds != null && renderBufferStorage)
-//							for (int i = 0; i < storageBufferIds[x][z].length; i++)
-//								drawArrays(storageBufferIds[x][z][i], vbos[x][z][i].vertexCount, posAttrib, colAttrib);
-//						else
+						if (storageBufferIds != null && renderBufferStorage)
+							for (int i = 0; i < storageBufferIds[x][z].length; i++)
+								drawArrays(storageBufferIds[x][z][i], vbos[x][z][i].vertexCount, posAttrib, colAttrib);
+						else
 							for (int i = 0; i < vbos[x][z].length; i++)
 								drawArrays(vbos[x][z][i].id, vbos[x][z][i].vertexCount, posAttrib, colAttrib);
 					}

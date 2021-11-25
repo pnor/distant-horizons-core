@@ -81,6 +81,8 @@ public class LodBufferBuilderFactory
 	/** The threads used to generate buffers. */
 	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
 	
+	
+	
 	/**
 	 * When uploading to a buffer that is too small,
 	 * recreate it this many times bigger than the upload payload
@@ -93,6 +95,8 @@ public class LodBufferBuilderFactory
 	 * when need be to fit the larger sizes.
 	 */
 	public static final int DEFAULT_MEMORY_ALLOCATION = 1024;
+	
+	
 	
 	public static int skyLightPlayer = 15;
 	
@@ -595,11 +599,11 @@ public class LodBufferBuilderFactory
 					
 					// create the initial mapped buffers (system memory)
 					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buildableVbos[x][z][i].id);
-					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_DYNAMIC_DRAW);
+					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
 					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 					
 					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, drawableVbos[x][z][i].id);
-					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_DYNAMIC_DRAW);
+					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
 					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 					
 					
@@ -780,16 +784,18 @@ public class LodBufferBuilderFactory
 						for (int i = 0; i < buildableBuffers[x][z].length; i++)
 						{
 							ByteBuffer uploadBuffer = buildableBuffers[x][z][i].getCleanedByteBuffer();
-							int storageBufferId = 0;
-							if (buildableStorageBufferIds != null)
-								storageBufferId = buildableStorageBufferIds[x][z][i];
-							
-							vboUpload(buildableVbos[x][z][i], storageBufferId, uploadBuffer, true, uploadMethod);
+							vboUpload(x,z,i, uploadBuffer, true, uploadMethod);
 							lodDim.setRegenRegionBufferByArrayIndex(x, z, false);
 						}
 					}
 				}
 			}
+			
+			// make sure all of the uploads finish before continuing
+			GL45.glMemoryBarrier(GL45.GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+			long fence = GL45.glFenceSync(GL45.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			GL45.glClientWaitSync(fence, GL45.GL_SYNC_FLUSH_COMMANDS_BIT, 5 * 1000000000); // 5 seconds
+			GL45.glDeleteSync(fence);
 		}
 		catch (Exception e)
 		{
@@ -809,9 +815,19 @@ public class LodBufferBuilderFactory
 	}
 	
 	/** Uploads the uploadBuffer so the GPU can use it. */
-	private void vboUpload(LodVertexBuffer vbo, int storageBufferId, ByteBuffer uploadBuffer,
+	private void vboUpload(int xIndex, int zIndex, int iIndex, ByteBuffer uploadBuffer,
 			boolean allowBufferExpansion, GpuUploadMethod uploadMethod)
 	{
+		// get the vbos, buffers, ids, etc.
+		int storageBufferId = 0;
+		if (buildableStorageBufferIds != null)
+			storageBufferId = buildableStorageBufferIds[xIndex][zIndex][iIndex];
+		
+		LodVertexBuffer vbo = buildableVbos[xIndex][zIndex][iIndex];
+		
+		
+		
+		
 		// this shouldn't happen, but just to be safe
 		if (vbo.id != -1 && GLProxy.getInstance().getGlContext() == GLProxyContext.LOD_BUILDER)
 		{
@@ -855,7 +871,7 @@ public class LodBufferBuilderFactory
 							// recursively try to upload into the newly created buffer storage
 							// but don't recurse again if that fails
 							// (we don't want an infinitely expanding buffer!)
-							vboUpload(vbo, storageBufferId, uploadBuffer, false, uploadMethod);
+							vboUpload(xIndex,zIndex,iIndex, uploadBuffer, false, uploadMethod);
 						}
 					}
 					else
@@ -868,11 +884,6 @@ public class LodBufferBuilderFactory
 						// (uploading into GPU memory directly can only be done 
 						// through the glCopyBufferSubData/glCopyNamed... methods)
 						GL45.glCopyNamedBufferSubData(vbo.id, storageBufferId, 0, 0, uploadBuffer.capacity());
-						
-						// alternative way that doesn't require GL45
-//						GL15.glBindBuffer(GL45.GL_COPY_WRITE_BUFFER, storageBufferId);
-//						GL45.glCopyBufferSubData(GL15.GL_ARRAY_BUFFER, GL45.GL_COPY_WRITE_BUFFER, 0, 0, uploadBuffer.capacity());
-//						GL15.glBindBuffer(GL45.GL_COPY_WRITE_BUFFER, 0);
 					}
 				}
 				else if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
@@ -895,7 +906,7 @@ public class LodBufferBuilderFactory
 					
 					if (vboBuffer == null)
 					{
-						GL15.glBufferData(GL45.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL15.GL_DYNAMIC_DRAW);
+						GL15.glBufferData(GL45.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL15.GL_STATIC_DRAW);
 						GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, uploadBuffer);
 					}
 					else
@@ -909,7 +920,7 @@ public class LodBufferBuilderFactory
 					// high stutter, low GPU usage
 					// But simplest/most compatible
 					
-					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uploadBuffer, GL15.GL_DYNAMIC_DRAW);
+					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uploadBuffer, GL15.GL_STATIC_DRAW);
 				}
 				else
 				{
@@ -919,7 +930,7 @@ public class LodBufferBuilderFactory
 					long size = GL15.glGetBufferParameteri(GL15.GL_ARRAY_BUFFER, GL15.GL_BUFFER_SIZE);
 					if (size < uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER)
 					{
-						GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL15.GL_DYNAMIC_DRAW);
+						GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL15.GL_STATIC_DRAW);
 					}
 					GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, uploadBuffer);
 				}
