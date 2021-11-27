@@ -76,17 +76,22 @@ public interface ILodConfigWrapperSingleton
 				HorizontalResolution DRAW_RESOLUTION_DEFAULT = HorizontalResolution.BLOCK;
 				public static final String DRAW_RESOLUTION_DESC = ""
 						+ " What is the maximum detail fake chunks should be drawn at? \n"
+						+ " Higher settings will increase memory and GPU usage. \n"
+						+ "\n"
 						+ " " + HorizontalResolution.CHUNK + ": render 1 LOD for each Chunk. \n"
 						+ " " + HorizontalResolution.HALF_CHUNK + ": render 4 LODs for each Chunk. \n"
 						+ " " + HorizontalResolution.FOUR_BLOCKS + ": render 16 LODs for each Chunk. \n"
 						+ " " + HorizontalResolution.TWO_BLOCKS + ": render 64 LODs for each Chunk. \n"
-						+ " " + HorizontalResolution.BLOCK + ": render 256 LODs for each Chunk. \n";
+						+ " " + HorizontalResolution.BLOCK + ": render 256 LODs for each Chunk (width of one block). \n"
+						+ "\n"
+						+ " Lowest Quality: " + HorizontalResolution.CHUNK
+						+ " Highest Quality: " + HorizontalResolution.BLOCK;
 				public HorizontalResolution getDrawResolution();
 				public void setDrawResolution(HorizontalResolution newHorizontalResolution);
 				
 				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 1024);
 				String LOD_CHUNK_RENDER_DISTANCE_DESC = ""
-						+ " The mod's render distance, measured in chunks. \n";
+						+ " The radius of the mod's render distance. (measured in chunks) \n";
 				public int getLodChunkRenderDistance();
 				public void setLodChunkRenderDistance(int newLodChunkRenderDistance);
 				
@@ -94,29 +99,44 @@ public interface ILodConfigWrapperSingleton
 				String VERTICAL_QUALITY_DESC = ""
 						+ " This indicates how detailed fake chunks will represent \n"
 						+ " overhangs, caves, floating islands, ect. \n"
-						+ " Higher options will use more memory and increase GPU usage. \n"
+						+ " Higher options will make the world more accurate, but"
+						+ " will increase memory and GPU usage. \n"
+						+ "\n"
 						+ " " + VerticalQuality.LOW + ": uses at max 2 columns per position. \n"
 						+ " " + VerticalQuality.MEDIUM + ": uses at max 4 columns per position. \n"
-						+ " " + VerticalQuality.HIGH + ": uses at max 8 columns per position. \n";
+						+ " " + VerticalQuality.HIGH + ": uses at max 8 columns per position. \n"
+						+ "\n"
+						+ " Lowest Quality: " + VerticalQuality.LOW
+						+ " Highest Quality: " + VerticalQuality.HIGH;
 				public VerticalQuality getVerticalQuality();
 				public void setVerticalQuality(VerticalQuality newVerticalQuality);
 				
 				HorizontalScale HORIZONTAL_SCALE_DEFAULT = HorizontalScale.MEDIUM;
 				String HORIZONTAL_SCALE_DESC = ""
-						+ " This indicates how quickly fake chunks drop off in quality. \n"
+						+ " This indicates how quickly fake chunks decrease in quality the further away they are. \n"
+						+ " Higher settings will render higher quality fake chunks farther away, \n"
+						+ " but will increase memory and GPU usage. \n"
+						+ "\n"
 						+ " " + HorizontalScale.LOW + ": quality drops every " + HorizontalScale.LOW.distanceUnit / 16 + " chunks. \n"
 						+ " " + HorizontalScale.MEDIUM + ": quality drops every " + HorizontalScale.MEDIUM.distanceUnit / 16 + " chunks. \n"
-						+ " " + HorizontalScale.HIGH + ": quality drops every " + HorizontalScale.HIGH.distanceUnit / 16 + " chunks. \n";
+						+ " " + HorizontalScale.HIGH + ": quality drops every " + HorizontalScale.HIGH.distanceUnit / 16 + " chunks. \n"
+						+ "\n"
+						+ " Lowest Quality: " + HorizontalScale.LOW
+						+ " Highest Quality: " + HorizontalScale.HIGH;
 				public HorizontalScale getHorizontalScale();
 				public void setHorizontalScale(HorizontalScale newHorizontalScale);
 				
 				HorizontalQuality HORIZONTAL_QUALITY_DEFAULT = HorizontalQuality.MEDIUM;
 				String HORIZONTAL_QUALITY_DESC = ""
 						+ " This indicates the exponential base of the quadratic drop-off \n"
+						+ "\n"
 						+ " " + HorizontalQuality.LOWEST + ": base " + HorizontalQuality.LOWEST.quadraticBase + ". \n"
 						+ " " + HorizontalQuality.LOW + ": base " + HorizontalQuality.LOW.quadraticBase + ". \n"
 						+ " " + HorizontalQuality.MEDIUM + ": base " + HorizontalQuality.MEDIUM.quadraticBase + ". \n"
-						+ " " + HorizontalQuality.HIGH + ": base " + HorizontalQuality.HIGH.quadraticBase + ". \n";
+						+ " " + HorizontalQuality.HIGH + ": base " + HorizontalQuality.HIGH.quadraticBase + ". \n"
+						+ "\n"
+						+ " Lowest Quality: " + HorizontalQuality.LOWEST
+						+ " Highest Quality: " + HorizontalQuality.HIGH;
 				public HorizontalQuality getHorizontalQuality();
 				public void setHorizontalQuality(HorizontalQuality newHorizontalQuality);
 			}
@@ -128,37 +148,40 @@ public interface ILodConfigWrapperSingleton
 				FogDistance FOG_DISTANCE_DEFAULT = FogDistance.FAR;
 				String FOG_DISTANCE_DESC = ""
 						+ " At what distance should Fog be drawn on the fake chunks? \n"
-						+ " If the fog cuts off abruptly or you are using Optifine's \"fast\" fog option \n"
-						+ " set this to " + FogDistance.NEAR + " or " + FogDistance.FAR + ". \n";
+						+ "\n"
+						+ " This setting shouldn't affect performance.";
 				public FogDistance getFogDistance();
 				public void setFogDistance(FogDistance newFogDistance);
 				
 				FogDrawMode FOG_DRAW_MODE_DEFAULT = FogDrawMode.FOG_ENABLED;
 				String FOG_DRAW_MODE_DESC = ""
 						+ " When should fog be drawn? \n"
+						+ "\n"
 						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using. If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
 						+ " " + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
-						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n";
+						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
+						+ "\n"
+						+ " Disabling fog will improve GPU performance.";
 				public FogDrawMode getFogDrawMode();
 				public void setFogDrawMode(FogDrawMode newFogDrawMode);
 				
 				FogColorMode FOG_COLOR_MODE_DEFAULT = FogColorMode.USE_WORLD_FOG_COLOR;
 				String FOG_COLOR_MODE_DESC = ""
 						+ " What color should fog use? \n"
+						+ "\n"
 						+ " " + FogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
-						+ " " + FogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n";
+						+ " " + FogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
+						+ "\n"
+						+ " This setting doesn't affect performance.";
 				public FogColorMode getFogColorMode();
 				public void setFogColorMode(FogColorMode newFogColorMode);
 				
 				boolean DISABLE_VANILLA_FOG_DEFAULT = false;
 				String DISABLE_VANILLA_FOG_DESC = ""
-						+ " If true disable Minecraft's fog. \n\n"
-						+ ""
-						+ " Experimental! May cause issues with Sodium. \n\n"
-						+ ""
-						+ " Unlike Optifine or Sodium's fog disabling option this won't change \n"
-						+ " performance (we don't actually disable the fog, we just tell it to render a infinite distance away). \n"
-						+ " May or may not play nice with other mods that edit fog. \n";
+						+ " If true disable Minecraft's fog. \n"
+						+ "\n"
+						+ " Experimental! May cause issues with Sodium and \n"
+						+ " may or may not play nice with other mods that edit fog. \n";
 				public boolean getDisableVanillaFog();
 				public void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
@@ -182,13 +205,13 @@ public interface ILodConfigWrapperSingleton
 				boolean DISABLE_DIRECTIONAL_CULLING_DEFAULT = false;
 				String DISABLE_DIRECTIONAL_CULLING_DESC = ""
 						+ " If false fake chunks behind the player's camera \n"
-						+ " aren't drawn, increasing performance. \n\n"
-						+ ""
+						+ " aren't drawn, increasing GPU performance. \n"
+						+ "\n"
 						+ " If true all LODs are drawn, even those behind \n"
-						+ " the player's camera, decreasing performance. \n\n"
-						+ ""
-						+ " Disable this if you see LODs disappearing. \n"
-						+ " (Which may happen if you are using a camera mod) \n";
+						+ " the player's camera, decreasing GPU performance. \n"
+						+ "\n"
+						+ " Disable this if you see LODs disappearing, \n"
+						+ " which may happen if you are using a camera mod. \n";
 				public boolean getDisableDirectionalCulling();
 				public void setDisableDirectionalCulling(boolean newDisableDirectionalCulling);
 				
@@ -196,44 +219,49 @@ public interface ILodConfigWrapperSingleton
 				String ALWAYS_DRAW_AT_MAD_QUALITY_DESC = ""
 						+ " Disable quality falloff, \n"
 						+ " all fake chunks will be drawn at the highest \n"
-						+ " available detail level. \n\n"
-						+ " "
+						+ " available detail level. \n"
+						+ "\n"
 						+ " WARNING: \n"
-						+ " This could cause a Out Of Memory crash on render \n"
-						+ " distances higher than 128 \n";
+						+ " This could cause an Out Of Memory crash when using render \n"
+						+ " distances higher than 128 and will drastically increase GPU usage. \n";
 				public boolean getAlwaysDrawAtMaxQuality();
 				public void setAlwaysDrawAtMaxQuality(boolean newAlwaysDrawAtMaxQuality);
 				
 				VanillaOverdraw VANILLA_OVERDRAW_DEFAULT = VanillaOverdraw.DYNAMIC;
 				String VANILLA_OVERDRAW_DESC = ""
 						+ " How often should LODs be drawn on top of regular chunks? \n"
-						+ " HALF and ALWAYS will prevent holes in the world, but may look odd for transparent blocks or in caves. \n\n"
+						+ " HALF and ALWAYS will prevent holes in the world, but may look odd for transparent blocks or in caves. \n"
+						+ "\n"
 						+ " " + VanillaOverdraw.NEVER + ": LODs won't render on top of vanilla chunks. \n"
 						+ " " + VanillaOverdraw.BORDER + ": LODs will render only on the border of vanilla chunks preventing only some holes in the world. \n"
 						+ " " + VanillaOverdraw.DYNAMIC + ": LODs will render on top of distant vanilla chunks to hide delayed loading. \n"
 						+ " " + "     More effective on higher render distances. \n"
 						+ " " + "     For vanilla render distances less than or equal to " + LodUtil.MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW + " \n"
-						+ " " + "     " + VanillaOverdraw.NEVER + " or " + VanillaOverdraw.ALWAYS + " may be used depending on the dimension. \n"
-						+ " " + VanillaOverdraw.ALWAYS + ": LODs will render on all vanilla chunks preventing holes in the world. \n";
+						+ " " + "     " + VanillaOverdraw.NEVER + " or " + VanillaOverdraw.ALWAYS + " will be used depending on the dimension. \n"
+						+ " " + VanillaOverdraw.ALWAYS + ": LODs will render on all vanilla chunks preventing holes in the world. \n"
+						+ "\n"
+						+ " This setting shouldn't affect performance. \n";
 				public VanillaOverdraw getVanillaOverdraw();
 				public void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
 				
 				GpuUploadMethod GPU_UPLOAD_METHOD_DEFAULT = GpuUploadMethod.BUFFER_STORAGE;
 				String GPU_UPLOAD_METHOD_DESC = ""
 						+ " What method should be used to upload geometry to the GPU? \n"
-						+ " Listed in the suggested order of best to worst. \n\n"
-						+ ""
+						+ " Listed in the suggested order of best to worst. \n"
+						+ "\n"
 						+ " " + GpuUploadMethod.BUFFER_STORAGE + ": Default if OpenGL 4.5 is supported. Fast rendering, no stuttering. \n"
-						+ " " + GpuUploadMethod.SUB_DATA + ": Default if OpenGL 4.5 is NOT supported. Fast rendering but may stutter when uploading. \n"
+						+ " " + GpuUploadMethod.SUB_DATA + ": Default if OpenGL 4.5 is NOT supported. Fast rendering but will probably stutter when uploading. \n"
 						+ " " + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
-						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly better than " + GpuUploadMethod.SUB_DATA + " if using a integrated GPU. \n";
+						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly better than " + GpuUploadMethod.SUB_DATA + " if using an integrated GPU. \n";
 				public GpuUploadMethod getGpuUploadMethod();
 				public void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog);
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
 						+ " Will prevent some overdraw issues, but may cause nearby fake chunks to render incorrectly \n"
-						+ " especially when in/near an ocean. \n";
+						+ " especially when in/near an ocean. \n"
+						+ "\n"
+						+ " This setting shouldn't affect performance. \n";
 				public boolean getUseExtendedNearClipPlane();
 				public void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane);
 			}
@@ -251,57 +279,65 @@ public interface ILodConfigWrapperSingleton
 			
 			GenerationPriority GENERATION_PRIORITY_DEFAULT = GenerationPriority.FAR_FIRST;
 			String GENERATION_PRIORITY_DESC = ""
+					+ " In what order should fake chunks be generated outside the vanilla render distance? \n"
+					+ "\n"
 					+ " " + GenerationPriority.FAR_FIRST + " \n"
-					+ " LODs are generated from low to high detail \n"
+					+ " Fake chunks are generated from lowest to highest detail \n"
 					+ " with a small priority for far away regions. \n"
-					+ " This fills in the world fastest. \n\n"
-					+ ""
+					+ " This fills in the world fastest, but you will have large low detail \n"
+					+ " blocks for a while while the generation happens. \n"
+					+ "\n"
 					+ " " + GenerationPriority.NEAR_FIRST + " \n"
-					+ " LODs are generated around the player \n"
-					+ " in a spiral, similar to vanilla minecraft. \n";
+					+ " Fake chunks are generated around the player \n"
+					+ " in a spiral, similar to vanilla minecraft. \n"
+					+ " Best used when on a server since we can't generate \n"
+					+ " fake chunks, which causes the low detail blocks to become much more noticable. \n"
+					+ "\n"
+					+ " This shouldn't affect performance.";
 			public GenerationPriority getGenerationPriority();
 			public void setGenerationPriority(GenerationPriority newGenerationPriority);
 			
 			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.SURFACE;
 			String DISTANCE_GENERATION_MODE_DESC = ""
-					+ " Note: The times listed here are the amount of time it took \n"
-					+ "       one of the developer's PC to generate 1 chunk, \n"
-					+ "       and are included so you can compare the \n"
-					+ "       different generation options. Your mileage may vary. \n\n"
-					+ ""
+					+ " How detailed should fake chunks be generated outside the vanilla render distance? \n"
+					+ "\n"
 					+ " " + DistanceGenerationMode.NONE + " \n"
-					+ " Don't run the distance generator. \n\n"
-					+ ""
+					+ " Don't run the distance generator. \n"
+					+ " No CPU usage - Fastest \n"
+					+ "\n"
 					+ " " + DistanceGenerationMode.BIOME_ONLY + " \n"
 					+ " Only generate the biomes and use the biome's \n"
 					+ " grass color, water color, or snow color. \n"
 					+ " Doesn't generate height, everything is shown at sea level. \n"
-					+ " Multithreaded - Fastest (2-5 ms) \n\n"
-					+ ""
+					+ " Multithreaded - Fastest (2-5 ms) \n"
+					+ "\n"
 					+ " " + DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT + " \n"
-					+ " Same as BIOME_ONLY, except instead \n"
+					+ " Same as " + DistanceGenerationMode.BIOME_ONLY + ", except instead \n"
 					+ " of always using sea level as the LOD height \n"
 					+ " different biome types (mountain, ocean, forest, etc.) \n"
 					+ " use predetermined heights to simulate having height data. \n"
-					+ " Multithreaded - Fastest (2-5 ms) \n\n"
-					+ ""
+					+ " Multithreaded - Fastest (2-5 ms) \n"
+					+ "\n"
 					+ " " + DistanceGenerationMode.SURFACE + " \n"
 					+ " Generate the world surface, \n"
 					+ " this does NOT include trees, \n"
 					+ " or structures. \n"
-					+ " Multithreaded - Faster (10-20 ms) \n\n"
-					+ ""
+					+ " Multithreaded - Faster (10-20 ms) \n"
+					+ "\n"
 					+ " " + DistanceGenerationMode.FEATURES + " \n"
 					+ " Generate everything except structures. \n"
 					+ " WARNING: This may cause world generation bugs or instability! \n"
-					+ " Multithreaded - Fast (15-20 ms) \n\n"
-					+ ""
+					+ " Multithreaded - Fast (15-20 ms) \n"
+					+ "\n"
 					+ " " + DistanceGenerationMode.FULL + " \n"
 					+ " Ask the local server to generate/load each chunk. \n"
 					+ " This will show player made structures, which can \n"
 					+ " be useful if you are adding the mod to a pre-existing world. \n"
 					+ " This is the most compatible, but causes server/simulation lag. \n"
-					+ " SingleThreaded - Slow (15-50 ms, with spikes up to 200 ms) \n";
+					+ " SingleThreaded - Slow (15-50 ms, with spikes up to 200 ms) \n"
+					+ "\n"
+					+ " The multithreaded options may increase CPU load significantly (while generating) \n"
+					+ " depending on how many world generation threads you have allocated. \n";
 			public DistanceGenerationMode getDistanceGenerationMode();
 			public void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode);
 			
@@ -317,7 +353,7 @@ public interface ILodConfigWrapperSingleton
 					+ "               so some trees may not be generated.) \n"
 					+ " By setting this to true, all features will be generated, \n"
 					+ " but your game will be more unstable and crashes may occur. \n"
-					+ " \n"
+					+ "\n"
 					+ " I would love to remove this option and always generate everything, \n"
 					+ " but I'm not sure how to do that. \n"
 					+ " If you are a Java wizard, check out the git issue here: \n"
@@ -327,13 +363,17 @@ public interface ILodConfigWrapperSingleton
 			
 			BlocksToAvoid BLOCKS_TO_AVOID_DEFAULT = BlocksToAvoid.BOTH;
 			String BLOCKS_TO_AVOID_DESC = ""
-					+ " " + BlocksToAvoid.NONE + ": Use all blocks when generating fake chunks \n\n"
-					+ ""
-					+ " " + BlocksToAvoid.NON_FULL + ": Only use full blocks when generating fake chunks (ignores slabs, lanterns, torches, grass, etc.) \n\n"
-					+ ""
-					+ " " + BlocksToAvoid.NO_COLLISION + ": Only use solid blocks when generating fake chunks (ignores grass, torches, etc.) \n"
-					+ ""
-					+ " " + BlocksToAvoid.BOTH + ": Only use full solid blocks when generating fake chunks \n";
+					+ " When generating fake chunks, what blocks should be ignored? \n"
+					+ " Ignored blocks don't affect the height of the fake chunk, but might affect the color. \n"
+					+ " So using " + BlocksToAvoid.BOTH + " will prevent snow covered blocks from appearing one block too tall, \n"
+					+ " but will still show the snow's color.\n"
+					+ "\n"
+					+ " " + BlocksToAvoid.NONE + ": Use all blocks when generating fake chunks \n"
+					+ " " + BlocksToAvoid.NON_FULL + ": Only use full blocks when generating fake chunks (ignores slabs, lanterns, torches, tall grass, etc.) \n"
+					+ " " + BlocksToAvoid.NO_COLLISION + ": Only use solid blocks when generating fake chunks (ignores tall grass, torches, etc.) \n"
+					+ " " + BlocksToAvoid.BOTH + ": Only use full solid blocks when generating fake chunks \n"
+					+ "\n"
+					+ " This wont't affect performance.";
 			public BlocksToAvoid getBlocksToAvoid();
 			public void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
 		}
@@ -362,12 +402,17 @@ public interface ILodConfigWrapperSingleton
 							Runtime.getRuntime().availableProcessors() / 2,
 							Runtime.getRuntime().availableProcessors());
 				String NUMBER_OF_WORLD_GENERATION_THREADS_DESC = ""
-						+ " This is how many threads are used when generating LODs outside \n"
-						+ " the normal render distance. \n"
+						+ " How many threads should be used when generating fake chunks outside \n"
+						+ " the normal render distance? \n"
+						+ "\n"
 						+ " If you experience stuttering when generating distant LODs, decrease \n"
 						+ " this number. If you want to increase LOD generation speed, \n"
-						+ " increase this number. \n\n"
-						+ ""
+						+ " increase this number. \n"
+						+ "\n"
+						+ " This and the number of buffer builder threads are independent, \n"
+						+ " so if they add up to more threads than your CPU has cores, \n"
+						+ " that shouldn't cause an issue. \n"
+						+ "\n"
 						+ " The maximum value is the number of logical processors on your CPU. \n"
 						+ " Requires a restart to take effect. \n";
 				public int getNumberOfWorldGenerationThreads();
@@ -378,11 +423,17 @@ public interface ILodConfigWrapperSingleton
 							Runtime.getRuntime().availableProcessors() / 2, 
 							Runtime.getRuntime().availableProcessors());
 				String NUMBER_OF_BUFFER_BUILDER_THREADS_DESC = ""
-						+ " This is how many threads are used when building vertex buffers \n"
+						+ " How many threads are used when building vertex buffers? \n"
 						+ " (The things sent to your GPU to draw the fake chunks). \n"
+						+ "\n"
 						+ " If you experience high CPU usage when NOT generating distant \n"
-						+ " fake chunks, lower this number. \n"
-						+ " \n"
+						+ " fake chunks, lower this number. A higher number will make fake\n"
+						+ " fake chunks' transition faster when moving around the world. \n"
+						+ "\n"
+						+ " This and the number of world generator threads are independent, \n"
+						+ " so if they add up to more threads than your CPU has cores, \n"
+						+ " that shouldn't cause an issue. \n"
+						+ "\n"
 						+ " The maximum value is the number of logical processors on your CPU. \n"
 						+ " Requires a restart to take effect. \n";
 				public int getNumberOfBufferBuilderThreads();
@@ -397,12 +448,16 @@ public interface ILodConfigWrapperSingleton
 				String DRAW_LODS_DESC = ""
 						+ " If true, the mod is enabled and fake chunks will be drawn. \n"
 						+ " If false, the mod will still generate fake chunks, \n"
-						+ " but they won't be rendered. \n";
+						+ " but they won't be rendered. \n"
+						+ "\n"
+						+ " Disabling rendering will reduce GPU usage \n";
 				public boolean getDrawLods();
 				public void setDrawLods(boolean newDrawLods);
 				
 				DebugMode DEBUG_MODE_DEFAULT = DebugMode.OFF;
 				String DEBUG_MODE_DESC = ""
+						+ " Should specialized colors/rendering modes be used? \n"
+						+ "\n"
 						+ " " + DebugMode.OFF + ": Fake chunks will be drawn with their normal colors. \n"
 						+ " " + DebugMode.SHOW_DETAIL + ": Fake chunks color will be based on their detail level. \n"
 						+ " " + DebugMode.SHOW_DETAIL_WIREFRAME + ": Fake chunks color will be based on their detail level, drawn as a wireframe. \n";
@@ -422,7 +477,7 @@ public interface ILodConfigWrapperSingleton
 				String DESC = "These settings affect how often geometry is rebuilt.";
 				
 				String REBUILD_TIMES_DESC = ""
-						+ " How frequently should geometry be rebuilt and sent to the GPU? \n"
+						+ " How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU? \n"
 						+ " Higher settings may cause stuttering, but will prevent holes in the world \n";
 				BufferRebuildTimes REBUILD_TIMES_DEFAULT = BufferRebuildTimes.NORMAL;
 				public BufferRebuildTimes getRebuildTimes();
