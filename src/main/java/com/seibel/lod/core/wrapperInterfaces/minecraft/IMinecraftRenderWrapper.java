@@ -50,6 +50,8 @@ public interface IMinecraftRenderWrapper
 	public double getGamma();
 	
 	public Color getFogColor();
+
+	public Color getSkyColor();
 	
 	public double getFov(float partialTicks);
 	
