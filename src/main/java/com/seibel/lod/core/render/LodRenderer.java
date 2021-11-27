@@ -290,7 +290,13 @@ public class LodRenderer
 			int cameraUniform = shaderProgram.getUniformLocation("cameraPos");
 			shaderProgram.setUniform(cameraUniform, getTranslatedCameraPos());
 			int fogColorUniform = shaderProgram.getUniformLocation("fogColor");
-			Color fogColor = MC_RENDER.getFogColor();
+			Color fogColor;
+			if (CONFIG.client().graphics().fogQuality().getFogDrawMode() == FogDrawMode.USE_OPTIFINE_SETTING)
+				fogColor = MC_RENDER.getFogColor();
+			else if (CONFIG.client().graphics().fogQuality().getFogDrawMode() == FogDrawMode.USE_SKY_COLORS)
+				fogColor = MC_RENDER.getSkyColor();
+			else
+				fogColor = new Color(0, 0, 0, 0);
 			GL20.glUniform4f(fogColorUniform, fogColor.getRed() / 256.0f, fogColor.getGreen() / 256.0f, fogColor.getBlue() / 256.0f, fogColor.getAlpha() / 256.0f);
 			
 			

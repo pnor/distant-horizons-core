@@ -136,6 +136,7 @@ public interface ILodConfigWrapperSingleton
 				String FOG_DRAW_MODE_DESC = ""
 						+ " When should fog be drawn? \n"
 						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using. If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
+						+ " " + FogDrawMode.USE_SKY_COLORS + ": Use sky colors for the fog to make it blend in more \n"
 						+ " " + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
 						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n";
 				public FogDrawMode getFogDrawMode();

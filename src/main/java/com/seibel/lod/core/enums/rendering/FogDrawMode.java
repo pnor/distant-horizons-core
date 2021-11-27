@@ -35,6 +35,15 @@ public enum FogDrawMode
 	 */
 	USE_OPTIFINE_SETTING,
 	
+	/**
+	 * Replicates the effect of the clear sky mod
+	 * Makes the fog blend in with the sky way better
+	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies
+	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies-forge-port
+	 * For it to look good you need one of those mods
+	 */
+	USE_SKY_COLORS,
+
 	FOG_ENABLED,
 	FOG_DISABLED
 }
