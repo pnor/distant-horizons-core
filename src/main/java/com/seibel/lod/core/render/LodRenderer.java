@@ -31,6 +31,7 @@ import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.handlers.IReflectionHandler;
@@ -59,7 +60,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  * This is where LODs are draw to the world.
  * 
  * @author James Seibel
- * @version 11-26-2021
+ * @version 11-27-2021
  */
 public class LodRenderer
 {
@@ -290,13 +291,7 @@ public class LodRenderer
 			int cameraUniform = shaderProgram.getUniformLocation("cameraPos");
 			shaderProgram.setUniform(cameraUniform, getTranslatedCameraPos());
 			int fogColorUniform = shaderProgram.getUniformLocation("fogColor");
-			Color fogColor;
-			if (CONFIG.client().graphics().fogQuality().getFogDrawMode() == FogDrawMode.USE_OPTIFINE_SETTING)
-				fogColor = MC_RENDER.getFogColor();
-			else if (CONFIG.client().graphics().fogQuality().getFogDrawMode() == FogDrawMode.USE_SKY_COLORS)
-				fogColor = MC_RENDER.getSkyColor();
-			else
-				fogColor = new Color(0, 0, 0, 0);
+			Color fogColor = getFogColor();
 			GL20.glUniform4f(fogColorUniform, fogColor.getRed() / 256.0f, fogColor.getGreen() / 256.0f, fogColor.getBlue() / 256.0f, fogColor.getAlpha() / 256.0f);
 			
 			
@@ -381,6 +376,13 @@ public class LodRenderer
 		// end of internal LOD profiling
 		profiler.pop();
 	}
+
+
+
+
+
+
+	
 	
 	/** This is where the actual drawing happens. */
 	private void drawArrays(int glBufferId, int vertexCount, int posAttrib, int colAttrib)
@@ -476,6 +478,19 @@ public class LodRenderer
 		
 		
 		return fogConfig;
+	}
+	
+	/**  */
+	private Color getFogColor()
+	{
+		Color fogColor;
+		
+		if (CONFIG.client().graphics().fogQuality().getFogColorMode() == FogColorMode.USE_SKY_COLOR)
+			fogColor = MC_RENDER.getSkyColor();
+		else
+			fogColor = MC_RENDER.getFogColor();
+		
+		return fogColor;
 	}
 	
 	/**

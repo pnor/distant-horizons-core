@@ -20,21 +20,23 @@
 package com.seibel.lod.core.enums.rendering;
 
 /**
- * USE_OPTIFINE_FOG_SETTING, <br>
- * FOG_ENABLED, <br>
- * FOG_DISABLED <br>
+ * USE_DEFAULT_FOG_COLOR, <br>
+ * USE_SKY_COLOR, <br>
  * 
  * @author James Seibel
  * @version 11-27-2021
  */
-public enum FogDrawMode
+public enum FogColorMode
 {
-	/**
-	 * Use whatever Fog setting optifine is using.
-	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
-	 */
-	USE_OPTIFINE_SETTING,
+	/** Fog uses Minecraft's fog color. */
+	USE_WORLD_FOG_COLOR,
 	
-	FOG_ENABLED,
-	FOG_DISABLED
+	/**
+	 * Replicates the effect of the clear sky mod.
+	 * Making the fog blend in with the sky better
+	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies
+	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies-forge-port
+	 * For it to look good you need one of those mods
+	 */
+	USE_SKY_COLOR,
 }

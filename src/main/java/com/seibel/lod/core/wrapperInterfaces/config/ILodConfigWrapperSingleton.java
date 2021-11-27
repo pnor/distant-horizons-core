@@ -31,6 +31,7 @@ import com.seibel.lod.core.enums.config.LodTemplate;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.enums.rendering.DebugMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.MinDefaultMax;
@@ -42,7 +43,7 @@ import com.seibel.lod.core.util.LodUtil;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 11-21-2021
+ * @version 11-27-2021
  */
 public interface ILodConfigWrapperSingleton
 {
@@ -136,11 +137,18 @@ public interface ILodConfigWrapperSingleton
 				String FOG_DRAW_MODE_DESC = ""
 						+ " When should fog be drawn? \n"
 						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using. If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
-						+ " " + FogDrawMode.USE_SKY_COLORS + ": Use sky colors for the fog to make it blend in more \n"
 						+ " " + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
 						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n";
 				public FogDrawMode getFogDrawMode();
-				public void setFogDrawMode(FogDrawMode newFogDrawOverride);
+				public void setFogDrawMode(FogDrawMode newFogDrawMode);
+				
+				FogColorMode FOG_COLOR_MODE_DEFAULT = FogColorMode.USE_WORLD_FOG_COLOR;
+				String FOG_COLOR_MODE_DESC = ""
+						+ " What color should fog use? \n"
+						+ " " + FogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
+						+ " " + FogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n";
+				public FogColorMode getFogColorMode();
+				public void setFogColorMode(FogColorMode newFogColorMode);
 				
 				boolean DISABLE_VANILLA_FOG_DEFAULT = false;
 				String DISABLE_VANILLA_FOG_DESC = ""
