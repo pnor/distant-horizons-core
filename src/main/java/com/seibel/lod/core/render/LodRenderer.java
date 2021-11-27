@@ -32,8 +32,7 @@ import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.Verte
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.FogDrawOverride;
-import com.seibel.lod.core.enums.rendering.FogQuality;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
@@ -41,7 +40,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
-import com.seibel.lod.core.objects.rending.LodFogConfigContainer;
+import com.seibel.lod.core.objects.rending.LodFogConfig;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
@@ -255,7 +254,7 @@ public class LodRenderer
 		
 		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, partialTicks);
 		
-		LodFogConfigContainer fogSettings = generateFogConfigContainer();
+		LodFogConfig fogSettings = determineFogConfig();
 		
 		
 		
@@ -269,7 +268,7 @@ public class LodRenderer
 			//==============//
 			
 			// can be used when testing shaders
-//			glProxy.createShaderProgram();
+			glProxy.createShaderProgram();
 			
 			
 			LodShaderProgram shaderProgram = glProxy.lodShaderProgram;
@@ -283,7 +282,7 @@ public class LodRenderer
 	        shaderProgram.enableVertexAttribute(colAttrib);
 	        
 	        
-	        // upload the required uniforms
+	        // global uniforms
 	        int mvmUniform = shaderProgram.getUniformLocation("modelViewMatrix");
 	        shaderProgram.setUniform(mvmUniform, modelViewMatrix);
 			int projUniform = shaderProgram.getUniformLocation("projectionMatrix");
@@ -295,10 +294,17 @@ public class LodRenderer
 			GL20.glUniform4f(fogColorUniform, fogColor.getRed() / 256.0f, fogColor.getGreen() / 256.0f, fogColor.getBlue() / 256.0f, fogColor.getAlpha() / 256.0f);
 			
 			
-			
-			int nearPlaneUniform = shaderProgram.getUniformLocation("nearPlane");
-			int farPlaneUniform = shaderProgram.getUniformLocation("farPlane");
+			// region dependent uniforms
 			int fogEnabledUniform = shaderProgram.getUniformLocation("fogEnabled");
+			int nearFogEnabledUniform = shaderProgram.getUniformLocation("nearFogEnabled");
+			int farFogEnabledUniform = shaderProgram.getUniformLocation("farFogEnabled");
+			// near
+			int nearFogStartUniform = shaderProgram.getUniformLocation("nearFogStart");
+			int nearFogEndUniform = shaderProgram.getUniformLocation("nearFogEnd");
+			// far
+			int farFogStartUniform = shaderProgram.getUniformLocation("farFogStart");
+			int farFogEndUniform = shaderProgram.getUniformLocation("farFogEnd");
+			
 			
 			
 			
@@ -312,12 +318,9 @@ public class LodRenderer
 			boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
 			boolean renderBufferStorage = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
 			
-			// used to determine what type of fog to render
-			int halfWidth = vbos.length / 2;
-			int quarterWidth = vbos.length / 4;
-			
 			// where the center of the buffers is (needed when culling regions)
 			RegionPos vboCenterRegionPos = new RegionPos(vbosCenter);
+			RegionPos vboPos = new RegionPos();
 			
 			
 			// render each of the buffers
@@ -325,14 +328,15 @@ public class LodRenderer
 			{
 				for (int z = 0; z < vbos.length; z++)
 				{
-					RegionPos vboPos = new RegionPos(
-							x + vboCenterRegionPos.x - (lodDim.getWidth() / 2),
-							z + vboCenterRegionPos.z - (lodDim.getWidth() / 2));
+					vboPos.x = x + vboCenterRegionPos.x - (lodDim.getWidth() / 2);
+					vboPos.z = z + vboCenterRegionPos.z - (lodDim.getWidth() / 2);
 					
 					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(), MC_RENDER.getLookAtVector(), vboPos.blockPos()))
 					{
 						// fog may be different from region to region
-						applyFog(shaderProgram, fogSettings, nearPlaneUniform, farPlaneUniform, fogEnabledUniform, halfWidth, quarterWidth, x, z);
+						applyFog(shaderProgram, 
+								fogSettings, fogEnabledUniform, nearFogEnabledUniform, farFogEnabledUniform, 
+								nearFogStartUniform, nearFogEndUniform, farFogStartUniform, farFogEndUniform);
 						
 						
 						// actual rendering
@@ -412,7 +416,6 @@ public class LodRenderer
 	
 	
 	
-	
 	//=================//
 	// Setup Functions //
 	//=================//
@@ -425,154 +428,48 @@ public class LodRenderer
 	}
 	
 	
-
+	
+	
 	/** Return what fog settings should be used when rendering. */
-	private LodFogConfigContainer generateFogConfigContainer()
+	private LodFogConfig determineFogConfig()
 	{
-		LodFogConfigContainer fogSettings = new LodFogConfigContainer();
+		LodFogConfig fogConfig = new LodFogConfig();
 		
 		
-		FogQuality quality = REFLECTION_HANDLER.getFogQuality();
-		FogDrawOverride override = CONFIG.client().graphics().fogQuality().getFogDrawOverride();
+		fogConfig.fogDrawMode = CONFIG.client().graphics().fogQuality().getFogDrawMode();
+		if (fogConfig.fogDrawMode == FogDrawMode.USE_OPTIFINE_SETTING)
+			fogConfig.fogDrawMode = REFLECTION_HANDLER.getFogDrawMode();
 		
-		fogSettings.vanillaIsRenderingFog = quality != FogQuality.OFF;
-		
-		// use any fog overrides the user may have set
-		switch (override)
-		{
-		case FANCY:
-			quality = FogQuality.FANCY;
-			break;
-		
-		case NO_FOG:
-			quality = FogQuality.OFF;
-			break;
-		
-		case FAST:
-			quality = FogQuality.FAST;
-			break;
-		
-		case OPTIFINE_SETTING:
-			// don't override anything
-			break;
-		}
-		fogSettings.fogQuality = quality;
 		
 		// how different distances are drawn depends on the quality set
-		switch (quality)
-		{
-		case FANCY:
-			fogSettings.near.quality = FogQuality.FANCY;
-			fogSettings.far.quality = FogQuality.FANCY;
-			
-			switch (CONFIG.client().graphics().fogQuality().getFogDistance())
-			{
-			case NEAR_AND_FAR:
-				fogSettings.near.distance = FogDistance.NEAR;
-				fogSettings.far.distance = FogDistance.FAR;
-				break;
-			
-			case NEAR:
-				fogSettings.near.distance = FogDistance.NEAR;
-				fogSettings.far.distance = FogDistance.NEAR;
-				break;
-			
-			case FAR:
-				fogSettings.near.distance = FogDistance.FAR;
-				fogSettings.far.distance = FogDistance.FAR;
-				break;
-			}
-			break;
-		
-		case FAST:
-			fogSettings.near.quality = FogQuality.FAST;
-			fogSettings.far.quality = FogQuality.FAST;
-			
-			// fast fog setting should only have one type of
-			// fog, since the LODs are separated into a near
-			// and far portion; and fast fog is rendered from the
-			// frustrum's perspective instead of the camera
-			switch (CONFIG.client().graphics().fogQuality().getFogDistance())
-			{
-			case NEAR_AND_FAR:
-			case NEAR:
-				fogSettings.near.distance = FogDistance.NEAR;
-				fogSettings.far.distance = FogDistance.NEAR;
-				break;
-			
-			case FAR:
-				fogSettings.near.distance = FogDistance.FAR;
-				fogSettings.far.distance = FogDistance.FAR;
-				break;
-			}
-			break;
-		
-		case OFF:
-			fogSettings.near.quality = FogQuality.OFF;
-			fogSettings.far.quality = FogQuality.OFF;
-			break;
-		}
-		
-		populateFogConfig(fogSettings.near);
-		populateFogConfig(fogSettings.far);
-		
-		return fogSettings;
-	}
-	/** populates the given LodFogConfig object */
-	private void populateFogConfig(LodFogConfigContainer.LodFogConfig fogSetting)
-	{
-		FogDistance fogDistance = fogSetting.distance;
-		FogQuality fogQuality = fogSetting.quality;
+		fogConfig.fogDistance = CONFIG.client().graphics().fogQuality().getFogDistance();
 		
 		
-		if (fogQuality == FogQuality.OFF)
-			return;
-		
-		if (fogDistance == FogDistance.NEAR_AND_FAR)
-		{
-			throw new IllegalArgumentException("determineFogDistance doesn't accept the NEAR_AND_FAR fog distance.");
-		}
 		
 		
-		if (fogDistance == FogDistance.FAR)
-		{
-			if (fogQuality == FogQuality.FANCY)
-			{
-				// for more realistic fog when using FAR
-				if (CONFIG.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
-					fogSetting.fogStart = farPlaneBlockDistance * 1.6f * 0.9f;
-				else
-					fogSetting.fogStart = Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f);
-				
-				fogSetting.fogEnd = farPlaneBlockDistance * 1.6f;
-			}
-			else if (fogQuality == FogQuality.FAST)
-			{
-				// for the far fog of the normal chunks
-				// to start right where the LODs' end use:
-				// end = 0.8f, start = 1.5f
-				fogSetting.fogStart = farPlaneBlockDistance * 0.75f;
-				fogSetting.fogEnd = farPlaneBlockDistance * 1.0f;
-			}
-		}
-		else if (fogDistance == FogDistance.NEAR)
-		{
-			// the reason that I wrote fogEnd then fogStart backwards
-			// is because we are using fog backwards to how
-			// it is normally used, with it hiding near objects
-			// instead of far objects.
-			
-			if (fogQuality == FogQuality.FANCY)
-			{
-				fogSetting.fogEnd = vanillaBlockRenderedDistance * 1.41f;
-				fogSetting.fogStart = vanillaBlockRenderedDistance * 1.6f;
-			}
-			else if (fogQuality == FogQuality.FAST)
-			{
-				fogSetting.fogEnd = vanillaBlockRenderedDistance * 1.0f;
-				fogSetting.fogStart = vanillaBlockRenderedDistance * 1.5f;
-			}
-		}
+		
+		// far fog //
+		
+		if (CONFIG.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
+			fogConfig.farFogStart = farPlaneBlockDistance * 1.6f * 0.9f;
+		else
+			// for more realistic fog when using FAR
+			fogConfig.farFogStart = Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f);
+		
+		fogConfig.farFogEnd = farPlaneBlockDistance * 1.6f;
+	
+		
+		// near fog //
+		
+		// the reason that I wrote fogEnd then fogStart backwards
+		// is because we are using fog backwards to how
+		// it is normally used, hiding near objects
+		// instead of far objects.
+		fogConfig.nearFogEnd = vanillaBlockRenderedDistance * 1.41f;
+		fogConfig.nearFogStart = vanillaBlockRenderedDistance * 1.6f;
+		
+		
+		return fogConfig;
 	}
 	
 	/**
@@ -650,24 +547,21 @@ public class LodRenderer
 	}
 	
 	private void applyFog(LodShaderProgram shaderProgram, 
-			LodFogConfigContainer fogSettings, int nearPlaneUniform, int farPlaneUniform, int fogEnabledUniform, 
-			int halfWidth, int quarterWidth, int regionX, int regionZ)
+			LodFogConfig fogSettings, int fogEnabledUniform, int nearFogEnabledUniform, int farFogEnabledUniform, 
+			int nearFogStartUniform, int nearFogEndUniform, int farFogStartUniform, int farFogEndUniform)
 	{
-		if (fogSettings.fogQuality != FogQuality.OFF)
+		if (fogSettings.fogDrawMode != FogDrawMode.FOG_DISABLED)
 		{
 			shaderProgram.setUniform(fogEnabledUniform, true);
+			shaderProgram.setUniform(nearFogEnabledUniform, fogSettings.fogDistance != FogDistance.FAR);
+			shaderProgram.setUniform(farFogEnabledUniform, fogSettings.fogDistance != FogDistance.NEAR);
 			
-			if ((regionX > halfWidth - quarterWidth && regionX < halfWidth + quarterWidth) 
-				&& (regionZ > halfWidth - quarterWidth && regionZ < halfWidth + quarterWidth))
-			{
-				shaderProgram.setUniform(nearPlaneUniform, fogSettings.near.fogStart);
-				shaderProgram.setUniform(farPlaneUniform, fogSettings.near.fogEnd);
-			}
-			else
-			{
-				shaderProgram.setUniform(nearPlaneUniform, fogSettings.far.fogStart);
-				shaderProgram.setUniform(farPlaneUniform, fogSettings.far.fogEnd);
-			}
+			// near
+			shaderProgram.setUniform(nearFogStartUniform, fogSettings.nearFogStart);
+			shaderProgram.setUniform(nearFogEndUniform, fogSettings.nearFogEnd);
+			// far
+			shaderProgram.setUniform(farFogStartUniform, fogSettings.farFogStart);
+			shaderProgram.setUniform(farFogEndUniform, fogSettings.farFogEnd);
 		}
 		else
 		{
@@ -683,6 +577,7 @@ public class LodRenderer
 	// Other Misc Functions //
 	//======================//
 	
+	
 	/**
 	 * If this is called then the next time "drawLODs" is called
 	 * the LODs will be regenerated; the same as if the player moved.
@@ -691,7 +586,6 @@ public class LodRenderer
 	{
 		fullRegen = true;
 	}
-	
 	
 	/**
 	 * Replace the current Vertex Buffers with the newly
@@ -715,6 +609,7 @@ public class LodRenderer
 	{
 		lodBufferBuilderFactory.destroyBuffers();
 	}
+	
 	
 	
 	/** Determines if the LODs should have a fullRegen or partialRegen */

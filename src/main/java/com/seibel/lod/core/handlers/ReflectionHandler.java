@@ -25,7 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.enums.rendering.FogQuality;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.math.Mat4f;
 
 /**
@@ -35,7 +35,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
  * presence/absence of other mods.
  * 
  * @author James Seibel
- * @version 11-20-2021
+ * @version 11-26-2021
  */
 public class ReflectionHandler implements IReflectionHandler
 {
@@ -100,14 +100,14 @@ public class ReflectionHandler implements IReflectionHandler
 	 * @return the fog quality
 	 */
 	@Override
-	public FogQuality getFogQuality()
+	public FogDrawMode getFogDrawMode()
 	{
 		if (ofFogField == null)
 		{
 			// either optifine isn't installed,
 			// the variable name was changed, or
 			// the setup method wasn't called yet.
-			return FogQuality.FANCY;
+			return FogDrawMode.FOG_ENABLED;
 		}
 		
 		int returnNum = 0;
@@ -129,12 +129,11 @@ public class ReflectionHandler implements IReflectionHandler
 			// it should never be called in this case
 			
 			// normal options
-		case 1:
-			return FogQuality.FAST;
-		case 2:
-			return FogQuality.FANCY;
-		case 3:
-			return FogQuality.OFF;
+		case 1: // fast
+		case 2: // fancy
+			return FogDrawMode.FOG_ENABLED;
+		case 3: // off
+			return FogDrawMode.FOG_DISABLED;
 		}
 	}
 	

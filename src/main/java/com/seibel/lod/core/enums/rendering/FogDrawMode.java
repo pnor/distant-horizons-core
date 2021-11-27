@@ -20,14 +20,21 @@
 package com.seibel.lod.core.enums.rendering;
 
 /**
- * fast, fancy, or off
+ * USE_OPTIFINE_FOG_SETTING, <br>
+ * FOG_ENABLED, <br>
+ * FOG_DISABLED <br>
  * 
  * @author James Seibel
- * @version 02-14-2021
+ * @version 11-26-2021
  */
-public enum FogQuality
+public enum FogDrawMode
 {
-	FAST,
-	FANCY,
-	OFF
+	/**
+	 * Use whatever Fog setting optifine is using.
+	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
+	 */
+	USE_OPTIFINE_SETTING,
+	
+	FOG_ENABLED,
+	FOG_DISABLED
 }

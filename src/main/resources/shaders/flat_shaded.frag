@@ -12,8 +12,13 @@ out vec4 fragColor;
 uniform vec3 cameraPos;
 
 uniform bool fogEnabled;
-uniform float farPlane;
-uniform float nearPlane;
+uniform bool nearFogEnabled;
+uniform bool farFogEnabled;
+
+uniform float nearFogStart;
+uniform float nearFogEnd;
+uniform float farFogStart;
+uniform float farFogEnd;
 uniform vec4 fogColor;
 
 
@@ -39,9 +44,22 @@ void main()
 	if (fogEnabled)
 	{
 		// add fog
+		
 		float dist = distance(vertexWorldPos, vec4(cameraPos,1));
-		float fogAlpha = getFogAlpha(nearPlane, farPlane, dist);
-		returnColor = mix(vec4(fogColor.xyz, 1), vertexColor, fogAlpha);
+		// no fog by default
+		float fogAlpha = 0;
+		
+		// less than because nearFogStart is farther away than nearFogEnd
+		if (nearFogEnabled && dist < nearFogStart)
+		{
+			fogAlpha = getFogAlpha(nearFogStart, nearFogEnd, dist);
+		}
+		else if (farFogEnabled)
+		{
+			fogAlpha = getFogAlpha(farFogStart, farFogEnd, dist);
+		}
+		
+		returnColor = mix(vertexColor, vec4(fogColor.xyz, 1), fogAlpha);
 	}
 	else
 	{
@@ -60,10 +78,12 @@ void main()
 /** 
  * Returns the fog strength for the given fragment.
  * This is the same implementation as legacy OpenGL's Linear fog option.
+ * 1 = completely opaque fog
+ * 0 = no fog
  */
 float getFogAlpha(float start, float end, float dist)
 {
-	float fogAlpha = (end - dist) / (end - start);
+	float fogAlpha = 1 - ((end - dist) / (end - start));
     return clamp(fogAlpha, 0, 1);
 }
 

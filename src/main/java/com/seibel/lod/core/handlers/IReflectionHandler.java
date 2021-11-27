@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.handlers;
 
-import com.seibel.lod.core.enums.rendering.FogQuality;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.math.Mat4f;
 
 /**
@@ -35,12 +35,12 @@ import com.seibel.lod.core.objects.math.Mat4f;
  * different MC versions.
  * 
  * @author James Seibel
- * @version 11-20-2021
+ * @version 11-26-2021
  */
 public interface IReflectionHandler
 {
-	/** @returns the type of fog optifine is currently set to render. */
-	public FogQuality getFogQuality();
+	/** @returns Whether Optifine is set to render fog or not. */
+	public FogDrawMode getFogDrawMode();
 	
 	/** @returns if Vivecraft is present. Attempts to find the "VRRenderer" class. */
 	public boolean vivecraftPresent();

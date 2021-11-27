@@ -17,31 +17,27 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.rendering;
+package com.seibel.lod.core.objects.rending;
+
+import com.seibel.lod.core.enums.rendering.FogDistance;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 
 /**
- * USE_OPTIFINE_FOG_SETTING, <br>
- * NEVER_DRAW_FOG, <br>
- * ALWAYS_DRAW_FOG_FAST, <br>
- * ALWAYS_DRAW_FOG_FANCY <br>
+ * This object is just a replacement for an array
+ * to make things easier to understand in the LodRenderer.
  * 
  * @author James Seibel
- * @version 7-3-2021
+ * @version 11-26-2021
  */
-public enum FogDrawOverride
+public class LodFogConfig
 {
-	/**
-	 * Use whatever Fog setting optifine is using.
-	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
-	 */
-	OPTIFINE_SETTING,
+	public FogDrawMode fogDrawMode;
+	public FogDistance fogDistance;
 	
-	/** Never draw fog on the LODs */
-	NO_FOG,
 	
-	/** Always draw fast fog on the LODs */
-	FAST,
+	public float nearFogStart = 0;
+	public float nearFogEnd = 0;
 	
-	/** Always draw fancy fog on the LODs */
-	FANCY
+	public float farFogStart = 0;
+	public float farFogEnd = 0;
 }

@@ -32,7 +32,7 @@ import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.FogDrawOverride;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.MinDefaultMax;
 import com.seibel.lod.core.util.LodUtil;
 
@@ -132,15 +132,14 @@ public interface ILodConfigWrapperSingleton
 				public FogDistance getFogDistance();
 				public void setFogDistance(FogDistance newFogDistance);
 				
-				FogDrawOverride FOG_DRAW_OVERRIDE_DEFAULT = FogDrawOverride.FANCY;
-				String FOG_DRAW_OVERRIDE_DESC = ""
+				FogDrawMode FOG_DRAW_MODE_DEFAULT = FogDrawMode.FOG_ENABLED;
+				String FOG_DRAW_MODE_DESC = ""
 						+ " When should fog be drawn? \n"
-						+ " " + FogDrawOverride.OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using. If Optifine isn't installed this defaults to " + FogDrawOverride.FANCY + ". \n"
-						+ " " + FogDrawOverride.NO_FOG + ": Never draw fog on the LODs \n"
-						+ " " + FogDrawOverride.FAST + ": Always draw fast fog on the LODs \n"
-						+ " " + FogDrawOverride.FANCY + ": Always draw fancy fog on the LODs (if your graphics card supports it) \n";
-				public FogDrawOverride getFogDrawOverride();
-				public void setFogDrawOverride(FogDrawOverride newFogDrawOverride);
+						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using. If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
+						+ " " + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
+						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n";
+				public FogDrawMode getFogDrawMode();
+				public void setFogDrawMode(FogDrawMode newFogDrawOverride);
 				
 				boolean DISABLE_VANILLA_FOG_DEFAULT = false;
 				String DISABLE_VANILLA_FOG_DESC = ""

@@ -154,7 +154,7 @@ public class ClientApi
 //		CONFIG.client().graphics().advancedGraphics().setGpuUploadMethod(GpuUploadMethod.BUFFER_STORAGE);
 //		CONFIG.client().graphics().quality().setLodChunkRenderDistance(128);
 		
-//		CONFIG.client().graphics().fogQuality().setFogDrawOverride(FogDrawOverride.FANCY);
+//		CONFIG.client().graphics().fogQuality().setFogDrawMode(FogDrawMode.FOG_ENABLED);
 //		CONFIG.client().graphics().fogQuality().setFogDistance(FogDistance.FAR);
 		
 //		CONFIG.client().advanced().buffers().setRebuildTimes(BufferRebuildTimes.FREQUENT);
