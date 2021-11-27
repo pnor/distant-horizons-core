@@ -25,6 +25,8 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
 import com.seibel.lod.core.objects.math.Mat4f;
+import com.seibel.lod.core.objects.math.Vec3d;
+import com.seibel.lod.core.objects.math.Vec3f;
 
 
 /**
@@ -34,7 +36,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
  * can (and needs to be) done with a shader program.
  * 
  * @author James Seibel
- * @version 11-8-2021
+ * @version 11-26-2021
  */
 public class LodShaderProgram
 {
@@ -152,23 +154,41 @@ public class LodShaderProgram
 		return GL20.glGetUniformLocation(id, name);
 	}
 	
-	/**
-	 * Sets the uniform variable for specified location.
-	 *
-	 * @param location Uniform location
-	 * @param value    Value to set
-	 */
+	
+	
+	/** Sets the uniform variable for specified location. */
+	public void setUniform(int location, boolean value)
+	{
+		GL20.glUniform1i(location, value ? 1 : 0);
+	}
+	
+	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, int value)
 	{
 		GL20.glUniform1i(location, value);
 	}
 	
-	/**
-	 * Sets the uniform variable for specified location.
-	 *
-	 * @param location Uniform location
-	 * @param value    Value to set
-	 */
+	/** Sets the uniform variable for specified location. */
+	public void setUniform(int location, float value)
+	{
+		GL20.glUniform1f(location, value);
+	}
+	
+	
+	/** Sets the uniform variable for specified location. */
+	public void setUniform(int location, Vec3f value)
+	{
+		GL20.glUniform3f(location, value.x, value.y, value.z);
+	}
+	
+	
+	/** Sets the uniform variable for specified location. */
+	public void setUniform(int location, Vec3d value)
+	{
+		GL20.glUniform3f(location, (float) value.x, (float) value.y, (float) value.z);
+	}
+	
+	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, Mat4f value)
 	{
 		try (MemoryStack stack = MemoryStack.stackPush())

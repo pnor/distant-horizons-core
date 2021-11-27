@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.wrapperInterfaces.minecraft;
 
+import java.awt.Color;
 import java.util.HashSet;
 
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -32,7 +33,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
  * rendering in Minecraft.
  * 
  * @author James Seibel
- * @version 11-18-2021
+ * @version 11-26-2021
  */
 public interface IMinecraftRenderWrapper
 {
@@ -47,6 +48,8 @@ public interface IMinecraftRenderWrapper
 	public Mat4f getDefaultProjectionMatrix(float partialTicks);
 	
 	public double getGamma();
+	
+	public Color getFogColor();
 	
 	public double getFov(float partialTicks);
 	

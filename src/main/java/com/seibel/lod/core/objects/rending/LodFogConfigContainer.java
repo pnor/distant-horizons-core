@@ -27,12 +27,12 @@ import com.seibel.lod.core.enums.rendering.FogQuality;
  * to make things easier to understand in the LodRenderer.
  * 
  * @author James Seibel
- * @version 7-03-2021
+ * @version 11-26-2021
  */
-public class NearFarFogSettings
+public class LodFogConfigContainer
 {
-	public final NearOrFarSetting near = new NearOrFarSetting(FogDistance.NEAR);
-	public final NearOrFarSetting far = new NearOrFarSetting(FogDistance.FAR);
+	public LodFogConfig near = new LodFogConfig(FogDistance.NEAR);
+	public LodFogConfig far = new LodFogConfig(FogDistance.FAR);
 	
 	/**
 	 * If true that means Minecraft is
@@ -40,7 +40,10 @@ public class NearFarFogSettings
 	 */
 	public boolean vanillaIsRenderingFog = true;
 	
-	public NearFarFogSettings()
+	public FogQuality fogQuality;
+	
+	
+	public LodFogConfigContainer()
 	{
 		
 	}
@@ -51,12 +54,15 @@ public class NearFarFogSettings
 	 * This holds all relevant data to rendering fog at either
 	 * near or far distances.
 	 */
-	public static class NearOrFarSetting
+	public static class LodFogConfig
 	{
 		public FogQuality quality = FogQuality.FANCY;
 		public FogDistance distance;
 		
-		public NearOrFarSetting(FogDistance newFogDistance)
+		public float fogStart = 0;
+		public float fogEnd = 0;
+		
+		public LodFogConfig(FogDistance newFogDistance)
 		{
 			distance = newFogDistance;
 		}

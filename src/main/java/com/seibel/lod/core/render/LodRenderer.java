@@ -19,12 +19,12 @@
 
 package com.seibel.lod.core.render;
 
+import java.awt.Color;
 import java.util.HashSet;
 
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.NVFogDistance;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
@@ -41,7 +41,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
-import com.seibel.lod.core.objects.rending.NearFarFogSettings;
+import com.seibel.lod.core.objects.rending.LodFogConfigContainer;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
@@ -60,7 +60,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  * This is where LODs are draw to the world.
  * 
  * @author James Seibel
- * @version 11-8-2021
+ * @version 11-26-2021
  */
 public class LodRenderer
 {
@@ -244,7 +244,7 @@ public class LodRenderer
 		int currentProgram = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 		
 		
-		Mat4f modelViewMatrix = offsetTheModelViewMatrix(mcModelViewMatrix, partialTicks);
+		Mat4f modelViewMatrix = translateModelViewMatrix(mcModelViewMatrix, partialTicks);
 		vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		// required for setupFog and setupProjectionMatrix
 		if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
@@ -255,52 +255,21 @@ public class LodRenderer
 		
 		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, partialTicks);
 		
-		
-		// commented out until we can add shaders to handle lighting
-		//setupLighting(lodDim, partialTicks);
-		
-		
-//		// determine the current fog settings, so they can be
-//		// reset after drawing the LODs
-//		float defaultFogStartDist = GL15.glGetFloat(GL15.GL_FOG_START);
-//		float defaultFogEndDist = GL15.glGetFloat(GL15.GL_FOG_END);
-//		int defaultFogMode = GL15.glGetInteger(GL15.GL_FOG_MODE);
-//		int defaultFogDistance = glProxy.fancyFogAvailable ? GL15.glGetInteger(NVFogDistance.GL_FOG_DISTANCE_MODE_NV) : -1;
-		
-		//ShaderInstance mcShader = RenderSystem.getShader();
-		
-//		NearFarFogSettings fogSettings = determineFogSettings();
+		LodFogConfigContainer fogSettings = generateFogConfigContainer();
 		
 		
 		
 		
 		
-		//===========//
-		// rendering //
-		//===========//
-		
-		profiler.popPush("LOD draw");
 		
 		if (vbos != null)
 		{
-			Vec3f cameraDir = MC_RENDER.getLookAtVector();
-			
-			// TODO re-enable once rendering is totally working
-			boolean cullingDisabled = true; //LodConfig.client().graphics.advancedGraphicsOption.disableDirectionalCulling.get();
-			boolean renderBufferStorage = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
-			
-			// used to determine what type of fog to render
-//			int halfWidth = vbos.length / 2;
-//			int quarterWidth = vbos.length / 4;
-			
-			// where the center of the built buffers is (needed when culling regions)
-			RegionPos vboCenterRegionPos = new RegionPos(vbosCenter);
-			
-			
-			
+			//==============//
+			// shader setup //
+			//==============//
 			
 			// can be used when testing shaders
-			//glProxy.createShaderProgram();
+//			glProxy.createShaderProgram();
 			
 			
 			LodShaderProgram shaderProgram = glProxy.lodShaderProgram;
@@ -312,7 +281,6 @@ public class LodRenderer
 	        shaderProgram.enableVertexAttribute(posAttrib);
 	        int colAttrib = shaderProgram.getAttributeLocation("color");
 	        shaderProgram.enableVertexAttribute(colAttrib);
-			
 	        
 	        
 	        // upload the required uniforms
@@ -320,7 +288,37 @@ public class LodRenderer
 	        shaderProgram.setUniform(mvmUniform, modelViewMatrix);
 			int projUniform = shaderProgram.getUniformLocation("projectionMatrix");
 			shaderProgram.setUniform(projUniform, projectionMatrix);
-	        
+			int cameraUniform = shaderProgram.getUniformLocation("cameraPos");
+			shaderProgram.setUniform(cameraUniform, getTranslatedCameraPos());
+			int fogColorUniform = shaderProgram.getUniformLocation("fogColor");
+			Color fogColor = MC_RENDER.getFogColor();
+			GL20.glUniform4f(fogColorUniform, fogColor.getRed() / 256.0f, fogColor.getGreen() / 256.0f, fogColor.getBlue() / 256.0f, fogColor.getAlpha() / 256.0f);
+			
+			
+			
+			int nearPlaneUniform = shaderProgram.getUniformLocation("nearPlane");
+			int farPlaneUniform = shaderProgram.getUniformLocation("farPlane");
+			int fogEnabledUniform = shaderProgram.getUniformLocation("fogEnabled");
+			
+			
+			
+			
+			//===========//
+			// rendering //
+			//===========//
+			
+			profiler.popPush("LOD draw");
+			
+			boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
+			boolean renderBufferStorage = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
+			
+			// used to determine what type of fog to render
+			int halfWidth = vbos.length / 2;
+			int quarterWidth = vbos.length / 4;
+			
+			// where the center of the buffers is (needed when culling regions)
+			RegionPos vboCenterRegionPos = new RegionPos(vbosCenter);
+			
 			
 			// render each of the buffers
 			for (int x = 0; x < vbos.length; x++)
@@ -331,28 +329,23 @@ public class LodRenderer
 							x + vboCenterRegionPos.x - (lodDim.getWidth() / 2),
 							z + vboCenterRegionPos.z - (lodDim.getWidth() / 2));
 					
-					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(), cameraDir, vboPos.blockPos()))
+					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(), MC_RENDER.getLookAtVector(), vboPos.blockPos()))
 					{
-						// TODO add fog to the fragment shader
-//						if ((x > halfWidth - quarterWidth && x < halfWidth + quarterWidth) 
-//							&& (z > halfWidth - quarterWidth && z < halfWidth + quarterWidth))
-//							setupFog(fogSettings.near.distance, fogSettings.near.quality);
-//						else
-//							setupFog(fogSettings.far.distance, fogSettings.far.quality);
+						// fog may be different from region to region
+						applyFog(shaderProgram, fogSettings, nearPlaneUniform, farPlaneUniform, fogEnabledUniform, halfWidth, quarterWidth, x, z);
 						
-						if (storageBufferIds != null && renderBufferStorage)
-							for (int i = 0; i < storageBufferIds[x][z].length; i++)
-								drawArrays(storageBufferIds[x][z][i], vbos[x][z][i].vertexCount, posAttrib, colAttrib);
-						else
-							for (int i = 0; i < vbos[x][z].length; i++)
-								drawArrays(vbos[x][z][i].id, vbos[x][z][i].vertexCount, posAttrib, colAttrib);
+						
+						// actual rendering
+						int bufferId = 0;
+						for (int i = 0; i < vbos[x][z].length; i++)
+						{
+							bufferId = (storageBufferIds != null && renderBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
+							drawArrays(bufferId, vbos[x][z][i].vertexCount, posAttrib, colAttrib);
+						}
+						
 					}
 				}
 			}
-	        
-	        
-	        GL20.glDisableVertexAttribArray(posAttrib);
-	        GL20.glDisableVertexAttribArray(colAttrib);
 		}
 		
 		
@@ -369,9 +362,8 @@ public class LodRenderer
 		GL15.glDisable(GL15.GL_BLEND); // TODO: what should this be reset to?
 		
 		GL20.glUseProgram(currentProgram);
-		//RenderSystem.setShader(() -> mcShader);
 		
-		// clear the depth buffer so everything drawn is drawn
+		// clear the depth buffer so everything is drawn
 		// over the LODs
 		GL15.glClear(GL15.GL_DEPTH_BUFFER_BIT);
 		
@@ -402,10 +394,12 @@ public class LodRenderer
         GL20.glEnableVertexAttribArray(colAttrib);
         GL20.glVertexAttribPointer(colAttrib, 4, GL15.GL_UNSIGNED_BYTE, true, vertexByteCount, Float.BYTES * 3);
         
+        
         // draw the LODs
 		GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, vertexCount);
 		
 		
+		// cleanup
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL30.glBindVertexArray(0);
 		
@@ -417,219 +411,13 @@ public class LodRenderer
 	
 	
 	
+	
+	
 	//=================//
 	// Setup Functions //
 	//=================//
 	
-	@SuppressWarnings("unused")
-	private void setupFog(FogDistance fogDistance, FogQuality fogQuality)
-	{
-		if (fogQuality == FogQuality.OFF)
-		{
-			GL15.glDisable(GL15.GL_FOG);
-			return;
-		}
-		
-		if (fogDistance == FogDistance.NEAR_AND_FAR)
-		{
-			throw new IllegalArgumentException("setupFog doesn't accept the NEAR_AND_FAR fog distance.");
-		}
-		
-		// determine the fog distance mode to use
-		int glFogDistanceMode;
-		if (fogQuality == FogQuality.FANCY)
-		{
-			// fancy fog (fragment distance based fog)
-			glFogDistanceMode = NVFogDistance.GL_EYE_RADIAL_NV;
-		}
-		else
-		{
-			// fast fog (frustum distance based fog)
-			glFogDistanceMode = NVFogDistance.GL_EYE_PLANE_ABSOLUTE_NV;
-		}
-		
-		// the multipliers are percentages
-		// of the regular view distance.
-		if (fogDistance == FogDistance.FAR)
-		{
-			// the reason that I wrote fogEnd then fogStart backwards
-			// is because we are using fog backwards to how
-			// it is normally used, with it hiding near objects
-			// instead of far objects.
-			
-			if (fogQuality == FogQuality.FANCY)
-			{
-				// for more realistic fog when using FAR
-				if (CONFIG.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
-					GL15.glFogf(GL15.GL_FOG_START, farPlaneBlockDistance * 1.6f * 0.9f);
-				else
-					GL15.glFogf(GL15.GL_FOG_START, Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f));
-				GL15.glFogf(GL15.GL_FOG_END, farPlaneBlockDistance * 1.6f);
-			}
-			else if (fogQuality == FogQuality.FAST)
-			{
-				// for the far fog of the normal chunks
-				// to start right where the LODs' end use:
-				// end = 0.8f, start = 1.5f
-				GL15.glFogf(GL15.GL_FOG_START, farPlaneBlockDistance * 0.75f);
-				GL15.glFogf(GL15.GL_FOG_END, farPlaneBlockDistance * 1.0f);
-			}
-		}
-		else if (fogDistance == FogDistance.NEAR)
-		{
-			if (fogQuality == FogQuality.FANCY)
-			{
-				GL15.glFogf(GL15.GL_FOG_END, vanillaBlockRenderedDistance * 1.41f);
-				GL15.glFogf(GL15.GL_FOG_START, vanillaBlockRenderedDistance * 1.6f);
-			}
-			else if (fogQuality == FogQuality.FAST)
-			{
-				GL15.glFogf(GL15.GL_FOG_END, vanillaBlockRenderedDistance * 1.0f);
-				GL15.glFogf(GL15.GL_FOG_START, vanillaBlockRenderedDistance * 1.5f);
-			}
-		}
-		
-		GL15.glEnable(GL15.GL_FOG);
-		GL15.glFogi(GL15.GL_FOG_MODE, GL15.GL_LINEAR);
-	}
-	
-	/** 
-	 * Revert any changes that were made to the fog
-	 * and sets up the fog for Minecraft.
-	 */
-	@SuppressWarnings("unused")
-	private void cleanupFog(NearFarFogSettings fogSettings,
-			float defaultFogStartDist, float defaultFogEndDist,
-			int defaultFogMode, int defaultFogDistance)
-	{
-		GL15.glFogf(GL15.GL_FOG_START, defaultFogStartDist);
-		GL15.glFogf(GL15.GL_FOG_END, defaultFogEndDist);
-		GL15.glFogi(GL15.GL_FOG_MODE, defaultFogMode);
-		
-		// disable fog if Minecraft wasn't rendering fog
-		// or we want it disabled
-		if (!fogSettings.vanillaIsRenderingFog
-			|| CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
-		{
-			// Make fog render a infinite distance away.
-			// This doesn't technically disable Minecraft's fog
-			// so performance will probably be the same regardless, unlike
-			// Optifine's no fog setting.
-			
-			// we can't disable minecraft's fog outright because by default
-			// minecraft will re-enable the fog after our code
-			
-			GL15.glFogf(GL15.GL_FOG_START, 0.0F);
-			GL15.glFogf(GL15.GL_FOG_END, Float.MAX_VALUE);
-			GL15.glFogf(GL15.GL_FOG_DENSITY, Float.MAX_VALUE);
-		}
-	}
-	
-	
-	/**
-	 * Translate the camera relative to the LodDimension's center,
-	 * this is done since all LOD buffers are created in world space
-	 * instead of object space.
-	 * (since AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
-	 * accuracy vs the model view matrix, which only uses floats)
-	 */
-	private Mat4f offsetTheModelViewMatrix(Mat4f mcModelViewMatrix, float partialTicks)
-	{
-		// get all relevant camera info
-		Vec3d projectedView = MC_RENDER.getCameraExactPosition();
-		
-		// translate the camera relative to the regions' center
-		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
-		// accuracy vs the model view matrix, which only uses floats)
-		AbstractBlockPosWrapper bufferPos = vbosCenter.getWorldPosition();
-		double xDiff = projectedView.x - bufferPos.getX();
-		double zDiff = projectedView.z - bufferPos.getZ();
-		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
-		
-		return mcModelViewMatrix;
-	}
-		
-	/**
-	 * create and return a new projection matrix based on MC's projection matrix
-	 * @param currentProjectionMatrix this is Minecraft's current projection matrix
-	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
-	 * @param partialTicks how many ticks into the frame we are
-	 */
-	private Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance, float partialTicks)
-	{
-		// create the new projection matrix
-		
-		Mat4f lodProj = Mat4f.perspective(
-				MC_RENDER.getFov(partialTicks),
-				(float) this.MC_RENDER.getScreenWidth() / (float) this.MC_RENDER.getScreenHeight(),
-				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ? vanillaBlockRenderedDistance / 5 : 1,
-				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
-				
-		
-		// get Minecraft's un-edited projection matrix
-		// (this is before it is zoomed, distorted, etc.)
-		Mat4f defaultMcProj = MC_RENDER.getDefaultProjectionMatrix(partialTicks);
-		// true here means use "use fov setting" (probably)
-		
-		// this logic strips away the defaultMcProj matrix, so we
-		// can get the distortionMatrix, which represents all
-		// transformations, zooming, distortions, etc. done
-		// to Minecraft's Projection matrix
-		Mat4f defaultMcProjInv = defaultMcProj.copy();
-		defaultMcProjInv.invert();
-		
-		Mat4f distortionMatrix = defaultMcProjInv.copy();
-		distortionMatrix.multiply(currentProjectionMatrix);
-		
-		
-		// edit the lod projection to match Minecraft's
-		// (so the LODs line up with the real world)
-		lodProj.multiply(distortionMatrix);
-		
-		return lodProj;
-	}
-	
-	///** setup the lighting to be used for the LODs */
-	/*private void setupLighting(LodDimension lodDimension, float partialTicks)
-	{
-		// Determine if the player has night vision
-		boolean playerHasNightVision = false;
-		if (this.mc.getPlayer() != null)
-		{
-			Iterator<EffectInstance> iterator = this.mc.getPlayer().getActiveEffects().iterator();
-			while (iterator.hasNext())
-			{
-				EffectInstance instance = iterator.next();
-				if (instance.getEffect() == Effects.NIGHT_VISION)
-				{
-					playerHasNightVision = true;
-					break;
-				}
-			}
-		}
 
-		float sunBrightness = lodDimension.dimension.hasSkyLight() ? mc.getSkyDarken(partialTicks) : 0.2f;
-		sunBrightness = playerHasNightVision ? 1.0f : sunBrightness;
-		float gamma = (float) mc.getOptions().gamma - 0.0f;
-		float dayEffect = (sunBrightness - 0.2f) * 1.25f;
-		float lightStrength = (gamma * 0.34f - 0.01f) * (1.0f - dayEffect) + dayEffect - 0.20f; //gamma * 0.2980392157f + 0.1647058824f
-		float blueLightStrength = (gamma * 0.44f + 0.12f) * (1.0f - dayEffect) + dayEffect - 0.20f; //gamma * 0.4235294118f + 0.2784313725f
-
-		float[] lightAmbient = {lightStrength, lightStrength, blueLightStrength, 1.0f};
-
-
-		// can be used for debugging
-		//		if (partialTicks < 0.005)
-		//			ClientProxy.LOGGER.debug(lightStrength);
-
-		ByteBuffer temp = ByteBuffer.allocateDirect(16);
-		temp.order(ByteOrder.nativeOrder());
-		GL15.glLightfv(LOD_GL_LIGHT_NUMBER, GL15.GL_AMBIENT, (FloatBuffer) temp.asFloatBuffer().put(lightAmbient).flip());
-		GL15.glEnable(LOD_GL_LIGHT_NUMBER); // Enable the above lighting
-
-		RenderSystem.enableLighting();
-	}*/
-	
 	/** Create all buffers that will be used. */
 	public void setupBuffers(LodDimension lodDim)
 	{
@@ -637,56 +425,17 @@ public class LodRenderer
 	}
 	
 	
-	//======================//
-	// Other Misc Functions //
-	//======================//
-	
-	/**
-	 * If this is called then the next time "drawLODs" is called
-	 * the LODs will be regenerated; the same as if the player moved.
-	 */
-	public void regenerateLODsNextFrame()
-	{
-		fullRegen = true;
-	}
-	
-	
-	/**
-	 * Replace the current Vertex Buffers with the newly
-	 * created buffers from the lodBufferBuilder. <br><br>
-	 * <p>
-	 * For some reason this has to be called after the frame has been rendered,
-	 * otherwise visual stuttering/rubber banding may happen. I'm not sure why...
-	 */
-	private void swapBuffers()
-	{
-		// replace the drawable buffers with
-		// the newly created buffers from the lodBufferBuilder
-		VertexBuffersAndOffset result = lodBufferBuilderFactory.getVertexBuffers();
-		vbos = result.vbos;
-		storageBufferIds = result.storageBufferIds;
-		vbosCenter = result.drawableCenterChunkPos;
-	}
-	
-	/** Calls the BufferBuilder's destroyBuffers method. */
-	public void destroyBuffers()
-	{
-		lodBufferBuilderFactory.destroyBuffers();
-	}
-		
+
 	/** Return what fog settings should be used when rendering. */
-	@SuppressWarnings("unused")
-	private NearFarFogSettings determineFogSettings()
+	private LodFogConfigContainer generateFogConfigContainer()
 	{
-		NearFarFogSettings fogSettings = new NearFarFogSettings();
+		LodFogConfigContainer fogSettings = new LodFogConfigContainer();
 		
 		
 		FogQuality quality = REFLECTION_HANDLER.getFogQuality();
 		FogDrawOverride override = CONFIG.client().graphics().fogQuality().getFogDrawOverride();
 		
-		
 		fogSettings.vanillaIsRenderingFog = quality != FogQuality.OFF;
-		
 		
 		// use any fog overrides the user may have set
 		switch (override)
@@ -707,7 +456,7 @@ public class LodRenderer
 			// don't override anything
 			break;
 		}
-		
+		fogSettings.fogQuality = quality;
 		
 		// how different distances are drawn depends on the quality set
 		switch (quality)
@@ -763,7 +512,208 @@ public class LodRenderer
 			fogSettings.far.quality = FogQuality.OFF;
 			break;
 		}
+		
+		populateFogConfig(fogSettings.near);
+		populateFogConfig(fogSettings.far);
+		
 		return fogSettings;
+	}
+	/** populates the given LodFogConfig object */
+	private void populateFogConfig(LodFogConfigContainer.LodFogConfig fogSetting)
+	{
+		FogDistance fogDistance = fogSetting.distance;
+		FogQuality fogQuality = fogSetting.quality;
+		
+		
+		if (fogQuality == FogQuality.OFF)
+			return;
+		
+		if (fogDistance == FogDistance.NEAR_AND_FAR)
+		{
+			throw new IllegalArgumentException("determineFogDistance doesn't accept the NEAR_AND_FAR fog distance.");
+		}
+		
+		
+		if (fogDistance == FogDistance.FAR)
+		{
+			if (fogQuality == FogQuality.FANCY)
+			{
+				// for more realistic fog when using FAR
+				if (CONFIG.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
+					fogSetting.fogStart = farPlaneBlockDistance * 1.6f * 0.9f;
+				else
+					fogSetting.fogStart = Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f);
+				
+				fogSetting.fogEnd = farPlaneBlockDistance * 1.6f;
+			}
+			else if (fogQuality == FogQuality.FAST)
+			{
+				// for the far fog of the normal chunks
+				// to start right where the LODs' end use:
+				// end = 0.8f, start = 1.5f
+				fogSetting.fogStart = farPlaneBlockDistance * 0.75f;
+				fogSetting.fogEnd = farPlaneBlockDistance * 1.0f;
+			}
+		}
+		else if (fogDistance == FogDistance.NEAR)
+		{
+			// the reason that I wrote fogEnd then fogStart backwards
+			// is because we are using fog backwards to how
+			// it is normally used, with it hiding near objects
+			// instead of far objects.
+			
+			if (fogQuality == FogQuality.FANCY)
+			{
+				fogSetting.fogEnd = vanillaBlockRenderedDistance * 1.41f;
+				fogSetting.fogStart = vanillaBlockRenderedDistance * 1.6f;
+			}
+			else if (fogQuality == FogQuality.FAST)
+			{
+				fogSetting.fogEnd = vanillaBlockRenderedDistance * 1.0f;
+				fogSetting.fogStart = vanillaBlockRenderedDistance * 1.5f;
+			}
+		}
+	}
+	
+	/**
+	 * Translate the camera relative to the LodDimension's center,
+	 * this is done since all LOD buffers are created in world space
+	 * instead of object space.
+	 * (since AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
+	 * accuracy vs the model view matrix, which only uses floats)
+	 */
+	private Mat4f translateModelViewMatrix(Mat4f mcModelViewMatrix, float partialTicks)
+	{
+		// get all relevant camera info
+		Vec3d projectedView = MC_RENDER.getCameraExactPosition();
+		
+		// translate the camera relative to the regions' center
+		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
+		// accuracy vs the model view matrix, which only uses floats)
+		AbstractBlockPosWrapper bufferPos = vbosCenter.getWorldPosition();
+		double xDiff = projectedView.x - bufferPos.getX();
+		double zDiff = projectedView.z - bufferPos.getZ();
+		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
+		
+		return mcModelViewMatrix;
+	}
+	
+	/** 
+	 * Similar to translateModelViewMatrix (above),
+	 * but for the camera position
+	 */
+	private Vec3f getTranslatedCameraPos()
+	{
+		AbstractBlockPosWrapper worldCenter = vbosCenter.getWorldPosition();
+		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
+		return new Vec3f((float)cameraPos.x - worldCenter.getX(), (float)cameraPos.y, (float)cameraPos.z - worldCenter.getZ());
+	}
+	
+	/**
+	 * create and return a new projection matrix based on MC's projection matrix
+	 * @param currentProjectionMatrix this is Minecraft's current projection matrix
+	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
+	 * @param partialTicks how many ticks into the frame we are
+	 */
+	private Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance, float partialTicks)
+	{
+		// create the new projection matrix
+		
+		Mat4f lodProj = Mat4f.perspective(
+				MC_RENDER.getFov(partialTicks),
+				(float) MC_RENDER.getScreenWidth() / (float) MC_RENDER.getScreenHeight(),
+				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ? vanillaBlockRenderedDistance / 5 : 1,
+				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
+				
+		
+		// get Minecraft's un-edited projection matrix
+		// (this is before it is zoomed, distorted, etc.)
+		Mat4f defaultMcProj = MC_RENDER.getDefaultProjectionMatrix(partialTicks);
+		// true here means use "use fov setting" (probably)
+		
+		// this logic strips away the defaultMcProj matrix, so we
+		// can get the distortionMatrix, which represents all
+		// transformations, zooming, distortions, etc. done
+		// to Minecraft's Projection matrix
+		Mat4f defaultMcProjInv = defaultMcProj.copy();
+		defaultMcProjInv.invert();
+		
+		Mat4f distortionMatrix = defaultMcProjInv.copy();
+		distortionMatrix.multiply(currentProjectionMatrix);
+		
+		
+		// edit the lod projection to match Minecraft's
+		// (so the LODs line up with the real world)
+		lodProj.multiply(distortionMatrix);
+		
+		return lodProj;
+	}
+	
+	private void applyFog(LodShaderProgram shaderProgram, 
+			LodFogConfigContainer fogSettings, int nearPlaneUniform, int farPlaneUniform, int fogEnabledUniform, 
+			int halfWidth, int quarterWidth, int regionX, int regionZ)
+	{
+		if (fogSettings.fogQuality != FogQuality.OFF)
+		{
+			shaderProgram.setUniform(fogEnabledUniform, true);
+			
+			if ((regionX > halfWidth - quarterWidth && regionX < halfWidth + quarterWidth) 
+				&& (regionZ > halfWidth - quarterWidth && regionZ < halfWidth + quarterWidth))
+			{
+				shaderProgram.setUniform(nearPlaneUniform, fogSettings.near.fogStart);
+				shaderProgram.setUniform(farPlaneUniform, fogSettings.near.fogEnd);
+			}
+			else
+			{
+				shaderProgram.setUniform(nearPlaneUniform, fogSettings.far.fogStart);
+				shaderProgram.setUniform(farPlaneUniform, fogSettings.far.fogEnd);
+			}
+		}
+		else
+		{
+			shaderProgram.setUniform(fogEnabledUniform, false);
+		}
+	}
+	
+	
+	
+	
+	
+	//======================//
+	// Other Misc Functions //
+	//======================//
+	
+	/**
+	 * If this is called then the next time "drawLODs" is called
+	 * the LODs will be regenerated; the same as if the player moved.
+	 */
+	public void regenerateLODsNextFrame()
+	{
+		fullRegen = true;
+	}
+	
+	
+	/**
+	 * Replace the current Vertex Buffers with the newly
+	 * created buffers from the lodBufferBuilder. <br><br>
+	 * <p>
+	 * For some reason this has to be called after the frame has been rendered,
+	 * otherwise visual stuttering/rubber banding may happen. I'm not sure why...
+	 */
+	private void swapBuffers()
+	{
+		// replace the drawable buffers with
+		// the newly created buffers from the lodBufferBuilder
+		VertexBuffersAndOffset result = lodBufferBuilderFactory.getVertexBuffers();
+		vbos = result.vbos;
+		storageBufferIds = result.storageBufferIds;
+		vbosCenter = result.drawableCenterChunkPos;
+	}
+	
+	/** Calls the BufferBuilder's destroyBuffers method. */
+	public void destroyBuffers()
+	{
+		lodBufferBuilderFactory.destroyBuffers();
 	}
 	
 	
