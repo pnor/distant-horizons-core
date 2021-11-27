@@ -291,8 +291,7 @@ public class LodRenderer
 			int cameraUniform = shaderProgram.getUniformLocation("cameraPos");
 			shaderProgram.setUniform(cameraUniform, getTranslatedCameraPos());
 			int fogColorUniform = shaderProgram.getUniformLocation("fogColor");
-			Color fogColor = getFogColor();
-			GL20.glUniform4f(fogColorUniform, fogColor.getRed() / 256.0f, fogColor.getGreen() / 256.0f, fogColor.getBlue() / 256.0f, fogColor.getAlpha() / 256.0f);
+			shaderProgram.setUniform(fogColorUniform, getFogColor());
 			
 			
 			// region dependent uniforms
@@ -480,7 +479,6 @@ public class LodRenderer
 		return fogConfig;
 	}
 	
-	/**  */
 	private Color getFogColor()
 	{
 		Color fogColor;

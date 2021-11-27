@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.render.shader;
 
+import java.awt.Color;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL20;
@@ -156,39 +157,31 @@ public class LodShaderProgram
 	
 	
 	
-	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, boolean value)
 	{
 		GL20.glUniform1i(location, value ? 1 : 0);
 	}
 	
-	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, int value)
 	{
 		GL20.glUniform1i(location, value);
 	}
 	
-	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, float value)
 	{
 		GL20.glUniform1f(location, value);
 	}
 	
-	
-	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, Vec3f value)
 	{
 		GL20.glUniform3f(location, value.x, value.y, value.z);
 	}
 	
-	
-	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, Vec3d value)
 	{
 		GL20.glUniform3f(location, (float) value.x, (float) value.y, (float) value.z);
 	}
 	
-	/** Sets the uniform variable for specified location. */
 	public void setUniform(int location, Mat4f value)
 	{
 		try (MemoryStack stack = MemoryStack.stackPush())
@@ -197,6 +190,12 @@ public class LodShaderProgram
 			value.store(buffer);
 			GL20.glUniformMatrix4fv(location, false, buffer);
 		}
+	}
+	
+	/** Converts the color's RGBA values into values between 0 and 1. */
+	public void setUniform(int location, Color value)
+	{
+		GL20.glUniform4f(location, value.getRed() / 256.0f, value.getGreen() / 256.0f, value.getBlue() / 256.0f, value.getAlpha() / 256.0f);
 	}
 	
 
