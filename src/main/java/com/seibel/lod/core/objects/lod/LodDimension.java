@@ -128,7 +128,7 @@ public class LodDimension
 					// connected to server
 					
 					saveDir = new File(MC.getGameDirectory().getCanonicalFile().getPath() +
-											   File.separatorChar + "DistantHorizons_Server_Data" + File.separatorChar + MC.getCurrentDimensionId());
+											   File.separatorChar + "Distant_Horizons_server_data" + File.separatorChar + MC.getCurrentDimensionId());
 				}
 				
 				fileHandler = new LodDimensionFileHandler(saveDir, this);
