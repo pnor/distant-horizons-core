@@ -268,7 +268,7 @@ public class LodRenderer
 			//==============//
 			
 			// can be used when testing shaders
-			glProxy.createShaderProgram();
+			// glProxy.createShaderProgram();
 			
 			
 			LodShaderProgram shaderProgram = glProxy.lodShaderProgram;
