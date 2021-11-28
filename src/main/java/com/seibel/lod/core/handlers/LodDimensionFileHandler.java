@@ -203,19 +203,16 @@ public class LodDimensionFileHandler
 							inputStream.close();
 							// add the data to our region
 							region.addLevelContainer(new VerticalLevelContainer(data, 6));
-							break;
+						} else
+						{
+							// this file is a readable version,
+							// read the file
+							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
+							inputStream.read(data);
+							inputStream.close();
+							// add the data to our region
+							region.addLevelContainer(new VerticalLevelContainer(data, LOD_SAVE_FILE_VERSION));
 						}
-						
-						
-						// this file is a readable version, 
-						// read the file
-						byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
-						inputStream.read(data);
-						inputStream.close();
-						
-						
-						// add the data to our region
-						region.addLevelContainer(new VerticalLevelContainer(data, LOD_SAVE_FILE_VERSION));
 					}
 					catch (IOException ioEx)
 					{
