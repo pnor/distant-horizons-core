@@ -166,7 +166,6 @@ public class GLProxy
 		bufferStorageSupported = lodBuilderGlCapabilities.glBufferStorage != 0;
 		mapBufferRangeSupported = lodBuilderGlCapabilities.glMapBufferRange != 0;
 		
-		
 		// display the capabilities
 		if (!bufferStorageSupported)
 		{
@@ -367,6 +366,23 @@ public class GLProxy
 		}
 	}
 	
+	/** 
+	 * If called from a legacy OpenGL context this will
+	 * set the fog end to infinity with a density of 0. 
+	 * Effectively removing the fog.
+	 * <p>
+	 * This only works with Legacy OpenGL because James hasn't
+	 * looking into a way for it to work with Modern OpenGL.
+	 */
+	public void disableLegacyFog()
+	{
+		if (minecraftGlCapabilities.glFogf != 0)
+		{
+			GL11.glFogf(GL11.GL_FOG_START, 0.0f);
+			GL11.glFogf(GL11.GL_FOG_END, Float.MAX_VALUE);
+			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.0f);
+		}
+	}
 	
 	
 }

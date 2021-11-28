@@ -170,16 +170,19 @@ public class LodRenderer
 		
 		if (MC_RENDER.playerHasBlindnessEffect())
 		{
-			// if the player is blind don't render LODs,
+			// if the player is blind, don't render LODs,
 			// and don't change minecraft's fog
 			// which blindness relies on.
 			return;
 		}
 		
+		if (CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
+			GLProxy.getInstance().disableLegacyFog();
 		
 		
 		
-		// TODO move the buffer regeneration logic into its own class (probably called in the client proxy instead)
+		
+		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// starting here...
 		determineIfLodsShouldRegenerate(lodDim, partialTicks);
 		
@@ -204,7 +207,7 @@ public class LodRenderer
 			partialRegen = false;
 		}
 		
-		// TODO move the buffer regeneration logic into its own class (probably called in the client proxy instead)
+		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// ...ending here
 		
 		if (lodBufferBuilderFactory.newBuffersAvailable())
@@ -372,6 +375,7 @@ public class LodRenderer
 		GL15.glClear(GL15.GL_DEPTH_BUFFER_BIT);
 		
 		
+		 
 		// end of internal LOD profiling
 		profiler.pop();
 	}

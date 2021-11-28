@@ -156,6 +156,7 @@ public class ClientApi
 		
 //		CONFIG.client().graphics().fogQuality().setFogDrawMode(FogDrawMode.FOG_ENABLED);
 //		CONFIG.client().graphics().fogQuality().setFogDistance(FogDistance.FAR);
+//		CONFIG.client().graphics().fogQuality().setDisableVanillaFog(true);
 		
 //		CONFIG.client().advanced().buffers().setRebuildTimes(BufferRebuildTimes.FREQUENT);
 		
