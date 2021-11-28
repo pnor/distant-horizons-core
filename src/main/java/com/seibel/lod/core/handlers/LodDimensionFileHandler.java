@@ -77,7 +77,7 @@ public class LodDimensionFileHandler
 	 * file handler, older versions (smaller numbers) will be deleted and overwritten,
 	 * newer versions (larger numbers) will be ignored and won't be read.
 	 */
-	public static final int LOD_SAVE_FILE_VERSION = 6;
+	public static final int LOD_SAVE_FILE_VERSION = 7;
 	
 	/**
 	 * Allow saving asynchronously, but never try to save multiple regions
@@ -169,7 +169,7 @@ public class LodDimensionFileHandler
 						fileVersion = inputStream.read();
 						
 						// check if this file can be read by this file handler
-						if (fileVersion < LOD_SAVE_FILE_VERSION)
+						if (fileVersion < 6)
 						{
 							// the file we are reading is an older version,
 							// close the reader and delete the file.
@@ -195,6 +195,16 @@ public class LodDimensionFileHandler
 							
 							break;
 						}
+						else if (fileVersion == 6)
+						{
+							//this is old, but readable version
+							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
+							inputStream.read(data);
+							inputStream.close();
+							// add the data to our region
+							region.addLevelContainer(new VerticalLevelContainer(data, 6));
+							break;
+						}
 						
 						
 						// this file is a readable version, 
@@ -205,7 +215,7 @@ public class LodDimensionFileHandler
 						
 						
 						// add the data to our region
-						region.addLevelContainer(new VerticalLevelContainer(data));
+						region.addLevelContainer(new VerticalLevelContainer(data, LOD_SAVE_FILE_VERSION));
 					}
 					catch (IOException ioEx)
 					{

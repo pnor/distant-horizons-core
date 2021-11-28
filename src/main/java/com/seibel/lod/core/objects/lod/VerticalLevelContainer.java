@@ -122,25 +122,62 @@ public class VerticalLevelContainer implements LevelContainer
 		return DataPointUtil.doesItExist(getSingleData(posX, posZ));
 	}
 	
-	public VerticalLevelContainer(byte[] inputData)
+	public VerticalLevelContainer(byte[] inputData, int version)
 	{
-		int tempIndex;
-		int index = 0;
-		long newData;
-		detailLevel = inputData[index];
-		index++;
-		maxVerticalData = inputData[index] & 0b01111111;
-		index++;
-		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-		int x = size * size * maxVerticalData;
-		this.dataContainer = new long[x];
-		for (int i = 0; i < x; i++)
+		if (version == 6)
 		{
-			newData = 0;
-			for (tempIndex = 0; tempIndex < 8; tempIndex++)
-				newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
-			index += 8;
-			dataContainer[i] = newData;
+			int tempIndex;
+			int index = 0;
+			long newData;
+			detailLevel = inputData[index];
+			index++;
+			maxVerticalData = inputData[index] & 0b01111111;
+			index++;
+			size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+			int x = size * size * maxVerticalData;
+			this.dataContainer = new long[x];
+			for (int i = 0; i < x; i++)
+			{
+				newData = 0;
+				for (tempIndex = 0; tempIndex < 8; tempIndex++)
+					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
+				index += 8;
+				
+				newData = DataPointUtil.createDataPoint(
+						DataPointUtil.getAlpha(newData),
+						DataPointUtil.getRed(newData),
+						DataPointUtil.getGreen(newData),
+						DataPointUtil.getBlue(newData),
+						DataPointUtil.getHeight(newData) - LodUtil.VERTICAL_OFFSET,
+						DataPointUtil.getDepth(newData) - LodUtil.VERTICAL_OFFSET,
+						DataPointUtil.getLightSky(newData),
+						DataPointUtil.getLightBlock(newData),
+						DataPointUtil.getGenerationMode(newData),
+						DataPointUtil.getFlag(newData)
+				);
+				dataContainer[i] = newData;
+			}
+		}
+		else //if (version == 7)
+		{
+			int tempIndex;
+			int index = 0;
+			long newData;
+			detailLevel = inputData[index];
+			index++;
+			maxVerticalData = inputData[index] & 0b01111111;
+			index++;
+			size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+			int x = size * size * maxVerticalData;
+			this.dataContainer = new long[x];
+			for (int i = 0; i < x; i++)
+			{
+				newData = 0;
+				for (tempIndex = 0; tempIndex < 8; tempIndex++)
+					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
+				index += 8;
+				dataContainer[i] = newData;
+			}
 		}
 	}
 	

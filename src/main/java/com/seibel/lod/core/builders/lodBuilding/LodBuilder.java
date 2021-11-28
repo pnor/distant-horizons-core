@@ -196,7 +196,7 @@ public class LodBuilder
 			
 			long[] data;
 			long[] dataToMergeVertical = createVerticalDataToMerge(detail, chunk, config, startX, startZ);
-			data = DataPointUtil.mergeMultiData(dataToMergeVertical, DataPointUtil.worldHeight / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
+			data = DataPointUtil.mergeMultiData(dataToMergeVertical, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
 			
 			
 			//lodDim.clear(detailLevel, posX, posZ);
@@ -217,7 +217,7 @@ public class LodBuilder
 		int size = 1 << detail.detailLevel;
 		
 		long[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
-		int verticalData = DataPointUtil.worldHeight / 2 + 1;
+		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
 		
 		AbstractChunkPosWrapper chunkPos = chunk.getPos();
 		int height;
@@ -247,7 +247,7 @@ public class LodBuilder
 			zAbs = chunkPos.getMinBlockZ() + zRel;
 			
 			//Calculate the height of the lod
-			yAbs = DataPointUtil.worldHeight + 1;
+			yAbs = DataPointUtil.WORLD_HEIGHT + 1;
 			int count = 0;
 			boolean topBlock = true;
 			while (yAbs > 0)
@@ -284,7 +284,7 @@ public class LodBuilder
 				lightSky = (light >> 4) & 0b1111;
 				isDefault = ((light >> 8)) == 1;
 				
-				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height, depth, color, lightSky, lightBlock, generation, isDefault);
+				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height - LodUtil.VERTICAL_OFFSET, depth - LodUtil.VERTICAL_OFFSET, color, lightSky, lightBlock, generation, isDefault);
 				topBlock = false;
 				yAbs = depth - 1;
 				count++;

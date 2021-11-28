@@ -103,7 +103,7 @@ public class EventApi
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)
 	{
-		DataPointUtil.worldHeight = world.getHeight();
+		DataPointUtil.WORLD_HEIGHT = world.getHeight();
 		//LodNodeGenWorker.restartExecutorService();
 		//ThreadMapUtil.clearMaps();
 		

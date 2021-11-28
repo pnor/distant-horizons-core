@@ -58,7 +58,7 @@ public class DataPointUtil
 	//public final static int MIN_DEPTH = -64;
 	//public final static int MIN_HEIGHT = -64;
 	public final static int EMPTY_DATA = 0;
-	public static int worldHeight = 256;
+	public static int WORLD_HEIGHT = 1024;
 	
 	public final static int ALPHA_DOWNSIZE_SHIFT = 4;
 	
@@ -267,7 +267,7 @@ public class DataPointUtil
 		int size = dataToMerge.length / inputVerticalData;
 		
 		// We initialize the arrays that are going to be used
-		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((worldHeight / 2 + 1) * 2);
+		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT / 2 + 1) * 2);
 		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
 		
 		
@@ -412,7 +412,7 @@ public class DataPointUtil
 		int j = 0;
 		while (count > maxVerticalData)
 		{
-			ii = worldHeight;
+			ii = WORLD_HEIGHT;
 			for (i = 0; i < count - 1; i++)
 			{
 				if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)
