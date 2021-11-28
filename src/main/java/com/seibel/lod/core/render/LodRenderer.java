@@ -71,12 +71,6 @@ public class LodRenderer
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	
-//	/**
-//	 * this is the light used when rendering the LODs,
-//	 * it should be something different from what is used by Minecraft
-//	 */
-//	private static final int LOD_GL_LIGHT_NUMBER = GL15.GL_LIGHT2;
-	
 	/**
 	 * If true the LODs colors will be replaced with
 	 * a checkerboard, this can be used for debugging.

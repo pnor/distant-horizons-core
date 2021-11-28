@@ -53,7 +53,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * https://stackoverflow.com/questions/63509735/massive-performance-loss-with-glmapbuffer <br><br>
  * 
  * @author James Seibel
- * @version 11-21-2021
+ * @version 11-27-2021
  */
 public class GLProxy
 {
@@ -376,8 +376,14 @@ public class GLProxy
 	 */
 	public void disableLegacyFog()
 	{
+		// make sure this is a legacy OpenGL context 
 		if (minecraftGlCapabilities.glFogf != 0)
 		{
+			// glFogf should only have a address if the current OpenGL
+			// context can call it, and it should only be able to call it in
+			// legacy OpenGL contexts; since it is disabled in Modern
+			// OpenGL.
+			
 			GL11.glFogf(GL11.GL_FOG_START, 0.0f);
 			GL11.glFogf(GL11.GL_FOG_END, Float.MAX_VALUE);
 			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.0f);
