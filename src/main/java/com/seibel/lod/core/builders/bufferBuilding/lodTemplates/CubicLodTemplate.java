@@ -130,7 +130,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 					color = ColorUtil.applyLightValue(color, skyLight, blockLight);
 					addPosAndColor(buffer,
 							box.getX(lodDirection, vertexIndex),
-							box.getY(lodDirection, vertexIndex, verticalFaceIndex) + LodUtil.VERTICAL_OFFSET,
+							box.getY(lodDirection, vertexIndex, verticalFaceIndex) + DataPointUtil.VERTICAL_OFFSET,
 							box.getZ(lodDirection, vertexIndex),
 							color);
 				}

@@ -58,6 +58,7 @@ public class DataPointUtil
 	//public final static int MIN_DEPTH = -64;
 	//public final static int MIN_HEIGHT = -64;
 	public final static int EMPTY_DATA = 0;
+	public static final short VERTICAL_OFFSET = -64;
 	public static int WORLD_HEIGHT = 1024;
 	
 	public final static int ALPHA_DOWNSIZE_SHIFT = 4;

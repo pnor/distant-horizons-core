@@ -115,8 +115,6 @@ public class LodUtil
 	 */
 	public static final short BLOCK_WIDTH = 1;
 	
-	public static final short VERTICAL_OFFSET = -64;
-	
 	
 	/** number of chunks wide */
 	public static final int REGION_WIDTH_IN_CHUNKS = REGION_WIDTH / CHUNK_WIDTH;
