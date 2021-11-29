@@ -347,6 +347,20 @@ public class LodRenderer
 					}
 				}
 			}
+			
+			
+			
+			//================//
+			// render cleanup //
+			//================//
+			
+			// if this cleanup isn't done MC may crash
+			// when trying to render its own terrain
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+			GL30.glBindVertexArray(0);
+			
+			GL20.glDisableVertexAttribArray(posAttrib);
+			GL20.glDisableVertexAttribArray(colAttrib);
 		}
 		
 		
@@ -406,14 +420,6 @@ public class LodRenderer
         
         // draw the LODs
 		GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, vertexCount);
-		
-		
-		// cleanup
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL30.glBindVertexArray(0);
-		
-		GL20.glDisableVertexAttribArray(posAttrib);
-		GL20.glDisableVertexAttribArray(colAttrib);
 	}
 	
 	
