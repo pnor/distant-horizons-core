@@ -553,4 +553,21 @@ public class Mat4f
 		this.m13 = y;
 		this.m23 = z;
 	}
+
+	/**
+	 * Changes the values that store the clipping planes.
+	 * Formula for calculating matrix values is the same that OpenGL uses when making matrices.
+	 *
+	 * @param nearClip New near clipping plane value.
+	 * @param farClip New far clipping plane value.
+	 */
+	public void setClipPlanes(float nearClip,float farClip)
+	{
+		//convert to matrix values, formula copied from a textbook / openGL specification.
+		float matNearClip = -((farClip + nearClip) / (farClip - nearClip));
+		float matFarClip = -((2 * farClip * nearClip) / (farClip - nearClip));
+		//set new values for the clip planes.
+		this.m22 = matNearClip;
+		this.m23 = matFarClip;
+	}
 }

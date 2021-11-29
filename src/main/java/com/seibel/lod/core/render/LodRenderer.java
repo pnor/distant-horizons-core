@@ -250,7 +250,7 @@ public class LodRenderer
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
 		
 		
-		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, partialTicks);
+		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance);
 		
 		LodFogConfig fogSettings = determineFogConfig();
 		
@@ -528,44 +528,22 @@ public class LodRenderer
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		return new Vec3f((float)cameraPos.x - worldCenter.getX(), (float)cameraPos.y, (float)cameraPos.z - worldCenter.getZ());
 	}
-	
+
 	/**
 	 * create and return a new projection matrix based on MC's projection matrix
 	 * @param currentProjectionMatrix this is Minecraft's current projection matrix
 	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
-	 * @param partialTicks how many ticks into the frame we are
 	 */
-	private Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance, float partialTicks)
+	private Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance)
 	{
-		// create the new projection matrix
-		
-		Mat4f lodProj = Mat4f.perspective(
-				MC_RENDER.getFov(partialTicks),
-				(float) MC_RENDER.getScreenWidth() / (float) MC_RENDER.getScreenHeight(),
+		//Create a copy of the current matrix, so the current matrix isn't modified.
+		Mat4f lodProj = currentProjectionMatrix.copy();
+
+		//Set new far and near clip plane values.
+		lodProj.setClipPlanes(
 				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ? vanillaBlockRenderedDistance / 5 : 1,
 				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
-				
-		
-		// get Minecraft's un-edited projection matrix
-		// (this is before it is zoomed, distorted, etc.)
-		Mat4f defaultMcProj = MC_RENDER.getDefaultProjectionMatrix(partialTicks);
-		// true here means use "use fov setting" (probably)
-		
-		// this logic strips away the defaultMcProj matrix, so we
-		// can get the distortionMatrix, which represents all
-		// transformations, zooming, distortions, etc. done
-		// to Minecraft's Projection matrix
-		Mat4f defaultMcProjInv = defaultMcProj.copy();
-		defaultMcProjInv.invert();
-		
-		Mat4f distortionMatrix = defaultMcProjInv.copy();
-		distortionMatrix.multiply(currentProjectionMatrix);
-		
-		
-		// edit the lod projection to match Minecraft's
-		// (so the LODs line up with the real world)
-		lodProj.multiply(distortionMatrix);
-		
+
 		return lodProj;
 	}
 	
