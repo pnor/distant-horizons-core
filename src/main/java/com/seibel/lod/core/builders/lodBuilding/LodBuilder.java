@@ -428,39 +428,42 @@ public class LodBuilder
 		}
 		else
 		{
-			world = MC.getWrappedServerWorld();
+			world = MC.getWrappedClientWorld();
 			if (world==null)
-				return 0;
-			// client world sky light (almost never accurate)
-			blockLight = world.getBlockLight(blockPos);
-			// estimate what the lighting should be
-			if (hasSkyLight || !hasCeiling)
 			{
-				if (topBlock)
-					skyLight = DEFAULT_MAX_LIGHT;
-				else
+				blockLight = 0;
+				skyLight = 12;
+				isDefault = 1;
+			}
+			else
+			{
+				// client world sky light (almost never accurate)
+				blockLight = world.getBlockLight(blockPos);
+				// estimate what the lighting should be
+				if (hasSkyLight || !hasCeiling)
 				{
-					
-					if (hasSkyLight)
-						skyLight = world.getSkyLight(blockPos);
-					//else
-					//	skyLight = 0;
-					
-					if (!chunk.isLightCorrect() && (skyLight == 0 || skyLight == 15))
+					if (topBlock)
+						skyLight = DEFAULT_MAX_LIGHT;
+					else
 					{
-						// we don't know what the light here is,
-						// lets just take a guess
-						if (blockPos.getY() >= MC.getWrappedClientWorld().getSeaLevel() - 5)
+						if (hasSkyLight)
+							skyLight = world.getSkyLight(blockPos);
+						//else
+						//	skyLight = 0;
+						if (!chunk.isLightCorrect() && (skyLight == 0 || skyLight == 15))
 						{
-							skyLight = 12;
-							isDefault = 1;
+							// we don't know what the light here is,
+							// lets just take a guess
+							if (blockPos.getY() >= MC.getWrappedClientWorld().getSeaLevel() - 5)
+							{
+								skyLight = 12;
+								isDefault = 1;
+							}
+							else
+								skyLight = 0;
 						}
-						else
-							skyLight = 0;
 					}
 				}
-				if (hasSkyLight)
-					skyLight = 0;
 			}
 		}
 		
