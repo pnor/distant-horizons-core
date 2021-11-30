@@ -25,9 +25,9 @@ package com.seibel.lod.core.wrapperInterfaces.minecraft;
  */
 public interface IProfilerWrapper
 {
-	public void push(String newSection);
+	void push(String newSection);
 	
-	public void popPush(String newSection);
+	void popPush(String newSection);
 	
-	public void pop();
+	void pop();
 }

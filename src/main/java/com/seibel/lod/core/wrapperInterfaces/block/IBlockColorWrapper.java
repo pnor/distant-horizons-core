@@ -29,22 +29,22 @@ public interface IBlockColorWrapper
 	//Colors getters//
 	//--------------//
 	
-	public boolean hasColor();
+	boolean hasColor();
 	
-	public int getColor();
+	int getColor();
 	
 	
 	//------------//
 	//Tint getters//
 	//------------//
 	
-	public boolean hasTint();
+	boolean hasTint();
 	
-	public boolean hasGrassTint();
+	boolean hasGrassTint();
 	
-	public boolean hasFolliageTint();
+	boolean hasFolliageTint();
 	
-	public boolean hasWaterTint();
+	boolean hasWaterTint();
 	
 }
 

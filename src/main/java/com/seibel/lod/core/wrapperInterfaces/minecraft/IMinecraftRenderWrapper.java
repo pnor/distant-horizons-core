@@ -37,33 +37,33 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
  */
 public interface IMinecraftRenderWrapper
 {
-	public Vec3f getLookAtVector();
+	Vec3f getLookAtVector();
 	
-	public AbstractBlockPosWrapper getCameraBlockPosition();
+	AbstractBlockPosWrapper getCameraBlockPosition();
 	
-	public boolean playerHasBlindnessEffect();
+	boolean playerHasBlindnessEffect();
 	
-	public Vec3d getCameraExactPosition();
+	Vec3d getCameraExactPosition();
 	
-	public Mat4f getDefaultProjectionMatrix(float partialTicks);
+	Mat4f getDefaultProjectionMatrix(float partialTicks);
 	
-	public double getGamma();
+	double getGamma();
 	
-	public Color getFogColor();
+	Color getFogColor();
 
-	public Color getSkyColor();
+	Color getSkyColor();
 	
-	public double getFov(float partialTicks);
+	double getFov(float partialTicks);
 	
 	/** Measured in chunks */
-	public int getRenderDistance();
+	int getRenderDistance();
 	
-	public int getScreenWidth();
-	public int getScreenHeight();
+	int getScreenWidth();
+	int getScreenHeight();
 	
 	/**
 	 * This method returns the ChunkPos of all chunks that Minecraft
 	 * is going to render this frame.
 	 */
-	public HashSet<AbstractChunkPosWrapper> getRenderedChunks();
+	HashSet<AbstractChunkPosWrapper> getRenderedChunks();
 }

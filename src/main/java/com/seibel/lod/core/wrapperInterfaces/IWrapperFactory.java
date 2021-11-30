@@ -34,15 +34,15 @@ import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGenera
  */
 public interface IWrapperFactory
 {	
-	public AbstractBlockPosWrapper createBlockPos();
-	public AbstractBlockPosWrapper createBlockPos(int x, int y, int z);
+	AbstractBlockPosWrapper createBlockPos();
+	AbstractBlockPosWrapper createBlockPos(int x, int y, int z);
 	
 	
-	public AbstractChunkPosWrapper createChunkPos();
-	public AbstractChunkPosWrapper createChunkPos(int x, int z);
-	public AbstractChunkPosWrapper createChunkPos(AbstractChunkPosWrapper newChunkPos);
-	public AbstractChunkPosWrapper createChunkPos(AbstractBlockPosWrapper blockPos);
+	AbstractChunkPosWrapper createChunkPos();
+	AbstractChunkPosWrapper createChunkPos(int x, int z);
+	AbstractChunkPosWrapper createChunkPos(AbstractChunkPosWrapper newChunkPos);
+	AbstractChunkPosWrapper createChunkPos(AbstractBlockPosWrapper blockPos);
 	
 	
-	public AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper);
+	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper);
 }

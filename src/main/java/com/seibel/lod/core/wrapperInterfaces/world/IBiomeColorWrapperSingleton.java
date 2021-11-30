@@ -30,9 +30,9 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
  */
 public interface IBiomeColorWrapperSingleton
 {
-	public IBiomeColorWrapperSingleton getInstance(); 
+	IBiomeColorWrapperSingleton getInstance();
 	
-	public int getGrassColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
-	public int getWaterColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
-	public int getFoliageColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
+	int getGrassColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
+	int getWaterColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
+	int getFoliageColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
 }

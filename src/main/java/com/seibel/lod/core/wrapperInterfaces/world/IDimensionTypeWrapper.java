@@ -25,9 +25,9 @@ package com.seibel.lod.core.wrapperInterfaces.world;
  */
 public interface IDimensionTypeWrapper
 {
-	public String getDimensionName();
+	String getDimensionName();
 	
-	public boolean hasCeiling();
+	boolean hasCeiling();
 
-	public boolean hasSkyLight();
+	boolean hasSkyLight();
 }

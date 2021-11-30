@@ -25,5 +25,5 @@ package com.seibel.lod.core.wrapperInterfaces.misc;
  */
 public interface ILightMapWrapper
 {
-	public int getLightValue(int skyLight, int blockLight);
+	int getLightValue(int skyLight, int blockLight);
 }

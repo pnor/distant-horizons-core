@@ -32,30 +32,30 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
  */
 public interface IWorldWrapper
 {
-	public IDimensionTypeWrapper getDimensionType();
+	IDimensionTypeWrapper getDimensionType();
 	
-	public WorldType getWorldType();
+	WorldType getWorldType();
 	
-	public int getBlockLight(AbstractBlockPosWrapper blockPos);
+	int getBlockLight(AbstractBlockPosWrapper blockPos);
 	
-	public int getSkyLight(AbstractBlockPosWrapper blockPos);
+	int getSkyLight(AbstractBlockPosWrapper blockPos);
 	
-	public IBiomeWrapper getBiome(AbstractBlockPosWrapper blockPos);
+	IBiomeWrapper getBiome(AbstractBlockPosWrapper blockPos);
 	
-	public boolean hasCeiling();
+	boolean hasCeiling();
 	
-	public boolean hasSkyLight();
+	boolean hasSkyLight();
 	
 	// Pls dont use this
 	// If the world is null then this cant be called and gives an error
-	public boolean isEmpty();
+	boolean isEmpty();
 	
-	public int getHeight();
+	int getHeight();
 	
-	public int getSeaLevel();
+	int getSeaLevel();
 	
 	/** @throws UnsupportedOperationException if the WorldWrapper isn't for a ServerWorld */
-	public File getSaveFolder() throws UnsupportedOperationException;
+	File getSaveFolder() throws UnsupportedOperationException;
 
 	
 }

@@ -25,15 +25,15 @@ package com.seibel.lod.core.wrapperInterfaces.block;
  */
 public interface IBlockShapeWrapper
 {
-	public boolean ofBlockToAvoid();
+	boolean ofBlockToAvoid();
 	
 	//-----------------//
 	//Avoidance getters//
 	//-----------------//
 	
-	public boolean isNonFull();
+	boolean isNonFull();
 	
-	public boolean hasNoCollision();
+	boolean hasNoCollision();
 	
-	public boolean isToAvoid();
+	boolean isToAvoid();
 }

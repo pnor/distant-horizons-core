@@ -93,16 +93,15 @@ public class RenderUtil
 		Vec3f playerVec = new Vec3f(playerBlockPos.getX(), playerBlockPos.getY(), playerBlockPos.getZ());
 		
 		vboVec.subtract(playerVec);
-		Vec3f vboCenterVec = vboVec;
 		
 		
 		int halfRegionWidth = LodUtil.REGION_WIDTH / 2;
 		
 		// calculate the 4 corners
-		Vec3f vboSeVec = new Vec3f(vboCenterVec.x + halfRegionWidth, vboCenterVec.y, vboCenterVec.z + halfRegionWidth);
-		Vec3f vboSwVec = new Vec3f(vboCenterVec.x - halfRegionWidth, vboCenterVec.y, vboCenterVec.z + halfRegionWidth);
-		Vec3f vboNwVec = new Vec3f(vboCenterVec.x - halfRegionWidth, vboCenterVec.y, vboCenterVec.z - halfRegionWidth);
-		Vec3f vboNeVec = new Vec3f(vboCenterVec.x + halfRegionWidth, vboCenterVec.y, vboCenterVec.z - halfRegionWidth);
+		Vec3f vboSeVec = new Vec3f(vboVec.x + halfRegionWidth, vboVec.y, vboVec.z + halfRegionWidth);
+		Vec3f vboSwVec = new Vec3f(vboVec.x - halfRegionWidth, vboVec.y, vboVec.z + halfRegionWidth);
+		Vec3f vboNwVec = new Vec3f(vboVec.x - halfRegionWidth, vboVec.y, vboVec.z - halfRegionWidth);
+		Vec3f vboNeVec = new Vec3f(vboVec.x + halfRegionWidth, vboVec.y, vboVec.z - halfRegionWidth);
 		
 		// if any corner is visible, this region should be rendered
 		return isNormalizedVectorInViewFrustum(vboSeVec, cameraDir) ||

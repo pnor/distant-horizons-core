@@ -30,23 +30,23 @@ import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
  */
 public interface IChunkWrapper
 {
-	public int getHeight();
+	int getHeight();
 	
-	public boolean isPositionInWater(AbstractBlockPosWrapper blockPos);
+	boolean isPositionInWater(AbstractBlockPosWrapper blockPos);
 	
-	public int getHeightMapValue(int xRel, int zRel);
+	int getHeightMapValue(int xRel, int zRel);
 	
-	public IBiomeWrapper getBiome(int xRel, int yAbs, int zRel);
+	IBiomeWrapper getBiome(int xRel, int yAbs, int zRel);
 	
-	public IBlockColorWrapper getBlockColorWrapper(AbstractBlockPosWrapper blockPos);
+	IBlockColorWrapper getBlockColorWrapper(AbstractBlockPosWrapper blockPos);
 	
-	public IBlockShapeWrapper getBlockShapeWrapper(AbstractBlockPosWrapper blockPos);
+	IBlockShapeWrapper getBlockShapeWrapper(AbstractBlockPosWrapper blockPos);
 	
-	public AbstractChunkPosWrapper getPos();
+	AbstractChunkPosWrapper getPos();
 	
-	public boolean isLightCorrect();
+	boolean isLightCorrect();
 	
-	public boolean isWaterLogged(AbstractBlockPosWrapper blockPos);
+	boolean isWaterLogged(AbstractBlockPosWrapper blockPos);
 	
-	public int getEmittedBrightness(AbstractBlockPosWrapper blockPos);
+	int getEmittedBrightness(AbstractBlockPosWrapper blockPos);
 }

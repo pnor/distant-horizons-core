@@ -105,7 +105,7 @@ public class LodGenWorker
 	
 	private static class LodChunkGenThread implements Runnable
 	{
-		private AbstractWorldGeneratorWrapper worldGenWrapper; 
+		private final AbstractWorldGeneratorWrapper worldGenWrapper;
 		
 		public final LodDimension lodDim;
 		public final DistanceGenerationMode generationMode;

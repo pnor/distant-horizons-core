@@ -28,9 +28,9 @@ package com.seibel.lod.core.objects;
  */
 public class MinDefaultMax<T>
 {
-	public T minValue;
-	public T defaultValue;
-	public T maxValue;
+	public final T minValue;
+	public final T defaultValue;
+	public final T maxValue;
 	
 	public MinDefaultMax(T newMinValue, T newDefaultValue, T newMaxValue)
 	{

@@ -47,34 +47,34 @@ import com.seibel.lod.core.util.LodUtil;
  */
 public interface ILodConfigWrapperSingleton
 {
-	public IClient client();
+	IClient client();
 	
 	
-	public interface IClient
+	interface IClient
 	{
-		public IGraphics graphics();
-		public IWorldGenerator worldGenerator();
-		public IAdvanced advanced();
+		IGraphics graphics();
+		IWorldGenerator worldGenerator();
+		IAdvanced advanced();
 		
 		
 		//==================//
 		// Graphics Configs //
 		//==================//
-		public interface IGraphics
+		interface IGraphics
 		{
-			public static final String DESC = "These settings control how the mod will look in game";
+			String DESC = "These settings control how the mod will look in game";
 			
-			public IQuality quality();
-			public IFogQuality fogQuality();
-			public IAdvancedGraphics advancedGraphics();
+			IQuality quality();
+			IFogQuality fogQuality();
+			IAdvancedGraphics advancedGraphics();
 			
 			
-			public interface IQuality
+			interface IQuality
 			{
-				public static final String DESC = "These settings control how detailed the fake chunks will be.";
+				String DESC = "These settings control how detailed the fake chunks will be.";
 				
 				HorizontalResolution DRAW_RESOLUTION_DEFAULT = HorizontalResolution.BLOCK;
-				public static final String DRAW_RESOLUTION_DESC = ""
+				String DRAW_RESOLUTION_DESC = ""
 						+ " What is the maximum detail fake chunks should be drawn at? \n"
 						+ " Higher settings will increase memory and GPU usage. \n"
 						+ "\n"
@@ -86,14 +86,14 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " Lowest Quality: " + HorizontalResolution.CHUNK
 						+ " Highest Quality: " + HorizontalResolution.BLOCK;
-				public HorizontalResolution getDrawResolution();
-				public void setDrawResolution(HorizontalResolution newHorizontalResolution);
+				HorizontalResolution getDrawResolution();
+				void setDrawResolution(HorizontalResolution newHorizontalResolution);
 				
 				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 1024);
 				String LOD_CHUNK_RENDER_DISTANCE_DESC = ""
 						+ " The radius of the mod's render distance. (measured in chunks) \n";
-				public int getLodChunkRenderDistance();
-				public void setLodChunkRenderDistance(int newLodChunkRenderDistance);
+				int getLodChunkRenderDistance();
+				void setLodChunkRenderDistance(int newLodChunkRenderDistance);
 				
 				VerticalQuality VERTICAL_QUALITY_DEFAULT = VerticalQuality.MEDIUM;
 				String VERTICAL_QUALITY_DESC = ""
@@ -108,8 +108,8 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " Lowest Quality: " + VerticalQuality.LOW
 						+ " Highest Quality: " + VerticalQuality.HIGH;
-				public VerticalQuality getVerticalQuality();
-				public void setVerticalQuality(VerticalQuality newVerticalQuality);
+				VerticalQuality getVerticalQuality();
+				void setVerticalQuality(VerticalQuality newVerticalQuality);
 				
 				HorizontalScale HORIZONTAL_SCALE_DEFAULT = HorizontalScale.MEDIUM;
 				String HORIZONTAL_SCALE_DESC = ""
@@ -123,8 +123,8 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " Lowest Quality: " + HorizontalScale.LOW
 						+ " Highest Quality: " + HorizontalScale.HIGH;
-				public HorizontalScale getHorizontalScale();
-				public void setHorizontalScale(HorizontalScale newHorizontalScale);
+				HorizontalScale getHorizontalScale();
+				void setHorizontalScale(HorizontalScale newHorizontalScale);
 				
 				HorizontalQuality HORIZONTAL_QUALITY_DEFAULT = HorizontalQuality.MEDIUM;
 				String HORIZONTAL_QUALITY_DESC = ""
@@ -137,11 +137,11 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " Lowest Quality: " + HorizontalQuality.LOWEST
 						+ " Highest Quality: " + HorizontalQuality.HIGH;
-				public HorizontalQuality getHorizontalQuality();
-				public void setHorizontalQuality(HorizontalQuality newHorizontalQuality);
+				HorizontalQuality getHorizontalQuality();
+				void setHorizontalQuality(HorizontalQuality newHorizontalQuality);
 			}
 			
-			public interface IFogQuality
+			interface IFogQuality
 			{
 				String DESC = "These settings control the fog quality.";	
 				
@@ -150,8 +150,8 @@ public interface ILodConfigWrapperSingleton
 						+ " At what distance should Fog be drawn on the fake chunks? \n"
 						+ "\n"
 						+ " This setting shouldn't affect performance.";
-				public FogDistance getFogDistance();
-				public void setFogDistance(FogDistance newFogDistance);
+				FogDistance getFogDistance();
+				void setFogDistance(FogDistance newFogDistance);
 				
 				FogDrawMode FOG_DRAW_MODE_DEFAULT = FogDrawMode.FOG_ENABLED;
 				String FOG_DRAW_MODE_DESC = ""
@@ -162,8 +162,8 @@ public interface ILodConfigWrapperSingleton
 						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
 						+ "\n"
 						+ " Disabling fog will improve GPU performance.";
-				public FogDrawMode getFogDrawMode();
-				public void setFogDrawMode(FogDrawMode newFogDrawMode);
+				FogDrawMode getFogDrawMode();
+				void setFogDrawMode(FogDrawMode newFogDrawMode);
 				
 				FogColorMode FOG_COLOR_MODE_DEFAULT = FogColorMode.USE_WORLD_FOG_COLOR;
 				String FOG_COLOR_MODE_DESC = ""
@@ -173,8 +173,8 @@ public interface ILodConfigWrapperSingleton
 						+ " " + FogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
 						+ "\n"
 						+ " This setting doesn't affect performance.";
-				public FogColorMode getFogColorMode();
-				public void setFogColorMode(FogColorMode newFogColorMode);
+				FogColorMode getFogColorMode();
+				void setFogColorMode(FogColorMode newFogColorMode);
 				
 				boolean DISABLE_VANILLA_FOG_DEFAULT = false;
 				String DISABLE_VANILLA_FOG_DESC = ""
@@ -182,11 +182,11 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " Experimental! May cause issues with Sodium and \n"
 						+ " may or may not play nice with other mods that edit fog. \n";
-				public boolean getDisableVanillaFog();
-				public void setDisableVanillaFog(boolean newDisableVanillaFog);
+				boolean getDisableVanillaFog();
+				void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
 			
-			public interface IAdvancedGraphics
+			interface IAdvancedGraphics
 			{
 				String DESC = "Graphics options that are a bit more technical.";
 				
@@ -199,8 +199,8 @@ public interface ILodConfigWrapperSingleton
 						+ " " + LodTemplate.TRIANGULAR + ": LOD Chunks smoothly transition between other. \n"
 						+ " " + LodTemplate.DYNAMIC + ": LOD Chunks smoothly transition between each other, \n"
 						+ " " + "         unless a neighboring chunk is at a significantly different height. \n";
-				public LodTemplate getLodTemplate();
-				public void setLodTemplate(LodTemplate newLodTemplate);
+				LodTemplate getLodTemplate();
+				void setLodTemplate(LodTemplate newLodTemplate);
 				
 				boolean DISABLE_DIRECTIONAL_CULLING_DEFAULT = false;
 				String DISABLE_DIRECTIONAL_CULLING_DESC = ""
@@ -212,8 +212,8 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " Disable this if you see LODs disappearing, \n"
 						+ " which may happen if you are using a camera mod. \n";
-				public boolean getDisableDirectionalCulling();
-				public void setDisableDirectionalCulling(boolean newDisableDirectionalCulling);
+				boolean getDisableDirectionalCulling();
+				void setDisableDirectionalCulling(boolean newDisableDirectionalCulling);
 				
 				boolean ALWAYS_DRAW_AT_MAD_QUALITY_DEFAULT = false;
 				String ALWAYS_DRAW_AT_MAD_QUALITY_DESC = ""
@@ -224,8 +224,8 @@ public interface ILodConfigWrapperSingleton
 						+ " WARNING: \n"
 						+ " This could cause an Out Of Memory crash when using render \n"
 						+ " distances higher than 128 and will drastically increase GPU usage. \n";
-				public boolean getAlwaysDrawAtMaxQuality();
-				public void setAlwaysDrawAtMaxQuality(boolean newAlwaysDrawAtMaxQuality);
+				boolean getAlwaysDrawAtMaxQuality();
+				void setAlwaysDrawAtMaxQuality(boolean newAlwaysDrawAtMaxQuality);
 				
 				VanillaOverdraw VANILLA_OVERDRAW_DEFAULT = VanillaOverdraw.DYNAMIC;
 				String VANILLA_OVERDRAW_DESC = ""
@@ -241,8 +241,8 @@ public interface ILodConfigWrapperSingleton
 						+ " " + VanillaOverdraw.ALWAYS + ": LODs will render on all vanilla chunks preventing holes in the world. \n"
 						+ "\n"
 						+ " This setting shouldn't affect performance. \n";
-				public VanillaOverdraw getVanillaOverdraw();
-				public void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
+				VanillaOverdraw getVanillaOverdraw();
+				void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
 				
 				GpuUploadMethod GPU_UPLOAD_METHOD_DEFAULT = GpuUploadMethod.BUFFER_STORAGE;
 				String GPU_UPLOAD_METHOD_DESC = ""
@@ -256,8 +256,8 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " If you don't see any difference when changing these settings\n"
 						+ " a restart may be necessary to clear the old buffers. \n";
-				public GpuUploadMethod getGpuUploadMethod();
-				public void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog);
+				GpuUploadMethod getGpuUploadMethod();
+				void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog);
 				
 				MinDefaultMax<Integer> GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 0, 5000);
 				String GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DESC = ""
@@ -273,8 +273,8 @@ public interface ILodConfigWrapperSingleton
 						+ " This should be a last resort option."
 						+ " Only change this from [0], after you have tried all of the \n"
 						+ " GPU Upload methods and determined none of them work with your hardware.";
-				public int getGpuUploadTimeoutInMilliseconds();
-				public void setGpuUploadTimeoutInMilliseconds(int newTimeoutInMilliseconds);
+				int getGpuUploadTimeoutInMilliseconds();
+				void setGpuUploadTimeoutInMilliseconds(int newTimeoutInMilliseconds);
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
@@ -282,8 +282,8 @@ public interface ILodConfigWrapperSingleton
 						+ " especially when in/near an ocean. \n"
 						+ "\n"
 						+ " This setting shouldn't affect performance. \n";
-				public boolean getUseExtendedNearClipPlane();
-				public void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane);
+				boolean getUseExtendedNearClipPlane();
+				void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane);
 			}
 		}
 		
@@ -293,7 +293,7 @@ public interface ILodConfigWrapperSingleton
 		//========================//
 		// WorldGenerator Configs //
 		//========================//
-		public interface IWorldGenerator
+		interface IWorldGenerator
 		{
 			String DESC = "These settings control how fake chunks outside your normal view range are generated.";
 			
@@ -314,8 +314,8 @@ public interface ILodConfigWrapperSingleton
 					+ " fake chunks, which causes the low detail blocks to become much more noticable. \n"
 					+ "\n"
 					+ " This shouldn't affect performance.";
-			public GenerationPriority getGenerationPriority();
-			public void setGenerationPriority(GenerationPriority newGenerationPriority);
+			GenerationPriority getGenerationPriority();
+			void setGenerationPriority(GenerationPriority newGenerationPriority);
 			
 			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.SURFACE;
 			String DISTANCE_GENERATION_MODE_DESC = ""
@@ -358,8 +358,8 @@ public interface ILodConfigWrapperSingleton
 					+ "\n"
 					+ " The multithreaded options may increase CPU load significantly (while generating) \n"
 					+ " depending on how many world generation threads you have allocated. \n";
-			public DistanceGenerationMode getDistanceGenerationMode();
-			public void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode);
+			DistanceGenerationMode getDistanceGenerationMode();
+			void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode);
 			
 			boolean ALLOW_UNSTABLE_FEATURE_GENERATION_DEFAULT = false;
 			String ALLOW_UNSTABLE_FEATURE_GENERATION_DESC = ""
@@ -378,8 +378,8 @@ public interface ILodConfigWrapperSingleton
 					+ " but I'm not sure how to do that. \n"
 					+ " If you are a Java wizard, check out the git issue here: \n"
 					+ " https://gitlab.com/jeseibel/minecraft-lod-mod/-/issues/35 \n";
-			public boolean getAllowUnstableFeatureGeneration();
-			public void setAllowUnstableFeatureGeneration(boolean newAllowUnstableFeatureGeneration);
+			boolean getAllowUnstableFeatureGeneration();
+			void setAllowUnstableFeatureGeneration(boolean newAllowUnstableFeatureGeneration);
 			
 			BlocksToAvoid BLOCKS_TO_AVOID_DEFAULT = BlocksToAvoid.BOTH;
 			String BLOCKS_TO_AVOID_DESC = ""
@@ -394,8 +394,8 @@ public interface ILodConfigWrapperSingleton
 					+ " " + BlocksToAvoid.BOTH + ": Only use full solid blocks when generating fake chunks \n"
 					+ "\n"
 					+ " This wont't affect performance.";
-			public BlocksToAvoid getBlocksToAvoid();
-			public void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
+			BlocksToAvoid getBlocksToAvoid();
+			void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
 		}
 		
 		
@@ -404,16 +404,16 @@ public interface ILodConfigWrapperSingleton
 		//============================//
 		// AdvancedModOptions Configs //
 		//============================//
-		public interface IAdvanced
+		interface IAdvanced
 		{
-			public static final String DESC = "Advanced mod settings";
+			String DESC = "Advanced mod settings";
 			
-			public IThreading threading();
-			public IDebugging debugging();
-			public IBuffers buffers();
+			IThreading threading();
+			IDebugging debugging();
+			IBuffers buffers();
 			
 			
-			public interface IThreading
+			interface IThreading
 			{
 				String DESC = "These settings control how many CPU threads the mod uses for different tasks.";
 				
@@ -435,8 +435,8 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " The maximum value is the number of logical processors on your CPU. \n"
 						+ " Requires a restart to take effect. \n";
-				public int getNumberOfWorldGenerationThreads();
-				public void setNumberOfWorldGenerationThreads(int newNumberOfWorldGenerationThreads);
+				int getNumberOfWorldGenerationThreads();
+				void setNumberOfWorldGenerationThreads(int newNumberOfWorldGenerationThreads);
 				
 				MinDefaultMax<Integer> NUMBER_OF_BUFFER_BUILDER_THREADS_MIN_DEFAULT_MAX
 					= new MinDefaultMax<Integer>(1, 
@@ -456,11 +456,11 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " The maximum value is the number of logical processors on your CPU. \n"
 						+ " Requires a restart to take effect. \n";
-				public int getNumberOfBufferBuilderThreads();
-				public void setNumberOfBufferBuilderThreads(int newNumberOfWorldBuilderThreads);
+				int getNumberOfBufferBuilderThreads();
+				void setNumberOfBufferBuilderThreads(int newNumberOfWorldBuilderThreads);
 			}
 			
-			public interface IDebugging
+			interface IDebugging
 			{
 				String DESC = "These settings can be used to look for bugs, or see how certain aspects of the mod work.";
 				
@@ -471,8 +471,8 @@ public interface ILodConfigWrapperSingleton
 						+ " but they won't be rendered. \n"
 						+ "\n"
 						+ " Disabling rendering will reduce GPU usage \n";
-				public boolean getDrawLods();
-				public void setDrawLods(boolean newDrawLods);
+				boolean getDrawLods();
+				void setDrawLods(boolean newDrawLods);
 				
 				DebugMode DEBUG_MODE_DEFAULT = DebugMode.OFF;
 				String DEBUG_MODE_DESC = ""
@@ -481,18 +481,18 @@ public interface ILodConfigWrapperSingleton
 						+ " " + DebugMode.OFF + ": Fake chunks will be drawn with their normal colors. \n"
 						+ " " + DebugMode.SHOW_DETAIL + ": Fake chunks color will be based on their detail level. \n"
 						+ " " + DebugMode.SHOW_DETAIL_WIREFRAME + ": Fake chunks color will be based on their detail level, drawn as a wireframe. \n";
-				public DebugMode getDebugMode();
-				public void setDebugMode(DebugMode newDebugMode);
+				DebugMode getDebugMode();
+				void setDebugMode(DebugMode newDebugMode);
 				
 				boolean DEBUG_KEYBINDINGS_ENABLED_DEFAULT = true;
 				String DEBUG_KEYBINDINGS_ENABLED_DESC = ""
 						+ " If true the F4 key can be used to cycle through the different debug modes. \n"
 						+ " and the F6 key can be used to enable and disable LOD rendering.";
-				public boolean getDebugKeybindingsEnabled();
-				public void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings);
+				boolean getDebugKeybindingsEnabled();
+				void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings);
 			}
 			
-			public interface IBuffers
+			interface IBuffers
 			{
 				String DESC = "These settings affect how often geometry is rebuilt.";
 				
@@ -500,8 +500,8 @@ public interface ILodConfigWrapperSingleton
 						+ " How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU? \n"
 						+ " Higher settings may cause stuttering, but will prevent holes in the world \n";
 				BufferRebuildTimes REBUILD_TIMES_DEFAULT = BufferRebuildTimes.NORMAL;
-				public BufferRebuildTimes getRebuildTimes();
-				public void setRebuildTimes(BufferRebuildTimes newBufferRebuildTimes);
+				BufferRebuildTimes getRebuildTimes();
+				void setRebuildTimes(BufferRebuildTimes newBufferRebuildTimes);
 			}
 		}
 	}

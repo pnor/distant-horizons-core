@@ -71,7 +71,7 @@ public class LodVertexFormatElement
 	
 	
 	
-	public static enum DataType
+	public enum DataType
 	{
 		FLOAT(4, "Float", GL11.GL_FLOAT),
 		UBYTE(1, "Unsigned Byte", GL11.GL_UNSIGNED_BYTE),
@@ -85,7 +85,7 @@ public class LodVertexFormatElement
 		private final String name;
 		private final int glType;
 		
-		private DataType(int sizeInBytes, String newName, int openGlDataType)
+		DataType(int sizeInBytes, String newName, int openGlDataType)
 		{
 			this.size = sizeInBytes;
 			this.name = newName;

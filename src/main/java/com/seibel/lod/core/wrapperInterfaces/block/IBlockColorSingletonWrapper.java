@@ -30,6 +30,6 @@ package com.seibel.lod.core.wrapperInterfaces.block;
 public interface IBlockColorSingletonWrapper
 {
 	/** @returns the base color of water (grey) */
-	public IBlockColorWrapper getWaterColor();
+	IBlockColorWrapper getWaterColor();
 }
 

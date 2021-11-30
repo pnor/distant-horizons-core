@@ -40,10 +40,10 @@ import com.seibel.lod.core.objects.math.Mat4f;
 public interface IReflectionHandler
 {
 	/** @returns Whether Optifine is set to render fog or not. */
-	public FogDrawMode getFogDrawMode();
+	FogDrawMode getFogDrawMode();
 	
 	/** @returns if Vivecraft is present. Attempts to find the "VRRenderer" class. */
-	public boolean vivecraftPresent();
+	boolean vivecraftPresent();
 	
 	/**
 	 * Modifies the projection matrix's clip planes.
@@ -54,5 +54,5 @@ public interface IReflectionHandler
 	 * @param newFarClipPlane the new far clip plane value.
 	 * @return The modified matrix.
 	 */
-	public Mat4f ModifyProjectionClipPlanes(Mat4f projectionMatrix, float newNearClipPlane, float newFarClipPlane);
+	Mat4f ModifyProjectionClipPlanes(Mat4f projectionMatrix, float newNearClipPlane, float newFarClipPlane);
 }

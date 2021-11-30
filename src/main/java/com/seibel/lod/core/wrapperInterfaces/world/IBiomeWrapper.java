@@ -26,12 +26,12 @@ package com.seibel.lod.core.wrapperInterfaces.world;
 public interface IBiomeWrapper
 {
 	/** Returns a color int for the given biome. */
-	public int getColorForBiome(int x, int z);
+	int getColorForBiome(int x, int z);
 	
-	public int getGrassTint(int x, int z);
+	int getGrassTint(int x, int z);
 	
-	public int getFolliageTint();
+	int getFolliageTint();
 	
-	public int getWaterTint();
+	int getWaterTint();
 	
 }

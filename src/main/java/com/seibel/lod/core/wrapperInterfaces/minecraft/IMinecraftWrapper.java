@@ -50,7 +50,7 @@ public interface IMinecraftWrapper
 	 * <p>
 	 * This doesn't affect OpenGL objects in any way.
 	 */
-	public void clearFrameObjectCache();
+	void clearFrameObjectCache();
 	
 	
 	
@@ -58,18 +58,18 @@ public interface IMinecraftWrapper
 	// method wrappers //
 	//=================//
 	
-	public float getShade(LodDirection lodDirection);
+	float getShade(LodDirection lodDirection);
 	
-	public boolean hasSinglePlayerServer();
+	boolean hasSinglePlayerServer();
 	
-	public String getCurrentServerName();
-	public String getCurrentServerIp();
-	public String getCurrentServerVersion();
+	String getCurrentServerName();
+	String getCurrentServerIp();
+	String getCurrentServerVersion();
 	
 	/** Returns the dimension the player is currently in */
-	public IDimensionTypeWrapper getCurrentDimension();
+	IDimensionTypeWrapper getCurrentDimension();
 	
-	public String getCurrentDimensionId();
+	String getCurrentDimensionId();
 	
 	/** This texture changes every frame */
 	ILightMapWrapper getCurrentLightMap();
@@ -80,7 +80,7 @@ public interface IMinecraftWrapper
 	 * @param u x location in texture space
 	 * @param v z location in texture space
 	 */
-	public int getColorIntFromLightMap(int u, int v);
+	int getColorIntFromLightMap(int u, int v);
 	
 	/**
 	 * Returns the Color at the given pixel coordinates
@@ -88,7 +88,7 @@ public interface IMinecraftWrapper
 	 * @param u x location in texture space
 	 * @param v z location in texture space
 	 */
-	public Color getColorFromLightMap(int u, int v);
+	Color getColorFromLightMap(int u, int v);
 	
 	
 	
@@ -97,35 +97,35 @@ public interface IMinecraftWrapper
 	// Simple gets //
 	//=============//
 	
-	public boolean playerExists();
+	boolean playerExists();
 	
-	public AbstractBlockPosWrapper getPlayerBlockPos();
+	AbstractBlockPosWrapper getPlayerBlockPos();
 	
-	public AbstractChunkPosWrapper getPlayerChunkPos();
+	AbstractChunkPosWrapper getPlayerChunkPos();
 	
 	/** 
 	 * Attempts to get the ServerWorld for the dimension
 	 * the user is currently in.
 	 * @returns null if no ServerWorld is available
 	 */
-	public IWorldWrapper getWrappedServerWorld();
+	IWorldWrapper getWrappedServerWorld();
 	
-	public IWorldWrapper getWrappedClientWorld();
+	IWorldWrapper getWrappedClientWorld();
 	
-	public File getGameDirectory();
+	File getGameDirectory();
 	
-	public IProfilerWrapper getProfiler();
+	IProfilerWrapper getProfiler();
 	
-	public float getSkyDarken(float partialTicks);
+	float getSkyDarken(float partialTicks);
 	
 	boolean connectedToServer();
 	
 	/** Returns all worlds available to the server */
-	public ArrayList<IWorldWrapper> getAllServerWorlds();
+	ArrayList<IWorldWrapper> getAllServerWorlds();
 	
 	
 	
-	public void sendChatMessage(String string);
+	void sendChatMessage(String string);
 	
 	/**
 	 * Crashes Minecraft, displaying the given errorMessage <br> <br>
@@ -135,7 +135,7 @@ public interface IMinecraftWrapper
 	 * Error: <strong>ExceptionClass: exceptionErrorMessage</strong>  <br>
 	 * Exit Code: -1  <br>
 	 */
-	public void crashMinecraft(String errorMessage, Throwable exception);
+	void crashMinecraft(String errorMessage, Throwable exception);
 
 	
 	

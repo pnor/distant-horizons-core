@@ -73,7 +73,7 @@ public enum LodDirection
 	
 	
 	
-	private LodDirection(int p_i46016_3_, int p_i46016_4_, int p_i46016_5_, String p_i46016_6_, LodDirection.AxisDirection p_i46016_7_, LodDirection.Axis p_i46016_8_, Vec3i p_i46016_9_)
+	LodDirection(int p_i46016_3_, int p_i46016_4_, int p_i46016_5_, String p_i46016_6_, LodDirection.AxisDirection p_i46016_7_, LodDirection.Axis p_i46016_8_, Vec3i p_i46016_9_)
 	{
 //		this.data3d = p_i46016_3_;
 //		this.data2d = p_i46016_5_;
@@ -328,7 +328,7 @@ public enum LodDirection
 //		return this.normal.getX() * f1 + this.normal.getZ() * f2 > 0.0F;
 //	}
 	
-	public static enum Axis implements Predicate<LodDirection>
+	public enum Axis implements Predicate<LodDirection>
 	{
 		X("x")
 		{
@@ -381,7 +381,7 @@ public enum LodDirection
 		}));
 		private final String name;
 		
-		private Axis(String name)
+		Axis(String name)
 		{
 			this.name = name;
 		}
@@ -443,7 +443,7 @@ public enum LodDirection
 		public abstract double choose(double p_196051_1_, double p_196051_3_, double p_196051_5_);
 	}
 	
-	public static enum AxisDirection
+	public enum AxisDirection
 	{
 		POSITIVE(1, "Towards positive"),
 		NEGATIVE(-1, "Towards negative");
@@ -451,7 +451,7 @@ public enum LodDirection
 		private final int step;
 		private final String name;
 		
-		private AxisDirection(int newStep, String newName)
+		AxisDirection(int newStep, String newName)
 		{
 			this.step = newStep;
 			this.name = newName;

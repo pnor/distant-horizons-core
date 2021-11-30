@@ -326,8 +326,7 @@ public class LodBufferBuilder
 		ImmutableList<LodVertexFormatElement> immutablelist = this.format.getElements();
 		this.elementIndex = (this.elementIndex + 1) % immutablelist.size();
 		this.nextElementByte += this.currentElement.getByteSize();
-		LodVertexFormatElement LodVertexFormatelement = immutablelist.get(this.elementIndex);
-		this.currentElement = LodVertexFormatelement;
+		this.currentElement = immutablelist.get(this.elementIndex);
 //		if (LodVertexFormatelement.getUsage() == LodVertexFormatElement.Usage.PADDING)
 //		{
 //			this.nextElement();
