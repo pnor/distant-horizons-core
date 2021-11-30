@@ -43,7 +43,7 @@ import com.seibel.lod.core.util.LodUtil;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 11-27-2021
+ * @version 11-29-2021
  */
 public interface ILodConfigWrapperSingleton
 {
@@ -252,9 +252,29 @@ public interface ILodConfigWrapperSingleton
 						+ " " + GpuUploadMethod.BUFFER_STORAGE + ": Default if OpenGL 4.5 is supported. Fast rendering, no stuttering. \n"
 						+ " " + GpuUploadMethod.SUB_DATA + ": Default if OpenGL 4.5 is NOT supported. Fast rendering but will probably stutter when uploading. \n"
 						+ " " + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
-						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly better than " + GpuUploadMethod.SUB_DATA + " if using an integrated GPU. \n";
+						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly better than " + GpuUploadMethod.SUB_DATA + " if using an integrated GPU. \n"
+						+ "\n"
+						+ " If you don't see any difference when changing these settings\n"
+						+ " a restart may be necessary to clear the old buffers. \n";
 				public GpuUploadMethod getGpuUploadMethod();
 				public void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog);
+				
+				MinDefaultMax<Integer> GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 0, 5000);
+				String GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DESC = ""
+						+ " EXPERIMENTAL \n"
+						+ "\n"
+						+ " How long should we wait before uploading a buffer to the GPU? \n"
+						+ " Helpful resource for frame times: https://fpstoms.com \n"
+						+ "\n"
+						+ " Longer times may reduce stuttering but will make fake chunks \n"
+						+ " transition and load slower. \n"
+						+ "\n"
+						+ " NOTE:\n"
+						+ " This should be a last resort option."
+						+ " Only change this from [0], after you have tried all of the \n"
+						+ " GPU Upload methods and determined none of them work with your hardware.";
+				public int getGpuUploadTimeoutInMilliseconds();
+				public void setGpuUploadTimeoutInMilliseconds(int newTimeoutInMilliseconds);
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""

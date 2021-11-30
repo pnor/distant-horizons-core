@@ -68,7 +68,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * rendered by the LodRenderer.
  * 
  * @author James Seibel
- * @version 11-21-2021
+ * @version 11-29-2021
  */
 public class LodBufferBuilderFactory
 {
@@ -757,6 +757,7 @@ public class LodBufferBuilderFactory
 	private void uploadBuffers(boolean fullRegen, LodDimension lodDim)
 	{
 		GLProxy glProxy = GLProxy.getInstance();
+		long fence = 0;
 		
 		try
 		{
@@ -774,6 +775,17 @@ public class LodBufferBuilderFactory
 				uploadMethod = GpuUploadMethod.SUB_DATA;
 			}
 			
+			// determine the upload timeout
+			int uploadTimeoutInMS = CONFIG.client().graphics().advancedGraphics().getGpuUploadTimeoutInMilliseconds();
+			
+			// James has no idea if this does anything helpful,
+			// but in theory it should prevent OpenGL from drawing and
+			// writing to a buffer at the same time.
+			GL45.glMemoryBarrier(GL45.GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+			fence = GL45.glFenceSync(GL45.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			
+			
+			
 			// actually upload the buffers
 			for (int x = 0; x < buildableVbos.length; x++)
 			{
@@ -786,16 +798,20 @@ public class LodBufferBuilderFactory
 							ByteBuffer uploadBuffer = buildableBuffers[x][z][i].getCleanedByteBuffer();
 							vboUpload(x,z,i, uploadBuffer, true, uploadMethod);
 							lodDim.setRegenRegionBufferByArrayIndex(x, z, false);
+							
+							
+							// upload buffers over a extended period of time
+							// to hopefully prevent stuttering.
+							if (uploadTimeoutInMS != 0)
+								Thread.sleep(uploadTimeoutInMS);
+							GL15.glFinish();
 						}
 					}
 				}
 			}
 			
 			// make sure all of the uploads finish before continuing
-			GL45.glMemoryBarrier(GL45.GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
-			long fence = GL45.glFenceSync(GL45.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-			GL45.glClientWaitSync(fence, GL45.GL_SYNC_FLUSH_COMMANDS_BIT, 5 * 1000000000); // 5 seconds
-			GL45.glDeleteSync(fence);
+			GL45.glClientWaitSync(fence, GL45.GL_SYNC_FLUSH_COMMANDS_BIT, 5 * 1000000000); // wait up to 5 seconds
 		}
 		catch (Exception e)
 		{
@@ -806,7 +822,9 @@ public class LodBufferBuilderFactory
 		finally
 		{
 			GL15.glFinish();
-			
+			if (fence != 0)
+				GL45.glDeleteSync(fence);
+
 			// close the context so it can be re-used later.
 			// I'm guessing we can't just leave it because the executor service
 			// does something that invalidates the OpenGL context.
@@ -899,7 +917,7 @@ public class LodBufferBuilderFactory
 					
 					// map buffer range is better since it can be explicitly unsynchronized 
 					if (GLProxy.getInstance().mapBufferRangeSupported)
-						vboBuffer = GL30.glMapBufferRange(GL30.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(), GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT);
+						vboBuffer = GL30.glMapBufferRange(GL30.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(), GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT | GL30.GL_MAP_INVALIDATE_BUFFER_BIT);
 					else
 						vboBuffer = GL15.glMapBuffer(GL30.GL_ARRAY_BUFFER, uploadBuffer.capacity());
 					
@@ -920,6 +938,7 @@ public class LodBufferBuilderFactory
 					// high stutter, low GPU usage
 					// But simplest/most compatible
 					
+					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uploadBuffer.capacity(), GL15.GL_STATIC_DRAW);
 					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uploadBuffer, GL15.GL_STATIC_DRAW);
 				}
 				else

@@ -28,7 +28,7 @@ package com.seibel.lod.core;
  * Pretty much all of the mod stems from there.
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 11-29-2021
  */
 public final class ModInfo
 {
@@ -38,5 +38,5 @@ public final class ModInfo
 	/** Human readable version of NAME */
 	public static final String READABLE_NAME = "Distant Horizons";
 	public static final String API = "LodAPI";
-	public static final String VERSION = "a1.5.3";
+	public static final String VERSION = "a1.5.4";
 }

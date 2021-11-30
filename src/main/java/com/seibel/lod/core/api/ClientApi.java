@@ -161,7 +161,7 @@ public class ClientApi
 //		CONFIG.client().advanced().buffers().setRebuildTimes(BufferRebuildTimes.FREQUENT);
 		
 		
-		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
+//		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}
 	
 	
