@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import com.seibel.lod.core.objects.math.Vec3i;
 
 /**
@@ -227,9 +225,8 @@ public enum LodDirection
 	{
 		return this.axis;
 	}
-	
-	@Nullable
-	public static LodDirection byName(@Nullable String name)
+
+	public static LodDirection byName(String name)
 	{
 		return name == null ? null : BY_NAME.get(name.toLowerCase(Locale.ROOT));
 	}
@@ -385,8 +382,7 @@ public enum LodDirection
 		{
 			this.name = name;
 		}
-		
-		@Nullable
+
 		public static LodDirection.Axis byName(String name)
 		{
 			return BY_NAME.get(name.toLowerCase(Locale.ROOT));
@@ -419,7 +415,7 @@ public enum LodDirection
 //		}
 		
 		@Override
-		public boolean test(@Nullable LodDirection p_test_1_)
+		public boolean test(LodDirection p_test_1_)
 		{
 			return p_test_1_ != null && p_test_1_.getAxis() == this;
 		}

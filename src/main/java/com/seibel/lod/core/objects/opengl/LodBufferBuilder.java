@@ -25,8 +25,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +51,6 @@ public class LodBufferBuilder
 	private int nextElementByte = 0;
 	private int totalUploadedBytes = 0;
 	private int vertices;
-	@Nullable
 	private LodVertexFormatElement currentElement;
 	private int elementIndex;
 	private int mode;
