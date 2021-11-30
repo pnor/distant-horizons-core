@@ -40,7 +40,7 @@ public class SingletonHandler
 	/**
 	 * Adds the given singleton so it can be referenced later.
 	 * 
-	 * @param objectClass
+	 * @param interfaceClass
 	 * @param singletonReference
 	 * @throws IllegalStateException
 	 */
