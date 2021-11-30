@@ -97,9 +97,9 @@ public class LodBufferBuilder
 			int j = i + roundUp(vertexSizeInBytes);
 			//LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", i, j);
 			ByteBuffer bytebuffer = allocateByteBuffer(j);
-			((Buffer) this.buffer).position(0);
+			this.buffer.position(0);
 			bytebuffer.put(this.buffer);
-			((Buffer) bytebuffer).rewind();
+			bytebuffer.rewind();
 			this.buffer = bytebuffer;
 		}
 	}
@@ -272,7 +272,7 @@ public class LodBufferBuilder
 			this.switchFormat(LodVertexFormat);
 			this.currentElement = LodVertexFormat.getElements().get(0);
 			this.elementIndex = 0;
-			((Buffer) this.buffer).clear();
+			this.buffer.clear();
 		}
 	}
 	
@@ -438,9 +438,9 @@ public class LodBufferBuilder
 	public ByteBuffer getCleanedByteBuffer()
 	{
 		LodBufferBuilder.DrawState bufferbuilder$drawstate = this.vertexCounts.get(this.lastRenderedCountIndex++);
-		((Buffer) this.buffer).position(this.totalUploadedBytes);
+		this.buffer.position(this.totalUploadedBytes);
 		this.totalUploadedBytes += bufferbuilder$drawstate.vertexCount() * bufferbuilder$drawstate.format().getVertexSize();
-		((Buffer) this.buffer).limit(this.totalUploadedBytes);
+		this.buffer.limit(this.totalUploadedBytes);
 		if (this.lastRenderedCountIndex == this.vertexCounts.size() && this.vertices == 0)
 		{
 			this.clear();
@@ -448,7 +448,7 @@ public class LodBufferBuilder
 		
 		ByteBuffer bytebuffer = this.buffer.slice();
 		bytebuffer.order(this.buffer.order()); // FORGE: Fix incorrect byte order
-		((Buffer) this.buffer).clear();
+		this.buffer.clear();
 		return bytebuffer; // the original method also returned bufferbuilder$drawstate
 	}
 	
@@ -533,7 +533,7 @@ public class LodBufferBuilder
 	public void putBulkData(ByteBuffer buffer)
 	{
 		ensureCapacity(buffer.limit() + this.format.getVertexSize());
-		((Buffer) this.buffer).position(this.vertices * this.format.getVertexSize());
+		this.buffer.position(this.vertices * this.format.getVertexSize());
 		this.buffer.put(buffer);
 		this.vertices += buffer.limit() / this.format.getVertexSize();
 		this.nextElementByte += buffer.limit();

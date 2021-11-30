@@ -374,7 +374,7 @@ public class Box
 				adjDepth.get(lodDirection)[0] = minY;
 				adjHeight.get(lodDirection)[1] = VOID_FACE;
 				adjDepth.get(lodDirection)[1] = VOID_FACE;
-				skyLights.get(lodDirection)[0] = 15; //in void set full sky light
+				skyLights.get(lodDirection)[0] = 15; //in void set full skylight
 				continue;
 			}
 			

@@ -385,7 +385,7 @@ public class LodBufferBuilderFactory
 								
 								
 								// We render every vertical lod present in this position
-								// We only stop when we find a block that is void or non existing block
+								// We only stop when we find a block that is void or non-existing block
 								long data;
 								for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ); verticalIndex++)
 								{
@@ -406,7 +406,7 @@ public class LodBufferBuilderFactory
 									//We extract the data to render
 									data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);
 									
-									//If the data is not renderable (Void or non existing) we stop since there is no data left in this position
+									//If the data is not renderable (Void or non-existing) we stop since there is no data left in this position
 									if (DataPointUtil.isVoid(data) || !DataPointUtil.doesItExist(data))
 										break;
 									
@@ -800,7 +800,7 @@ public class LodBufferBuilderFactory
 							lodDim.setRegenRegionBufferByArrayIndex(x, z, false);
 							
 							
-							// upload buffers over a extended period of time
+							// upload buffers over an extended period of time
 							// to hopefully prevent stuttering.
 							if (uploadTimeoutInMS != 0)
 								Thread.sleep(uploadTimeoutInMS);
@@ -811,7 +811,7 @@ public class LodBufferBuilderFactory
 			}
 			
 			// make sure all of the uploads finish before continuing
-			GL45.glClientWaitSync(fence, GL45.GL_SYNC_FLUSH_COMMANDS_BIT, 5 * 1000000000); // wait up to 5 seconds
+			GL45.glClientWaitSync(fence, GL45.GL_SYNC_FLUSH_COMMANDS_BIT, 5L * 1000000000); // wait up to 5 seconds
 		}
 		catch (Exception e)
 		{

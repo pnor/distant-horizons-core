@@ -143,7 +143,7 @@ public class LodShaderProgram
 	}
 	
 	/**
-	 * Gets the location of an uniform variable with specified name.
+	 * Gets the location of a uniform variable with specified name.
 	 * Calls GL20.glGetUniformLocation(id, name)
 	 *
 	 * @param name Uniform name

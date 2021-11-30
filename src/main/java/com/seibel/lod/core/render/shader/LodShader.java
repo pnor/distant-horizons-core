@@ -100,7 +100,7 @@ public class LodShader
 	}
 	
 	/** 
-	 * Compiles the shader and checks it's status afterwards. 
+	 * Compiles the shader and checks its status afterwards.
 	 * @throws Exception if the shader fails to compile
 	 */
 	public void compile() throws Exception

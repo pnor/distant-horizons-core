@@ -29,7 +29,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * This is used for generating chunks
  * in a variety of detail and threading levels.
  * <p>
- * Abstract instead of a interface so
+ * Abstract instead of an interface, so
  * we can define its constructors.
  * 
  * @author James Seibel

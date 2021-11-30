@@ -161,41 +161,11 @@ public class Mat4f
 	@Override
 	public String toString()
 	{
-		StringBuilder stringbuilder = new StringBuilder();
-		stringbuilder.append("Matrix4f:\n");
-		stringbuilder.append(this.m00);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m01);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m02);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m03);
-		stringbuilder.append("\n");
-		stringbuilder.append(this.m10);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m11);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m12);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m13);
-		stringbuilder.append("\n");
-		stringbuilder.append(this.m20);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m21);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m22);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m23);
-		stringbuilder.append("\n");
-		stringbuilder.append(this.m30);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m31);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m32);
-		stringbuilder.append(" ");
-		stringbuilder.append(this.m33);
-		stringbuilder.append("\n");
-		return stringbuilder.toString();
+		return "Matrix4f:\n" +
+				this.m00 + " " + this.m01 + " " + this.m02 + " " + this.m03 + "\n" +
+				this.m10 + " " + this.m11 + " " + this.m12 + " " + this.m13 + "\n" +
+				this.m20 + " " + this.m21 + " " + this.m22 + " " + this.m23 + "\n" +
+				this.m30 + " " + this.m31 + " " + this.m32 + " " + this.m33 + "\n";
 	}
 	
 	

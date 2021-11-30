@@ -84,7 +84,7 @@ public class LodGenWorker
 			// to queue up a bunch of generation requests,
 			// because MC's internal server (as of 1.16.5) only
 			// responds with a single thread. And we don't
-			// want to cause more lag then necessary or queue up
+			// want to cause more lag than necessary or queue up
 			// requests that may end up being unneeded.
 			thread.run();
 		}

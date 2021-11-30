@@ -56,7 +56,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * @author James Seibel
  * @version 10-22-2021
  */
-public class LodBuilder
+@SuppressWarnings("GrazieInspection") public class LodBuilder
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
@@ -109,6 +109,7 @@ public class LodBuilder
 		
 		Thread thread = new Thread(() ->
 		{
+			//noinspection GrazieInspection
 			try
 			{
 				// we need a loaded client world in order to

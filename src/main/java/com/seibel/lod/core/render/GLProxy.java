@@ -380,7 +380,7 @@ public class GLProxy
 		// make sure this is a legacy OpenGL context 
 		if (minecraftGlCapabilities.glFogf != 0)
 		{
-			// glFogf should only have a address if the current OpenGL
+			// glFogf should only have an address if the current OpenGL
 			// context can call it, and it should only be able to call it in
 			// legacy OpenGL contexts; since it is disabled in Modern
 			// OpenGL.

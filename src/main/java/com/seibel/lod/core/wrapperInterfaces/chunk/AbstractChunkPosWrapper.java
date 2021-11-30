@@ -23,7 +23,7 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 
 
 /**
- * This is abstract instead of a interface so
+ * This is abstract instead of an interface, so
  * we can define its constructors.
  * 
  * @author James Seibel

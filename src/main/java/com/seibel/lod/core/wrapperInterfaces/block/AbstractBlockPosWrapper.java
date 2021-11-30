@@ -22,7 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.block;
 import com.seibel.lod.core.enums.LodDirection;
 
 /**
- * BlockPos needs to be abstract instead of a interfaces
+ * BlockPos needs to be abstract instead of an interfaces
  * so that we can define its constructors.
  * 
  * @author James Seibel
