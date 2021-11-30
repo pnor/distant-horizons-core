@@ -247,7 +247,7 @@ public class LodBuilder
 			zAbs = chunkPos.getMinBlockZ() + zRel;
 			
 			//Calculate the height of the lod
-			yAbs = DataPointUtil.WORLD_HEIGHT + 1;
+			yAbs = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET + 1;
 			int count = 0;
 			boolean topBlock = true;
 			while (yAbs > 0)
