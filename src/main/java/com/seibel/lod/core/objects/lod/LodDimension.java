@@ -680,8 +680,13 @@ public class LodDimension
 			int playerPosZ)
 	{
 		LodRegion region = getRegion(regionPos.x, regionPos.z);
+		
+		// use FAR_FIRST on local worlds and NEAR_FIRST on servers
+		GenerationPriority generationPriority = CONFIG.client().worldGenerator().getGenerationPriority() == GenerationPriority.AUTO && MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST; 
+		boolean requireCorrectDetailLevel = generationPriority == GenerationPriority.NEAR_FIRST;
+		
 		if (region != null)
-			region.getPosToRender(posToRender, playerPosX, playerPosZ, CONFIG.client().worldGenerator().getGenerationPriority() == GenerationPriority.NEAR_FIRST);
+			region.getPosToRender(posToRender, playerPosX, playerPosZ, requireCorrectDetailLevel);
 	}
 	
 	/**

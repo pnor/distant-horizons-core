@@ -20,6 +20,7 @@
 package com.seibel.lod.core.enums.config;
 
 /**
+ * AUTO <br>
  * Near_First <br>
  * Far_First <br>
  * <br>
@@ -27,10 +28,13 @@ package com.seibel.lod.core.enums.config;
  * outside the normal view distance.
  * 
  * @author Leonardo Amato
- * @version 9-25-2021
+ * @version 12-1-2021
  */
 public enum GenerationPriority
 {
+	/** NEAR_FIRST when connected to servers and FAR_FIRST when on single player */
+	AUTO,
+	
 	NEAR_FIRST,
 	
 	FAR_FIRST

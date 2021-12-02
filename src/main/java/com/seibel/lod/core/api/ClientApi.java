@@ -149,7 +149,7 @@ public class ClientApi
 		}
 		
 //		CONFIG.client().worldGenerator().setDistanceGenerationMode(DistanceGenerationMode.SURFACE);
-//		CONFIG.client().worldGenerator().setGenerationPriority(GenerationPriority.NEAR_FIRST);		
+//		CONFIG.client().worldGenerator().setGenerationPriority(GenerationPriority.AUTO);		
 		
 //		CONFIG.client().graphics().advancedGraphics().setGpuUploadMethod(GpuUploadMethod.BUFFER_STORAGE);
 //		CONFIG.client().graphics().quality().setLodChunkRenderDistance(128);
@@ -161,7 +161,7 @@ public class ClientApi
 //		CONFIG.client().advanced().buffers().setRebuildTimes(BufferRebuildTimes.FREQUENT);
 		
 		
-//		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
+		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}
 	
 	

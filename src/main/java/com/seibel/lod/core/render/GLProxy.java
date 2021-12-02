@@ -105,7 +105,7 @@ public class GLProxy
 		// where the GL context is
 		if (GLFW.glfwGetCurrentContext() == 0L)
 			throw new IllegalStateException(GLProxy.class.getSimpleName() + " was created outside the render thread!");
-				
+		
 		
 		
 		//============================//

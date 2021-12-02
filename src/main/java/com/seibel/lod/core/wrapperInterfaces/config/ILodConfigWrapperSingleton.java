@@ -43,7 +43,7 @@ import com.seibel.lod.core.util.LodUtil;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 11-29-2021
+ * @version 12-1-2021
  */
 public interface ILodConfigWrapperSingleton
 {
@@ -297,7 +297,7 @@ public interface ILodConfigWrapperSingleton
 		{
 			String DESC = "These settings control how fake chunks outside your normal view range are generated.";
 			
-			GenerationPriority GENERATION_PRIORITY_DEFAULT = GenerationPriority.FAR_FIRST;
+			GenerationPriority GENERATION_PRIORITY_DEFAULT = GenerationPriority.AUTO;
 			String GENERATION_PRIORITY_DESC = ""
 					+ " In what order should fake chunks be generated outside the vanilla render distance? \n"
 					+ "\n"
@@ -311,7 +311,11 @@ public interface ILodConfigWrapperSingleton
 					+ " Fake chunks are generated around the player \n"
 					+ " in a spiral, similar to vanilla minecraft. \n"
 					+ " Best used when on a server since we can't generate \n"
-					+ " fake chunks, which causes the low detail blocks to become much more noticable. \n"
+					+ " fake chunks. \n"
+					+ "\n"
+					+ " " + GenerationPriority.AUTO + " \n"
+					+ " Uses " + GenerationPriority.FAR_FIRST + " when on a single player world \n"
+					+ " and " + GenerationPriority.NEAR_FIRST + " when connected to a server. \n"
 					+ "\n"
 					+ " This shouldn't affect performance.";
 			GenerationPriority getGenerationPriority();
