@@ -313,7 +313,7 @@ public class LodRenderer
 			profiler.popPush("LOD draw");
 			
 			boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
-			boolean renderBufferStorage = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
+			boolean renderBufferStorage = CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
 			
 			// where the center of the buffers is (needed when culling regions)
 			RegionPos vboCenterRegionPos = new RegionPos(vbosCenter);

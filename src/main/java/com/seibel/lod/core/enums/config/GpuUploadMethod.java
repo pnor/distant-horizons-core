@@ -20,22 +20,40 @@
 package com.seibel.lod.core.enums.config;
 
 /**
- * Buffer_Storage, Sub_Data, Buffer_Mapping
+ * Auto, Buffer_Storage, Sub_Data, Buffer_Mapping, Data
  * 
  * @author James Seibel
- * @version 11-21-2021
+ * @version 12-1-2021
  */
 public enum GpuUploadMethod
 {
-	/** Default if OpenGL 4.5 is supported. Fast rendering, no stuttering. */
+	/** Picks the best option based on the GPU the user has. */
+	AUTO,
+	
+	/**
+	 * Default for NVIDIA if OpenGL 4.5 is supported. <br>
+	 * Fast rendering, no stuttering.
+	 */
 	BUFFER_STORAGE,
 	
-	/** Default if OpenGL 4.5 is NOT supported. Fast rendering but may stutter when uploading. */
+	/**
+	 * Backup option for NVIDIA. <br>
+	 * Fast rendering but may stutter when uploading.
+	 */
 	SUB_DATA,
 
-	/** Fast rendering but will stutter when uploading. */
+	/** 
+	 * Default option for AMD/Intel. <br>
+	 * May end up storing buffers in System memory. <br>
+	 * Fast rending if in GPU memory, slow if in system memory, <br>
+	 * but won't stutter when uploading. 
+	 */
+	BUFFER_MAPPING,
+
+	/** 
+	 * Backup option for AMD/Intel. <br>
+	 * Fast rendering but may stutter when uploading. 
+	 */
 	DATA,
 	
-	/** May end up storing buffers in System memory. Slower rendering but won't stutter when uploading. */
-	BUFFER_MAPPING,
 }

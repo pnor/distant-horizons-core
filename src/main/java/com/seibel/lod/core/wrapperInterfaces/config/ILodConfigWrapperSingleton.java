@@ -180,8 +180,8 @@ public interface ILodConfigWrapperSingleton
 				String DISABLE_VANILLA_FOG_DESC = ""
 						+ " If true disable Minecraft's fog. \n"
 						+ "\n"
-						+ " Experimental! May cause issues with Sodium and \n"
-						+ " may or may not play nice with other mods that edit fog. \n";
+						+ " Experimental! Will cause issues with Sodium and \n"
+						+ " may not play nice with other mods that edit fog. \n";
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
@@ -210,8 +210,7 @@ public interface ILodConfigWrapperSingleton
 						+ " If true all LODs are drawn, even those behind \n"
 						+ " the player's camera, decreasing GPU performance. \n"
 						+ "\n"
-						+ " Disable this if you see LODs disappearing, \n"
-						+ " which may happen if you are using a camera mod. \n";
+						+ " Disable this if you see LODs disappearing at the corners of your vision. \n";
 				boolean getDisableDirectionalCulling();
 				void setDisableDirectionalCulling(boolean newDisableDirectionalCulling);
 				
@@ -243,38 +242,6 @@ public interface ILodConfigWrapperSingleton
 						+ " This setting shouldn't affect performance. \n";
 				VanillaOverdraw getVanillaOverdraw();
 				void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
-				
-				GpuUploadMethod GPU_UPLOAD_METHOD_DEFAULT = GpuUploadMethod.BUFFER_STORAGE;
-				String GPU_UPLOAD_METHOD_DESC = ""
-						+ " What method should be used to upload geometry to the GPU? \n"
-						+ " Listed in the suggested order of best to worst. \n"
-						+ "\n"
-						+ " " + GpuUploadMethod.BUFFER_STORAGE + ": Default if OpenGL 4.5 is supported. Fast rendering, no stuttering. \n"
-						+ " " + GpuUploadMethod.SUB_DATA + ": Default if OpenGL 4.5 is NOT supported. Fast rendering but will probably stutter when uploading. \n"
-						+ " " + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
-						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly better than " + GpuUploadMethod.SUB_DATA + " if using an integrated GPU. \n"
-						+ "\n"
-						+ " If you don't see any difference when changing these settings\n"
-						+ " a restart may be necessary to clear the old buffers. \n";
-				GpuUploadMethod getGpuUploadMethod();
-				void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog);
-				
-				MinDefaultMax<Integer> GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 0, 5000);
-				String GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DESC = ""
-						+ " EXPERIMENTAL \n"
-						+ "\n"
-						+ " How long should we wait before uploading a buffer to the GPU? \n"
-						+ " Helpful resource for frame times: https://fpstoms.com \n"
-						+ "\n"
-						+ " Longer times may reduce stuttering but will make fake chunks \n"
-						+ " transition and load slower. \n"
-						+ "\n"
-						+ " NOTE:\n"
-						+ " This should be a last resort option."
-						+ " Only change this from [0], after you have tried all of the \n"
-						+ " GPU Upload methods and determined none of them work with your hardware.";
-				int getGpuUploadTimeoutInMilliseconds();
-				void setGpuUploadTimeoutInMilliseconds(int newTimeoutInMilliseconds);
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
@@ -499,6 +466,44 @@ public interface ILodConfigWrapperSingleton
 			interface IBuffers
 			{
 				String DESC = "These settings affect how often geometry is rebuilt.";
+				
+				GpuUploadMethod GPU_UPLOAD_METHOD_DEFAULT = GpuUploadMethod.AUTO;
+				String GPU_UPLOAD_METHOD_DESC = ""
+						+ " What method should be used to upload geometry to the GPU? \n"
+						+ "\n"
+						+ " " + GpuUploadMethod.AUTO + ": Picks the best option based on the GPU you have. \n"
+						+ " " + GpuUploadMethod.BUFFER_STORAGE + ": Default for NVIDIA if OpenGL 4.5 is supported. \n"
+						+ "                 Fast rendering, no stuttering. \n"
+						+ " " + GpuUploadMethod.SUB_DATA + ": Backup option for NVIDIA. \n"
+						+ "           Fast rendering but may stutter when uploading. \n"
+						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly the best option for integrated GPUs. \n"
+						+ "                Default option for AMD/Intel. \n"
+						+ "                May end up storing buffers in System memory. \n"
+						+ "                Fast rending if in GPU memory, slow if in system memory, \n"
+						+ "                but won't stutter when uploading.  \n"
+						+ " " + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
+						+ "       Backup option for AMD/Intel. \n"
+						+ "       Fast rendering but may stutter when uploading. \n"  
+						+ "\n"
+						+ " If you don't see any difference when changing these settings, or the world looks corrupted: \n"
+						+ " Restart the game to clear the old buffers. \n";
+				GpuUploadMethod getGpuUploadMethod();
+				void setGpuUploadMethod(GpuUploadMethod newGpuUploadMethod);
+				
+				MinDefaultMax<Integer> GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 0, 5000);
+				String GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DESC = ""
+						+ " How long should we wait before uploading a buffer to the GPU? \n"
+						+ " Helpful resource for frame times: https://fpstoms.com \n"
+						+ "\n"
+						+ " Longer times may reduce stuttering but will make fake chunks \n"
+						+ " transition and load slower. \n"
+						+ "\n"
+						+ " NOTE:\n"
+						+ " This should be a last resort option."
+						+ " Only change this from [0], after you have tried all of the \n"
+						+ " \"GPU Upload methods\" and determined even the best stutters with yoru hardware.";
+				int getGpuUploadTimeoutInMilliseconds();
+				void setGpuUploadTimeoutInMilliseconds(int newTimeoutInMilliseconds);
 				
 				String REBUILD_TIMES_DESC = ""
 						+ " How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU? \n"

@@ -766,17 +766,17 @@ public class LodBufferBuilderFactory
 			glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
 			
 			// determine the upload method
-			GpuUploadMethod uploadMethod = CONFIG.client().graphics().advancedGraphics().getGpuUploadMethod();
+			GpuUploadMethod uploadMethod = CONFIG.client().advanced().buffers().getGpuUploadMethod();
 			if (!glProxy.bufferStorageSupported && uploadMethod == GpuUploadMethod.BUFFER_STORAGE)
 			{
 				// if buffer storage isn't supported
 				// default to SUB_DATA
-				CONFIG.client().graphics().advancedGraphics().setGpuUploadMethod(GpuUploadMethod.SUB_DATA);
+				CONFIG.client().advanced().buffers().setGpuUploadMethod(GpuUploadMethod.SUB_DATA);
 				uploadMethod = GpuUploadMethod.SUB_DATA;
 			}
 			
 			// determine the upload timeout
-			int uploadTimeoutInMS = CONFIG.client().graphics().advancedGraphics().getGpuUploadTimeoutInMilliseconds();
+			int uploadTimeoutInMS = CONFIG.client().advanced().buffers().getGpuUploadTimeoutInMilliseconds();
 			
 			// James has no idea if this does anything helpful,
 			// but in theory it should prevent OpenGL from drawing and

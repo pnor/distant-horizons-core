@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLCapabilities;
@@ -33,10 +34,12 @@ import org.lwjgl.opengl.GLCapabilities;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.render.shader.LodShader;
 import com.seibel.lod.core.render.shader.LodShaderProgram;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
 /**
@@ -54,11 +57,12 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * https://stackoverflow.com/questions/63509735/massive-performance-loss-with-glmapbuffer <br><br>
  * 
  * @author James Seibel
- * @version 11-27-2021
+ * @version 12-1-2021
  */
 public class GLProxy
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	private static final ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 	
@@ -163,7 +167,6 @@ public class GLProxy
 		
 		
 		// get specific capabilities
-		// TODO re-add buffer storage support
 		bufferStorageSupported = lodBuilderGlCapabilities.glBufferStorage != 0;
 		mapBufferRangeSupported = lodBuilderGlCapabilities.glMapBufferRange != 0;
 		
@@ -175,6 +178,43 @@ public class GLProxy
 		}
 		
 		
+		// if using AUTO gpuUpload
+		// determine a good default for the GPU
+		if (CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.AUTO)
+		{
+			GpuUploadMethod uploadMethod;
+			String vendor = GL15.glGetString(GL15.GL_VENDOR).toUpperCase(); // example return: "NVIDIA CORPORATION"
+			if (vendor.contains("NVIDIA") || vendor.contains("GEFORCE"))
+			{
+				// NVIDIA card
+				
+				if (bufferStorageSupported)
+				{
+					uploadMethod = GpuUploadMethod.BUFFER_STORAGE;
+				}
+				else
+				{
+					uploadMethod = GpuUploadMethod.SUB_DATA;
+				}
+			}
+			else
+			{
+				// AMD or Intel card
+				
+				if (mapBufferRangeSupported)
+				{
+					uploadMethod = GpuUploadMethod.BUFFER_MAPPING;
+				}
+				else
+				{
+					uploadMethod = GpuUploadMethod.DATA;
+				}
+			}
+			
+			CONFIG.client().advanced().buffers().setGpuUploadMethod(uploadMethod);
+			ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Upload method set to [" + uploadMethod + "].");
+		}
+		
 		
 		
 		
@@ -182,7 +222,6 @@ public class GLProxy
 		// shader setup //
 		//==============//
 		
-		//setGlContext(GLProxyContext.LOD_RENDER);
 		setGlContext(GLProxyContext.MINECRAFT);
 		
 		createShaderProgram();
