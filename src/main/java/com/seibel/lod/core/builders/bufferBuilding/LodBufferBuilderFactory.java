@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.objects.VertexOptimizer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -41,7 +42,6 @@ import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
-import com.seibel.lod.core.objects.Box;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
@@ -142,7 +142,7 @@ public class LodBufferBuilderFactory
 	/** this is used to prevent multiple threads creating, destroying, or using the buffers at the same time */
 	private final ReentrantLock bufferLock = new ReentrantLock();
 	
-	private volatile Box[][] boxCache;
+	private volatile VertexOptimizer[][] vertexOptimizerCache;
 	private volatile PosToRenderContainer[][] setsToRender;
 	private volatile RegionPos center;
 	
@@ -224,11 +224,11 @@ public class LodBufferBuilderFactory
 			if (setsToRender.length != lodDim.getWidth())
 				setsToRender = new PosToRenderContainer[lodDim.getWidth()][lodDim.getWidth()];
 			
-			if (boxCache == null)
-				boxCache = new Box[lodDim.getWidth()][lodDim.getWidth()];
+			if (vertexOptimizerCache == null)
+				vertexOptimizerCache = new VertexOptimizer[lodDim.getWidth()][lodDim.getWidth()];
 			
-			if (boxCache.length != lodDim.getWidth())
-				boxCache = new Box[lodDim.getWidth()][lodDim.getWidth()];
+			if (vertexOptimizerCache.length != lodDim.getWidth())
+				vertexOptimizerCache = new VertexOptimizer[lodDim.getWidth()][lodDim.getWidth()];
 			
 			// this will be the center of the VBOs once they have been built
 			buildableCenterChunkPos = playerChunkPos;
@@ -280,7 +280,7 @@ public class LodBufferBuilderFactory
 							int bufferIndex;
 							boolean posNotInPlayerChunk;
 							boolean adjPosInPlayerChunk;
-							Box box = ThreadMapUtil.getBox();
+							VertexOptimizer vertexOptimizer = ThreadMapUtil.getBox();
 							boolean[] adjShadeDisabled = ThreadMapUtil.getAdjShadeDisabledArray();
 							
 							// determine how many LODs we can stack vertically
@@ -342,11 +342,11 @@ public class LodBufferBuilderFactory
 								Arrays.fill(adjShadeDisabled, false);
 								
 								//We check every adj block in each direction
-								for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+								for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
 								{
 									
-									xAdj = posX + Box.DIRECTION_NORMAL_MAP.get(lodDirection).x;
-									zAdj = posZ + Box.DIRECTION_NORMAL_MAP.get(lodDirection).z;
+									xAdj = posX + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).x;
+									zAdj = posZ + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).z;
 									long data;
 									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkPos.getX();
 									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkPos.getZ();
@@ -364,7 +364,7 @@ public class LodBufferBuilderFactory
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
 										{
 											data = lodDim.getData(detailLevel, xAdj, zAdj, verticalIndex);
-											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = false;
+											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = false;
 											adjData.get(lodDirection)[verticalIndex] = data;
 										}
 									}
@@ -378,7 +378,7 @@ public class LodBufferBuilderFactory
 										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkPos, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
 													&& !DataPointUtil.isVoid(data))
 										{
-											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
+											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
 										}
 									}
 								}
@@ -412,7 +412,7 @@ public class LodBufferBuilderFactory
 									
 									//We send the call to create the vertices
 									CONFIG.client().graphics().advancedGraphics().getLodTemplate().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
-											detailLevel, posX, posZ, box, renderer.previousDebugMode, adjShadeDisabled);
+											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
 							} // for pos to in list to render

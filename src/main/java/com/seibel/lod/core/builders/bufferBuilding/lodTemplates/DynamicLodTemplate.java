@@ -24,7 +24,7 @@ import java.util.Map;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.objects.Box;
+import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 
@@ -40,7 +40,7 @@ public class DynamicLodTemplate extends AbstractLodTemplate
 {
 	@Override
 	public void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
-			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled)
+			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		ClientApi.LOGGER.error(DynamicLodTemplate.class.getSimpleName() + " is not implemented!");
 	}
