@@ -31,20 +31,22 @@ package com.seibel.lod.core.enums.config;
  */
 public enum BufferRebuildTimes
 {
-	FREQUENT(1000, 500, 2500),
+	FREQUENT(1000, 500, 2500, 1),
 	
-	NORMAL(2000, 1000, 5000),
+	NORMAL(2000, 1000, 5000, 4),
 	
-	RARE(5000, 2000, 10000);
+	RARE(5000, 2000, 10000, 16);
 	
 	public final int playerMoveTimeout;
 	public final int renderedChunkTimeout;
 	public final int chunkChangeTimeout;
+	public final int playerMoveDistance;
 	
-	BufferRebuildTimes(int playerMoveTimeout, int renderedChunkTimeout, int chunkChangeTimeout)
+	BufferRebuildTimes(int playerMoveTimeout, int renderedChunkTimeout, int chunkChangeTimeout, int playerMoveDistance)
 	{
 		this.playerMoveTimeout = playerMoveTimeout;
 		this.renderedChunkTimeout = renderedChunkTimeout;
 		this.chunkChangeTimeout = chunkChangeTimeout;
+		this.playerMoveDistance = playerMoveDistance;
 	}
 }

@@ -651,8 +651,8 @@ public class LodRenderer
 		if (newTime - prevPlayerPosTime > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveTimeout)
 		{
 			if (LevelPosUtil.getDetailLevel(previousPos) == 0
-						|| MC.getPlayerChunkPos().getX() != LevelPosUtil.getPosX(previousPos)
-						|| MC.getPlayerChunkPos().getZ() != LevelPosUtil.getPosZ(previousPos))
+						|| Math.abs(MC.getPlayerChunkPos().getX() - LevelPosUtil.getPosX(previousPos)) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance
+						|| Math.abs(MC.getPlayerChunkPos().getZ() - LevelPosUtil.getPosZ(previousPos)) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance)
 			{
 				vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 				fullRegen = true;
