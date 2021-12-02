@@ -23,6 +23,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -372,27 +373,69 @@ public class LodDimensionFileHandler
 	}
 	
 	
+	public void saveRegionFile (byte[] regionFile, RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
+	{
+		int regionX = regionPos.x;
+		int regionZ = regionPos.z;
+		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
+		
+		if (fileName != null)
+		{
+			File oldFile = new File(fileName);
+			File newFile = new File(fileName + TMP_FILE_EXTENSION);
+			try (OutputStream os = new FileOutputStream(newFile))
+			{
+				os.write(regionFile);
+				Files.move(newFile.toPath(), oldFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+				os.close();
+			}
+			catch (IOException ioEx)
+			{
+				ClientApi.LOGGER.error("LOD file write error. Unable to write to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
+				ioEx.printStackTrace();
+			}
+		}
+	}
 	
+	public byte[] getRegionFile (RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
+	{
+		int regionX = regionPos.x;
+		int regionZ = regionPos.z;
+		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
+		if (fileName != null)
+		{
+			File file = new File(fileName);
+			try (InputStream is = new FileInputStream(file))
+			{
+				byte[] data = ThreadMapUtil.getSaveContainer(detailLevel);
+				is.read(data);
+				is.close();
+				return Arrays.copyOf(data, (int) file.length());
+			}
+			catch (IOException ioEx)
+			{
+				ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
+				ioEx.printStackTrace();
+			}
+		}
+		return new byte[0];
+	}
 	
 	
 	//================//
 	// helper methods //
 	//================//
 	
-	public byte[] getHashFromFile(byte detailLevel, RegionPos regionPos, DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
+	public int getHashFromFile(RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
 	{
 		int regionX = regionPos.x;
 		int regionZ = regionPos.z;
 		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
-		try (InputStream is = Files.newInputStream(Paths.get(fileName))) {
-			return org.apache.commons.codec.digest.DigestUtils.md5(is);
-		}
-		catch (IOException ioEx)
-		{
-			ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
-			ioEx.printStackTrace();
-		}
-		return new byte[0];
+		if (fileName == null)
+			return 0;
+		
+		File file = new File(fileName);
+		return file.hashCode();
 	}
 	
 	
