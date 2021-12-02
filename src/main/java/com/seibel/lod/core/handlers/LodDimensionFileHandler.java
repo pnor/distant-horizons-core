@@ -130,28 +130,40 @@ public class LodDimensionFileHandler
 				{
 					//there is no file for current gen mode
 					//search others above current from the most to the least detailed
-					DistanceGenerationMode tempGenMode = DistanceGenerationMode.FULL;
-					while (tempGenMode != generationMode)
-					{
-						fileName = getFileNameAndPathForRegion(regionX, regionZ, tempGenMode, tempDetailLevel, verticalQuality);
+					VerticalQuality tempVerticalQuality = VerticalQuality.HIGH;
+					do {
+						DistanceGenerationMode tempGenMode = DistanceGenerationMode.FULL;
+						do {
+							fileName = getFileNameAndPathForRegion(regionX, regionZ, tempGenMode, tempDetailLevel, verticalQuality);
+							if (fileName != null)
+							{
+								file = new File(fileName);
+								if (file.exists())
+									break;
+							}
+							//decrease gen mode
+							if (tempGenMode == DistanceGenerationMode.FULL)
+								tempGenMode = DistanceGenerationMode.FEATURES;
+							else if (tempGenMode == DistanceGenerationMode.FEATURES)
+								tempGenMode = DistanceGenerationMode.SURFACE;
+							else if (tempGenMode == DistanceGenerationMode.SURFACE)
+								tempGenMode = DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
+							else if (tempGenMode == DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT)
+								tempGenMode = DistanceGenerationMode.BIOME_ONLY;
+							else if (tempGenMode == DistanceGenerationMode.BIOME_ONLY)
+								tempGenMode = DistanceGenerationMode.NONE;
+						} while (tempGenMode != generationMode);
 						if (fileName != null)
 						{
 							file = new File(fileName);
 							if (file.exists())
 								break;
 						}
-						//decrease gen mode
-						if (tempGenMode == DistanceGenerationMode.FULL)
-							tempGenMode = DistanceGenerationMode.FEATURES;
-						else if (tempGenMode == DistanceGenerationMode.FEATURES)
-							tempGenMode = DistanceGenerationMode.SURFACE;
-						else if (tempGenMode == DistanceGenerationMode.SURFACE)
-							tempGenMode = DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
-						else if (tempGenMode == DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT)
-							tempGenMode = DistanceGenerationMode.BIOME_ONLY;
-						else if (tempGenMode == DistanceGenerationMode.BIOME_ONLY)
-							tempGenMode = DistanceGenerationMode.NONE;
-					}
+						if (tempVerticalQuality == VerticalQuality.HIGH)
+							tempVerticalQuality = VerticalQuality.MEDIUM;
+						else if (tempVerticalQuality == VerticalQuality.MEDIUM)
+							tempVerticalQuality = VerticalQuality.LOW;
+					} while (tempVerticalQuality != verticalQuality);
 					if (!file.exists())
 						//there wasn't a file, don't return anything
 						continue;

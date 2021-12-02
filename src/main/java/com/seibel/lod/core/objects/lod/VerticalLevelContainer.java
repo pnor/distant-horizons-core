@@ -124,18 +124,20 @@ public class VerticalLevelContainer implements LevelContainer
 	
 	public VerticalLevelContainer(byte[] inputData, int version)
 	{
+		int tempMaxVerticalData;
+		int tempIndex;
+		int index = 0;
+		long newData;
+		detailLevel = inputData[index];
+		index++;
+		tempMaxVerticalData = inputData[index] & 0b01111111;
+		index++;
+		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+		int x = size * size * tempMaxVerticalData;
+		long[] tempDataContainer = new long[x];
+		
 		if (version == 6)
 		{
-			int tempIndex;
-			int index = 0;
-			long newData;
-			detailLevel = inputData[index];
-			index++;
-			maxVerticalData = inputData[index] & 0b01111111;
-			index++;
-			size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-			int x = size * size * maxVerticalData;
-			this.dataContainer = new long[x];
 			for (int i = 0; i < x; i++)
 			{
 				newData = 0;
@@ -155,29 +157,39 @@ public class VerticalLevelContainer implements LevelContainer
 						DataPointUtil.getGenerationMode(newData),
 						DataPointUtil.getFlag(newData)
 				);
-				dataContainer[i] = newData;
+				tempDataContainer[i] = newData;
 			}
 		}
 		else //if (version == 7)
 		{
-			int tempIndex;
-			int index = 0;
-			long newData;
-			detailLevel = inputData[index];
-			index++;
-			maxVerticalData = inputData[index] & 0b01111111;
-			index++;
-			size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-			int x = size * size * maxVerticalData;
-			this.dataContainer = new long[x];
 			for (int i = 0; i < x; i++)
 			{
 				newData = 0;
 				for (tempIndex = 0; tempIndex < 8; tempIndex++)
 					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 				index += 8;
-				dataContainer[i] = newData;
+				tempDataContainer[i] = newData;
 			}
+		}
+		
+		if (tempMaxVerticalData > DetailDistanceUtil.getMaxVerticalData(detailLevel))
+		{
+			int tempMaxVerticalData2 = DetailDistanceUtil.getMaxVerticalData(detailLevel);
+			long[] dataToMerge = new long[tempMaxVerticalData];
+			long[] tempDataContainer2 = new long[size * size * tempMaxVerticalData2];
+			for (int i = 0; i < size * size; i++)
+			{
+				System.arraycopy(tempDataContainer, i * tempMaxVerticalData, dataToMerge, 0, tempMaxVerticalData);
+				dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, tempMaxVerticalData, tempMaxVerticalData2);
+				System.arraycopy(dataToMerge, 0, tempDataContainer2, i * tempMaxVerticalData2, tempMaxVerticalData2);
+			}
+			maxVerticalData = tempMaxVerticalData2;
+			this.dataContainer = tempDataContainer2;
+		}
+		else
+		{
+			maxVerticalData = tempMaxVerticalData;
+			this.dataContainer = tempDataContainer;
 		}
 	}
 	
