@@ -26,7 +26,7 @@ import java.util.HashSet;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
-import com.seibel.lod.core.objects.Box;
+import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
@@ -403,10 +403,10 @@ public class LodUtil
 			return false;
 		int tempX;
 		int tempZ;
-		for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+		for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
 		{
-			tempX = x + Box.DIRECTION_NORMAL_MAP.get(lodDirection).x;
-			tempZ = z + Box.DIRECTION_NORMAL_MAP.get(lodDirection).z;
+			tempX = x + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).x;
+			tempZ = z + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).z;
 			if (vanillaRenderedChunks[x][z] || (!(tempX < 0 || tempZ < 0 || tempX >= vanillaRenderedChunks.length || tempZ >= vanillaRenderedChunks[0].length)
 				&& !vanillaRenderedChunks[tempX][tempZ]))
 				return true;

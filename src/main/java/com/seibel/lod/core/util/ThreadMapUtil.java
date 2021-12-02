@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.objects.Box;
+import com.seibel.lod.core.objects.VertexOptimizer;
 
 /**
  * Holds data used by specific threads so
@@ -59,7 +59,7 @@ public class ThreadMapUtil
 	public static final ConcurrentMap<String, boolean[]> adjShadeDisabled = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, Map<LodDirection, int[]>> adjDataMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, Map<LodDirection, byte[]>> adjFlagsMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, Box> boxMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, VertexOptimizer> boxMap = new ConcurrentHashMap<>();
 	
 	public static int dataPointColor = 0;
 	public static int dataPointData = 0;
@@ -73,7 +73,7 @@ public class ThreadMapUtil
 		if (!adjShadeDisabled.containsKey(Thread.currentThread().getName())
 				|| (adjShadeDisabled.get(Thread.currentThread().getName()) == null))
 		{
-			adjShadeDisabled.put(Thread.currentThread().getName(), new boolean[Box.DIRECTIONS.length]);
+			adjShadeDisabled.put(Thread.currentThread().getName(), new boolean[VertexOptimizer.DIRECTIONS.length]);
 		}
 		Arrays.fill(adjShadeDisabled.get(Thread.currentThread().getName()), false);
 		return adjShadeDisabled.get(Thread.currentThread().getName());
@@ -90,12 +90,12 @@ public class ThreadMapUtil
 			adjDataMap.put(Thread.currentThread().getName(), new HashMap<>());
 			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.UP, new int[1]);
 			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.DOWN, new int[1]);
-			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+			for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
 				adjDataMap.get(Thread.currentThread().getName()).put(lodDirection, new int[verticalData]);
 		}
 		else
 		{
-			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+			for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
 				Arrays.fill(adjDataMap.get(Thread.currentThread().getName()).get(lodDirection), 0);
 		}
 		return adjDataMap.get(Thread.currentThread().getName());
@@ -112,23 +112,23 @@ public class ThreadMapUtil
 			adjFlagsMap.put(Thread.currentThread().getName(), new HashMap<>());
 			adjFlagsMap.get(Thread.currentThread().getName()).put(LodDirection.UP, new byte[1]);
 			adjFlagsMap.get(Thread.currentThread().getName()).put(LodDirection.DOWN, new byte[1]);
-			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+			for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
 				adjFlagsMap.get(Thread.currentThread().getName()).put(lodDirection, new byte[verticalData]);
 		}
 		else
 		{
-			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+			for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
 				Arrays.fill(adjFlagsMap.get(Thread.currentThread().getName()).get(lodDirection), (byte) 0);
 		}
 		return adjFlagsMap.get(Thread.currentThread().getName());
 	}
 	
-	public static Box getBox()
+	public static VertexOptimizer getBox()
 	{
 		if (!boxMap.containsKey(Thread.currentThread().getName())
 				|| (boxMap.get(Thread.currentThread().getName()) == null))
 		{
-			boxMap.put(Thread.currentThread().getName(), new Box());
+			boxMap.put(Thread.currentThread().getName(), new VertexOptimizer());
 		}
 		boxMap.get(Thread.currentThread().getName()).reset();
 		return boxMap.get(Thread.currentThread().getName());

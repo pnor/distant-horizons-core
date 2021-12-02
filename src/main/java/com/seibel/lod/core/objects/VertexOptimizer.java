@@ -35,12 +35,11 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
 /**
- * Similar to Minecraft's AxisAlignedBoundingBox.
- * 
+ * This class handles all the vertex optimization that's needed for a column of lods. W
  * @author Leonardo Amato
  * @version 10-2-2021
  */
-public class Box
+public class VertexOptimizer
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
@@ -207,7 +206,7 @@ public class Box
 	
 	/** creates an empty box */
 	@SuppressWarnings("serial")
-	public Box()
+	public VertexOptimizer()
 	{
 		boxOffset = new int[3];
 		boxWidth = new int[3];
