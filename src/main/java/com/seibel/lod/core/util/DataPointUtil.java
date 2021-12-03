@@ -22,6 +22,7 @@ package com.seibel.lod.core.util;
 import static com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.skyLightPlayer;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.objects.lod.DataPoint;
 
 /**
  * 
@@ -57,9 +58,9 @@ public class DataPointUtil
 	//To be used in the future for negative value
 	//public final static int MIN_DEPTH = -64;
 	//public final static int MIN_HEIGHT = -64;
-	public final static int EMPTY_DATA = 0;
-	public static final short VERTICAL_OFFSET = -64;
-	public static int WORLD_HEIGHT = 1024;
+	public final static DataPoint EMPTY_DATA = new DataPoint();
+	public static final short VERTICAL_OFFSET = -2048;
+	public static int WORLD_HEIGHT = 4096;
 	
 	public final static int ALPHA_DOWNSIZE_SHIFT = 4;
 	
@@ -68,155 +69,145 @@ public class DataPointUtil
 	//public final static int RED_COLOR_SHIFT = 16;
 	//public final static int ALPHA_COLOR_SHIFT = 24;
 	
-	public final static int BLUE_SHIFT = 36;
-	public final static int GREEN_SHIFT = BLUE_SHIFT + 8;
-	public final static int RED_SHIFT = BLUE_SHIFT + 16;
-	public final static int ALPHA_SHIFT = BLUE_SHIFT + 24;
+	public final static byte BLUE_SHIFT = 0;
+	public final static byte GREEN_SHIFT = 8;
+	public final static byte RED_SHIFT = 16;
+	public final static byte ALPHA_SHIFT = 24;
 	
-	public final static int COLOR_SHIFT = 36;
+	//public final static byte COLOR_SHIFT = 36;
 	
-	public final static int HEIGHT_SHIFT = 26;
-	public final static int DEPTH_SHIFT = 16;
-	public final static int BLOCK_LIGHT_SHIFT = 12;
-	public final static int SKY_LIGHT_SHIFT = 8;
-	//public final static int LIGHTS_SHIFT = SKY_LIGHT_SHIFT;
-	//public final static int VERTICAL_INDEX_SHIFT = 6;
-	public final static int FLAG_SHIFT = 5;
-	public final static int GEN_TYPE_SHIFT = 2;
-	public final static int VOID_SHIFT = 1;
-	public final static int EXISTENCE_SHIFT = 0;
+	public final static byte HEIGHT_SHIFT = 20;
+	public final static byte DEPTH_SHIFT = 8;
+	public final static byte BLOCK_LIGHT_SHIFT = 4;
+	public final static byte SKY_LIGHT_SHIFT = 0;
+	//public final static byte LIGHTS_SHIFT = SKY_LIGHT_SHIFT;
+	//public final static byte VERTICAL_INDEX_SHIFT = 6;
+	public final static byte FLAG_SHIFT = 5;
+	public final static byte GEN_TYPE_SHIFT = 2;
+	public final static byte VOID_SHIFT = 1;
+	public final static byte EXISTENCE_SHIFT = 0;
 	
-	public final static long ALPHA_MASK = 0b1111;
-	public final static long RED_MASK = 0b1111_1111;
-	public final static long GREEN_MASK = 0b1111_1111;
-	public final static long BLUE_MASK = 0b1111_1111;
-	public final static long COLOR_MASK = 0b11111111_11111111_11111111;
-	public final static long HEIGHT_MASK = 0b11_1111_1111;
-	public final static long DEPTH_MASK = 0b11_1111_1111;
-	//public final static long LIGHTS_MASK = 0b1111_1111;
-	public final static long BLOCK_LIGHT_MASK = 0b1111;
-	public final static long SKY_LIGHT_MASK = 0b1111;
-	//public final static long VERTICAL_INDEX_MASK = 0b11;
-	public final static long FLAG_MASK = 0b1;
-	public final static long GEN_TYPE_MASK = 0b111;
-	public final static long VOID_MASK = 1;
-	public final static long EXISTENCE_MASK = 1;
+	public final static int ALPHA_MASK = 0xFF;
+	public final static int RED_MASK = 0xFF;
+	public final static int GREEN_MASK = 0xFF;
+	public final static int BLUE_MASK = 0xFF;
+	public final static int COLOR_MASK = 0xFFFFFFFF;
+	public final static int HEIGHT_MASK = 0xFFF;
+	public final static int DEPTH_MASK = 0xFFF;
+	public final static int LIGHTS_MASK = 0xFF;
+	public final static int BLOCK_LIGHT_MASK = 0xF;
+	public final static int SKY_LIGHT_MASK = 0xF;
+	public final static int VERTICAL_INDEX_MASK = 0x3;
+	public final static byte FLAG_MASK = 0x1;
+	public final static byte GEN_TYPE_MASK = 0x7;
+	public final static byte VOID_MASK = 1;
+	public final static byte EXISTENCE_MASK = 1;
 	
 	
-	public static long createVoidDataPoint(int generationMode)
+	public static DataPoint createVoidDataPoint(int generationMode)
 	{
-		long dataPoint = 0;
-		dataPoint += (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
-		dataPoint += VOID_MASK << VOID_SHIFT;
-		dataPoint += EXISTENCE_MASK << EXISTENCE_SHIFT;
-		return dataPoint;
+		byte flags = (byte) ((generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT);
+		flags += VOID_MASK << VOID_SHIFT;
+		flags += EXISTENCE_MASK << EXISTENCE_SHIFT;
+		return new DataPoint(0, 0, flags);
 	}
 	
-	public static long createDataPoint(int height, int depth, int color, int lightSky, int lightBlock, int generationMode, boolean flag)
+	public static DataPoint createDataPoint(int height, int depth, int color, int lightSky, int lightBlock, int generationMode, boolean flag)
+	{
+		int data = (height & HEIGHT_MASK) << HEIGHT_SHIFT;
+		data += (depth & DEPTH_MASK) << DEPTH_SHIFT;
+		data += (lightBlock & BLOCK_LIGHT_MASK) << BLOCK_LIGHT_SHIFT;
+		data += (lightSky & SKY_LIGHT_MASK) << SKY_LIGHT_SHIFT;
+		byte flags = (byte) ((generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT);
+		if (flag) flags += FLAG_MASK << FLAG_SHIFT;
+		flags += EXISTENCE_MASK << EXISTENCE_SHIFT;
+		return new DataPoint(color, data, flags);
+	}
+	
+	public static DataPoint createDataPoint(int alpha, int red, int green, int blue, int height, int depth, int lightSky, int lightBlock, int generationMode, boolean flag)
 	{
 		return createDataPoint(
-				ColorUtil.getAlpha(color),
-				ColorUtil.getRed(color),
-				ColorUtil.getGreen(color),
-				ColorUtil.getBlue(color),
-				height, depth, lightSky, lightBlock, generationMode, flag);
+				height, depth,
+				(alpha << ALPHA_SHIFT) | (red << RED_SHIFT) | (green << GREEN_SHIFT) | blue,
+				lightSky, lightBlock, generationMode, flag);
 	}
 	
-	public static long createDataPoint(int alpha, int red, int green, int blue, int height, int depth, int lightSky, int lightBlock, int generationMode, boolean flag)
+	public static short getHeight(DataPoint dataPoint)
 	{
-		long dataPoint = 0;
-		dataPoint += (long) (alpha >>> ALPHA_DOWNSIZE_SHIFT) << ALPHA_SHIFT;
-		dataPoint += (red & RED_MASK) << RED_SHIFT;
-		dataPoint += (green & GREEN_MASK) << GREEN_SHIFT;
-		dataPoint += (blue & BLUE_MASK) << BLUE_SHIFT;
-		dataPoint += (height & HEIGHT_MASK) << HEIGHT_SHIFT;
-		dataPoint += (depth & DEPTH_MASK) << DEPTH_SHIFT;
-		dataPoint += (lightBlock & BLOCK_LIGHT_MASK) << BLOCK_LIGHT_SHIFT;
-		dataPoint += (lightSky & SKY_LIGHT_MASK) << SKY_LIGHT_SHIFT;
-		dataPoint += (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
-		if (flag) dataPoint += FLAG_MASK << FLAG_SHIFT;
-		dataPoint += EXISTENCE_MASK << EXISTENCE_SHIFT;
-		
-		return dataPoint;
+		return (short) ((dataPoint.data >>> HEIGHT_SHIFT) & HEIGHT_MASK);
 	}
 	
-	public static short getHeight(long dataPoint)
+	public static short getDepth(DataPoint dataPoint)
 	{
-		return (short) ((dataPoint >>> HEIGHT_SHIFT) & HEIGHT_MASK);
+		return (short) ((dataPoint.data >>> DEPTH_SHIFT) & DEPTH_MASK);
 	}
 	
-	public static short getDepth(long dataPoint)
+	public static short getAlpha(DataPoint dataPoint)
 	{
-		return (short) ((dataPoint >>> DEPTH_SHIFT) & DEPTH_MASK);
+		return (short) ((dataPoint.color >>> ALPHA_SHIFT) & ALPHA_MASK);
 	}
 	
-	public static short getAlpha(long dataPoint)
+	public static short getRed(DataPoint dataPoint)
 	{
-		return (short) ((((dataPoint >>> ALPHA_SHIFT) & ALPHA_MASK) << ALPHA_DOWNSIZE_SHIFT) | 0b1111);
+		return (short) ((dataPoint.color >>> RED_SHIFT) & RED_MASK);
 	}
 	
-	public static short getRed(long dataPoint)
+	public static short getGreen(DataPoint dataPoint)
 	{
-		return (short) ((dataPoint >>> RED_SHIFT) & RED_MASK);
+		return (short) ((dataPoint.color >>> GREEN_SHIFT) & GREEN_MASK);
 	}
 	
-	public static short getGreen(long dataPoint)
+	public static short getBlue(DataPoint dataPoint)
 	{
-		return (short) ((dataPoint >>> GREEN_SHIFT) & GREEN_MASK);
+		return (short) ((dataPoint.color >>> BLUE_SHIFT) & BLUE_MASK);
 	}
 	
-	public static short getBlue(long dataPoint)
+	public static byte getLightSky(DataPoint dataPoint)
 	{
-		return (short) ((dataPoint >>> BLUE_SHIFT) & BLUE_MASK);
+		return (byte) ((dataPoint.data >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
-	public static byte getLightSky(long dataPoint)
+	public static byte getLightSkyAlt(DataPoint dataPoint)
 	{
-		return (byte) ((dataPoint >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
-	}
-	
-	public static byte getLightSkyAlt(long dataPoint)
-	{
-		if (skyLightPlayer == 0 && ((dataPoint >>> FLAG_SHIFT) & FLAG_MASK) == 1)
+		if (skyLightPlayer == 0 && ((dataPoint.flags >>> FLAG_SHIFT) & FLAG_MASK) == 1)
 			return 0;
 		else
-			return (byte) ((dataPoint >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
+			return (byte) ((dataPoint.data >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
-	public static byte getLightBlock(long dataPoint)
+	public static byte getLightBlock(DataPoint dataPoint)
 	{
-		return (byte) ((dataPoint >>> BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK);
+		return (byte) ((dataPoint.data >>> BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK);
 	}
 	
-	public static boolean getFlag(long dataPoint)
+	public static boolean getFlag(DataPoint dataPoint)
 	{
-		return ((dataPoint >>> FLAG_SHIFT) & FLAG_MASK) == 1;
+		return ((dataPoint.flags >>> FLAG_SHIFT) & FLAG_MASK) == 1;
 	}
 	
-	public static byte getGenerationMode(long dataPoint)
+	public static byte getGenerationMode(DataPoint dataPoint)
 	{
-		return (byte) ((dataPoint >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
+		return (byte) ((dataPoint.flags >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
 	}
 	
-	
-	public static boolean isVoid(long dataPoint)
+	public static boolean isVoid(DataPoint dataPoint)
 	{
-		return (((dataPoint >>> VOID_SHIFT) & VOID_MASK) == 1);
+		return (((dataPoint.flags >>> VOID_SHIFT) & VOID_MASK) == 1);
 	}
 	
-	public static boolean doesItExist(long dataPoint)
+	public static boolean doesItExist(DataPoint dataPoint)
 	{
-		return (((dataPoint >>> EXISTENCE_SHIFT) & EXISTENCE_MASK) == 1);
+		return (dataPoint != null) && (((dataPoint.flags >>> EXISTENCE_SHIFT) & EXISTENCE_MASK) == 1);
 	}
 	
-	public static int getColor(long dataPoint)
+	public static int getColor(DataPoint dataPoint)
 	{
-		return (int) (((dataPoint >>> COLOR_SHIFT) & COLOR_MASK) | (/*((dataPoint >>> (ALPHA_SHIFT - ALPHA_DOWNSIZE_SHIFT)) | 0b1111)*/255 << 24));
+		return dataPoint.color;
 	}
 	
 	/** This is used to convert a dataPoint to string (useful for the print function) */
 	@SuppressWarnings("unused")
-	public static String toString(long dataPoint)
+	public static String toString(DataPoint dataPoint)
 	{
 		return getHeight(dataPoint) + " " +
 				getDepth(dataPoint) + " " +
@@ -263,20 +254,20 @@ public class DataPointUtil
 	 * @param maxVerticalData max vertical size of the merged data
 	 * @return one column of correctly parsed data
 	 */
-	public static long[] mergeMultiData(long[] dataToMerge, int inputVerticalData, int maxVerticalData)
+	public static DataPoint[] mergeMultiData(DataPoint[] dataToMerge, int inputVerticalData, int maxVerticalData)
 	{
 		int size = dataToMerge.length / inputVerticalData;
 		
 		// We initialize the arrays that are going to be used
 		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT / 2 + 1) * 2);
-		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
+		DataPoint[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
 		
 		
 		int genMode = DistanceGenerationMode.FULL.complexity;
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		boolean allDefault;
-		long singleData;
+		DataPoint singleData;
 		
 		
 		short depth;
@@ -291,7 +282,7 @@ public class DataPointUtil
 			for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
 			{
 				singleData = dataToMerge[index * inputVerticalData + dataIndex];
-				if (doesItExist(singleData))
+				if (singleData != null && doesItExist(singleData))
 				{
 					genMode = Math.min(genMode, getGenerationMode(singleData));
 					allEmpty = false;
@@ -451,7 +442,7 @@ public class DataPointUtil
 			allEmpty = true;
 			allVoid = true;
 			allDefault = true;
-			long data = 0;
+			DataPoint data = EMPTY_DATA;
 			
 			for (int index = 0; index < size; index++)
 			{
@@ -460,7 +451,6 @@ public class DataPointUtil
 					singleData = dataToMerge[index * inputVerticalData + dataIndex];
 					if (doesItExist(singleData) && !isVoid(singleData))
 					{
-						
 						if ((depth <= getDepth(singleData) && getDepth(singleData) <= height)
 								|| (depth <= getHeight(singleData) && getHeight(singleData) <= height))
 						{
@@ -474,7 +464,10 @@ public class DataPointUtil
 				if (!doesItExist(data))
 				{
 					singleData = dataToMerge[index * inputVerticalData];
-					data = createVoidDataPoint(getGenerationMode(singleData));
+					if (doesItExist(singleData))
+						data = createVoidDataPoint(getGenerationMode(singleData));
+					else
+						data = createVoidDataPoint(0);
 				}
 				
 				if (doesItExist(data))

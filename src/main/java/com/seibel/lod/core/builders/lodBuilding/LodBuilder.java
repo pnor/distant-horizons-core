@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
+import com.seibel.lod.core.objects.lod.DataPoint;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.LodWorld;
@@ -195,8 +196,8 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			startX = detail.startX[i];
 			startZ = detail.startZ[i];
 			
-			long[] data;
-			long[] dataToMergeVertical = createVerticalDataToMerge(detail, chunk, config, startX, startZ);
+			DataPoint[] data;
+			DataPoint[] dataToMergeVertical = createVerticalDataToMerge(detail, chunk, config, startX, startZ);
 			data = DataPointUtil.mergeMultiData(dataToMergeVertical, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
 			
 			
@@ -212,12 +213,12 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	}
 	
 	/** creates a vertical DataPoint */
-	private long[] createVerticalDataToMerge(HorizontalResolution detail, IChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
+	private DataPoint[] createVerticalDataToMerge(HorizontalResolution detail, IChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
 	{
 		// equivalent to 2^detailLevel
 		int size = 1 << detail.detailLevel;
 		
-		long[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
+		DataPoint[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
 		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
 		
 		AbstractChunkPosWrapper chunkPos = chunk.getPos();

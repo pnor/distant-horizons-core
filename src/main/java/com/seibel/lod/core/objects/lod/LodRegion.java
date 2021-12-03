@@ -154,7 +154,7 @@ public class LodRegion
 	 * TODO this will always return true unless it has
 	 * @return true if the data was added successfully
 	 */
-	public boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, long data)
+	public boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, DataPoint data)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
@@ -177,7 +177,7 @@ public class LodRegion
 	 * TODO this will always return true unless it has
 	 * @return true if the data was added successfully
 	 */
-	public boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data)
+	public boolean addVerticalData(byte detailLevel, int posX, int posZ, DataPoint[] data)
 	{
 		//position is already relative
 		//posX = LevelPosUtil.getRegionModule(detailLevel, posX);
@@ -196,7 +196,7 @@ public class LodRegion
 	 * @return the data at the relative pos and detail level,
 	 * 0 if the data doesn't exist.
 	 */
-	public long getData(byte detailLevel, int posX, int posZ, int verticalIndex)
+	public DataPoint getData(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
 		return dataContainer[detailLevel].getData(posX, posZ, verticalIndex);
 	}
@@ -206,7 +206,7 @@ public class LodRegion
 	 * @return the data at the relative pos and detail level,
 	 * 0 if the data doesn't exist.
 	 */
-	public long getSingleData(byte detailLevel, int posX, int posZ)
+	public DataPoint getSingleData(byte detailLevel, int posX, int posZ)
 	{
 		return dataContainer[detailLevel].getSingleData(posX, posZ);
 	}

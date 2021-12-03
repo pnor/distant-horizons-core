@@ -25,6 +25,7 @@ import java.util.Map;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
+import com.seibel.lod.core.objects.lod.DataPoint;
 import com.seibel.lod.core.objects.math.Vec3i;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -339,13 +340,13 @@ public class Box
 	 * This method create all the shared face culling based on the adjacent data
 	 * @param adjData data adjacent to the column we are going to render
 	 */
-	public void setAdjData(Map<LodDirection, long[]> adjData)
+	public void setAdjData(Map<LodDirection, DataPoint[]> adjData)
 	{
 		int height;
 		int depth;
 		int minY = getMinY();
 		int maxY = getMaxY();
-		long singleAdjDataPoint;
+		DataPoint singleAdjDataPoint;
 		
 		/* TODO implement attached vertical face culling
 		//Up direction case
@@ -367,8 +368,8 @@ public class Box
 			if (isCulled(lodDirection))
 				continue;
 			
-			long[] dataPoint = adjData.get(lodDirection);
-			if (dataPoint == null || DataPointUtil.isVoid(dataPoint[0]))
+			DataPoint[] dataPoint = adjData.get(lodDirection);
+			if (DataPointUtil.isVoid(dataPoint[0]))
 			{
 				adjHeight.get(lodDirection)[0] = maxY;
 				adjDepth.get(lodDirection)[0] = minY;

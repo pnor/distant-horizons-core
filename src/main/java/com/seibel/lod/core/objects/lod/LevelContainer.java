@@ -32,7 +32,7 @@ public interface LevelContainer
 	 * @param index z position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
-	boolean addData(long data, int posX, int posZ, int index);
+	boolean addData(DataPoint data, int posX, int posZ, int index);
 	
 	/**
 	 * With this you can add data to the level container
@@ -41,7 +41,7 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
-	boolean addVerticalData(long[] data, int posX, int posZ);
+	boolean addVerticalData(DataPoint[] data, int posX, int posZ);
 	
 	/**
 	 * With this you can add data to the level container
@@ -50,7 +50,7 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
-	boolean addSingleData(long data, int posX, int posZ);
+	boolean addSingleData(DataPoint data, int posX, int posZ);
 	
 	/**
 	 * With this you can get data from the level container
@@ -58,7 +58,7 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return the data in long array format
 	 */
-	long getData(int posX, int posZ, int index);
+	DataPoint getData(int posX, int posZ, int index);
 	
 	/**
 	 * With this you can get data from the level container
@@ -66,7 +66,7 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return the data in long array format
 	 */
-	long getSingleData(int posX, int posZ);
+	DataPoint getSingleData(int posX, int posZ);
 	
 	/**
 	 * @param posX x position in the detail level

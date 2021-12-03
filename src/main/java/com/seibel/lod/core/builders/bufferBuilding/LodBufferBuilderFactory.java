@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.objects.lod.DataPoint;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -287,7 +288,7 @@ public class LodBufferBuilderFactory
 							int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
 							
 							//we get or create the map that will contain the adj data
-							Map<LodDirection, long[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
+							Map<LodDirection, DataPoint[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
 							
 							//previous setToRender cache
 							if (setsToRender[xR][zR] == null)
@@ -347,7 +348,7 @@ public class LodBufferBuilderFactory
 									
 									xAdj = posX + Box.DIRECTION_NORMAL_MAP.get(lodDirection).x;
 									zAdj = posZ + Box.DIRECTION_NORMAL_MAP.get(lodDirection).z;
-									long data;
+									DataPoint data;
 									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkPos.getX();
 									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkPos.getZ();
 									adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
@@ -376,7 +377,7 @@ public class LodBufferBuilderFactory
 										adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
 										
 										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkPos, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
-													&& !DataPointUtil.isVoid(data))
+													&& DataPointUtil.doesItExist(data) && !DataPointUtil.isVoid(data))
 										{
 											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
 										}
@@ -386,7 +387,7 @@ public class LodBufferBuilderFactory
 								
 								// We render every vertical lod present in this position
 								// We only stop when we find a block that is void or non-existing block
-								long data;
+								DataPoint data;
 								for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ); verticalIndex++)
 								{
 									
@@ -407,7 +408,7 @@ public class LodBufferBuilderFactory
 									data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);
 									
 									//If the data is not renderable (Void or non-existing) we stop since there is no data left in this position
-									if (DataPointUtil.isVoid(data) || !DataPointUtil.doesItExist(data))
+									if (!DataPointUtil.doesItExist(data) || DataPointUtil.isVoid(data))
 										break;
 									
 									//We send the call to create the vertices

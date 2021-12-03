@@ -24,6 +24,7 @@ import java.util.Map;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.Box;
+import com.seibel.lod.core.objects.lod.DataPoint;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -44,7 +45,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	}
 	
 	@Override
-	public void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
+	public void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, DataPoint data, Map<LodDirection, DataPoint[]> adjData,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (box == null)
@@ -80,7 +81,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
 			AbstractBlockPosWrapper bufferCenterBlockPos,
-			Map<LodDirection, long[]> adjData,
+			Map<LodDirection, DataPoint[]> adjData,
 			int color,
 			int skyLight,
 			int blockLight,

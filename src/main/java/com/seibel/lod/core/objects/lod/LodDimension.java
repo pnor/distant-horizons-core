@@ -445,7 +445,7 @@ public class LodDimension
 	 * stored in the LOD. If an LOD already exists at the given
 	 * coordinate it will be overwritten.
 	 */
-	public Boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, long data, boolean dontSave)
+	public Boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, DataPoint data, boolean dontSave)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -487,7 +487,7 @@ public class LodDimension
 	 * stored in the LOD. If an LOD already exists at the given
 	 * coordinate it will be overwritten.
 	 */
-	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data, boolean dontSave)
+	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, DataPoint[] data, boolean dontSave)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -566,7 +566,7 @@ public class LodDimension
 			byte detailLevel;
 			int posX;
 			int posZ;
-			long data;
+			DataPoint data;
 			int numbChunksWide = (width) * 32;
 			int circleLimit = Integer.MAX_VALUE;
 			
@@ -618,7 +618,7 @@ public class LodDimension
 				
 				//we will generate the position only if the current generation complexity is lower than the target one.
 				//an un-generated area will always have 0 generation
-				if (DataPointUtil.getGenerationMode(data) < complexity)
+				if (data != null && DataPointUtil.getGenerationMode(data) < complexity)
 				{
 					posToGenerate.addPosToGenerate(detailLevel, posX, posZ);
 					if (maxDataToGenerate >= 0)
@@ -712,7 +712,7 @@ public class LodDimension
 	 * Returns null if the LodChunk doesn't exist or
 	 * is outside the loaded area.
 	 */
-	public long getData(byte detailLevel, int posX, int posZ, int verticalIndex)
+	public DataPoint getData(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
@@ -732,7 +732,7 @@ public class LodDimension
 	 * Returns null if the LodChunk doesn't exist or
 	 * is outside the loaded area.
 	 */
-	public long getSingleData(byte detailLevel, int posX, int posZ)
+	public DataPoint getSingleData(byte detailLevel, int posX, int posZ)
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");

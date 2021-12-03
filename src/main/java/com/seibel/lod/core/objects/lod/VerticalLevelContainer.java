@@ -37,14 +37,14 @@ public class VerticalLevelContainer implements LevelContainer
 	public final int size;
 	public final int maxVerticalData;
 	
-	public final long[] dataContainer;
+	public final DataPoint[] dataContainer;
 	
 	public VerticalLevelContainer(byte detailLevel)
 	{
 		this.detailLevel = detailLevel;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		maxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
-		dataContainer = new long[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+		dataContainer = new DataPoint[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
 	}
 	
 	@Override
@@ -65,7 +65,7 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public boolean addData(long data, int posX, int posZ, int verticalIndex)
+	public boolean addData(DataPoint data, int posX, int posZ, int verticalIndex)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
@@ -74,7 +74,7 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public boolean addVerticalData(long[] data, int posX, int posZ)
+	public boolean addVerticalData(DataPoint[] data, int posX, int posZ)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
@@ -84,13 +84,13 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public boolean addSingleData(long data, int posX, int posZ)
+	public boolean addSingleData(DataPoint data, int posX, int posZ)
 	{
 		return addData(data, posX, posZ, 0);
 	}
 	
 	@Override
-	public long getData(int posX, int posZ, int verticalIndex)
+	public DataPoint getData(int posX, int posZ, int verticalIndex)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
@@ -98,7 +98,7 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public long getSingleData(int posX, int posZ)
+	public DataPoint getSingleData(int posX, int posZ)
 	{
 		return getData(posX, posZ, 0);
 	}
@@ -127,56 +127,98 @@ public class VerticalLevelContainer implements LevelContainer
 		int tempMaxVerticalData;
 		int tempIndex;
 		int index = 0;
-		long newData;
 		detailLevel = inputData[index];
 		index++;
 		tempMaxVerticalData = inputData[index] & 0b01111111;
 		index++;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		int x = size * size * tempMaxVerticalData;
-		long[] tempDataContainer = new long[x];
+		DataPoint[] tempDataContainer = new DataPoint[x];
 		
 		if (version == 6)
 		{
+			long oldData;
 			for (int i = 0; i < x; i++)
 			{
-				newData = 0;
+				oldData = 0;
 				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
+					oldData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 				index += 8;
-				
-				newData = DataPointUtil.createDataPoint(
-						DataPointUtil.getAlpha(newData),
-						DataPointUtil.getRed(newData),
-						DataPointUtil.getGreen(newData),
-						DataPointUtil.getBlue(newData),
-						DataPointUtil.getHeight(newData) - DataPointUtil.VERTICAL_OFFSET,
-						DataPointUtil.getDepth(newData) - DataPointUtil.VERTICAL_OFFSET,
-						DataPointUtil.getLightSky(newData),
-						DataPointUtil.getLightBlock(newData),
-						DataPointUtil.getGenerationMode(newData),
-						DataPointUtil.getFlag(newData)
+				/*
+				|a  |a  |a  |a  |r  |r  |r  |r  |
+				|r  |r  |r  |r  |g  |g  |g  |g  |
+				|g  |g  |g  |g  |b  |b  |b  |b  |
+				|b  |b  |b  |b  |h  |h  |h  |h  |
+				|h  |h  |h  |h  |h  |h  |d  |d  |
+				|d  |d  |d  |d  |d  |d  |d  |d  |
+				|bl |bl |bl |bl |sl |sl |sl |sl |
+				|l  |l  |f  |g  |g  |g  |v  |e  |
+				 */
+				DataPoint newData = DataPointUtil.createDataPoint(
+						(int)((oldData >> 60) << 4) + 15,
+						(int)(oldData >> 52) & 0xFF,
+						(int)(oldData >> 44) & 0xFF,
+						(int)(oldData >> 36) & 0xFF,
+						(int)(oldData >> 26) & 0x3FF - DataPointUtil.VERTICAL_OFFSET,
+						(int)(oldData >> 16) & 0x3FF - DataPointUtil.VERTICAL_OFFSET,
+						(int)(oldData >> 8) & 0xF,
+						(int)(oldData >> 12) & 0xF,
+						(int)(oldData >> 5) & 0x1,
+						((oldData >> 5) & 0x1) == 1
 				);
 				tempDataContainer[i] = newData;
 			}
 		}
-		else //if (version == 7)
+		else if (version == 7)
 		{
+			long oldData;
 			for (int i = 0; i < x; i++)
 			{
-				newData = 0;
+				oldData = 0;
 				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
+					oldData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 				index += 8;
+				DataPoint newData = DataPointUtil.createDataPoint(
+						(int)((oldData >> 60) << 4) + 15,
+						(int)(oldData >> 52) & 0xFF,
+						(int)(oldData >> 44) & 0xFF,
+						(int)(oldData >> 36) & 0xFF,
+						(int)(oldData >> 26) & 0x3FF - DataPointUtil.VERTICAL_OFFSET - 64,
+						(int)(oldData >> 16) & 0x3FF - DataPointUtil.VERTICAL_OFFSET - 64,
+						(int)(oldData >> 8) & 0xF,
+						(int)(oldData >> 12) & 0xF,
+						(int)(oldData >> 5) & 0x1,
+						((oldData >> 5) & 0x1) == 1
+				);
 				tempDataContainer[i] = newData;
+			}
+		}
+		else //if (version == 8)
+		{
+			int color;
+			int data;
+			for (int i = 0; i < x; i++)
+			{
+				byte flags = inputData[index];
+				index++;
+				data = 0;
+				color = 0;
+				for (tempIndex = 0; tempIndex < 8; tempIndex++)
+				{
+					data += (((int) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
+					color += (((int) inputData[index + tempIndex + 4]) & 0xff) << (8 * tempIndex);
+				}
+				index += 8;
+				
+				tempDataContainer[i] = new DataPoint(color, data, flags);
 			}
 		}
 		
 		if (tempMaxVerticalData > DetailDistanceUtil.getMaxVerticalData(detailLevel))
 		{
 			int tempMaxVerticalData2 = DetailDistanceUtil.getMaxVerticalData(detailLevel);
-			long[] dataToMerge = new long[tempMaxVerticalData];
-			long[] tempDataContainer2 = new long[size * size * tempMaxVerticalData2];
+			DataPoint[] dataToMerge = new DataPoint[tempMaxVerticalData];
+			DataPoint[] tempDataContainer2 = new DataPoint[size * size * tempMaxVerticalData2];
 			for (int i = 0; i < size * size; i++)
 			{
 				System.arraycopy(tempDataContainer, i * tempMaxVerticalData, dataToMerge, 0, tempMaxVerticalData);
@@ -203,12 +245,12 @@ public class VerticalLevelContainer implements LevelContainer
 	public void updateData(LevelContainer lowerLevelContainer, int posX, int posZ)
 	{
 		//We reset the array
-		long[] dataToMerge = ThreadMapUtil.getVerticalUpdateArray(detailLevel);
+		DataPoint[] dataToMerge = ThreadMapUtil.getVerticalUpdateArray(detailLevel);
 		
 		int lowerMaxVertical = dataToMerge.length / 4;
 		int childPosX;
 		int childPosZ;
-		long[] data;
+		DataPoint[] data;
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		for (int x = 0; x <= 1; x++)
@@ -232,7 +274,7 @@ public class VerticalLevelContainer implements LevelContainer
 		int index = 0;
 		int x = size * size;
 		int tempIndex;
-		long current;
+		DataPoint current;
 		boolean allGenerated = true;
 		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
 		
@@ -246,11 +288,19 @@ public class VerticalLevelContainer implements LevelContainer
 			for (j = 0; j < maxVerticalData; j++)
 			{
 				current = dataContainer[i * maxVerticalData + j];
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					tempData[index + tempIndex] = (byte) (current >>> (8 * tempIndex));
+				if (current != null)
+				{
+					tempData[index] = current.flags;
+					index++;
+					for (tempIndex = 0; tempIndex < 4; tempIndex++)
+					{
+						tempData[index + tempIndex] = (byte) (current.data >>> (8 * tempIndex));
+						tempData[index + tempIndex + 4] = (byte) (current.color >>> (8 * tempIndex));
+					}
+				}
 				index += 8;
 			}
-			if(!DataPointUtil.doesItExist(dataContainer[i]))
+			if(dataContainer[i] == null || !DataPointUtil.doesItExist(dataContainer[i]))
 				allGenerated = false;
 		}
 		if (allGenerated)
