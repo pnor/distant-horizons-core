@@ -203,7 +203,7 @@ public class VerticalLevelContainer implements LevelContainer
 				index++;
 				data = 0;
 				color = 0;
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
+				for (tempIndex = 0; tempIndex < 4; tempIndex++)
 				{
 					data += (((int) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 					color += (((int) inputData[index + tempIndex + 4]) & 0xff) << (8 * tempIndex);
