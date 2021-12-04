@@ -22,7 +22,6 @@ package com.seibel.lod.core.util;
 import static com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.skyLightPlayer;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.objects.lod.DataPoint;
 
 /**
  * 
@@ -58,7 +57,7 @@ public class DataPointUtil
 	//To be used in the future for negative value
 	//public final static int MIN_DEPTH = -64;
 	//public final static int MIN_HEIGHT = -64;
-	public final static DataPoint EMPTY_DATA = new DataPoint();
+	public final static byte EMPTY_DATA = 0;
 	public static final short VERTICAL_OFFSET = -2048;
 	public static int WORLD_HEIGHT = 4096;
 	
@@ -103,16 +102,17 @@ public class DataPointUtil
 	public final static byte VOID_MASK = 1;
 	public final static byte EXISTENCE_MASK = 1;
 	
-	
-	public static DataPoint createVoidDataPoint(int generationMode)
+	/** Returns the Flags byte */
+	public static byte createVoidDataPoint(byte generationMode)
 	{
-		byte flags = (byte) ((generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT);
-		flags += VOID_MASK << VOID_SHIFT;
-		flags += EXISTENCE_MASK << EXISTENCE_SHIFT;
-		return new DataPoint(0, 0, flags);
+		generationMode = (byte) ((generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT);
+		generationMode |= VOID_MASK << VOID_SHIFT;
+		generationMode |= EXISTENCE_MASK << EXISTENCE_SHIFT;
+		return generationMode;
 	}
 	
-	public static DataPoint createDataPoint(int height, int depth, int color, int lightSky, int lightBlock, int generationMode, boolean flag)
+	/** Returned datapoint is in ThreadMapUtil */
+	public static void createDataPoint(int height, int depth, int color, int lightSky, int lightBlock, int generationMode, boolean flag)
 	{
 		int data = (height & HEIGHT_MASK) << HEIGHT_SHIFT;
 		data += (depth & DEPTH_MASK) << DEPTH_SHIFT;
@@ -121,105 +121,106 @@ public class DataPointUtil
 		byte flags = (byte) ((generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT);
 		if (flag) flags += FLAG_MASK << FLAG_SHIFT;
 		flags += EXISTENCE_MASK << EXISTENCE_SHIFT;
-		return new DataPoint(color, data, flags);
+		ThreadMapUtil.saveDataPoint(color, data, flags);
 	}
 	
-	public static DataPoint createDataPoint(int alpha, int red, int green, int blue, int height, int depth, int lightSky, int lightBlock, int generationMode, boolean flag)
+	public static void createDataPoint(int alpha, int red, int green, int blue, int height, int depth, int lightSky, int lightBlock, int generationMode, boolean flag)
 	{
-		return createDataPoint(
+		createDataPoint(
 				height, depth,
 				(alpha << ALPHA_SHIFT) | (red << RED_SHIFT) | (green << GREEN_SHIFT) | blue,
 				lightSky, lightBlock, generationMode, flag);
 	}
 	
-	public static short getHeight(DataPoint dataPoint)
+	public static short getHeight(int data)
 	{
-		return (short) ((dataPoint.data >>> HEIGHT_SHIFT) & HEIGHT_MASK);
+		return (short) ((data >>> HEIGHT_SHIFT) & HEIGHT_MASK);
 	}
 	
-	public static short getDepth(DataPoint dataPoint)
+	public static short getDepth(int data)
 	{
-		return (short) ((dataPoint.data >>> DEPTH_SHIFT) & DEPTH_MASK);
+		return (short) ((data >>> DEPTH_SHIFT) & DEPTH_MASK);
 	}
 	
-	public static short getAlpha(DataPoint dataPoint)
+	public static short getAlpha(int color)
 	{
-		return (short) ((dataPoint.color >>> ALPHA_SHIFT) & ALPHA_MASK);
+		return (short) ((color >>> ALPHA_SHIFT) & ALPHA_MASK);
 	}
 	
-	public static short getRed(DataPoint dataPoint)
+	public static short getRed(int color)
 	{
-		return (short) ((dataPoint.color >>> RED_SHIFT) & RED_MASK);
+		return (short) ((color >>> RED_SHIFT) & RED_MASK);
 	}
 	
-	public static short getGreen(DataPoint dataPoint)
+	public static short getGreen(int color)
 	{
-		return (short) ((dataPoint.color >>> GREEN_SHIFT) & GREEN_MASK);
+		return (short) ((color >>> GREEN_SHIFT) & GREEN_MASK);
 	}
 	
-	public static short getBlue(DataPoint dataPoint)
+	public static short getBlue(int color)
 	{
-		return (short) ((dataPoint.color >>> BLUE_SHIFT) & BLUE_MASK);
+		return (short) ((color >>> BLUE_SHIFT) & BLUE_MASK);
 	}
 	
-	public static byte getLightSky(DataPoint dataPoint)
+	public static byte getLightSky(int data)
 	{
-		return (byte) ((dataPoint.data >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
+		return (byte) ((data >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
-	public static byte getLightSkyAlt(DataPoint dataPoint)
+	public static byte getLightSkyAlt(int data, byte flags)
 	{
-		if (skyLightPlayer == 0 && ((dataPoint.flags >>> FLAG_SHIFT) & FLAG_MASK) == 1)
+		if (skyLightPlayer == 0 && ((flags >>> FLAG_SHIFT) & FLAG_MASK) == 1)
 			return 0;
 		else
-			return (byte) ((dataPoint.data >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
+			return (byte) ((data >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
-	public static byte getLightBlock(DataPoint dataPoint)
+	public static byte getLightBlock(int data)
 	{
-		return (byte) ((dataPoint.data >>> BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK);
+		return (byte) ((data >>> BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK);
 	}
 	
-	public static boolean getFlag(DataPoint dataPoint)
+	public static boolean getFlag(byte flags)
 	{
-		return ((dataPoint.flags >>> FLAG_SHIFT) & FLAG_MASK) == 1;
+		return ((flags >>> FLAG_SHIFT) & FLAG_MASK) == 1;
 	}
 	
-	public static byte getGenerationMode(DataPoint dataPoint)
+	public static byte getGenerationMode(byte flags)
 	{
-		return (byte) ((dataPoint.flags >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
+		return (byte) ((flags >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
 	}
 	
-	public static boolean isVoid(DataPoint dataPoint)
+	public static boolean isVoid(byte flags)
 	{
-		return (((dataPoint.flags >>> VOID_SHIFT) & VOID_MASK) == 1);
+		return (((flags >>> VOID_SHIFT) & VOID_MASK) == 1);
 	}
 	
-	public static boolean doesItExist(DataPoint dataPoint)
+	public static boolean doesItExist(byte flags)
 	{
-		return (dataPoint != null) && (((dataPoint.flags >>> EXISTENCE_SHIFT) & EXISTENCE_MASK) == 1);
+		return ((flags >>> EXISTENCE_SHIFT) & EXISTENCE_MASK) == 1;
 	}
 	
-	public static int getColor(DataPoint dataPoint)
+	@Deprecated
+	public static int getColor(int color)
 	{
-		return dataPoint.color;
+		return color;
 	}
 	
 	/** This is used to convert a dataPoint to string (useful for the print function) */
 	@SuppressWarnings("unused")
-	public static String toString(DataPoint dataPoint)
+	public static String toString(int color, int data, byte flags)
 	{
-		return getHeight(dataPoint) + " " +
-				getDepth(dataPoint) + " " +
-				getAlpha(dataPoint) + " " +
-				getRed(dataPoint) + " " +
-				getBlue(dataPoint) + " " +
-				getGreen(dataPoint) + " " +
-				getLightBlock(dataPoint) + " " +
-				getLightSky(dataPoint) + " " +
-				getGenerationMode(dataPoint) + " " +
-				isVoid(dataPoint) + " " +
-				doesItExist(dataPoint) + '\n';
+		return getHeight(data) + " " +
+				getDepth(data) + " " +
+				getAlpha(color) + " " +
+				getRed(color) + " " +
+				getBlue(color) + " " +
+				getGreen(color) + " " +
+				getLightBlock(data) + " " +
+				getLightSky(data) + " " +
+				getGenerationMode(flags) + " " +
+				isVoid(flags) + " " +
+				doesItExist(flags) + '\n';
 	}
 	
 	public static void shrinkArray(short[] array, int packetSize, int start, int length, int arraySize)
@@ -249,25 +250,30 @@ public class DataPointUtil
 	
 	/**
 	 * This method merge column of multiple data together
-	 * @param dataToMerge one or more columns of data
+	 * Returned datapoint is in ThreadMapUtil
+	 * @param dataToMergeColor colors of one or more columns of data
+	 * @param dataToMergeData data of one or more columns of data
+	 * @param dataToMergeFlags flags of one or more columns of data
 	 * @param inputVerticalData vertical size of an input data
 	 * @param maxVerticalData max vertical size of the merged data
-	 * @return one column of correctly parsed data
 	 */
-	public static DataPoint[] mergeMultiData(DataPoint[] dataToMerge, int inputVerticalData, int maxVerticalData)
+	public static void mergeMultiData(int[] dataToMergeColor, int[] dataToMergeData, byte[] dataToMergeFlags, int inputVerticalData, int maxVerticalData)
 	{
-		int size = dataToMerge.length / inputVerticalData;
+		int size = dataToMergeData.length / inputVerticalData;
 		
 		// We initialize the arrays that are going to be used
 		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT / 2 + 1) * 2);
-		DataPoint[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
+		int[] dataPointColor = ThreadMapUtil.getVerticalDataArrayColor(DetailDistanceUtil.getMaxVerticalData(0));
+		int[] dataPointData = ThreadMapUtil.getVerticalDataArrayData(DetailDistanceUtil.getMaxVerticalData(0));
+		byte[] dataPointFlags = ThreadMapUtil.getVerticalDataArrayFlags(DetailDistanceUtil.getMaxVerticalData(0));
 		
 		
-		int genMode = DistanceGenerationMode.FULL.complexity;
+		byte genMode = DistanceGenerationMode.FULL.complexity;
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		boolean allDefault;
-		DataPoint singleData;
+		int singleDataData;
+		byte singleDataFlags;
 		
 		
 		short depth;
@@ -281,16 +287,17 @@ public class DataPointUtil
 		{
 			for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
 			{
-				singleData = dataToMerge[index * inputVerticalData + dataIndex];
-				if (singleData != null && doesItExist(singleData))
+				singleDataData = dataToMergeData[index * inputVerticalData + dataIndex];
+				singleDataFlags = dataToMergeFlags[index * inputVerticalData + dataIndex];
+				if (doesItExist(singleDataFlags))
 				{
-					genMode = Math.min(genMode, getGenerationMode(singleData));
+					genMode = (byte) Math.min(genMode, getGenerationMode(singleDataFlags));
 					allEmpty = false;
-					if (!isVoid(singleData))
+					if (!isVoid(singleDataFlags))
 					{
 						allVoid = false;
-						depth = getDepth(singleData);
-						height = getHeight(singleData);
+						depth = getDepth(singleDataData);
+						height = getHeight(singleDataData);
 						
 						int botPos = -1;
 						int topPos = -1;
@@ -393,11 +400,11 @@ public class DataPointUtil
 		
 		//We check if there is any data that's not empty or void
 		if (allEmpty)
-			return dataPoint;
+			return;
 		if (allVoid)
 		{
-			dataPoint[0] = createVoidDataPoint(genMode);
-			return dataPoint;
+			dataPointFlags[0] = createVoidDataPoint(genMode);
+			return;
 		}
 		
 		//we limit the vertical portion to maxVerticalData
@@ -442,73 +449,90 @@ public class DataPointUtil
 			allEmpty = true;
 			allVoid = true;
 			allDefault = true;
-			DataPoint data = EMPTY_DATA;
+			int singleDataColor;
+			int data = EMPTY_DATA;
+			int color = EMPTY_DATA;
+			byte flags = EMPTY_DATA;
 			
 			for (int index = 0; index < size; index++)
 			{
 				for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
 				{
-					singleData = dataToMerge[index * inputVerticalData + dataIndex];
-					if (doesItExist(singleData) && !isVoid(singleData))
+					singleDataColor = dataToMergeColor[index * inputVerticalData + dataIndex];
+					singleDataData = dataToMergeData[index * inputVerticalData + dataIndex];
+					singleDataFlags = dataToMergeFlags[index * inputVerticalData + dataIndex];
+					if (doesItExist(singleDataFlags) && !isVoid(singleDataFlags))
 					{
-						if ((depth <= getDepth(singleData) && getDepth(singleData) <= height)
-								|| (depth <= getHeight(singleData) && getHeight(singleData) <= height))
+						if ((depth <= getDepth(singleDataData) && getDepth(singleDataData) <= height)
+								|| (depth <= getHeight(singleDataData) && getHeight(singleDataData) <= height))
 						{
-							if (getHeight(singleData) > getHeight(data))
-								data = singleData;
+							if (getHeight(singleDataData) > getHeight(data))
+							{
+								color = singleDataColor;
+								data = singleDataData;
+								flags = singleDataFlags;
+							}
 						}
 					}
 					else
 						break;
 				}
-				if (!doesItExist(data))
+				if (!doesItExist(flags))
 				{
-					singleData = dataToMerge[index * inputVerticalData];
-					if (doesItExist(singleData))
-						data = createVoidDataPoint(getGenerationMode(singleData));
+					singleDataFlags = dataToMergeFlags[index * inputVerticalData];
+					if (doesItExist(singleDataFlags))
+						flags = createVoidDataPoint(getGenerationMode(singleDataFlags));
 					else
-						data = createVoidDataPoint(0);
+						flags = createVoidDataPoint((byte) 0);
+					data = EMPTY_DATA;
+					color = EMPTY_DATA;
 				}
 				
-				if (doesItExist(data))
+				if (doesItExist(flags))
 				{
 					allEmpty = false;
-					if (!isVoid(data))
+					if (!isVoid(flags))
 					{
 						numberOfChildren++;
 						allVoid = false;
-						tempAlpha += getAlpha(data);
-						tempRed += getRed(data);
-						tempGreen += getGreen(data);
-						tempBlue += getBlue(data);
+						tempAlpha += getAlpha(color);
+						tempRed += getRed(color);
+						tempGreen += getGreen(color);
+						tempBlue += getBlue(color);
 						tempLightBlock += getLightBlock(data);
 						tempLightSky += getLightSky(data);
-						if (!getFlag(data)) allDefault = false;
+						if (!getFlag(flags))
+							allDefault = false;
 					}
-					tempGenMode = (byte) Math.min(tempGenMode, getGenerationMode(data));
+					tempGenMode = (byte) Math.min(tempGenMode, getGenerationMode(flags));
 				}
 				else
 					tempGenMode = (byte) Math.min(tempGenMode, DistanceGenerationMode.NONE.complexity);
 			}
 			
-			if (allEmpty)
-				//no child has been initialized
-				dataPoint[j] = EMPTY_DATA;
-			else if (allVoid)
-				//all the children are void
-				dataPoint[j] = createVoidDataPoint(tempGenMode);
-			else
+			if (!allEmpty)
 			{
-				//we have at least 1 child
-				tempAlpha = tempAlpha / numberOfChildren;
-				tempRed = tempRed / numberOfChildren;
-				tempGreen = tempGreen / numberOfChildren;
-				tempBlue = tempBlue / numberOfChildren;
-				tempLightBlock = tempLightBlock / numberOfChildren;
-				tempLightSky = tempLightSky / numberOfChildren;
-				dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+				//child has been initialized
+				if (allVoid)
+				{
+					//all the children are void
+					dataPointFlags[j] = createVoidDataPoint(tempGenMode);
+				}
+				else
+				{
+					//we have at least 1 child
+					tempAlpha = tempAlpha / numberOfChildren;
+					tempRed = tempRed / numberOfChildren;
+					tempGreen = tempGreen / numberOfChildren;
+					tempBlue = tempBlue / numberOfChildren;
+					tempLightBlock = tempLightBlock / numberOfChildren;
+					tempLightSky = tempLightSky / numberOfChildren;
+					createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+					dataPointColor[j] = ThreadMapUtil.dataPointColor;
+					dataPointData[j] = ThreadMapUtil.dataPointData;
+					dataPointFlags[j] = ThreadMapUtil.dataPointFlags;
+				}
 			}
 		}
-		return dataPoint;
 	}
 }

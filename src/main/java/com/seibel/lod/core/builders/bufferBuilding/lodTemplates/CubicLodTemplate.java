@@ -24,7 +24,6 @@ import java.util.Map;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.Box;
-import com.seibel.lod.core.objects.lod.DataPoint;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -45,7 +44,9 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	}
 	
 	@Override
-	public void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, DataPoint data, Map<LodDirection, DataPoint[]> adjData,
+	public void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos,
+			int color, int data, byte flags,
+			Map<LodDirection, int[]> adjData, Map<LodDirection, byte[]> adjFlags,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (box == null)
@@ -54,12 +55,8 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		// equivalent to 2^detailLevel
 		int blockWidth = 1 << detailLevel;
 		
-		int color;
 		if (debugging != DebugMode.OFF)
 			color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel].getRGB();
-		else
-			color = DataPointUtil.getColor(data);
-		
 		
 		generateBoundingBox(
 				box,
@@ -69,8 +66,9 @@ public class CubicLodTemplate extends AbstractLodTemplate
 				posX * blockWidth, 0, posZ * blockWidth, // x, y, z offset
 				bufferCenterBlockPos,
 				adjData,
+				adjFlags,
 				color,
-				DataPointUtil.getLightSkyAlt(data),
+				DataPointUtil.getLightSkyAlt(data, flags),
 				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
@@ -81,7 +79,8 @@ public class CubicLodTemplate extends AbstractLodTemplate
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
 			AbstractBlockPosWrapper bufferCenterBlockPos,
-			Map<LodDirection, DataPoint[]> adjData,
+			Map<LodDirection, int[]> adjData,
+			Map<LodDirection, byte[]> adjFlags,
 			int color,
 			int skyLight,
 			int blockLight,
@@ -107,7 +106,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		box.setWidth(width, height - depth, width);
 		box.setOffset((int) (xOffset + x), (int) (depth + yOffset), (int) (zOffset + z));
 		box.setUpCulling(32, bufferCenterBlockPos);
-		box.setAdjData(adjData);
+		box.setAdjData(adjData, adjFlags);
 	}
 	
 	private void addBoundingBoxToBuffer(LodBufferBuilder buffer, Box box)

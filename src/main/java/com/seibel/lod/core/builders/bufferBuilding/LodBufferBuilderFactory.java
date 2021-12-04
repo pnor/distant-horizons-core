@@ -30,7 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.seibel.lod.core.objects.lod.DataPoint;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -288,7 +287,9 @@ public class LodBufferBuilderFactory
 							int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
 							
 							//we get or create the map that will contain the adj data
-							Map<LodDirection, DataPoint[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
+							
+							Map<LodDirection, int[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
+							Map<LodDirection, byte[]> adjFlags = ThreadMapUtil.getAdjFlagsArray(maxVerticalData);
 							
 							//previous setToRender cache
 							if (setsToRender[xR][zR] == null)
@@ -348,7 +349,9 @@ public class LodBufferBuilderFactory
 									
 									xAdj = posX + Box.DIRECTION_NORMAL_MAP.get(lodDirection).x;
 									zAdj = posZ + Box.DIRECTION_NORMAL_MAP.get(lodDirection).z;
-									DataPoint data;
+									int color;
+									int data;
+									byte flags;
 									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkPos.getX();
 									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkPos.getZ();
 									adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
@@ -364,20 +367,26 @@ public class LodBufferBuilderFactory
 									{
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
 										{
-											data = lodDim.getData(detailLevel, xAdj, zAdj, verticalIndex);
+											lodDim.getDataPoint(detailLevel, xAdj, zAdj, verticalIndex);
+											data = ThreadMapUtil.dataPointData;
+											flags = ThreadMapUtil.dataPointFlags;
 											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = false;
 											adjData.get(lodDirection)[verticalIndex] = data;
+											adjFlags.get(lodDirection)[verticalIndex] = flags;
 										}
 									}
 									else
 									{
 										//Otherwise, we check if this position is
-										data = lodDim.getSingleData(detailLevel, xAdj, zAdj);
+										lodDim.getSingleDataPoint(detailLevel, xAdj, zAdj);
+										data = ThreadMapUtil.dataPointData;
+										flags = ThreadMapUtil.dataPointFlags;
 										
-										adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
+										adjData.get(lodDirection)[0] = 0;
+										adjFlags.get(lodDirection)[0] = 0;
 										
 										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkPos, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
-													&& DataPointUtil.doesItExist(data) && !DataPointUtil.isVoid(data))
+													&& DataPointUtil.doesItExist(flags) && !DataPointUtil.isVoid(flags))
 										{
 											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
 										}
@@ -387,32 +396,50 @@ public class LodBufferBuilderFactory
 								
 								// We render every vertical lod present in this position
 								// We only stop when we find a block that is void or non-existing block
-								DataPoint data;
+								int color;
+								int data;
+								byte flags;
 								for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ); verticalIndex++)
 								{
 									
 									//we get the above block as adj UP
 									if (verticalIndex > 0)
-										adjData.get(LodDirection.UP)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex - 1);
+									{
+										lodDim.getDataPoint(detailLevel, posX, posZ, verticalIndex - 1);
+										adjData.get(LodDirection.UP)[0] = ThreadMapUtil.dataPointData;
+										adjFlags.get(LodDirection.UP)[0] = ThreadMapUtil.dataPointFlags;
+									}
 									else
-										adjData.get(LodDirection.UP)[0] = DataPointUtil.EMPTY_DATA;
-									
+									{
+										adjData.get(LodDirection.UP)[0] = 0;
+										adjFlags.get(LodDirection.UP)[0] = 0;
+									}
 									
 									//we get the below block as adj DOWN
 									if (verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ) - 1)
-										adjData.get(LodDirection.DOWN)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex + 1);
+									{
+										lodDim.getDataPoint(detailLevel, posX, posZ, verticalIndex + 1);
+										adjData.get(LodDirection.DOWN)[0] = ThreadMapUtil.dataPointData;
+										adjFlags.get(LodDirection.DOWN)[0] = ThreadMapUtil.dataPointFlags;
+									}
 									else
-										adjData.get(LodDirection.DOWN)[0] = DataPointUtil.EMPTY_DATA;
+									{
+										adjData.get(LodDirection.DOWN)[0] = 0;
+										adjFlags.get(LodDirection.DOWN)[0] = 0;
+									}
 									
 									//We extract the data to render
-									data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);
+									lodDim.getDataPoint(detailLevel, posX, posZ, verticalIndex);
+									color = ThreadMapUtil.dataPointColor;
+									data = ThreadMapUtil.dataPointData;
+									flags = ThreadMapUtil.dataPointFlags;
 									
 									//If the data is not renderable (Void or non-existing) we stop since there is no data left in this position
-									if (!DataPointUtil.doesItExist(data) || DataPointUtil.isVoid(data))
+									if (!DataPointUtil.doesItExist(flags) || DataPointUtil.isVoid(flags))
 										break;
 									
 									//We send the call to create the vertices
-									CONFIG.client().graphics().advancedGraphics().getLodTemplate().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
+									CONFIG.client().graphics().advancedGraphics().getLodTemplate().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, color, data, flags, adjData, adjFlags,
 											detailLevel, posX, posZ, box, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
@@ -420,9 +447,7 @@ public class LodBufferBuilderFactory
 							// the thread executed successfully
 							return true;
 						};
-						
 						nodeToRenderThreads.add(dataToRenderThread);
-						
 					}
 				} // region z
 			} // region z

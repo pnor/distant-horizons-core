@@ -24,7 +24,6 @@ import java.util.concurrent.Executors;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
-import com.seibel.lod.core.objects.lod.DataPoint;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.LodWorld;
@@ -196,103 +195,105 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			startX = detail.startX[i];
 			startZ = detail.startZ[i];
 			
-			DataPoint[] data;
-			DataPoint[] dataToMergeVertical = createVerticalDataToMerge(detail, chunk, config, startX, startZ);
-			data = DataPointUtil.mergeMultiData(dataToMergeVertical, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
+			// creates a vertical DataPoint
+			// equivalent to 2^detailLevel
+			int size = 1 << detail.detailLevel;
 			
+			int[] dataToMergeColor = ThreadMapUtil.getBuilderVerticalArrayColor(detail.detailLevel);
+			int[] dataToMergeData = ThreadMapUtil.getBuilderVerticalArrayData(detail.detailLevel);
+			byte[] dataToMergeFlags = ThreadMapUtil.getBuilderVerticalArrayFlags(detail.detailLevel);
+			int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
+			
+			AbstractChunkPosWrapper chunkPos = chunk.getPos();
+			int height;
+			int depth;
+			int color;
+			int light;
+			int lightSky;
+			int lightBlock;
+			byte generation = config.distanceGenerationMode.complexity;
+			
+			int xRel;
+			int zRel;
+			int xAbs;
+			int yAbs;
+			int zAbs;
+			boolean hasCeiling = MC.getWrappedClientWorld().getDimensionType().hasCeiling();
+			boolean hasSkyLight = MC.getWrappedClientWorld().getDimensionType().hasSkyLight();
+			boolean isDefault;
+			AbstractBlockPosWrapper blockPos = FACTORY.createBlockPos();
+			int index;
+			
+			for (index = 0; index < size * size; index++)
+			{
+				xRel = startX + index % size;
+				zRel = startZ + index / size;
+				xAbs = chunkPos.getMinBlockX() + xRel;
+				zAbs = chunkPos.getMinBlockZ() + zRel;
+				
+				//Calculate the height of the lod
+				yAbs = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET + 1;
+				int count = 0;
+				boolean topBlock = true;
+				while (yAbs > 0)
+				{
+					height = determineHeightPointFrom(chunk, config, xRel, yAbs, zRel, blockPos);
+					
+					// If the lod is at the default height, it must be void data
+					if (height == DEFAULT_HEIGHT)
+					{
+						if (topBlock)
+							dataToMergeFlags[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
+						break;
+					}
+					
+					yAbs = height - 1;
+					// We search light on above air block
+					depth = determineBottomPointFrom(chunk, config, xRel, yAbs, zRel, blockPos);
+					if (hasCeiling && topBlock)
+					{
+						yAbs = depth;
+						blockPos.set(xAbs, yAbs, zAbs);
+						light = getLightValue(chunk, blockPos, true, hasSkyLight, true);
+						color = generateLodColor(chunk, config, xAbs, yAbs, zAbs, blockPos);
+						blockPos.set(xAbs, yAbs - 1, zAbs);
+					}
+					else
+					{
+						blockPos.set(xAbs, yAbs, zAbs);
+						light = getLightValue(chunk, blockPos, hasCeiling, hasSkyLight, topBlock);
+						color = generateLodColor(chunk, config, xRel, yAbs, zRel, blockPos);
+						blockPos.set(xAbs, yAbs + 1, zAbs);
+					}
+					lightBlock = light & 0b1111;
+					lightSky = (light >> 4) & 0b1111;
+					isDefault = ((light >> 8)) == 1;
+					DataPointUtil.createDataPoint(height - DataPointUtil.VERTICAL_OFFSET, depth - DataPointUtil.VERTICAL_OFFSET, color, lightSky, lightBlock, generation, isDefault);
+					dataToMergeColor[index * verticalData + count] = ThreadMapUtil.dataPointColor;
+					dataToMergeData[index * verticalData + count] = ThreadMapUtil.dataPointData;
+					dataToMergeFlags[index * verticalData + count] = ThreadMapUtil.dataPointFlags;
+					
+					topBlock = false;
+					yAbs = depth - 1;
+					count++;
+				}
+			}
+			
+			
+			DataPointUtil.mergeMultiData(dataToMergeColor, dataToMergeData, dataToMergeFlags, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
+			int[] mergedColor = ThreadMapUtil.getRawVerticalDataArrayColor();
+			int[] mergedData = ThreadMapUtil.getRawVerticalDataArrayData();
+			byte[] mergedFlags = ThreadMapUtil.getRawVerticalDataArrayFlags();
 			
 			//lodDim.clear(detailLevel, posX, posZ);
-			if (data != null && data.length != 0)
+			if (mergedFlags.length != 0)
 			{
 				posX = LevelPosUtil.convert((byte) 0, chunk.getPos().getX() * 16 + startX, detail.detailLevel);
 				posZ = LevelPosUtil.convert((byte) 0, chunk.getPos().getZ() * 16 + startZ, detail.detailLevel);
-				lodDim.addVerticalData(detailLevel, posX, posZ, data, false);
+				lodDim.addVerticalData(detailLevel, posX, posZ, mergedColor, mergedData, mergedFlags, false);
 			}
 		}
 		lodDim.updateData(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getPos().getX(), chunk.getPos().getZ());
-	}
-	
-	/** creates a vertical DataPoint */
-	private DataPoint[] createVerticalDataToMerge(HorizontalResolution detail, IChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
-	{
-		// equivalent to 2^detailLevel
-		int size = 1 << detail.detailLevel;
-		
-		DataPoint[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
-		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
-		
-		AbstractChunkPosWrapper chunkPos = chunk.getPos();
-		int height;
-		int depth;
-		int color;
-		int light;
-		int lightSky;
-		int lightBlock;
-		int generation = config.distanceGenerationMode.complexity;
-		
-		int xRel;
-		int zRel;
-		int xAbs;
-		int yAbs;
-		int zAbs;
-		boolean hasCeiling = MC.getWrappedClientWorld().getDimensionType().hasCeiling();
-		boolean hasSkyLight = MC.getWrappedClientWorld().getDimensionType().hasSkyLight();
-		boolean isDefault;
-		AbstractBlockPosWrapper blockPos = FACTORY.createBlockPos();
-		int index;
-		
-		for (index = 0; index < size * size; index++)
-		{
-			xRel = startX + index % size;
-			zRel = startZ + index / size;
-			xAbs = chunkPos.getMinBlockX() + xRel;
-			zAbs = chunkPos.getMinBlockZ() + zRel;
-			
-			//Calculate the height of the lod
-			yAbs = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET + 1;
-			int count = 0;
-			boolean topBlock = true;
-			while (yAbs > 0)
-			{
-				height = determineHeightPointFrom(chunk, config, xRel, yAbs, zRel, blockPos);
-				
-				// If the lod is at the default height, it must be void data
-				if (height == DEFAULT_HEIGHT)
-				{
-					if (topBlock)
-						dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
-					break;
-				}
-				
-				yAbs = height - 1;
-				// We search light on above air block
-				depth = determineBottomPointFrom(chunk, config, xRel, yAbs, zRel, blockPos);
-				if (hasCeiling && topBlock)
-				{
-					yAbs = depth;
-					blockPos.set(xAbs, yAbs, zAbs);
-					light = getLightValue(chunk, blockPos, true, hasSkyLight, true);
-					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs, blockPos);
-					blockPos.set(xAbs, yAbs - 1, zAbs);
-				}
-				else
-				{
-					blockPos.set(xAbs, yAbs, zAbs);
-					light = getLightValue(chunk, blockPos, hasCeiling, hasSkyLight, topBlock);
-					color = generateLodColor(chunk, config, xRel, yAbs, zRel, blockPos);
-					blockPos.set(xAbs, yAbs + 1, zAbs);
-				}
-				lightBlock = light & 0b1111;
-				lightSky = (light >> 4) & 0b1111;
-				isDefault = ((light >> 8)) == 1;
-				
-				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height - DataPointUtil.VERTICAL_OFFSET, depth - DataPointUtil.VERTICAL_OFFSET, color, lightSky, lightBlock, generation, isDefault);
-				topBlock = false;
-				yAbs = depth - 1;
-				count++;
-			}
-		}
-		return dataToMerge;
 	}
 	
 	/**

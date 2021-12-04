@@ -32,7 +32,7 @@ public interface LevelContainer
 	 * @param index z position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
-	boolean addData(DataPoint data, int posX, int posZ, int index);
+	boolean addData(int color, int data, byte flags, int posX, int posZ, int index);
 	
 	/**
 	 * With this you can add data to the level container
@@ -41,7 +41,7 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
-	boolean addVerticalData(DataPoint[] data, int posX, int posZ);
+	boolean addVerticalData(int[] color, int[] data, byte[] flags, int posX, int posZ);
 	
 	/**
 	 * With this you can add data to the level container
@@ -50,25 +50,32 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
-	boolean addSingleData(DataPoint data, int posX, int posZ);
+	boolean addSingleData(int color, int data, byte flags, int posX, int posZ);
 	
 	/**
 	 * With this you can get data from the level container
+	 * data is returned to ThreadMapUtil variables
 	 * @param posX x position in the detail level
 	 * @param posZ z position in the detail level
-	 * @return the data in long array format
 	 */
-	DataPoint getData(int posX, int posZ, int index);
+	void getDataPoint(int posX, int posZ, int index);
 	
 	/**
 	 * With this you can get data from the level container
+	 * data is returned to ThreadMapUtil variables
 	 * @param posX x position in the detail level
 	 * @param posZ z position in the detail level
-	 * @return the data in long array format
 	 */
-	DataPoint getSingleData(int posX, int posZ);
+	void getSingleDataPoint(int posX, int posZ);
+	
+	int getData(int posX, int posZ, int index);
+	
+	byte getFlags(int posX, int posZ, int index);
+	
+	byte getSingleFlags(int posX, int posZ);
 	
 	/**
+	 * data is returned to ThreadMapUtil variables
 	 * @param posX x position in the detail level
 	 * @param posZ z position in the detail level
 	 * @return true only if the data exist

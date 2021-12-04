@@ -24,7 +24,6 @@ import java.util.Map;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.Box;
-import com.seibel.lod.core.objects.lod.DataPoint;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
@@ -38,7 +37,8 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 public abstract class AbstractLodTemplate
 {
 	/** Uploads the given LOD to the buffer. */
-	public abstract void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, DataPoint data, Map<LodDirection, DataPoint[]> adjData,
+	public abstract void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, int color, int data, byte flags,
+			Map<LodDirection, int[]> adjData, Map<LodDirection, byte[]> adjFlags,
 			byte detailLevel, int posX, int posZ, Box box, DebugMode debugging, boolean[] adjShadeDisabled);
 	
 	/** add the given position and color to the buffer */

@@ -37,14 +37,19 @@ public class VerticalLevelContainer implements LevelContainer
 	public final int size;
 	public final int maxVerticalData;
 	
-	public final DataPoint[] dataContainer;
+	public final int[] dataContainerColor;
+	public final int[] dataContainerData;
+	public final byte[] dataContainerFlags;
 	
 	public VerticalLevelContainer(byte detailLevel)
 	{
 		this.detailLevel = detailLevel;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		maxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
-		dataContainer = new DataPoint[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+		final int i = size * size * maxVerticalData;
+		dataContainerColor = new int[i];
+		dataContainerData = new int[i];
+		dataContainerFlags = new byte[i];
 	}
 	
 	@Override
@@ -60,47 +65,79 @@ public class VerticalLevelContainer implements LevelContainer
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		for (int verticalIndex = 0; verticalIndex < maxVerticalData; verticalIndex++)
 		{
-			dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = DataPointUtil.EMPTY_DATA;
+			final int i = (posX * size + posZ) * maxVerticalData + verticalIndex;
+			dataContainerColor[i] = 0;
+			dataContainerData[i] = 0;
+			dataContainerFlags[i] = 0;
 		}
 	}
 	
 	@Override
-	public boolean addData(DataPoint data, int posX, int posZ, int verticalIndex)
+	public boolean addData(int color, int data, byte flags, int posX, int posZ, int verticalIndex)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = data;
+		final int i = (posX * size + posZ) * maxVerticalData + verticalIndex;
+		dataContainerColor[i] = color;
+		dataContainerData[i] = data;
+		dataContainerFlags[i] = flags;
 		return true;
 	}
 	
 	@Override
-	public boolean addVerticalData(DataPoint[] data, int posX, int posZ)
+	public boolean addVerticalData(int[] color, int[] data, byte[] flags, int posX, int posZ)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		for (int verticalIndex = 0; verticalIndex < maxVerticalData; verticalIndex++)
-			dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = data[verticalIndex];
+		{
+			final int i = (posX * size + posZ) * maxVerticalData + verticalIndex;
+			dataContainerColor[i] = color[verticalIndex];
+			dataContainerData[i] = data[verticalIndex];
+			dataContainerFlags[i] = flags[verticalIndex];
+		}
 		return true;
 	}
 	
 	@Override
-	public boolean addSingleData(DataPoint data, int posX, int posZ)
+	public boolean addSingleData(int color, int data, byte flags, int posX, int posZ)
 	{
-		return addData(data, posX, posZ, 0);
+		return addData(color, data, flags, posX, posZ, 0);
 	}
 	
 	@Override
-	public DataPoint getData(int posX, int posZ, int verticalIndex)
+	public void getDataPoint(int posX, int posZ, int verticalIndex)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		return dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex];
+		final int i = (posX * size + posZ) * maxVerticalData + verticalIndex;
+		ThreadMapUtil.saveDataPoint(dataContainerColor[i], dataContainerData[i], dataContainerFlags[i]);
 	}
 	
 	@Override
-	public DataPoint getSingleData(int posX, int posZ)
+	public void getSingleDataPoint(int posX, int posZ)
 	{
-		return getData(posX, posZ, 0);
+		getDataPoint(posX, posZ, 0);
+	}
+	
+	@Override
+	public int getData(int posX, int posZ, int verticalIndex)
+	{
+		return dataContainerData[(posX * size + posZ) * maxVerticalData + verticalIndex];
+	}
+	
+	@Override
+	public byte getFlags(int posX, int posZ, int verticalIndex)
+	{
+		return dataContainerFlags[(posX * size + posZ) * maxVerticalData + verticalIndex];
+	}
+	
+	@Override
+	public byte getSingleFlags(int posX, int posZ)
+	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
+		return dataContainerFlags[(posX * size + posZ) * maxVerticalData];
 	}
 	
 	@Override
@@ -119,7 +156,7 @@ public class VerticalLevelContainer implements LevelContainer
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		return DataPointUtil.doesItExist(getSingleData(posX, posZ));
+		return DataPointUtil.doesItExist(dataContainerFlags[(posX * size + posZ) * maxVerticalData]);
 	}
 	
 	public VerticalLevelContainer(byte[] inputData, int version)
@@ -133,7 +170,9 @@ public class VerticalLevelContainer implements LevelContainer
 		index++;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		int x = size * size * tempMaxVerticalData;
-		DataPoint[] tempDataContainer = new DataPoint[x];
+		int[] tempDataContainerColor = new int[x];
+		int[] tempDataContainerData = new int[x];
+		byte[] tempDataContainerFlags = new byte[x];
 		
 		if (version == 6)
 		{
@@ -154,7 +193,7 @@ public class VerticalLevelContainer implements LevelContainer
 				|bl |bl |bl |bl |sl |sl |sl |sl |
 				|l  |l  |f  |g  |g  |g  |v  |e  |
 				 */
-				DataPoint newData = DataPointUtil.createDataPoint(
+				DataPointUtil.createDataPoint(
 						(int)((oldData >> 60) << 4) + 15,
 						(int)(oldData >> 52) & 0xFF,
 						(int)(oldData >> 44) & 0xFF,
@@ -166,7 +205,9 @@ public class VerticalLevelContainer implements LevelContainer
 						(int)(oldData >> 5) & 0x1,
 						((oldData >> 5) & 0x1) == 1
 				);
-				tempDataContainer[i] = newData;
+				tempDataContainerColor[i] = ThreadMapUtil.dataPointColor;
+				tempDataContainerData[i] = ThreadMapUtil.dataPointData;
+				tempDataContainerFlags[i] = ThreadMapUtil.dataPointFlags;
 			}
 		}
 		else if (version == 7)
@@ -178,7 +219,7 @@ public class VerticalLevelContainer implements LevelContainer
 				for (tempIndex = 0; tempIndex < 8; tempIndex++)
 					oldData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 				index += 8;
-				DataPoint newData = DataPointUtil.createDataPoint(
+				DataPointUtil.createDataPoint(
 						(int)((oldData >> 60) << 4) + 15,
 						(int)(oldData >> 52) & 0xFF,
 						(int)(oldData >> 44) & 0xFF,
@@ -190,7 +231,9 @@ public class VerticalLevelContainer implements LevelContainer
 						(int)(oldData >> 5) & 0x1,
 						((oldData >> 5) & 0x1) == 1
 				);
-				tempDataContainer[i] = newData;
+				tempDataContainerColor[i] = ThreadMapUtil.dataPointColor;
+				tempDataContainerData[i] = ThreadMapUtil.dataPointData;
+				tempDataContainerFlags[i] = ThreadMapUtil.dataPointFlags;
 			}
 		}
 		else //if (version == 8)
@@ -210,28 +253,42 @@ public class VerticalLevelContainer implements LevelContainer
 				}
 				index += 8;
 				
-				tempDataContainer[i] = new DataPoint(color, data, flags);
+				tempDataContainerColor[i] = color;
+				tempDataContainerData[i] = data;
+				tempDataContainerFlags[i] = flags;
 			}
 		}
 		
 		if (tempMaxVerticalData > DetailDistanceUtil.getMaxVerticalData(detailLevel))
 		{
 			int tempMaxVerticalData2 = DetailDistanceUtil.getMaxVerticalData(detailLevel);
-			DataPoint[] dataToMerge = new DataPoint[tempMaxVerticalData];
-			DataPoint[] tempDataContainer2 = new DataPoint[size * size * tempMaxVerticalData2];
+			int[] dataToMergeColor = new int[tempMaxVerticalData];
+			int[] dataToMergeData = new int[tempMaxVerticalData];
+			byte[] dataToMergeFlags = new byte[tempMaxVerticalData];
+			int[] tempDataContainer2Color = new int[size * size * tempMaxVerticalData2];
+			int[] tempDataContainer2Data = new int[size * size * tempMaxVerticalData2];
+			byte[] tempDataContainer2Flags = new byte[size * size * tempMaxVerticalData2];
 			for (int i = 0; i < size * size; i++)
 			{
-				System.arraycopy(tempDataContainer, i * tempMaxVerticalData, dataToMerge, 0, tempMaxVerticalData);
-				dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, tempMaxVerticalData, tempMaxVerticalData2);
-				System.arraycopy(dataToMerge, 0, tempDataContainer2, i * tempMaxVerticalData2, tempMaxVerticalData2);
+				System.arraycopy(tempDataContainerColor, i * tempMaxVerticalData, dataToMergeColor, 0, tempMaxVerticalData);
+				System.arraycopy(tempDataContainerData, i * tempMaxVerticalData, dataToMergeData, 0, tempMaxVerticalData);
+				System.arraycopy(tempDataContainerFlags, i * tempMaxVerticalData, dataToMergeFlags, 0, tempMaxVerticalData);
+				DataPointUtil.mergeMultiData(dataToMergeColor, dataToMergeData, dataToMergeFlags, tempMaxVerticalData, tempMaxVerticalData2);
+				System.arraycopy(ThreadMapUtil.getRawVerticalDataArrayColor(), 0, tempDataContainer2Color, i * tempMaxVerticalData2, tempMaxVerticalData2);
+				System.arraycopy(ThreadMapUtil.getRawVerticalDataArrayData(), 0, tempDataContainer2Data, i * tempMaxVerticalData2, tempMaxVerticalData2);
+				System.arraycopy(ThreadMapUtil.getRawVerticalDataArrayFlags(), 0, tempDataContainer2Flags, i * tempMaxVerticalData2, tempMaxVerticalData2);
 			}
 			maxVerticalData = tempMaxVerticalData2;
-			this.dataContainer = tempDataContainer2;
+			this.dataContainerColor = tempDataContainer2Color;
+			this.dataContainerData = tempDataContainer2Data;
+			this.dataContainerFlags = tempDataContainer2Flags;
 		}
 		else
 		{
 			maxVerticalData = tempMaxVerticalData;
-			this.dataContainer = tempDataContainer;
+			this.dataContainerColor = tempDataContainerColor;
+			this.dataContainerData = tempDataContainerData;
+			this.dataContainerFlags = tempDataContainerFlags;
 		}
 	}
 	
@@ -245,12 +302,13 @@ public class VerticalLevelContainer implements LevelContainer
 	public void updateData(LevelContainer lowerLevelContainer, int posX, int posZ)
 	{
 		//We reset the array
-		DataPoint[] dataToMerge = ThreadMapUtil.getVerticalUpdateArray(detailLevel);
+		int[] dataToMergeColor = ThreadMapUtil.getVerticalUpdateArrayColor(detailLevel);
+		int[] dataToMergeData = ThreadMapUtil.getVerticalUpdateArrayData(detailLevel);
+		byte[] dataToMergeFlags = ThreadMapUtil.getVerticalUpdateArrayFlags(detailLevel);
 		
-		int lowerMaxVertical = dataToMerge.length / 4;
+		int lowerMaxVertical = dataToMergeFlags.length / 4;
 		int childPosX;
 		int childPosZ;
-		DataPoint[] data;
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		for (int x = 0; x <= 1; x++)
@@ -260,12 +318,17 @@ public class VerticalLevelContainer implements LevelContainer
 				childPosX = 2 * posX + x;
 				childPosZ = 2 * posZ + z;
 				for (int verticalIndex = 0; verticalIndex < lowerMaxVertical; verticalIndex++)
-					dataToMerge[(z * 2 + x) * lowerMaxVertical + verticalIndex] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
+				{
+					lowerLevelContainer.getDataPoint(childPosX, childPosZ, verticalIndex);
+					final int i = (z * 2 + x) * lowerMaxVertical + verticalIndex;
+					dataToMergeColor[i] = ThreadMapUtil.dataPointColor;
+					dataToMergeData[i] = ThreadMapUtil.dataPointData;
+					dataToMergeFlags[i] = ThreadMapUtil.dataPointFlags;
+				}
 			}
 		}
-		data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getMaxVerticalData());
-		
-		addVerticalData(data, posX, posZ);
+		DataPointUtil.mergeMultiData(dataToMergeColor, dataToMergeData, dataToMergeFlags, lowerMaxVertical, getMaxVerticalData());
+		addVerticalData(ThreadMapUtil.getRawVerticalDataArrayColor(), ThreadMapUtil.getRawVerticalDataArrayData(), ThreadMapUtil.getRawVerticalDataArrayFlags(), posX, posZ);
 	}
 	
 	@Override
@@ -274,7 +337,8 @@ public class VerticalLevelContainer implements LevelContainer
 		int index = 0;
 		int x = size * size;
 		int tempIndex;
-		DataPoint current;
+		int currentColor;
+		int currentData;
 		boolean allGenerated = true;
 		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
 		
@@ -287,20 +351,18 @@ public class VerticalLevelContainer implements LevelContainer
 		{
 			for (j = 0; j < maxVerticalData; j++)
 			{
-				current = dataContainer[i * maxVerticalData + j];
-				if (current != null)
+				currentColor = dataContainerColor[i * maxVerticalData + j];
+				currentData = dataContainerData[i * maxVerticalData + j];
+				tempData[index] = dataContainerFlags[i * maxVerticalData + j];
+				index++;
+				for (tempIndex = 0; tempIndex < 4; tempIndex++)
 				{
-					tempData[index] = current.flags;
-					index++;
-					for (tempIndex = 0; tempIndex < 4; tempIndex++)
-					{
-						tempData[index + tempIndex] = (byte) (current.data >>> (8 * tempIndex));
-						tempData[index + tempIndex + 4] = (byte) (current.color >>> (8 * tempIndex));
-					}
+					tempData[index + tempIndex] = (byte) (currentData >>> (8 * tempIndex));
+					tempData[index + tempIndex + 4] = (byte) (currentColor >>> (8 * tempIndex));
 				}
 				index += 8;
 			}
-			if(dataContainer[i] == null || !DataPointUtil.doesItExist(dataContainer[i]))
+			if(!DataPointUtil.doesItExist(dataContainerFlags[i]))
 				allGenerated = false;
 		}
 		if (allGenerated)

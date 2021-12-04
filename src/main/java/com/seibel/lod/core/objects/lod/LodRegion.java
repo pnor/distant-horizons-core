@@ -154,7 +154,7 @@ public class LodRegion
 	 * TODO this will always return true unless it has
 	 * @return true if the data was added successfully
 	 */
-	public boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, DataPoint data)
+	public boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, int color, int data, byte flags)
 	{
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
@@ -166,7 +166,7 @@ public class LodRegion
 			this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
 		}
 		
-		this.dataContainer[detailLevel].addData(data, posX, posZ, verticalIndex);
+		this.dataContainer[detailLevel].addData(color, data, flags, posX, posZ, verticalIndex);
 		
 		return true;
 	}
@@ -177,7 +177,7 @@ public class LodRegion
 	 * TODO this will always return true unless it has
 	 * @return true if the data was added successfully
 	 */
-	public boolean addVerticalData(byte detailLevel, int posX, int posZ, DataPoint[] data)
+	public boolean addVerticalData(byte detailLevel, int posX, int posZ, int[] color, int[] data, byte[] flags)
 	{
 		//position is already relative
 		//posX = LevelPosUtil.getRegionModule(detailLevel, posX);
@@ -188,7 +188,7 @@ public class LodRegion
 		if (this.dataContainer[detailLevel] == null)
 			this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
 		
-		return this.dataContainer[detailLevel].addVerticalData(data, posX, posZ);
+		return this.dataContainer[detailLevel].addVerticalData(color, data, flags, posX, posZ);
 	}
 	
 	/**
@@ -196,20 +196,41 @@ public class LodRegion
 	 * @return the data at the relative pos and detail level,
 	 * 0 if the data doesn't exist.
 	 */
-	public DataPoint getData(byte detailLevel, int posX, int posZ, int verticalIndex)
+	public void getDataPoint(byte detailLevel, int posX, int posZ, int verticalIndex)
+	{
+		dataContainer[detailLevel].getDataPoint(posX, posZ, verticalIndex);
+	}
+	
+	public int getData(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
 		return dataContainer[detailLevel].getData(posX, posZ, verticalIndex);
 	}
 	
+	public byte getFlags(byte detailLevel, int posX, int posZ, int verticalIndex)
+	{
+		return dataContainer[detailLevel].getFlags(posX, posZ, verticalIndex);
+	}
+	
 	/**
 	 * Get the dataPoint at the given relative position.
 	 * @return the data at the relative pos and detail level,
 	 * 0 if the data doesn't exist.
 	 */
-	public DataPoint getSingleData(byte detailLevel, int posX, int posZ)
+	public void getSingleDataPoint(byte detailLevel, int posX, int posZ)
 	{
-		return dataContainer[detailLevel].getSingleData(posX, posZ);
+		dataContainer[detailLevel].getSingleDataPoint(posX, posZ);
 	}
+	
+	/**
+	 * Get the flags at the given relative position.
+	 * @return the data at the relative pos and detail level,
+	 * 0 if the data doesn't exist.
+	 */
+	public byte getSingleFlags(byte detailLevel, int posX, int posZ)
+	{
+		return dataContainer[detailLevel].getSingleFlags(posX, posZ);
+	}
+	
 	
 	/**
 	 * Clears the datapoint at the given relative position
@@ -358,6 +379,7 @@ public class LodRegion
 					posZ + regionPosZ * size);
 		}
 		else
+		{
 			//if (desiredLevel > detailLevel)
 			//{
 			// we have gone beyond the target Detail level
@@ -408,6 +430,7 @@ public class LodRegion
 					}
 				}
 			}
+		}
 	}
 	
 	
@@ -479,7 +502,7 @@ public class LodRegion
 		if (dataContainer[detailLevel].doesItExist(posX, posZ))
 			// We take the bottom information always
 			// TODO what does that mean? bottom of what?
-			return DataPointUtil.getGenerationMode(dataContainer[detailLevel].getSingleData(posX, posZ));
+			return DataPointUtil.getGenerationMode(dataContainer[detailLevel].getSingleFlags(posX, posZ));
 		else
 			return DistanceGenerationMode.NONE.complexity;
 	}

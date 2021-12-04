@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.objects.Box;
-import com.seibel.lod.core.objects.lod.DataPoint;
 
 /**
  * Holds data used by specific threads so
@@ -39,15 +38,18 @@ import com.seibel.lod.core.objects.lod.DataPoint;
  */
 public class ThreadMapUtil
 {
-	public static final ConcurrentMap<String, DataPoint[]> threadSingleUpdateMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, DataPoint[][]> threadBuilderArrayMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, DataPoint[][]> threadBuilderVerticalArrayMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, DataPoint[]> threadVerticalAddDataMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> threadBuilderVerticalArrayMapColor = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> threadBuilderVerticalArrayMapData = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, byte[][]> threadBuilderVerticalArrayMapFlags = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[]> threadVerticalAddDataMapColor = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[]> threadVerticalAddDataMapData = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, byte[]> threadVerticalAddDataMapFlags = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, byte[][]> saveContainer = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, short[]> projectionArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, short[]> heightAndDepthMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, DataPoint[]> singleDataToMergeMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, DataPoint[][]> verticalUpdate = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> verticalUpdateColor = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> verticalUpdateData = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, byte[][]> verticalUpdateFlags = new ConcurrentHashMap<>();
 	
 	
 	//________________________//
@@ -55,8 +57,13 @@ public class ThreadMapUtil
 	//________________________//
 	
 	public static final ConcurrentMap<String, boolean[]> adjShadeDisabled = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, Map<LodDirection, DataPoint[]>> adjDataMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, Map<LodDirection, int[]>> adjDataMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, Map<LodDirection, byte[]>> adjFlagsMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, Box> boxMap = new ConcurrentHashMap<>();
+	
+	public static int dataPointColor = 0;
+	public static int dataPointData = 0;
+	public static byte dataPointFlags = 0;
 	
 	
 	
@@ -73,7 +80,7 @@ public class ThreadMapUtil
 	}
 	
 	/** returns the array NOT cleared every time */
-	public static Map<LodDirection, DataPoint[]> getAdjDataArray(int verticalData)
+	public static Map<LodDirection, int[]> getAdjDataArray(int verticalData)
 	{
 		if (!adjDataMap.containsKey(Thread.currentThread().getName())
 				|| (adjDataMap.get(Thread.currentThread().getName()) == null)
@@ -81,18 +88,39 @@ public class ThreadMapUtil
 				|| (adjDataMap.get(Thread.currentThread().getName()).get(LodDirection.NORTH).length != verticalData))
 		{
 			adjDataMap.put(Thread.currentThread().getName(), new HashMap<>());
-			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.UP, new DataPoint[1]);
-			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.DOWN, new DataPoint[1]);
+			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.UP, new int[1]);
+			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.DOWN, new int[1]);
 			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
-				adjDataMap.get(Thread.currentThread().getName()).put(lodDirection, new DataPoint[verticalData]);
+				adjDataMap.get(Thread.currentThread().getName()).put(lodDirection, new int[verticalData]);
 		}
 		else
 		{
-			
 			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
-				Arrays.fill(adjDataMap.get(Thread.currentThread().getName()).get(lodDirection), DataPointUtil.EMPTY_DATA);
+				Arrays.fill(adjDataMap.get(Thread.currentThread().getName()).get(lodDirection), 0);
 		}
 		return adjDataMap.get(Thread.currentThread().getName());
+	}
+	
+	/** returns the array NOT cleared every time */
+	public static Map<LodDirection, byte[]> getAdjFlagsArray(int verticalData)
+	{
+		if (!adjFlagsMap.containsKey(Thread.currentThread().getName())
+				|| (adjFlagsMap.get(Thread.currentThread().getName()) == null)
+				|| (adjFlagsMap.get(Thread.currentThread().getName()).get(LodDirection.NORTH) == null)
+				|| (adjFlagsMap.get(Thread.currentThread().getName()).get(LodDirection.NORTH).length != verticalData))
+		{
+			adjFlagsMap.put(Thread.currentThread().getName(), new HashMap<>());
+			adjFlagsMap.get(Thread.currentThread().getName()).put(LodDirection.UP, new byte[1]);
+			adjFlagsMap.get(Thread.currentThread().getName()).put(LodDirection.DOWN, new byte[1]);
+			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+				adjFlagsMap.get(Thread.currentThread().getName()).put(lodDirection, new byte[verticalData]);
+		}
+		else
+		{
+			for (LodDirection lodDirection : Box.ADJ_DIRECTIONS)
+				Arrays.fill(adjFlagsMap.get(Thread.currentThread().getName()).get(lodDirection), (byte) 0);
+		}
+		return adjFlagsMap.get(Thread.currentThread().getName());
 	}
 	
 	public static Box getBox()
@@ -120,21 +148,57 @@ public class ThreadMapUtil
 	
 	
 	/** returns the array filled with 0's */
-	public static DataPoint[] getBuilderVerticalArray(int detailLevel)
+	public static int[] getBuilderVerticalArrayColor(int detailLevel)
 	{
-		if (!threadBuilderVerticalArrayMap.containsKey(Thread.currentThread().getName()) || (threadBuilderVerticalArrayMap.get(Thread.currentThread().getName()) == null))
+		if (!threadBuilderVerticalArrayMapColor.containsKey(Thread.currentThread().getName()) || (threadBuilderVerticalArrayMapColor.get(Thread.currentThread().getName()) == null))
 		{
-			DataPoint[][] array = new DataPoint[5][];
+			int[][] array = new int[5][];
 			int size;
 			for (int i = 0; i < 5; i++)
 			{
 				size = 1 << i;
-				array[i] = new DataPoint[size * size * (DataPointUtil.WORLD_HEIGHT / 2 + 1)];
+				array[i] = new int[size * size * (DataPointUtil.WORLD_HEIGHT / 2 + 1)];
 			}
-			threadBuilderVerticalArrayMap.put(Thread.currentThread().getName(), array);
+			threadBuilderVerticalArrayMapColor.put(Thread.currentThread().getName(), array);
 		}
-		Arrays.fill(threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel], DataPointUtil.EMPTY_DATA);
-		return threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel];
+		Arrays.fill(threadBuilderVerticalArrayMapColor.get(Thread.currentThread().getName())[detailLevel], 0);
+		return threadBuilderVerticalArrayMapColor.get(Thread.currentThread().getName())[detailLevel];
+	}
+	
+	/** returns the array filled with 0's */
+	public static int[] getBuilderVerticalArrayData(int detailLevel)
+	{
+		if (!threadBuilderVerticalArrayMapData.containsKey(Thread.currentThread().getName()) || (threadBuilderVerticalArrayMapData.get(Thread.currentThread().getName()) == null))
+		{
+			int[][] array = new int[5][];
+			int size;
+			for (int i = 0; i < 5; i++)
+			{
+				size = 1 << i;
+				array[i] = new int[size * size * (DataPointUtil.WORLD_HEIGHT / 2 + 1)];
+			}
+			threadBuilderVerticalArrayMapData.put(Thread.currentThread().getName(), array);
+		}
+		Arrays.fill(threadBuilderVerticalArrayMapData.get(Thread.currentThread().getName())[detailLevel], 0);
+		return threadBuilderVerticalArrayMapData.get(Thread.currentThread().getName())[detailLevel];
+	}
+	
+	/** returns the array filled with 0's */
+	public static byte[] getBuilderVerticalArrayFlags(int detailLevel)
+	{
+		if (!threadBuilderVerticalArrayMapFlags.containsKey(Thread.currentThread().getName()) || (threadBuilderVerticalArrayMapFlags.get(Thread.currentThread().getName()) == null))
+		{
+			byte[][] array = new byte[5][];
+			int size;
+			for (int i = 0; i < 5; i++)
+			{
+				size = 1 << i;
+				array[i] = new byte[size * size * (DataPointUtil.WORLD_HEIGHT / 2 + 1)];
+			}
+			threadBuilderVerticalArrayMapFlags.put(Thread.currentThread().getName(), array);
+		}
+		Arrays.fill(threadBuilderVerticalArrayMapFlags.get(Thread.currentThread().getName())[detailLevel], (byte) 0);
+		return threadBuilderVerticalArrayMapFlags.get(Thread.currentThread().getName())[detailLevel];
 	}
 	
 	/** returns the array NOT cleared every time */
@@ -157,19 +221,46 @@ public class ThreadMapUtil
 	
 	
 	/** returns the array filled with 0's */
-	public static DataPoint[] getVerticalDataArray(int arrayLength)
+	public static int[] getVerticalDataArrayColor(int arrayLength)
 	{
-		if (!threadVerticalAddDataMap.containsKey(Thread.currentThread().getName()) || (threadVerticalAddDataMap.get(Thread.currentThread().getName()) == null))
-		{
-			threadVerticalAddDataMap.put(Thread.currentThread().getName(), new DataPoint[arrayLength]);
-		}
+		if (!threadVerticalAddDataMapColor.containsKey(Thread.currentThread().getName()) || (threadVerticalAddDataMapColor.get(Thread.currentThread().getName()) == null))
+			threadVerticalAddDataMapColor.put(Thread.currentThread().getName(), new int[arrayLength]);
 		else
-		{
-			Arrays.fill(threadVerticalAddDataMap.get(Thread.currentThread().getName()), DataPointUtil.EMPTY_DATA);
-		}
-		return threadVerticalAddDataMap.get(Thread.currentThread().getName());
+			Arrays.fill(threadVerticalAddDataMapColor.get(Thread.currentThread().getName()), 0);
+		return threadVerticalAddDataMapColor.get(Thread.currentThread().getName());
+	}
+	public static int[] getRawVerticalDataArrayColor()
+	{
+		return threadVerticalAddDataMapColor.get(Thread.currentThread().getName());
 	}
 	
+	/** returns the array filled with 0's */
+	public static int[] getVerticalDataArrayData(int arrayLength)
+	{
+		if (!threadVerticalAddDataMapData.containsKey(Thread.currentThread().getName()) || (threadVerticalAddDataMapData.get(Thread.currentThread().getName()) == null))
+			threadVerticalAddDataMapData.put(Thread.currentThread().getName(), new int[arrayLength]);
+		else
+			Arrays.fill(threadVerticalAddDataMapData.get(Thread.currentThread().getName()), 0);
+		return threadVerticalAddDataMapData.get(Thread.currentThread().getName());
+	}
+	public static int[] getRawVerticalDataArrayData()
+	{
+		return threadVerticalAddDataMapData.get(Thread.currentThread().getName());
+	}
+	
+	/** returns the array filled with 0's */
+	public static byte[] getVerticalDataArrayFlags(int arrayLength)
+	{
+		if (!threadVerticalAddDataMapFlags.containsKey(Thread.currentThread().getName()) || (threadVerticalAddDataMapFlags.get(Thread.currentThread().getName()) == null))
+			threadVerticalAddDataMapFlags.put(Thread.currentThread().getName(), new byte[arrayLength]);
+		else
+			Arrays.fill(threadVerticalAddDataMapFlags.get(Thread.currentThread().getName()), (byte) 0);
+		return threadVerticalAddDataMapFlags.get(Thread.currentThread().getName());
+	}
+	public static byte[] getRawVerticalDataArrayFlags()
+	{
+		return threadVerticalAddDataMapFlags.get(Thread.currentThread().getName());
+	}
 	
 	
 	/** returns the array NOT cleared every time */
@@ -182,22 +273,49 @@ public class ThreadMapUtil
 		return heightAndDepthMap.get(Thread.currentThread().getName());
 	}
 	
-	
 	/** returns the array filled with 0's */
-	public static DataPoint[] getVerticalUpdateArray(int detailLevel)
+	public static int[] getVerticalUpdateArrayColor(int detailLevel)
 	{
-		if (!verticalUpdate.containsKey(Thread.currentThread().getName()) || (verticalUpdate.get(Thread.currentThread().getName()) == null))
+		if (!verticalUpdateColor.containsKey(Thread.currentThread().getName()) || (verticalUpdateColor.get(Thread.currentThread().getName()) == null))
 		{
-			DataPoint[][] array = new DataPoint[LodUtil.DETAIL_OPTIONS][];
+			int[][] array = new int[LodUtil.DETAIL_OPTIONS][];
 			for (int i = 1; i < LodUtil.DETAIL_OPTIONS; i++)
-				array[i] = new DataPoint[DetailDistanceUtil.getMaxVerticalData(i - 1) * 4];
-			verticalUpdate.put(Thread.currentThread().getName(), array);
+				array[i] = new int[DetailDistanceUtil.getMaxVerticalData(i - 1) * 4];
+			verticalUpdateColor.put(Thread.currentThread().getName(), array);
 		}
 		else
+			Arrays.fill(verticalUpdateColor.get(Thread.currentThread().getName())[detailLevel], 0);
+		return verticalUpdateColor.get(Thread.currentThread().getName())[detailLevel];
+	}
+	
+	/** returns the array filled with 0's */
+	public static int[] getVerticalUpdateArrayData(int detailLevel)
+	{
+		if (!verticalUpdateData.containsKey(Thread.currentThread().getName()) || (verticalUpdateData.get(Thread.currentThread().getName()) == null))
 		{
-			Arrays.fill(verticalUpdate.get(Thread.currentThread().getName())[detailLevel], DataPointUtil.EMPTY_DATA);
+			int[][] array = new int[LodUtil.DETAIL_OPTIONS][];
+			for (int i = 1; i < LodUtil.DETAIL_OPTIONS; i++)
+				array[i] = new int[DetailDistanceUtil.getMaxVerticalData(i - 1) * 4];
+			verticalUpdateData.put(Thread.currentThread().getName(), array);
 		}
-		return verticalUpdate.get(Thread.currentThread().getName())[detailLevel];
+		else
+			Arrays.fill(verticalUpdateData.get(Thread.currentThread().getName())[detailLevel], 0);
+		return verticalUpdateData.get(Thread.currentThread().getName())[detailLevel];
+	}
+	
+	/** returns the array filled with 0's */
+	public static byte[] getVerticalUpdateArrayFlags(int detailLevel)
+	{
+		if (!verticalUpdateFlags.containsKey(Thread.currentThread().getName()) || (verticalUpdateFlags.get(Thread.currentThread().getName()) == null))
+		{
+			byte[][] array = new byte[LodUtil.DETAIL_OPTIONS][];
+			for (int i = 1; i < LodUtil.DETAIL_OPTIONS; i++)
+				array[i] = new byte[DetailDistanceUtil.getMaxVerticalData(i - 1) * 4];
+			verticalUpdateFlags.put(Thread.currentThread().getName(), array);
+		}
+		else
+			Arrays.fill(verticalUpdateFlags.get(Thread.currentThread().getName())[detailLevel], (byte) 0);
+		return verticalUpdateFlags.get(Thread.currentThread().getName())[detailLevel];
 	}
 	
 	/** clears all arrays so they will have to be rebuilt */
@@ -206,14 +324,24 @@ public class ThreadMapUtil
 		adjShadeDisabled.clear();
 		adjDataMap.clear();
 		boxMap.clear();
-		threadSingleUpdateMap.clear();
-		threadBuilderArrayMap.clear();
-		threadBuilderVerticalArrayMap.clear();
-		threadVerticalAddDataMap.clear();
+		threadBuilderVerticalArrayMapColor.clear();
+		threadBuilderVerticalArrayMapData.clear();
+		threadBuilderVerticalArrayMapFlags.clear();
+		threadVerticalAddDataMapColor.clear();
+		threadVerticalAddDataMapData.clear();
+		threadVerticalAddDataMapFlags.clear();
 		saveContainer.clear();
 		projectionArrayMap.clear();
 		heightAndDepthMap.clear();
-		singleDataToMergeMap.clear();
-		verticalUpdate.clear();
+		verticalUpdateColor.clear();
+		verticalUpdateData.clear();
+		verticalUpdateFlags.clear();
+	}
+	
+	public static void saveDataPoint(int color, int data, byte flags)
+	{
+		dataPointColor = color;
+		dataPointData = data;
+		dataPointFlags = flags;
 	}
 }

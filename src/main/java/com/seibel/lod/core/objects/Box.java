@@ -25,7 +25,6 @@ import java.util.Map;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.objects.lod.DataPoint;
 import com.seibel.lod.core.objects.math.Vec3i;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -340,25 +339,27 @@ public class Box
 	 * This method create all the shared face culling based on the adjacent data
 	 * @param adjData data adjacent to the column we are going to render
 	 */
-	public void setAdjData(Map<LodDirection, DataPoint[]> adjData)
+	public void setAdjData(Map<LodDirection, int[]> adjData, Map<LodDirection, byte[]> adjFlags)
 	{
 		int height;
 		int depth;
 		int minY = getMinY();
 		int maxY = getMaxY();
-		DataPoint singleAdjDataPoint;
+		int singleAdjData;
+		byte singleAdjFlags;
 		
 		/* TODO implement attached vertical face culling
 		//Up direction case
 		if(DataPointUtil.doesItExist(adjData.get(Direction.UP)))
 		{
-			height = DataPointUtil.getHeight(singleAdjDataPoint);
-			depth = DataPointUtil.getDepth(singleAdjDataPoint);
+			height = DataPointUtil.getHeight(singleAdjData);
+			depth = DataPointUtil.getDepth(singleAdjData);
 		}*/
 		//Down direction case
-		singleAdjDataPoint = adjData.get(LodDirection.DOWN)[0];
-		if(DataPointUtil.doesItExist(singleAdjDataPoint))
-			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+		singleAdjData = adjData.get(LodDirection.DOWN)[0];
+		singleAdjFlags = adjFlags.get(LodDirection.DOWN)[0];
+		if(DataPointUtil.doesItExist(singleAdjFlags))
+			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjData, singleAdjFlags);
 		else
 			skyLights.get(LodDirection.DOWN)[0] = skyLights.get(LodDirection.UP)[0];
 		//other sided
@@ -368,8 +369,9 @@ public class Box
 			if (isCulled(lodDirection))
 				continue;
 			
-			DataPoint[] dataPoint = adjData.get(lodDirection);
-			if (DataPointUtil.isVoid(dataPoint[0]))
+			int[] data = adjData.get(lodDirection);
+			byte[] flags = adjFlags.get(lodDirection);
+			if (DataPointUtil.isVoid(flags[0]))
 			{
 				adjHeight.get(lodDirection)[0] = maxY;
 				adjDepth.get(lodDirection)[0] = minY;
@@ -385,15 +387,16 @@ public class Box
 			boolean toFinish = false;
 			int toFinishIndex = 0;
 			boolean allAbove = true;
-			for (i = 0; i < dataPoint.length; i++)
+			for (i = 0; i < flags.length; i++)
 			{
-				singleAdjDataPoint = dataPoint[i];
+				singleAdjData = data[i];
+				singleAdjFlags = flags[i];
 				
-				if (DataPointUtil.isVoid(singleAdjDataPoint) || !DataPointUtil.doesItExist(singleAdjDataPoint))
+				if (DataPointUtil.isVoid(singleAdjFlags) || !DataPointUtil.doesItExist(singleAdjFlags))
 					break;
 				
-				height = DataPointUtil.getHeight(singleAdjDataPoint);
-				depth = DataPointUtil.getDepth(singleAdjDataPoint);
+				height = DataPointUtil.getHeight(singleAdjData);
+				depth = DataPointUtil.getDepth(singleAdjData);
 				
 				if (depth <= maxY)
 				{
@@ -406,12 +409,12 @@ public class Box
 						{
 							adjHeight.get(lodDirection)[0] = getMaxY();
 							adjDepth.get(lodDirection)[0] = getMinY();
-							skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
+							skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjData, singleAdjFlags); //skyLights.get(Direction.UP)[0];
 						}
 						else
 						{
 							adjDepth.get(lodDirection)[faceToDraw] = getMinY();
-							skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+							skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjData, singleAdjFlags);
 						}
 						faceToDraw++;
 						toFinish = false;
@@ -437,12 +440,12 @@ public class Box
 							{
 								adjHeight.get(lodDirection)[0] = getMaxY();
 								adjDepth.get(lodDirection)[0] = height;
-								skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
+								skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjData, singleAdjFlags); //skyLights.get(Direction.UP)[0];
 							}
 							else
 							{
 								adjDepth.get(lodDirection)[faceToDraw] = height;
-								skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+								skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjData, singleAdjFlags);
 							}
 							toFinish = false;
 							faceToDraw++;
@@ -454,7 +457,7 @@ public class Box
 						// the adj data intersects the higher part of the current data
 						// we start the creation of a new face
 						adjHeight.get(lodDirection)[faceToDraw] = depth;
-						//skyLights.get(direction)[faceToDraw] = (byte) DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+						//skyLights.get(direction)[faceToDraw] = (byte) DataPointUtil.getLightSkyAlt(singleAdjData);
 						firstFace = false;
 						toFinish = true;
 						toFinishIndex = i + 1;
@@ -470,7 +473,7 @@ public class Box
 						}
 						
 						adjDepth.get(lodDirection)[faceToDraw] = height;
-						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjData, singleAdjFlags);
 						faceToDraw++;
 						adjHeight.get(lodDirection)[faceToDraw] = depth;
 						firstFace = false;
@@ -490,11 +493,12 @@ public class Box
 			else if (toFinish)
 			{
 				adjDepth.get(lodDirection)[faceToDraw] = minY;
-				if(toFinishIndex < dataPoint.length)
+				if(toFinishIndex < flags.length)
 				{
-					singleAdjDataPoint = dataPoint[toFinishIndex];
-					if (DataPointUtil.doesItExist(singleAdjDataPoint))
-						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+					singleAdjData = data[toFinishIndex];
+					singleAdjFlags = flags[toFinishIndex];
+					if (DataPointUtil.doesItExist(singleAdjFlags))
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjData, singleAdjFlags);
 					else
 						skyLights.get(lodDirection)[faceToDraw] = skyLights.get(LodDirection.UP)[0];
 				}

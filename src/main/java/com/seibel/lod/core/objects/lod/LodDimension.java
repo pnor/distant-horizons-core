@@ -30,12 +30,7 @@ import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.PosToRenderContainer;
-import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
-import com.seibel.lod.core.util.LodThreadFactory;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -445,7 +440,7 @@ public class LodDimension
 	 * stored in the LOD. If an LOD already exists at the given
 	 * coordinate it will be overwritten.
 	 */
-	public Boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, DataPoint data, boolean dontSave)
+	public Boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, int color, int data, byte flags, boolean dontSave)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -455,7 +450,7 @@ public class LodDimension
 		if (region == null)
 			return false;
 		
-		boolean nodeAdded = region.addData(detailLevel, posX, posZ, verticalIndex, data);
+		boolean nodeAdded = region.addData(detailLevel, posX, posZ, verticalIndex, color, data, flags);
 		
 		// only save valid LODs to disk
 		if (!dontSave && fileHandler != null)
@@ -487,7 +482,7 @@ public class LodDimension
 	 * stored in the LOD. If an LOD already exists at the given
 	 * coordinate it will be overwritten.
 	 */
-	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, DataPoint[] data, boolean dontSave)
+	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, int[] color, int[] data, byte[] flags, boolean dontSave)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -497,7 +492,7 @@ public class LodDimension
 		if (region == null)
 			return false;
 		
-		boolean nodeAdded = region.addVerticalData(detailLevel, posX, posZ, data);
+		boolean nodeAdded = region.addVerticalData(detailLevel, posX, posZ, color, data, flags);
 		
 		// only save valid LODs to disk
 		if (!dontSave && fileHandler != null)
@@ -566,7 +561,9 @@ public class LodDimension
 			byte detailLevel;
 			int posX;
 			int posZ;
-			DataPoint data;
+			int color;
+			int data;
+			byte flags;
 			int numbChunksWide = (width) * 32;
 			int circleLimit = Integer.MAX_VALUE;
 			
@@ -614,11 +611,12 @@ public class LodDimension
 				posX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, xChunkToCheck, detailLevel);
 				posZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, zChunkToCheck, detailLevel);
 				
-				data = getSingleData(detailLevel, posX, posZ);
+				getSingleDataPoint(detailLevel, posX, posZ);
+				flags = ThreadMapUtil.dataPointFlags;
 				
 				//we will generate the position only if the current generation complexity is lower than the target one.
 				//an un-generated area will always have 0 generation
-				if (data != null && DataPointUtil.getGenerationMode(data) < complexity)
+				if (DataPointUtil.getGenerationMode(flags) < complexity)
 				{
 					posToGenerate.addPosToGenerate(detailLevel, posX, posZ);
 					if (maxDataToGenerate >= 0)
@@ -712,18 +710,41 @@ public class LodDimension
 	 * Returns null if the LodChunk doesn't exist or
 	 * is outside the loaded area.
 	 */
-	public DataPoint getData(byte detailLevel, int posX, int posZ, int verticalIndex)
+	public void getDataPoint(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
 		
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		if (region == null)
-			return DataPointUtil.EMPTY_DATA;
-		
-		return region.getData(detailLevel, posX, posZ, verticalIndex);
+			ThreadMapUtil.saveDataPoint(0,0, (byte) 0);
+		else
+			region.getDataPoint(detailLevel, posX, posZ, verticalIndex);
 	}
 	
+	public int getData(byte detailLevel, int posX, int posZ, int verticalIndex)
+	{
+		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
+			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
+		
+		LodRegion region = getRegion(detailLevel, posX, posZ);
+		if (region == null)
+			return 0;
+		else
+			return region.getData(detailLevel, posX, posZ, verticalIndex);
+	}
+	
+	public byte getFlags(byte detailLevel, int posX, int posZ, int verticalIndex)
+	{
+		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
+			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
+		
+		LodRegion region = getRegion(detailLevel, posX, posZ);
+		if (region == null)
+			return 0;
+		else
+			return region.getFlags(detailLevel, posX, posZ, verticalIndex);
+	}
 	
 	/**
 	 * Get the data point at the given X and Z coordinates
@@ -732,16 +753,28 @@ public class LodDimension
 	 * Returns null if the LodChunk doesn't exist or
 	 * is outside the loaded area.
 	 */
-	public DataPoint getSingleData(byte detailLevel, int posX, int posZ)
+	public void getSingleDataPoint(byte detailLevel, int posX, int posZ)
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
 		
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		if (region == null)
-			return DataPointUtil.EMPTY_DATA;
-		
-		return region.getSingleData(detailLevel, posX, posZ);
+			ThreadMapUtil.saveDataPoint(0, 0, (byte) 0);
+		else
+			region.getSingleDataPoint(detailLevel, posX, posZ);
+	}
+	
+	public byte getSingleFlags(byte detailLevel, int posX, int posZ)
+	{
+		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
+			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
+	
+		LodRegion region = getRegion(detailLevel, posX, posZ);
+		if (region == null)
+			return (byte) 0;
+		else
+			return region.getSingleFlags(detailLevel, posX, posZ);
 	}
 	
 	/** Clears the given region */
