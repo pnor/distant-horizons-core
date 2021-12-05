@@ -30,7 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.seibel.lod.core.objects.VertexOptimizer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -43,6 +42,7 @@ import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.objects.PosToRenderContainer;
+import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
@@ -184,6 +184,10 @@ public class LodBufferBuilderFactory
 			// setupBuffers hasn't been called yet
 			return;
 		
+		if (MC.getCurrentLightMap() == null)
+			// the lighting hasn't loaded yet
+			return;
+		
 		generatingBuffers = true;
 		
 		
@@ -260,7 +264,10 @@ public class LodBufferBuilderFactory
 						// make sure the buffers weren't
 						// changed while we were running this method
 						if (currentBuffers == null || !currentBuffers[0].building())
+						{
+							ClientApi.LOGGER.info("Buffer building quit early");
 							return;
+						}
 						
 						byte minDetail = region.getMinDetailLevel();
 						
@@ -459,12 +466,12 @@ public class LodBufferBuilderFactory
 		}
 		finally
 		{
-			// clean up any potentially open resources
-			if (buildableBuffers != null)
-				closeBuffers(fullRegen, lodDim);
-			
 			try
 			{
+				// clean up any potentially open resources
+				if (buildableBuffers != null)
+					closeBuffers(fullRegen, lodDim);
+				
 				// upload the new buffers
 				uploadBuffers(fullRegen, lodDim);
 			}
@@ -524,108 +531,120 @@ public class LodBufferBuilderFactory
 	 */
 	public void setupBuffers(LodDimension lodDimension)
 	{
-		bufferLock.lock();
-		int numbRegionsWide = lodDimension.getWidth();
-		long regionMemoryRequired;
-		int numberOfBuffers;
-		
-		GLProxy glProxy = GLProxy.getInstance();
-		GLProxyContext oldContext = glProxy.getGlContext();
-		glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
-		
-		
-		previousRegionWidth = numbRegionsWide;
-		numberOfBuffersPerRegion = new int[numbRegionsWide][numbRegionsWide];
-		buildableBuffers = new LodBufferBuilder[numbRegionsWide][numbRegionsWide][];
-		
-		buildableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
-		drawableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
-		
-		if (glProxy.bufferStorageSupported)
+		try
 		{
-			buildableStorageBufferIds = new int[numbRegionsWide][numbRegionsWide][];
-			drawableStorageBufferIds = new int[numbRegionsWide][numbRegionsWide][];
-		}
-		
-		for (int x = 0; x < numbRegionsWide; x++)
-		{
-			for (int z = 0; z < numbRegionsWide; z++)
+			bufferLock.lock();
+			
+			int numbRegionsWide = lodDimension.getWidth();
+			long regionMemoryRequired;
+			int numberOfBuffers;
+			
+			GLProxy glProxy = GLProxy.getInstance();
+			GLProxyContext oldContext = glProxy.getGlContext();
+			glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
+			
+			
+			previousRegionWidth = numbRegionsWide;
+			numberOfBuffersPerRegion = new int[numbRegionsWide][numbRegionsWide];
+			buildableBuffers = new LodBufferBuilder[numbRegionsWide][numbRegionsWide][];
+			
+			buildableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
+			drawableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
+			
+			if (glProxy.bufferStorageSupported)
 			{
-				regionMemoryRequired = DEFAULT_MEMORY_ALLOCATION;
-				
-				// if the memory required is greater than the max buffer 
-				// capacity, divide the memory across multiple buffers
-				if (regionMemoryRequired > LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY)
+				buildableStorageBufferIds = new int[numbRegionsWide][numbRegionsWide][];
+				drawableStorageBufferIds = new int[numbRegionsWide][numbRegionsWide][];
+			}
+			
+			for (int x = 0; x < numbRegionsWide; x++)
+			{
+				for (int z = 0; z < numbRegionsWide; z++)
 				{
-					numberOfBuffers = (int) regionMemoryRequired / LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY + 1;
+					regionMemoryRequired = DEFAULT_MEMORY_ALLOCATION;
 					
-					// TODO shouldn't this be determined with regionMemoryRequired?
-					// always allocating the max memory is a bit expensive isn't it?
-					regionMemoryRequired = LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY;
-					numberOfBuffersPerRegion[x][z] = numberOfBuffers;
-					buildableBuffers[x][z] = new LodBufferBuilder[numberOfBuffers];
-					buildableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
-					drawableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
-					
-					if (glProxy.bufferStorageSupported)
+					// if the memory required is greater than the max buffer 
+					// capacity, divide the memory across multiple buffers
+					if (regionMemoryRequired > LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY)
 					{
-						buildableStorageBufferIds[x][z] = new int[numberOfBuffers];
-						drawableStorageBufferIds[x][z] = new int[numberOfBuffers];
+						numberOfBuffers = (int) regionMemoryRequired / LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY + 1;
+						
+						// TODO shouldn't this be determined with regionMemoryRequired?
+						// always allocating the max memory is a bit expensive isn't it?
+						regionMemoryRequired = LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY;
+						numberOfBuffersPerRegion[x][z] = numberOfBuffers;
+						buildableBuffers[x][z] = new LodBufferBuilder[numberOfBuffers];
+						buildableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
+						drawableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
+						
+						if (glProxy.bufferStorageSupported)
+						{
+							buildableStorageBufferIds[x][z] = new int[numberOfBuffers];
+							drawableStorageBufferIds[x][z] = new int[numberOfBuffers];
+						}
 					}
-				}
-				else
-				{
-					// we only need one buffer for this region
-					numberOfBuffersPerRegion[x][z] = 1;
-					buildableBuffers[x][z] = new LodBufferBuilder[1];
-					buildableVbos[x][z] = new LodVertexBuffer[1];
-					drawableVbos[x][z] = new LodVertexBuffer[1];
-					
-					if (glProxy.bufferStorageSupported)
+					else
 					{
-						buildableStorageBufferIds[x][z] = new int[1];
-						drawableStorageBufferIds[x][z] = new int[1];
+						// we only need one buffer for this region
+						numberOfBuffersPerRegion[x][z] = 1;
+						buildableBuffers[x][z] = new LodBufferBuilder[1];
+						buildableVbos[x][z] = new LodVertexBuffer[1];
+						drawableVbos[x][z] = new LodVertexBuffer[1];
+						
+						if (glProxy.bufferStorageSupported)
+						{
+							buildableStorageBufferIds[x][z] = new int[1];
+							drawableStorageBufferIds[x][z] = new int[1];
+						}
 					}
-				}
-				
-				
-				for (int i = 0; i < numberOfBuffersPerRegion[x][z]; i++)
-				{
-					buildableBuffers[x][z][i] = new LodBufferBuilder((int) regionMemoryRequired);
-					
-					buildableVbos[x][z][i] = new LodVertexBuffer();
-					drawableVbos[x][z][i] = new LodVertexBuffer();
 					
 					
-					// create the initial mapped buffers (system memory)
-					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buildableVbos[x][z][i].id);
-					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
-					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-					
-					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, drawableVbos[x][z][i].id);
-					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
-					GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-					
-					
-					if (glProxy.bufferStorageSupported)
+					for (int i = 0; i < numberOfBuffersPerRegion[x][z]; i++)
 					{
-						// create the buffer storage (GPU memory)
-						buildableStorageBufferIds[x][z][i] = GL15.glGenBuffers();
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buildableStorageBufferIds[x][z][i]);
-						GL45.glBufferStorage(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, 0); // the 0 flag means to create the storage in the GPUs memory
+						buildableBuffers[x][z][i] = new LodBufferBuilder((int) regionMemoryRequired);
+						
+						buildableVbos[x][z][i] = new LodVertexBuffer();
+						drawableVbos[x][z][i] = new LodVertexBuffer();
+						
+						
+						// create the initial mapped buffers (system memory)
+						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buildableVbos[x][z][i].id);
+						GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
 						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 						
-						drawableStorageBufferIds[x][z][i] = GL15.glGenBuffers();
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, drawableStorageBufferIds[x][z][i]);
-						GL45.glBufferStorage(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, 0);
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);	
+						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, drawableVbos[x][z][i].id);
+						GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
+						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+						
+						
+						if (glProxy.bufferStorageSupported)
+						{
+							// create the buffer storage (GPU memory)
+							buildableStorageBufferIds[x][z][i] = GL15.glGenBuffers();
+							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buildableStorageBufferIds[x][z][i]);
+							GL45.glBufferStorage(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, 0); // the 0 flag means to create the storage in the GPUs memory
+							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+							
+							drawableStorageBufferIds[x][z][i] = GL15.glGenBuffers();
+							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, drawableStorageBufferIds[x][z][i]);
+							GL45.glBufferStorage(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, 0);
+							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);	
+						}
 					}
 				}
 			}
+			
+			glProxy.setGlContext(oldContext);
 		}
-		
-		glProxy.setGlContext(oldContext);
-		bufferLock.unlock();
+		catch (Exception e)
+		{
+			ClientApi.LOGGER.info("setupBuffers ran into trouble: " + e.getMessage(), e);
+		}
+		finally
+		{
+			// this shouldn't normally happen, but just in case it sill prevent deadlock
+			bufferLock.unlock();
+		}
 	}
 	
 	
@@ -638,85 +657,95 @@ public class LodBufferBuilderFactory
 	 */
 	public void destroyBuffers()
 	{
-		bufferLock.lock();
-		
-		
-		// destroy the buffer storages if they aren't already
-		if (buildableStorageBufferIds != null)
+		try
 		{
-			for (int x = 0; x < buildableStorageBufferIds.length; x++)
+			bufferLock.lock();
+			
+			
+			// destroy the buffer storages if they aren't already
+			if (buildableStorageBufferIds != null)
 			{
-				for (int z = 0; z < buildableStorageBufferIds.length; z++)
+				for (int x = 0; x < buildableStorageBufferIds.length; x++)
 				{
-					for (int i = 0; i < buildableStorageBufferIds[x][z].length; i++)
+					for (int z = 0; z < buildableStorageBufferIds.length; z++)
 					{
-						int buildableId = buildableStorageBufferIds[x][z][i];
-						int drawableId = drawableStorageBufferIds[x][z][i];
-						
-						// make sure the buffers are deleted in a openGL context
-						GLProxy.getInstance().recordOpenGlCall(() ->
+						for (int i = 0; i < buildableStorageBufferIds[x][z].length; i++)
 						{
-							GL15.glDeleteBuffers(buildableId);
-							GL15.glDeleteBuffers(drawableId);
-						});
-					}
-				}
-			}
-		}
-		
-		buildableStorageBufferIds = null;
-		drawableStorageBufferIds = null;
-		
-		
-		
-		
-		// destroy the VBOs if they aren't already
-		if (buildableVbos != null)
-		{
-			for (int i = 0; i < buildableVbos.length; i++)
-			{
-				for (int j = 0; j < buildableVbos.length; j++)
-				{
-					for (int k = 0; k < buildableVbos[i][j].length; k++)
-					{
-						int buildableId;
-						int drawableId;
-						
-						// variables passed into a lambda expression
-						// need to be effectively final, so we have
-						// to use an else statement here
-						if (buildableVbos[i][j][k] != null)
-							buildableId = buildableVbos[i][j][k].id;
-						else
-							buildableId = 0;
-						
-						if (drawableVbos[i][j][k] != null)
-							drawableId = drawableVbos[i][j][k].id;
-						else
-							drawableId = 0;
-						
-						
-						GLProxy.getInstance().recordOpenGlCall(() ->
-						{
-							if (buildableId != 0)
+							int buildableId = buildableStorageBufferIds[x][z][i];
+							int drawableId = drawableStorageBufferIds[x][z][i];
+							
+							// make sure the buffers are deleted in a openGL context
+							GLProxy.getInstance().recordOpenGlCall(() ->
+							{
 								GL15.glDeleteBuffers(buildableId);
-							if (drawableId != 0)
 								GL15.glDeleteBuffers(drawableId);
-						});
+							});
+						}
 					}
 				}
 			}
+			
+			buildableStorageBufferIds = null;
+			drawableStorageBufferIds = null;
+			
+			
+			
+			
+			// destroy the VBOs if they aren't already
+			if (buildableVbos != null)
+			{
+				for (int i = 0; i < buildableVbos.length; i++)
+				{
+					for (int j = 0; j < buildableVbos.length; j++)
+					{
+						for (int k = 0; k < buildableVbos[i][j].length; k++)
+						{
+							int buildableId;
+							int drawableId;
+							
+							// variables passed into a lambda expression
+							// need to be effectively final, so we have
+							// to use an else statement here
+							if (buildableVbos[i][j][k] != null)
+								buildableId = buildableVbos[i][j][k].id;
+							else
+								buildableId = 0;
+							
+							if (drawableVbos[i][j][k] != null)
+								drawableId = drawableVbos[i][j][k].id;
+							else
+								drawableId = 0;
+							
+							
+							GLProxy.getInstance().recordOpenGlCall(() ->
+							{
+								if (buildableId != 0)
+									GL15.glDeleteBuffers(buildableId);
+								if (drawableId != 0)
+									GL15.glDeleteBuffers(drawableId);
+							});
+						}
+					}
+				}
+			}
+			
+			buildableVbos = null;
+			drawableVbos = null;
+			
+			
+			// these don't contain any OpenGL objects, so
+			// they don't require any special clean-up
+			buildableBuffers = null;
 		}
-		
-		buildableVbos = null;
-		drawableVbos = null;
-		
-		
-		// these don't contain any OpenGL objects, so
-		// they don't require any special clean-up
-		buildableBuffers = null;
-		
-		bufferLock.unlock();
+		catch (Exception e)
+		{
+			ClientApi.LOGGER.info("destroyBuffers ran into trouble: " + e.getMessage(), e);
+		}
+		finally
+		{
+			// this shouldn't normally happen, but just in case it sill prevent deadlock
+			bufferLock.unlock();
+		}
 	}
 	
 	/** Calls begin on each of the buildable BufferBuilders. */
@@ -977,19 +1006,30 @@ public class LodBufferBuilderFactory
 		// since this is called on the main render thread
 		if (bufferLock.tryLock())
 		{
-			LodVertexBuffer[][][] tmpVbo = drawableVbos;
-			drawableVbos = buildableVbos;
-			buildableVbos = tmpVbo;
-			
-			int[][][] tmpStorage = drawableStorageBufferIds;
-			drawableStorageBufferIds = buildableStorageBufferIds;
-			buildableStorageBufferIds = tmpStorage;
-			
-			drawableCenterChunkPos = buildableCenterChunkPos;
-			
-			// the vbos have been swapped
-			switchVbos = false;
-			bufferLock.unlock();
+			try
+			{
+				LodVertexBuffer[][][] tmpVbo = drawableVbos;
+				drawableVbos = buildableVbos;
+				buildableVbos = tmpVbo;
+				
+				int[][][] tmpStorage = drawableStorageBufferIds;
+				drawableStorageBufferIds = buildableStorageBufferIds;
+				buildableStorageBufferIds = tmpStorage;
+				
+				drawableCenterChunkPos = buildableCenterChunkPos;
+				
+				// the vbos have been swapped
+				switchVbos = false;
+			}
+			catch (Exception e)
+			{
+				// this shouldn't normally happen, but just in case it sill prevent deadlock
+				ClientApi.LOGGER.info("getVertexBuffers ran into trouble: " + e.getMessage(), e);
+			}
+			finally
+			{
+				bufferLock.unlock();
+			}
 		}
 		
 		return new VertexBuffersAndOffset(drawableVbos, drawableStorageBufferIds, drawableCenterChunkPos);
