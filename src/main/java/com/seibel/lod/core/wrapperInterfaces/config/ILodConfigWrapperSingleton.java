@@ -121,20 +121,13 @@ public interface ILodConfigWrapperSingleton
 				VerticalQuality getVerticalQuality();
 				void setVerticalQuality(VerticalQuality newVerticalQuality);
 				
-				HorizontalScale HORIZONTAL_SCALE_DEFAULT = HorizontalScale.MEDIUM;
+				MinDefaultMax<Integer> HORIZONTAL_SCALE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(2, 8, 32);
 				String HORIZONTAL_SCALE_DESC = ""
 						+ " This indicates how quickly fake chunks decrease in quality the further away they are. \n"
 						+ " Higher settings will render higher quality fake chunks farther away, \n"
-						+ " but will increase memory and GPU usage. \n"
-						+ "\n"
-						+ " " + HorizontalScale.LOW + ": quality drops every " + HorizontalScale.LOW.distanceUnit / 16 + " chunks. \n"
-						+ " " + HorizontalScale.MEDIUM + ": quality drops every " + HorizontalScale.MEDIUM.distanceUnit / 16 + " chunks. \n"
-						+ " " + HorizontalScale.HIGH + ": quality drops every " + HorizontalScale.HIGH.distanceUnit / 16 + " chunks. \n"
-						+ "\n"
-						+ " Lowest Quality: " + HorizontalScale.LOW
-						+ " Highest Quality: " + HorizontalScale.HIGH;
-				HorizontalScale getHorizontalScale();
-				void setHorizontalScale(HorizontalScale newHorizontalScale);
+						+ " but will increase memory and GPU usage.";
+				int getHorizontalScale();
+				void setHorizontalScale(int newHorizontalScale);
 				
 				HorizontalQuality HORIZONTAL_QUALITY_DEFAULT = HorizontalQuality.MEDIUM;
 				String HORIZONTAL_QUALITY_DESC = ""
