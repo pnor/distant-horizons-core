@@ -307,6 +307,7 @@ public class LodUtil
 		int skipRadius;
 		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
 		HorizontalResolution drawRes = CONFIG.client().graphics().quality().getDrawResolution();
+		int drawResOffset = CONFIG.client().graphics().quality().getDrawResolutionOffset();
 		
 		// apply distance based rules for dynamic overdraw
 		if (overdraw == VanillaOverdraw.DYNAMIC
@@ -314,7 +315,7 @@ public class LodUtil
 		{
 			// The vanilla render distance isn't far enough 
 			// for partial skipping to make sense...
-			if (!lodDim.dimension.hasCeiling() && (drawRes == HorizontalResolution.BLOCK))
+			if (!lodDim.dimension.hasCeiling() && (drawRes == HorizontalResolution.BLOCK) && (drawResOffset == 0))
 			{
 				// ...and the dimension is open, so we don't have to worry about
 				// LODs rendering on top of the player,
