@@ -39,9 +39,7 @@ public class DetailDistanceUtil
 	private static final double treeGenMultiplier = 1.0;
 	private static final double treeCutMultiplier = 1.0;
 	private static byte minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
-	private static byte minDrawDetail = (byte) Math.max(CONFIG.client().graphics().quality().getDrawResolution().detailLevel, CONFIG.client().graphics().quality().getDrawResolutionOffset());
-	private static final int minGenDetailOffset = CONFIG.client().graphics().quality().getDrawResolutionOffset();
-	private static final int minDrawDetailOffset = CONFIG.client().graphics().quality().getDrawResolutionOffset();
+	private static byte minDrawDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 	private static final int maxDetail = LodUtil.REGION_DETAIL_LEVEL + 1;
 	private static final int minDistance = 0;
 	private static int minDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
@@ -141,16 +139,12 @@ public class DetailDistanceUtil
 		return CONFIG.client().worldGenerator().getDistanceGenerationMode();
 	}
 	
-	public static byte getLodDrawDetail(int detail)
+	public static byte getLodDrawDetail(byte detail)
 	{
-		detail += minDrawDetailOffset;
+		detail += minDrawDetail;
 		if (detail > 10)
 			detail = 10;
-		
-		if (detail < minDrawDetail)
-			return minDrawDetail;
-		else
-			return (byte) detail;
+		return detail;
 	}
 	
 	public static HorizontalResolution getLodGenDetail(int detail)

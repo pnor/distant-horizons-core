@@ -90,15 +90,6 @@ public interface ILodConfigWrapperSingleton
 				HorizontalResolution getDrawResolution();
 				void setDrawResolution(HorizontalResolution newHorizontalResolution);
 				
-				MinDefaultMax<Integer> DRAW_RESOLUTION_OFFSET_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0, 0, 4);
-				String DRAW_RESOLUTION_OFFSET_DESC = ""
-						+ " By how many levels should we lower resolution across the board?\n"
-						+ " Very similar to 'Block size',\n"
-						+ " but this setting will affect ALL chunks.\n"
-						+ " Lower settings will increase memory and GPU usage. \n";
-				Integer getDrawResolutionOffset();
-				void setDrawResolutionOffset(int newDrawResolutionOffset);
-				
 				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 1024);
 				String LOD_CHUNK_RENDER_DISTANCE_DESC = ""
 						+ " The radius of the mod's render distance. (measured in chunks) \n";
