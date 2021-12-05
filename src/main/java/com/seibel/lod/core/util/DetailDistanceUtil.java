@@ -81,7 +81,7 @@ public class DetailDistanceUtil
 		if (CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
 			return detail * 0x10000; //if you want more you are doing wrong
 		
-		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale().distanceUnit;
+		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale() * 16;
 		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
 			return (detail * distanceUnit);
 		else
@@ -103,7 +103,7 @@ public class DetailDistanceUtil
 				|| (distance < minDetailDistance && useRenderMinDistance)
 				|| CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
 			return minDetail;
-		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale().distanceUnit;
+		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale() * 16;
 		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
 			detail = (byte) distance / distanceUnit;
 		else
