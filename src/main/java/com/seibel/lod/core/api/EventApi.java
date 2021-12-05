@@ -21,6 +21,7 @@ package com.seibel.lod.core.api;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -115,13 +116,30 @@ public class EventApi
 		ClientApi.renderer.regenerateLODsNextFrame();
 	}
 	
+	/** This is also called when the user disconnects from a server+ */
 	public void worldUnloadEvent()
 	{
 		// the player just unloaded a world/dimension
 		ThreadMapUtil.clearMaps();
 		
+		new Thread(() -> checkIfDisconnectedFromServer()).start();
+	}
+	private void checkIfDisconnectedFromServer()
+	{
+		try
+		{
+			// world unloading events are called before disconnecting from the server,
+			// so we need to wait a second for MC to disconnect 
+			Thread.sleep(1000);
+		}
+		catch (InterruptedException e)
+		{
+			// this should never happen, but just in case
+			e.printStackTrace();
+		}
 		
-		if (MC.getWrappedClientWorld() == null)
+		
+		if (MC.getWrappedClientWorld() == null || (!MC.connectedToServer() && !MC.hasSinglePlayerServer()))
 		{
 			// the player just left the server
 			
@@ -129,15 +147,14 @@ public class EventApi
 			
 			// if this isn't done unfinished tasks may be left in the queue
 			// preventing new LodChunks form being generated
-			//LodNodeGenWorker.restartExecutorService(); // TODO why was this commented out? -James
-			//ThreadMapUtil.clearMaps();
+			LodGenWorker.restartExecutorService();
 			
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);
 			ApiShared.lodWorld.deselectWorld();
 			
 			
 			// prevent issues related to the buffer builder
-			// breaking when changing worlds.
+			// breaking or retaining previous data when changing worlds.
 			ClientApi.renderer.destroyBuffers();
 			recalculateWidths = true;
 			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);

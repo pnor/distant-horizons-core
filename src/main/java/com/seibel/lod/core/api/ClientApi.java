@@ -23,14 +23,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -76,7 +74,7 @@ public class ClientApi
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
-		// applyConfigOverrides();
+		applyConfigOverrides();
 		
 		// clear any out of date objects
 		MC.clearFrameObjectCache();
@@ -148,7 +146,8 @@ public class ClientApi
 			configOverrideReminderPrinted = true;
 		}
 		
-//		CONFIG.client().worldGenerator().setDistanceGenerationMode(DistanceGenerationMode.SURFACE);
+//		CONFIG.client().worldGenerator().setDistanceGenerationMode(DistanceGenerationMode.FULL);
+		
 //		CONFIG.client().worldGenerator().setGenerationPriority(GenerationPriority.AUTO);		
 		
 //		CONFIG.client().graphics().advancedGraphics().setGpuUploadMethod(GpuUploadMethod.BUFFER_STORAGE);
@@ -178,14 +177,6 @@ public class ClientApi
 		GLProxy.getInstance();
 		
 		firstTimeSetupComplete = true;
-	}
-	
-	/** this method reset some static data every time we change world */
-	private void resetMod()
-	{
-		// TODO when should this be used?
-		ThreadMapUtil.clearMaps();
-		LodGenWorker.restartExecutorService();
 	}
 	
 	
