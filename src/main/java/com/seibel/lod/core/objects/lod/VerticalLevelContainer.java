@@ -108,6 +108,8 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public int getColor(int posX, int posZ, int verticalIndex)
 	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainerColor[(posX * size + posZ) * maxVerticalData + verticalIndex];
 	}
 	
@@ -115,12 +117,16 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public int getData(int posX, int posZ, int verticalIndex)
 	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainerData[(posX * size + posZ) * maxVerticalData + verticalIndex];
 	}
 	
 	@Override
 	public byte getFlags(int posX, int posZ, int verticalIndex)
 	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainerFlags[(posX * size + posZ) * maxVerticalData + verticalIndex];
 	}
 	
