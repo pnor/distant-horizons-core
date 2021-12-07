@@ -367,9 +367,8 @@ public class LodBufferBuilderFactory
 									{
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
 										{
-											lodDim.getDataPoint(detailLevel, xAdj, zAdj, verticalIndex);
-											data = ThreadMapUtil.dataPointData;
-											flags = ThreadMapUtil.dataPointFlags;
+											data = lodDim.getData(detailLevel, xAdj, zAdj, verticalIndex);
+											flags = lodDim.getFlags(detailLevel, xAdj, zAdj, verticalIndex);
 											adjShadeDisabled[Box.DIRECTION_INDEX.get(lodDirection)] = false;
 											adjData.get(lodDirection)[verticalIndex] = data;
 											adjFlags.get(lodDirection)[verticalIndex] = flags;
@@ -378,9 +377,8 @@ public class LodBufferBuilderFactory
 									else
 									{
 										//Otherwise, we check if this position is
-										lodDim.getSingleDataPoint(detailLevel, xAdj, zAdj);
-										data = ThreadMapUtil.dataPointData;
-										flags = ThreadMapUtil.dataPointFlags;
+										data = lodDim.getData(detailLevel, xAdj, zAdj, 0);
+										flags = lodDim.getFlags(detailLevel, xAdj, zAdj, 0);
 										
 										adjData.get(lodDirection)[0] = 0;
 										adjFlags.get(lodDirection)[0] = 0;
@@ -405,9 +403,8 @@ public class LodBufferBuilderFactory
 									//we get the above block as adj UP
 									if (verticalIndex > 0)
 									{
-										lodDim.getDataPoint(detailLevel, posX, posZ, verticalIndex - 1);
-										adjData.get(LodDirection.UP)[0] = ThreadMapUtil.dataPointData;
-										adjFlags.get(LodDirection.UP)[0] = ThreadMapUtil.dataPointFlags;
+										adjData.get(LodDirection.UP)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex - 1);
+										adjFlags.get(LodDirection.UP)[0] = lodDim.getFlags(detailLevel, posX, posZ, verticalIndex - 1);
 									}
 									else
 									{
@@ -418,9 +415,8 @@ public class LodBufferBuilderFactory
 									//we get the below block as adj DOWN
 									if (verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ) - 1)
 									{
-										lodDim.getDataPoint(detailLevel, posX, posZ, verticalIndex + 1);
-										adjData.get(LodDirection.DOWN)[0] = ThreadMapUtil.dataPointData;
-										adjFlags.get(LodDirection.DOWN)[0] = ThreadMapUtil.dataPointFlags;
+										adjData.get(LodDirection.DOWN)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex + 1);
+										adjFlags.get(LodDirection.DOWN)[0] = lodDim.getFlags(detailLevel, posX, posZ, verticalIndex + 1);
 									}
 									else
 									{
@@ -429,10 +425,9 @@ public class LodBufferBuilderFactory
 									}
 									
 									//We extract the data to render
-									lodDim.getDataPoint(detailLevel, posX, posZ, verticalIndex);
-									color = ThreadMapUtil.dataPointColor;
-									data = ThreadMapUtil.dataPointData;
-									flags = ThreadMapUtil.dataPointFlags;
+									color = lodDim.getColor(detailLevel, posX, posZ, verticalIndex);
+									data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);
+									flags = lodDim.getFlags(detailLevel, posX, posZ, verticalIndex);
 									
 									//If the data is not renderable (Void or non-existing) we stop since there is no data left in this position
 									if (!DataPointUtil.doesItExist(flags) || DataPointUtil.isVoid(flags))

@@ -106,19 +106,11 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public void getDataPoint(int posX, int posZ, int verticalIndex)
+	public int getColor(int posX, int posZ, int verticalIndex)
 	{
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		final int i = (posX * size + posZ) * maxVerticalData + verticalIndex;
-		ThreadMapUtil.saveDataPoint(dataContainerColor[i], dataContainerData[i], dataContainerFlags[i]);
+		return dataContainerColor[(posX * size + posZ) * maxVerticalData + verticalIndex];
 	}
 	
-	@Override
-	public void getSingleDataPoint(int posX, int posZ)
-	{
-		getDataPoint(posX, posZ, 0);
-	}
 	
 	@Override
 	public int getData(int posX, int posZ, int verticalIndex)
@@ -319,11 +311,11 @@ public class VerticalLevelContainer implements LevelContainer
 				childPosZ = 2 * posZ + z;
 				for (int verticalIndex = 0; verticalIndex < lowerMaxVertical; verticalIndex++)
 				{
-					lowerLevelContainer.getDataPoint(childPosX, childPosZ, verticalIndex);
+					
 					final int i = (z * 2 + x) * lowerMaxVertical + verticalIndex;
-					dataToMergeColor[i] = ThreadMapUtil.dataPointColor;
-					dataToMergeData[i] = ThreadMapUtil.dataPointData;
-					dataToMergeFlags[i] = ThreadMapUtil.dataPointFlags;
+					dataToMergeColor[i] = lowerLevelContainer.getColor(childPosX, childPosZ, verticalIndex);
+					dataToMergeData[i] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
+					dataToMergeFlags[i] = lowerLevelContainer.getFlags(childPosX, childPosZ, verticalIndex);
 				}
 			}
 		}

@@ -52,21 +52,7 @@ public interface LevelContainer
 	 */
 	boolean addSingleData(int color, int data, byte flags, int posX, int posZ);
 	
-	/**
-	 * With this you can get data from the level container
-	 * data is returned to ThreadMapUtil variables
-	 * @param posX x position in the detail level
-	 * @param posZ z position in the detail level
-	 */
-	void getDataPoint(int posX, int posZ, int index);
-	
-	/**
-	 * With this you can get data from the level container
-	 * data is returned to ThreadMapUtil variables
-	 * @param posX x position in the detail level
-	 * @param posZ z position in the detail level
-	 */
-	void getSingleDataPoint(int posX, int posZ);
+	int getColor(int posX, int posZ, int verticalIndex);
 	
 	int getData(int posX, int posZ, int index);
 	

@@ -611,8 +611,7 @@ public class LodDimension
 				posX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, xChunkToCheck, detailLevel);
 				posZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, zChunkToCheck, detailLevel);
 				
-				getSingleDataPoint(detailLevel, posX, posZ);
-				flags = ThreadMapUtil.dataPointFlags;
+				flags = getSingleFlags(detailLevel, posX, posZ);
 				
 				//we will generate the position only if the current generation complexity is lower than the target one.
 				//an un-generated area will always have 0 generation
@@ -703,23 +702,16 @@ public class LodDimension
 		return region.getMaxVerticalData(detailLevel);
 	}
 	
-	/**
-	 * Get the data point at the given X and Z coordinates
-	 * in this dimension.
-	 * <br>
-	 * Returns null if the LodChunk doesn't exist or
-	 * is outside the loaded area.
-	 */
-	public void getDataPoint(byte detailLevel, int posX, int posZ, int verticalIndex)
+	public int getColor(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
 		
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		if (region == null)
-			ThreadMapUtil.saveDataPoint(0,0, (byte) 0);
+			return 0;
 		else
-			region.getDataPoint(detailLevel, posX, posZ, verticalIndex);
+			return region.getColor(detailLevel, posX, posZ, verticalIndex);
 	}
 	
 	public int getData(byte detailLevel, int posX, int posZ, int verticalIndex)
@@ -744,25 +736,6 @@ public class LodDimension
 			return 0;
 		else
 			return region.getFlags(detailLevel, posX, posZ, verticalIndex);
-	}
-	
-	/**
-	 * Get the data point at the given X and Z coordinates
-	 * in this dimension.
-	 * <br>
-	 * Returns null if the LodChunk doesn't exist or
-	 * is outside the loaded area.
-	 */
-	public void getSingleDataPoint(byte detailLevel, int posX, int posZ)
-	{
-		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
-			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
-		
-		LodRegion region = getRegion(detailLevel, posX, posZ);
-		if (region == null)
-			ThreadMapUtil.saveDataPoint(0, 0, (byte) 0);
-		else
-			region.getSingleDataPoint(detailLevel, posX, posZ);
 	}
 	
 	public byte getSingleFlags(byte detailLevel, int posX, int posZ)

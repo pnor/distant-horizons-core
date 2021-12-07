@@ -191,14 +191,9 @@ public class LodRegion
 		return this.dataContainer[detailLevel].addVerticalData(color, data, flags, posX, posZ);
 	}
 	
-	/**
-	 * Get the dataPoint at the given relative position.
-	 * @return the data at the relative pos and detail level,
-	 * 0 if the data doesn't exist.
-	 */
-	public void getDataPoint(byte detailLevel, int posX, int posZ, int verticalIndex)
+	public int getColor(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
-		dataContainer[detailLevel].getDataPoint(posX, posZ, verticalIndex);
+		return dataContainer[detailLevel].getColor(posX, posZ, verticalIndex);
 	}
 	
 	public int getData(byte detailLevel, int posX, int posZ, int verticalIndex)
@@ -209,16 +204,6 @@ public class LodRegion
 	public byte getFlags(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
 		return dataContainer[detailLevel].getFlags(posX, posZ, verticalIndex);
-	}
-	
-	/**
-	 * Get the dataPoint at the given relative position.
-	 * @return the data at the relative pos and detail level,
-	 * 0 if the data doesn't exist.
-	 */
-	public void getSingleDataPoint(byte detailLevel, int posX, int posZ)
-	{
-		dataContainer[detailLevel].getSingleDataPoint(posX, posZ);
 	}
 	
 	/**
