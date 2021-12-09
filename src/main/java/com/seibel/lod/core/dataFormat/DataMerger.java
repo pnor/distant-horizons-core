@@ -1,5 +1,5 @@
 package com.seibel.lod.core.dataFormat;
 
-public class DepthHeightFormat
+public class DataMerger
 {
 }
