@@ -56,19 +56,13 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public void clear(int posX, int posZ)
 	{
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		for (int verticalIndex = 0; verticalIndex < maxVerticalData; verticalIndex++)
-		{
 			dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = DataPointUtil.EMPTY_DATA;
-		}
 	}
 	
 	@Override
 	public boolean addData(long data, int posX, int posZ, int verticalIndex)
 	{
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = data;
 		return true;
 	}
@@ -76,8 +70,6 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public boolean addVerticalData(long[] data, int posX, int posZ)
 	{
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		for (int verticalIndex = 0; verticalIndex < maxVerticalData; verticalIndex++)
 			dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = data[verticalIndex];
 		return true;
@@ -92,15 +84,13 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public long getData(int posX, int posZ, int verticalIndex)
 	{
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex];
 	}
 	
 	@Override
 	public long getSingleData(int posX, int posZ)
 	{
-		return getData(posX, posZ, 0);
+		return dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData];
 	}
 	
 	@Override
@@ -117,8 +107,6 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public boolean doesItExist(int posX, int posZ)
 	{
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return DataPointUtil.doesItExist(getSingleData(posX, posZ));
 	}
 	
@@ -209,8 +197,6 @@ public class VerticalLevelContainer implements LevelContainer
 		int childPosX;
 		int childPosZ;
 		long[] data;
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		for (int x = 0; x <= 1; x++)
 		{
 			for (int z = 0; z <= 1; z++)

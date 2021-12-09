@@ -162,9 +162,7 @@ public class LodRegion
 		// The dataContainer could have null entries if the
 		// detailLevel changes.
 		if (this.dataContainer[detailLevel] == null)
-		{
 			this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
-		}
 		
 		this.dataContainer[detailLevel].addData(data, posX, posZ, verticalIndex);
 		
@@ -179,9 +177,8 @@ public class LodRegion
 	 */
 	public boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data)
 	{
-		//position is already relative
-		//posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		//posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		
 		// The dataContainer could have null entries if the
 		// detailLevel changes.
@@ -198,6 +195,8 @@ public class LodRegion
 	 */
 	public long getData(byte detailLevel, int posX, int posZ, int verticalIndex)
 	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainer[detailLevel].getData(posX, posZ, verticalIndex);
 	}
 	
@@ -208,6 +207,8 @@ public class LodRegion
 	 */
 	public long getSingleData(byte detailLevel, int posX, int posZ)
 	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainer[detailLevel].getSingleData(posX, posZ);
 	}
 	
@@ -216,6 +217,8 @@ public class LodRegion
 	 */
 	public void clear(byte detailLevel, int posX, int posZ)
 	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		dataContainer[detailLevel].clear(posX, posZ);
 	}
 	
@@ -450,6 +453,8 @@ public class LodRegion
 	 */
 	private void update(byte detailLevel, int posX, int posZ)
 	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		dataContainer[detailLevel].updateData(dataContainer[detailLevel - 1], posX, posZ);
 	}
 	
@@ -459,14 +464,11 @@ public class LodRegion
 	 */
 	public boolean doesDataExist(byte detailLevel, int posX, int posZ)
 	{
-		if (detailLevel < minDetailLevel)
+		if (detailLevel < minDetailLevel || dataContainer[detailLevel] == null)
 			return false;
 		
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		
-		if (dataContainer[detailLevel] == null)
-			return false;
 		
 		return dataContainer[detailLevel].doesItExist(posX, posZ);
 	}
