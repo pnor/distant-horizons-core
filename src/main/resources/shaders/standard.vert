@@ -31,7 +31,7 @@ void main()
 //	vertexColor = vec4(color.xyz * worldSkyLight / 16.0, color.w);
 	
 	float blockLightTex = blockLight / 16.0;
-	float skyLightTex = worldSkyLight / 16.0;
+	float skyLightTex = blockSkyLight / 16.0;
 	
 	// we don't really need alpha in the lightmap
 //	vertexColor = color * vec4(texture(lightMap, vec2(blockLightTex, skyLightTex)).xyz, 1);
