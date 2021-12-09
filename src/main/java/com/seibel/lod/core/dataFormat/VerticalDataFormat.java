@@ -21,4 +21,50 @@ public class VerticalDataFormat
 	public final static int EMPTY_LOD_MASK = 0b1;
 	
 	public final static int EMPTY_LOD = 0;
+	
+	public static int createVerticalData(int height, int depth, int level, boolean transparent, boolean bottom)
+	{
+		int verticalData = 0;
+		verticalData |= (height & HEIGHT_MASK) << HEIGHT_SHIFT;
+		verticalData |= (depth & DEPTH_MASK) << DEPTH_SHIFT;
+		verticalData |= (level & LEVEL_MASK) << LEVEL_SHIFT;
+		if (bottom)
+			verticalData |= BOTTOM_TYPE_MASK << BOTTOM_TYPE_SHIFT;
+		if (transparent)
+			verticalData |= TRANSPARENCY_MASK << TRANSPARENCY_SHIFT;
+		verticalData |= EMPTY_LOD_MASK << EMPTY_LOD_SHIFT;
+		
+		return verticalData;
+	}
+	
+	public static short getHeight(int verticalData)
+	{
+		return (short) ((verticalData >>> HEIGHT_SHIFT) & HEIGHT_MASK);
+	}
+	
+	public static short getDepth(int verticalData)
+	{
+		return (short) ((verticalData >>> DEPTH_SHIFT) & DEPTH_MASK);
+	}
+	
+	public static byte getLevel(int verticalData)
+	{
+		return (byte) ((verticalData >>> LEVEL_SHIFT) & LEVEL_MASK);
+	}
+	
+	public static boolean isTransparent(int verticalData)
+	{
+		return ((verticalData >>> TRANSPARENCY_SHIFT) & TRANSPARENCY_MASK) == 1;
+	}
+	
+	public static boolean isBottom(int verticalData)
+	{
+		return ((verticalData >>> BOTTOM_TYPE_SHIFT) & BOTTOM_TYPE_MASK) == 1;
+	}
+	
+	public static boolean doesItExist(int verticalData)
+	{
+		return (((verticalData >>> EMPTY_LOD_SHIFT) & EMPTY_LOD_MASK) == 1);
+	}
+	
 }
