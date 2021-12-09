@@ -33,7 +33,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
  * rendering in Minecraft.
  * 
  * @author James Seibel
- * @version 11-26-2021
+ * @version 12-8-2021
  */
 public interface IMinecraftRenderWrapper
 {
@@ -66,4 +66,14 @@ public interface IMinecraftRenderWrapper
 	 * is going to render this frame.
 	 */
 	HashSet<AbstractChunkPosWrapper> getRenderedChunks();
+
+	/** @returns null if there was a issue getting the lightmap */
+	int[] getLightmapPixels();
+
+	/** @returns -1 if there was an issue getting the lightmap */
+	int getLightmapTextureHeight();
+	/** @returns -1 if there was an issue getting the lightmap */
+	int getLightmapTextureWidth();
+	/** @returns -1 if there was an issue getting the lightmap */
+	public int getLightmapGLFormat();
 }

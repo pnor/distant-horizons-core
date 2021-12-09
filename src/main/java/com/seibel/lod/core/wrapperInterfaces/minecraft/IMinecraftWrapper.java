@@ -34,7 +34,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * Contains everything related to the Minecraft object.
  * 
  * @author James Seibel
- * @version 9-16-2021
+ * @version 12-8-2021
  */
 public interface IMinecraftWrapper
 {
@@ -77,18 +77,18 @@ public interface IMinecraftWrapper
 	/**
 	 * Returns the color int at the given pixel coordinates
 	 * from the current lightmap.
-	 * @param u x location in texture space
-	 * @param v z location in texture space
+	 * @param blockLight x location in texture space
+	 * @param skyLight z location in texture space
 	 */
-	int getColorIntFromLightMap(int u, int v);
+	int getColorIntFromLightMap(int blockLight, int skyLight);
 	
 	/**
 	 * Returns the Color at the given pixel coordinates
 	 * from the current lightmap.
-	 * @param u x location in texture space
-	 * @param v z location in texture space
+	 * @param blockLight x location in texture space
+	 * @param skyLight z location in texture space
 	 */
-	Color getColorFromLightMap(int u, int v);
+	Color getColorFromLightMap(int blockLight, int skyLight);
 	
 	
 	

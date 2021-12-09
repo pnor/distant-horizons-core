@@ -40,7 +40,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  * Specifically for the client.
  * 
  * @author James Seibel
- * @version 11-12-2021
+ * @version 12-8-2021
  */
 public class ClientApi
 {
@@ -141,6 +141,9 @@ public class ClientApi
 		{
 			MC.sendChatMessage(ModInfo.READABLE_NAME + " experimental build " + ModInfo.VERSION);
 			MC.sendChatMessage("You are running a unsupported version of the mod!");
+			MC.sendChatMessage("==========================================");
+			MC.sendChatMessage("SEIZURE WARNING: Flashing lights expected!"); // remove this line when the lighting shaders are fixed
+			MC.sendChatMessage("==========================================");
 			MC.sendChatMessage("Here be dragons!");
 			
 			configOverrideReminderPrinted = true;

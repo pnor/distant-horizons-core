@@ -32,7 +32,7 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
  * This is the abstract class used to create different
  * BufferBuilders.
  * @author James Seibel
- * @version 11-13-2021
+ * @version 12-8-2021
  */
 public abstract class AbstractLodTemplate
 {
@@ -43,10 +43,13 @@ public abstract class AbstractLodTemplate
 	/** add the given position and color to the buffer */
 	protected void addPosAndColor(LodBufferBuilder buffer,
 			float x, float y, float z,
-			int color)
+			int color, byte blockLightValue, byte skyLightValue)
 	{
-		// TODO re-add transparency by replacing the 255 with "ColorUtil.getAlpha(color)"
-		buffer.vertex(x, y, z).color(ColorUtil.getRed(color), ColorUtil.getGreen(color), ColorUtil.getBlue(color), 255).endVertex();
+		// TODO re-add transparency by replacing the color 255 with "ColorUtil.getAlpha(color)"
+		buffer.position(x, y, z)
+		.color(ColorUtil.getRed(color), ColorUtil.getGreen(color), ColorUtil.getBlue(color), 255)
+		.minecraftLightValue(blockLightValue).minecraftLightValue(skyLightValue)
+		.endVertex();
 	}
 	
 }

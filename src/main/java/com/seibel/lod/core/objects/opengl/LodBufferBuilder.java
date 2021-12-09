@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.objects.opengl;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -38,7 +37,7 @@ import com.google.common.collect.Lists;
  * OpenGL buffers.
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 12-8-2021
  */
 public class LodBufferBuilder
 {
@@ -354,7 +353,22 @@ public class LodBufferBuilder
 		}
 	}
 	
-	public LodBufferBuilder vertex(float x, float y, float z)
+	public LodBufferBuilder minecraftLightValue(byte lightValue)
+	{
+		LodVertexFormatElement LodVertexFormatelement = this.currentElement();
+		if (LodVertexFormatelement.getType() != LodVertexFormatElement.DataType.UBYTE)
+		{
+			throw new IllegalStateException("Light Color must be stored as a UBYTE");
+		}
+		else
+		{
+			this.putByte(0, lightValue);
+			this.nextElement();
+			return this;
+		}
+	}
+	
+	public LodBufferBuilder position(float x, float y, float z)
 	{
 		if (this.currentElement().getType() != LodVertexFormatElement.DataType.FLOAT)
 		{

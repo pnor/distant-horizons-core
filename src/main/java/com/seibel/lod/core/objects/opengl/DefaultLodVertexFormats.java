@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
  * DefaultVertexFormats class.
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 12-8-2021
  */
 public class DefaultLodVertexFormats
 {
@@ -37,6 +37,8 @@ public class DefaultLodVertexFormats
 	public static final LodVertexFormatElement ELEMENT_NORMAL = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.BYTE, 3);
 	public static final LodVertexFormatElement ELEMENT_PADDING = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.BYTE, 1);
 	
+	public static final LodVertexFormatElement ELEMENT_BLOCK_LIGHT = new LodVertexFormatElement(0, LodVertexFormatElement.DataType.UBYTE, 1);
+	
 	
 	public static final LodVertexFormat POSITION = 						new LodVertexFormat(ImmutableList.<LodVertexFormatElement>builder().add(ELEMENT_POSITION).build());
 	public static final LodVertexFormat POSITION_COLOR = 				new LodVertexFormat(ImmutableList.<LodVertexFormatElement>builder().add(ELEMENT_POSITION).add(ELEMENT_COLOR).build());
@@ -45,4 +47,5 @@ public class DefaultLodVertexFormats
 	public static final LodVertexFormat POSITION_COLOR_TEX = 			new LodVertexFormat(ImmutableList.<LodVertexFormatElement>builder().add(ELEMENT_POSITION).add(ELEMENT_COLOR).add(ELEMENT_UV).build());
 	public static final LodVertexFormat POSITION_COLOR_TEX_LIGHTMAP = 	new LodVertexFormat(ImmutableList.<LodVertexFormatElement>builder().add(ELEMENT_POSITION).add(ELEMENT_COLOR).add(ELEMENT_UV).add(ELEMENT_LIGHT_MAP_UV).build());
 	
+	public static final LodVertexFormat POSITION_COLOR_BLOCK_LIGHT_SKY_LIGHT =	new LodVertexFormat(ImmutableList.<LodVertexFormatElement>builder().add(ELEMENT_POSITION).add(ELEMENT_COLOR).add(ELEMENT_BLOCK_LIGHT).add(ELEMENT_BLOCK_LIGHT).build());	
 }

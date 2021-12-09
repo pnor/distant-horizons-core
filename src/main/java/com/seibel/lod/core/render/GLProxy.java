@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.render;
 
-import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -57,7 +56,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * https://stackoverflow.com/questions/63509735/massive-performance-loss-with-glmapbuffer <br><br>
  * 
  * @author James Seibel
- * @version 12-1-2021
+ * @version 12-8-2021
  */
 public class GLProxy
 {
@@ -90,6 +89,8 @@ public class GLProxy
 	public LodShaderProgram lodShaderProgram;
 	/** This is the VAO that is used when rendering */
 	public final int vertexArrayObjectId;
+	/** This is the 2D texture that holds MC's lightmap */
+	public final int lightMapTextureId;
 	
 	
 	/** Requires OpenGL 4.5, and offers the best buffer uploading */
@@ -103,7 +104,7 @@ public class GLProxy
 	
 	private GLProxy()
 	{
-		ClientApi.LOGGER.error("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
+		ClientApi.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
 		
 		// getting Minecraft's context has to be done on the render thread,
 		// where the GL context is
@@ -174,7 +175,7 @@ public class GLProxy
 		if (!bufferStorageSupported)
 		{
 			String fallBackVersion = mapBufferRangeSupported ? "3.0" : "1.5";  
-			ClientApi.LOGGER.error("This GPU doesn't support Buffer Storage (OpenGL 4.5), falling back to OpenGL " + fallBackVersion + ". This may cause stuttering and reduced performance.");			
+			ClientApi.LOGGER.warn("This GPU doesn't support Buffer Storage (OpenGL 4.5), falling back to OpenGL " + fallBackVersion + ". This may cause stuttering and reduced performance.");			
 		}
 		
 		
@@ -230,6 +231,7 @@ public class GLProxy
         // this must be created on minecraft's render context to work correctly
         vertexArrayObjectId = GL30.glGenVertexArrays();
         
+        lightMapTextureId = GL30.glGenTextures();
         
         
         
@@ -243,7 +245,7 @@ public class GLProxy
 		
 		
 		// GLProxy creation success
-		ClientApi.LOGGER.error(GLProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
+		ClientApi.LOGGER.info(GLProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
 	}
 	
 	/** Creates all required shaders */
@@ -255,13 +257,13 @@ public class GLProxy
 		try
 		{
 			// get the shaders from the resource folder
-			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "shaders" + File.separator + "standard.vert", false);
-			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "shaders" + File.separator + "flat_shaded.frag", false);
+//			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "shaders" + File.separator + "standard.vert", false);
+//			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "shaders" + File.separator + "flat_shaded.frag", false);
 			
 			// this can be used when testing shaders, 
 			// since we can't hot swap the files in the resource folder 
-//			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "C:/Users/James Seibel/Desktop/shaders/standard.vert", true);
-//			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "C:/Users/James Seibel/Desktop/shaders/flat_shaded.frag", true);
+			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "C:/Users/James Seibel/Desktop/shaders/standard.vert", true);
+			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "C:/Users/James Seibel/Desktop/shaders/flat_shaded.frag", true);
 			
 			
 			// create the shaders

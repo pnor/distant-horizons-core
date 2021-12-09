@@ -27,6 +27,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
@@ -60,7 +61,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  * This is where LODs are draw to the world.
  * 
  * @author James Seibel
- * @version 11-27-2021
+ * @version 12-8-2021
  */
 public class LodRenderer
 {
@@ -278,6 +279,13 @@ public class LodRenderer
 	        shaderProgram.enableVertexAttribute(posAttrib);
 	        int colAttrib = shaderProgram.getAttributeLocation("color");
 	        shaderProgram.enableVertexAttribute(colAttrib);
+	        int blockSkyLightAttrib = shaderProgram.getAttributeLocation("blockSkyLight");
+	        // TODO the block sky light is being passed in correctly but the data
+	        // 		we were given appears to be incorrect, so we won't use it for now
+	        //shaderProgram.enableVertexAttribute(blockSkyLightAttrib); 
+	        int blockLightAttrib = shaderProgram.getAttributeLocation("blockLight");
+	        shaderProgram.enableVertexAttribute(blockLightAttrib);
+	        
 	        
 	        
 	        // global uniforms
@@ -289,6 +297,58 @@ public class LodRenderer
 			shaderProgram.setUniform(cameraUniform, getTranslatedCameraPos());
 			int fogColorUniform = shaderProgram.getUniformLocation("fogColor");
 			shaderProgram.setUniform(fogColorUniform, getFogColor());
+			
+			
+			int skyLightUniform = shaderProgram.getUniformLocation("worldSkyLight");
+			shaderProgram.setUniform(skyLightUniform, (int) (MC.getSkyDarken(partialTicks) * 15));
+			
+			int lightMapUniform = shaderProgram.getUniformLocation("lightMap");
+			
+			
+			
+			GL20.glBindTexture(GL20.GL_TEXTURE_2D, glProxy.lightMapTextureId);
+			
+			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_S, GL20.GL_CLAMP_TO_BORDER);
+			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, GL20.GL_CLAMP_TO_BORDER);
+			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_NEAREST);
+			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_NEAREST);
+			
+			
+			// get the latest lightmap from MC
+			try
+			{
+				int lightMapHeight = MC_RENDER.getLightmapTextureHeight();
+				int lightMapWidth = MC_RENDER.getLightmapTextureWidth();
+				int[] pixels = MC_RENDER.getLightmapPixels();
+				
+				// comment me out to see when the lightmap is changing
+//				boolean same = true;
+//				int badIndex = 0;
+//				if (testArray != null && pixels != null)
+//				for (int i = 0; i < pixels.length; i++)
+//				{
+//					if(pixels[i] != testArray[i])
+//					{
+//						same = false;
+//						badIndex = i;
+//						break;	
+//					}
+//				}
+//				testArray = pixels;
+//				MC.sendChatMessage(same + " " + badIndex);
+				
+				// comment this line out to prevent uploading the new lightmap
+				GL20.glTexImage2D(GL20.GL_TEXTURE_2D, 0, GL20.GL_RGBA, lightMapWidth,
+						lightMapHeight, 0, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixels);
+				
+				// TODO is this needed/correct?
+				shaderProgram.setUniform(lightMapUniform, 0);
+			}
+			catch (Exception e)
+			{
+				ClientApi.LOGGER.info(e.getMessage(), e);
+			}
+			
 			
 			
 			// region dependent uniforms
@@ -341,7 +401,7 @@ public class LodRenderer
 						for (int i = 0; i < vbos[x][z].length; i++)
 						{
 							bufferId = (storageBufferIds != null && renderBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
-							drawArrays(bufferId, vbos[x][z][i].vertexCount, posAttrib, colAttrib);
+							drawArrays(bufferId, vbos[x][z][i].vertexCount, posAttrib, colAttrib, blockLightAttrib, blockSkyLightAttrib);
 						}
 						
 					}
@@ -349,18 +409,21 @@ public class LodRenderer
 			}
 			
 			
+			GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
 			
 			//================//
 			// render cleanup //
 			//================//
 			
-			// if this cleanup isn't done MC may crash
+			// if this cleanup isn't done MC will crash
 			// when trying to render its own terrain
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 			GL30.glBindVertexArray(0);
 			
 			GL20.glDisableVertexAttribArray(posAttrib);
 			GL20.glDisableVertexAttribArray(colAttrib);
+//			GL20.glDisableVertexAttribArray(blockSkyLightAttrib);
+			GL20.glDisableVertexAttribArray(blockLightAttrib);
 		}
 		
 		
@@ -387,8 +450,10 @@ public class LodRenderer
 		// end of internal LOD profiling
 		profiler.pop();
 	}
-
-
+	
+	// Temporary variables James was using while working with the shader lightmap
+	int[] testArray = null;
+	int testInt = 0;
 
 
 
@@ -396,14 +461,14 @@ public class LodRenderer
 	
 	
 	/** This is where the actual drawing happens. */
-	private void drawArrays(int glBufferId, int vertexCount, int posAttrib, int colAttrib)
+	private void drawArrays(int glBufferId, int vertexCount, int posAttrib, int colAttrib, int blockLightAttrib, int blockSkyLightAttrib)
 	{
 		if (glBufferId == 0)
 			return;
 		
 		// can be used to check for OpenGL errors
 //		int error = GL15.glGetError();
-//		ClientProxy.LOGGER.info(Integer.toHexString(error));
+//		ClientApi.LOGGER.info(Integer.toHexString(error));
 		
 		
         // bind the buffer we are going to draw
@@ -411,11 +476,15 @@ public class LodRenderer
 		GL30.glBindVertexArray(GLProxy.getInstance().vertexArrayObjectId);
         
 		// let OpenGL know how our buffer is set up
-		int vertexByteCount = (Float.BYTES * 3) + (Byte.BYTES * 4);
+		int vertexByteCount = (Float.BYTES * 3) + (Byte.BYTES * 4) + Byte.BYTES + Byte.BYTES; // TODO move this into the template
         GL20.glEnableVertexAttribArray(posAttrib);
         GL20.glVertexAttribPointer(posAttrib, 3, GL15.GL_FLOAT, false, vertexByteCount, 0);
         GL20.glEnableVertexAttribArray(colAttrib);
         GL20.glVertexAttribPointer(colAttrib, 4, GL15.GL_UNSIGNED_BYTE, true, vertexByteCount, Float.BYTES * 3);
+        GL20.glEnableVertexAttribArray(blockLightAttrib);
+        GL20.glVertexAttribPointer(blockLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * (3 + 1));
+//        GL20.glEnableVertexAttribArray(blockSkyLightAttrib);
+//        GL20.glVertexAttribPointer(blockSkyLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * (3 + 1 + 1));
         
         
         // draw the LODs

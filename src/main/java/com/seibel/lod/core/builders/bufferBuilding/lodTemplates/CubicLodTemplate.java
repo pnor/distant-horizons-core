@@ -25,7 +25,6 @@ import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
-import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
@@ -33,7 +32,7 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 /**
  * Builds LODs as rectangular prisms.
  * @author James Seibel
- * @version 11-8-2021
+ * @version 12-8-2021
  */
 public class CubicLodTemplate extends AbstractLodTemplate
 {
@@ -69,11 +68,9 @@ public class CubicLodTemplate extends AbstractLodTemplate
 				bufferCenterBlockPos,
 				adjData,
 				color,
-				DataPointUtil.getLightSkyAlt(data),
-				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
-		addBoundingBoxToBuffer(buffer, vertexOptimizer);
+		addBoundingBoxToBuffer(buffer, vertexOptimizer, DataPointUtil.getLightBlock(data), DataPointUtil.getLightSkyAlt(data));
 	}
 	
 	private void generateBoundingBox(VertexOptimizer vertexOptimizer,
@@ -82,8 +79,6 @@ public class CubicLodTemplate extends AbstractLodTemplate
 			AbstractBlockPosWrapper bufferCenterBlockPos,
 			Map<LodDirection, long[]> adjData,
 			int color,
-			int skyLight,
-			int blockLight,
 			boolean[] adjShadeDisabled)
 	{
 		// don't add an LOD if it is empty
@@ -102,18 +97,15 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		double z = -bufferCenterBlockPos.getZ();
 		vertexOptimizer.reset();
 		vertexOptimizer.setColor(color, adjShadeDisabled);
-		vertexOptimizer.setLights(skyLight, blockLight);
 		vertexOptimizer.setWidth(width, height - depth, width);
 		vertexOptimizer.setOffset((int) (xOffset + x), (int) (depth + yOffset), (int) (zOffset + z));
 		vertexOptimizer.setUpCulling(32, bufferCenterBlockPos);
 		vertexOptimizer.setAdjData(adjData);
 	}
 	
-	private void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer)
+	private void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer, byte blockLightValue, byte skyLightValue)
 	{
 		int color;
-		int skyLight;
-		int blockLight;
 		for (LodDirection lodDirection : VertexOptimizer.DIRECTIONS)
 		{
 			if(vertexOptimizer.isCulled(lodDirection))
@@ -125,14 +117,11 @@ public class CubicLodTemplate extends AbstractLodTemplate
 				for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++)
 				{
 					color = vertexOptimizer.getColor(lodDirection);
-					skyLight = vertexOptimizer.getSkyLight(lodDirection, verticalFaceIndex);
-					blockLight = vertexOptimizer.getBlockLight();
-					color = ColorUtil.applyLightValue(color, skyLight, blockLight);
 					addPosAndColor(buffer,
 							vertexOptimizer.getX(lodDirection, vertexIndex),
 							vertexOptimizer.getY(lodDirection, vertexIndex, verticalFaceIndex) + DataPointUtil.VERTICAL_OFFSET,
 							vertexOptimizer.getZ(lodDirection, vertexIndex),
-							color);
+							color, blockLightValue, skyLightValue);
 				}
 				verticalFaceIndex++;
 			}

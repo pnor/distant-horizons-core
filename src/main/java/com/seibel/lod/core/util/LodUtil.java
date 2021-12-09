@@ -44,7 +44,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * This class holds methods and constants that may be used in multiple places.
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 12-8-2021
  */
 public class LodUtil
 {
@@ -140,7 +140,7 @@ public class LodUtil
 	public static final int MAX_ALLOCATABLE_DIRECT_MEMORY = 64 * 1024 * 1024;
 	
 	/** the format of data stored in the GPU buffers */
-	public static final LodVertexFormat LOD_VERTEX_FORMAT = DefaultLodVertexFormats.POSITION_COLOR;
+	public static final LodVertexFormat LOD_VERTEX_FORMAT = DefaultLodVertexFormats.POSITION_COLOR_BLOCK_LIGHT_SKY_LIGHT;
 	
 	
 	
