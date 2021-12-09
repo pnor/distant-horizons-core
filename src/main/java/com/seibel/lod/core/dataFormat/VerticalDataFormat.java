@@ -2,7 +2,7 @@ package com.seibel.lod.core.dataFormat;
 
 public class VerticalDataFormat
 {
-	public final static short MIN_WORLD_HEIGHT = −2048;
+	public final static short MIN_WORLD_HEIGHT = -2048;
 	public final static short MAX_WORLD_HEIGHT = 2047;
 	
 	public final static byte HEIGHT_SHIFT = 20;

@@ -31,7 +31,7 @@ public interface IBlockColorWrapper
 	
 	boolean hasColor();
 	
-	int getName();
+	String getName();
 	
 	int getColor();
 	
