@@ -128,7 +128,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 							vertexOptimizer.getX(lodDirection, vertexIndex),
 							vertexOptimizer.getY(lodDirection, vertexIndex, verticalFaceIndex) + DataPointUtil.VERTICAL_OFFSET,
 							vertexOptimizer.getZ(lodDirection, vertexIndex),
-							color, blockLight, skyLight);
+							color, skyLight, blockLight );
 				}
 				verticalFaceIndex++;
 			}

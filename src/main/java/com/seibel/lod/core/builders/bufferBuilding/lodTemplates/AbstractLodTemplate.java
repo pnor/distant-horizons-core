@@ -43,7 +43,7 @@ public abstract class AbstractLodTemplate
 	/** add the given position and color to the buffer */
 	protected void addPosAndColor(LodBufferBuilder buffer,
 			float x, float y, float z,
-			int color, byte blockLightValue, byte skyLightValue)
+			int color, byte skyLightValue, byte blockLightValue)
 	{
 		// TODO re-add transparency by replacing the color 255 with "ColorUtil.getAlpha(color)"
 		buffer.position(x, y, z)
