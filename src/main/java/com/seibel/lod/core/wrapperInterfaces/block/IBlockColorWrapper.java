@@ -31,6 +31,8 @@ public interface IBlockColorWrapper
 	
 	boolean hasColor();
 	
+	int getName();
+	
 	int getColor();
 	
 	

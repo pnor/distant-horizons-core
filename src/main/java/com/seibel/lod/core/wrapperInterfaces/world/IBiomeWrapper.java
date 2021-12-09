@@ -28,6 +28,8 @@ public interface IBiomeWrapper
 	/** Returns a color int for the given biome. */
 	int getColorForBiome(int x, int z);
 	
+	int getName();
+	
 	int getGrassTint(int x, int z);
 	
 	int getFolliageTint();
