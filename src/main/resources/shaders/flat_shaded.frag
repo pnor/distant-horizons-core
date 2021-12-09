@@ -2,13 +2,12 @@
 
 in vec4 vertexColor;
 in vec4 vertexWorldPos;
-//in vec2 textureCoord;
+
 
 
 out vec4 fragColor;
 
 
-//uniform sampler2D texImage;
 uniform vec3 cameraPos;
 
 uniform bool fogEnabled;

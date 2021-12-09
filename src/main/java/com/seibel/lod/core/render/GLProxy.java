@@ -264,13 +264,13 @@ public class GLProxy
 		try
 		{
 			// get the shaders from the resource folder
-//			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "shaders" + File.separator + "standard.vert", false);
-//			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "shaders" + File.separator + "flat_shaded.frag", false);
+			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "shaders/standard.vert", false);
+			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "shaders/flat_shaded.frag", false);
 			
 			// this can be used when testing shaders, 
 			// since we can't hot swap the files in the resource folder 
-			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "C:/Users/James Seibel/Desktop/shaders/standard.vert", true);
-			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "C:/Users/James Seibel/Desktop/shaders/flat_shaded.frag", true);
+//			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "C:/Users/James Seibel/Desktop/shaders/standard.vert", true);
+//			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "C:/Users/James Seibel/Desktop/shaders/flat_shaded.frag", true);
 			
 			
 			// create the shaders
