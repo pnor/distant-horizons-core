@@ -731,7 +731,7 @@ public class LodRenderer
 		}
 		
 		
-		
+		/*
 		// determine how far the lighting has to 
 		// change in order to rebuild the buffers
 		
@@ -763,12 +763,6 @@ public class LodRenderer
 			fullRegen = true;
 			prevBrightness = MC_RENDER.getGamma();
 			prevSkyBrightness = skyBrightness;
-		}
-		
-		/*if (lightMap != lastLightMap)
-		{
-			fullRegen = true;
-			lastLightMap = lightMap;
 		}*/
 		
 		//================//
