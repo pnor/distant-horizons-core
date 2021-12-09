@@ -68,9 +68,11 @@ public class CubicLodTemplate extends AbstractLodTemplate
 				bufferCenterBlockPos,
 				adjData,
 				color,
+				DataPointUtil.getLightSkyAlt(data),
+				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
-		addBoundingBoxToBuffer(buffer, vertexOptimizer, DataPointUtil.getLightBlock(data), DataPointUtil.getLightSkyAlt(data));
+		addBoundingBoxToBuffer(buffer, vertexOptimizer);
 	}
 	
 	private void generateBoundingBox(VertexOptimizer vertexOptimizer,
@@ -78,7 +80,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 			double xOffset, double yOffset, double zOffset,
 			AbstractBlockPosWrapper bufferCenterBlockPos,
 			Map<LodDirection, long[]> adjData,
-			int color,
+			int color, byte skyLight, byte blockLight,
 			boolean[] adjShadeDisabled)
 	{
 		// don't add an LOD if it is empty
@@ -97,15 +99,18 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		double z = -bufferCenterBlockPos.getZ();
 		vertexOptimizer.reset();
 		vertexOptimizer.setColor(color, adjShadeDisabled);
+		vertexOptimizer.setLights(skyLight, blockLight);
 		vertexOptimizer.setWidth(width, height - depth, width);
 		vertexOptimizer.setOffset((int) (xOffset + x), (int) (depth + yOffset), (int) (zOffset + z));
 		vertexOptimizer.setUpCulling(32, bufferCenterBlockPos);
 		vertexOptimizer.setAdjData(adjData);
 	}
 	
-	private void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer, byte blockLightValue, byte skyLightValue)
+	private void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer)
 	{
 		int color;
+		byte skyLight;
+		byte blockLight;
 		for (LodDirection lodDirection : VertexOptimizer.DIRECTIONS)
 		{
 			if(vertexOptimizer.isCulled(lodDirection))
@@ -116,12 +121,14 @@ public class CubicLodTemplate extends AbstractLodTemplate
 			{
 				for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++)
 				{
+					skyLight = vertexOptimizer.getSkyLight(lodDirection, verticalFaceIndex);
+					blockLight = (byte) vertexOptimizer.getBlockLight();
 					color = vertexOptimizer.getColor(lodDirection);
 					addPosAndColor(buffer,
 							vertexOptimizer.getX(lodDirection, vertexIndex),
 							vertexOptimizer.getY(lodDirection, vertexIndex, verticalFaceIndex) + DataPointUtil.VERTICAL_OFFSET,
 							vertexOptimizer.getZ(lodDirection, vertexIndex),
-							color, blockLightValue, skyLightValue);
+							color, blockLight, skyLight);
 				}
 				verticalFaceIndex++;
 			}

@@ -48,7 +48,7 @@ public abstract class AbstractLodTemplate
 		// TODO re-add transparency by replacing the color 255 with "ColorUtil.getAlpha(color)"
 		buffer.position(x, y, z)
 		.color(ColorUtil.getRed(color), ColorUtil.getGreen(color), ColorUtil.getBlue(color), 255)
-		.minecraftLightValue(blockLightValue).minecraftLightValue(skyLightValue)
+		.minecraftLightValue(skyLightValue).minecraftLightValue(blockLightValue)
 		.endVertex();
 	}
 	

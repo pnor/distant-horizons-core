@@ -37,7 +37,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 /**
  * This class handles all the vertex optimization that's needed for a column of lods. W
  * @author Leonardo Amato
- * @version 12-8-2021
+ * @version 10-2-2021
  */
 public class VertexOptimizer
 {
@@ -197,6 +197,7 @@ public class VertexOptimizer
 	 */
 	public final Map<LodDirection, int[]> adjHeight;
 	public final Map<LodDirection, int[]> adjDepth;
+	public final Map<LodDirection, byte[]> skyLights;
 	public byte blockLight;
 	
 	/** Holds if the given direction should be culled or not */
@@ -211,6 +212,15 @@ public class VertexOptimizer
 		boxWidth = new int[3];
 		
 		colorMap = new int[6];
+		skyLights = new HashMap<LodDirection, byte[]>()
+		{{
+			put(LodDirection.UP, new byte[1]);
+			put(LodDirection.DOWN, new byte[1]);
+			put(LodDirection.EAST, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.WEST, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.SOUTH, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+			put(LodDirection.NORTH, new byte[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
+		}};
 		adjHeight = new HashMap<LodDirection, int[]>()
 		{{
 			put(LodDirection.EAST, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
@@ -230,9 +240,10 @@ public class VertexOptimizer
 	}
 	
 	/** Set the light of the columns */
-	public void setBlockLight(byte blockLight)
+	public void setLights(int skyLight, int blockLight)
 	{
-		this.blockLight = blockLight;
+		this.blockLight = (byte) blockLight;
+		skyLights.get(LodDirection.UP)[0] = (byte) skyLight;
 	}
 	
 	/**
@@ -266,11 +277,20 @@ public class VertexOptimizer
 	
 	/**
 	 */
-	public byte getBlockLight()
+	public byte getSkyLight(LodDirection lodDirection, int verticalIndex)
+	{
+		if(lodDirection == LodDirection.UP || lodDirection == LodDirection.DOWN)
+			return skyLights.get(lodDirection)[0];
+		else
+			return skyLights.get(lodDirection)[verticalIndex];
+	}
+	
+	/**
+	 */
+	public int getBlockLight()
 	{
 		return blockLight;
 	}
-	
 	/** clears this box, resetting everything to default values */
 	public void reset()
 	{
@@ -284,6 +304,7 @@ public class VertexOptimizer
 			{
 				adjHeight.get(lodDirection)[i] = VOID_FACE;
 				adjDepth.get(lodDirection)[i] = VOID_FACE;
+				skyLights.get(lodDirection)[i] = 0;
 			}
 		}
 	}
@@ -334,6 +355,10 @@ public class VertexOptimizer
 		}*/
 		//Down direction case
 		singleAdjDataPoint = adjData.get(LodDirection.DOWN)[0];
+		if(DataPointUtil.doesItExist(singleAdjDataPoint))
+			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+		else
+			skyLights.get(LodDirection.DOWN)[0] = skyLights.get(LodDirection.UP)[0];
 		//other sided
 		//TODO clean some similar cases
 		for (LodDirection lodDirection : ADJ_DIRECTIONS)
@@ -348,6 +373,7 @@ public class VertexOptimizer
 				adjDepth.get(lodDirection)[0] = minY;
 				adjHeight.get(lodDirection)[1] = VOID_FACE;
 				adjDepth.get(lodDirection)[1] = VOID_FACE;
+				skyLights.get(lodDirection)[0] = 15; //in void set full skylight
 				continue;
 			}
 			
@@ -378,10 +404,12 @@ public class VertexOptimizer
 						{
 							adjHeight.get(lodDirection)[0] = getMaxY();
 							adjDepth.get(lodDirection)[0] = getMinY();
+							skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
 						}
 						else
 						{
 							adjDepth.get(lodDirection)[faceToDraw] = getMinY();
+							skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 						}
 						faceToDraw++;
 						toFinish = false;
@@ -407,10 +435,12 @@ public class VertexOptimizer
 							{
 								adjHeight.get(lodDirection)[0] = getMaxY();
 								adjDepth.get(lodDirection)[0] = height;
+								skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
 							}
 							else
 							{
 								adjDepth.get(lodDirection)[faceToDraw] = height;
+								skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 							}
 							toFinish = false;
 							faceToDraw++;
@@ -438,6 +468,7 @@ public class VertexOptimizer
 						}
 						
 						adjDepth.get(lodDirection)[faceToDraw] = height;
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 						faceToDraw++;
 						adjHeight.get(lodDirection)[faceToDraw] = depth;
 						firstFace = false;
@@ -451,6 +482,7 @@ public class VertexOptimizer
 			{
 				adjHeight.get(lodDirection)[0] = getMaxY();
 				adjDepth.get(lodDirection)[0] = getMinY();
+				skyLights.get(lodDirection)[0] = skyLights.get(LodDirection.UP)[0];
 				faceToDraw++;
 			}
 			else if (toFinish)
@@ -459,6 +491,10 @@ public class VertexOptimizer
 				if(toFinishIndex < dataPoint.length)
 				{
 					singleAdjDataPoint = dataPoint[toFinishIndex];
+					if (DataPointUtil.doesItExist(singleAdjDataPoint))
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+					else
+						skyLights.get(lodDirection)[faceToDraw] = skyLights.get(LodDirection.UP)[0];
 				}
 				faceToDraw++;
 			}
