@@ -306,7 +306,7 @@ public class VerticalLevelContainer implements LevelContainer
 	 * @param lightDataToMerge
 	 * @effect
 	 */
-	public void computeColorLightVerticalData(int[] colorDataToMerge, byte[] lightDataToMerge)
+	public void computeColorLightVerticalData(int[] colorDataToMerge, byte[] lightDataToMerge, int[] verticalDataToMerge)
 	{
 	
 	}
