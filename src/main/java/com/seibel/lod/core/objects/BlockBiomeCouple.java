@@ -3,22 +3,86 @@ package com.seibel.lod.core.objects;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 
+import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class BlockBiomeCouple
 {
+	public static ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
+	public static ConcurrentMap<IBiomeWrapper, ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple>> withBiomeIstanceCache = new ConcurrentHashMap<>();
+	
 	String blockName;
 	String biomeName;
+	String coupleName;
 	
 	IBiomeWrapper biomeColor;
 	IBlockColorWrapper blockColor;
 	
-	public BlockBiomeCouple(IBiomeWrapper biomeColor, IBlockColorWrapper blockColor)
+	public static void addBlockBiomeToCache(IBlockColorWrapper blockColor){
+	}
+	
+	public static BlockBiomeCouple getBlockBiomeCouple(IBlockColorWrapper blockColor){
+		if(noBiomeIstanceCache.containsKey(blockColor))
+		{
+			return noBiomeIstanceCache.get(blockColor);
+		}
+		else
+		{
+			BlockBiomeCouple couple = new BlockBiomeCouple(blockColor);
+			noBiomeIstanceCache.put(blockColor,couple);
+			return couple;
+		}
+	}
+	
+	public static BlockBiomeCouple getBlockBiomeCouple(IBiomeWrapper biomeColor, IBlockColorWrapper blockColor){
+		if(biomeColor == null)
+		{
+			return getBlockBiomeCouple(blockColor);
+		}
+		else
+		{
+			if(withBiomeIstanceCache.containsKey(biomeColor))
+			{
+				withBiomeIstanceCache.put(biomeColor, new ConcurrentHashMap<>());
+			}
+			ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> blockToCoupleMap = withBiomeIstanceCache.get(biomeColor);
+			if(blockToCoupleMap.containsKey(blockColor))
+			{
+				return blockToCoupleMap.get(blockColor);
+			}
+			else
+			{
+				BlockBiomeCouple couple = new BlockBiomeCouple(blockColor,biomeColor);
+				blockToCoupleMap.put(blockColor,couple);
+				return couple;
+			}
+		}
+	}
+	
+	public BlockBiomeCouple(IBlockColorWrapper blockColor)
+	{
+		this.biomeColor = null;
+		this.blockColor = blockColor;
+		biomeName = "";
+		blockName = blockColor.getName();
+		coupleName = blockName;
+	}
+	
+	public BlockBiomeCouple(IBlockColorWrapper blockColor, IBiomeWrapper biomeColor)
 	{
 		this.biomeColor = biomeColor;
 		this.blockColor = blockColor;
-		biomeName = biomeColor.getClass().getName();
-		blockName = blockColor.getClass().getName();
+		
+		if(biomeColor == null)
+			biomeName = biomeColor.getName();
+		else
+			biomeName = "";
+		
+		blockName = blockColor.getName();
+		
+		coupleName = blockName + biomeName;
 	}
 	
 	@Override public boolean equals(Object o)
@@ -35,4 +99,6 @@ public class BlockBiomeCouple
 	{
 		return Objects.hash(blockName, biomeName);
 	}
+	
+	
 }
