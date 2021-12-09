@@ -284,7 +284,7 @@ public class VerticalLevelContainer implements LevelContainer
 	 * @param positionDataToMerge
 	 * @effect
 	 */
-	public void computePositionData(int[] positionDataToMerge)
+	public void computePositionData(short[] positionDataToMerge)
 	{
 	
 	}
