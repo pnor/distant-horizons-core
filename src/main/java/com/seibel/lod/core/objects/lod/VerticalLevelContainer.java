@@ -36,9 +36,21 @@ public class VerticalLevelContainer implements LevelContainer
 	
 	public final byte detailLevel;
 	public final int size;
+	public final int chunkCount = 0;
+	public final int chunkSize = 0;
+	
 	public final int maxVerticalData;
 	
 	public final long[] dataContainer;
+	
+	//length should be chunkCount
+	public final byte[] verticalSize = null;
+	
+	//length should be chunkCount
+	public final short[] positionData = null;
+	public final int[][] verticalData = null;
+	public final int[][] colorData = null;
+	public final byte[][] lightData = null;
 	
 	public VerticalLevelContainer(byte detailLevel)
 	{
@@ -265,6 +277,38 @@ public class VerticalLevelContainer implements LevelContainer
 			array[start + length + i] = array[start + i];
 			array[start + i] = 0;
 		}
+	}
+	
+	/**
+	 *
+	 * @param positionDataToMerge
+	 * @effect
+	 */
+	public void computePositionData(int[] positionDataToMerge)
+	{
+	
+	}
+	
+	/**
+	 *
+	 * @param verticalDataToMerge
+	 * @param maxVerticalData max vertical size of the merged data
+	 * @effect save in
+	 */
+	public void computeHeightAndDepthData(int[] verticalDataToMerge, int maxVerticalData)
+	{
+	
+	}
+	
+	/**
+	 *
+	 * @param colorDataToMerge
+	 * @param lightDataToMerge
+	 * @effect
+	 */
+	public void computeColorLightVerticalData(int[] colorDataToMerge, byte[] lightDataToMerge)
+	{
+	
 	}
 	
 	/**

@@ -40,12 +40,21 @@ public class PositionDataFormat
 		return positionData;
 	}
 	
+	public static String toString(int verticalData, short positionData)
+	{
+		return getLodCount(verticalData) + " " +
+					   getLightFlag(verticalData)  + " " +
+					   getGenerationMode(verticalData)  + " " +
+					   isVoid(verticalData)  + " " +
+					   doesItExist(verticalData)  + " " +'\n';
+	}
+	
 	public static byte getLodCount(short dataPoint)
 	{
 		return (byte) ((dataPoint >>> LOD_COUNT_SHIFT) & LOD_COUNT_MASK);
 	}
 	
-	public static boolean getFlag(short dataPoint)
+	public static boolean getLightFlag(short dataPoint)
 	{
 		return ((dataPoint >>> CORRECT_LIGHT_SHIFT) & CORRECT_LIGHT_MASK) == 1;
 	}
