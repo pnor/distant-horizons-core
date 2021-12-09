@@ -551,7 +551,6 @@ public class LodDimension
 		// We can use two type of generation scheduling
 		switch (CONFIG.client().worldGenerator().getGenerationPriority())
 		{
-		default:
 		case NEAR_FIRST:
 			//in the NEAR_FIRST generation scheduling we prioritize the nearest un-generated position to the player
 			//the chunk position to generate will be stored in a posToGenerate object
@@ -637,7 +636,7 @@ public class LodDimension
 			}
 			break;
 		
-		
+		default:
 		case FAR_FIRST:
 			//in the FAR_FIRST generation we dedicate part of the generation process to the far region with really
 			//low detail quality.
