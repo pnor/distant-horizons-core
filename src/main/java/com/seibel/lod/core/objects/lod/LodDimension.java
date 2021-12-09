@@ -909,4 +909,39 @@ public class LodDimension
 	{
 		isRegionDirty[i][j] = val;
 	}
+	
+	public void mergeMultiData(byte detailLevel, int posX, int posZ, boolean dontSave, long[] dataToMergeVertical, int inputVerticalData, int maxVerticalData)
+	{
+		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
+		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
+		
+		// don't continue if the region can't be saved
+		LodRegion region = getRegion(regionPosX, regionPosZ);
+		if (region == null)
+			return;
+		
+		region.mergeMultiData(detailLevel, posX, posZ, dataToMergeVertical, inputVerticalData, maxVerticalData);
+		
+		// only save valid LODs to disk
+		if (!dontSave && fileHandler != null)
+		{
+			try
+			{
+				// mark the region as dirty, so it will be saved to disk
+				int xIndex = (regionPosX - center.x) + halfWidth;
+				int zIndex = (regionPosZ - center.z) + halfWidth;
+				
+				isRegionDirty[xIndex][zIndex] = true;
+				regenRegionBuffer[xIndex][zIndex] = true;
+				regenDimensionBuffers = true;
+			}
+			catch (ArrayIndexOutOfBoundsException e)
+			{
+				e.printStackTrace();
+				// If this happens, the method was probably
+				// called when the dimension was changing size.
+				// Hopefully this shouldn't be an issue.
+			}
+		}
+	}
 }

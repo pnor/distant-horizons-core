@@ -198,16 +198,9 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			
 			long[] data;
 			long[] dataToMergeVertical = createVerticalDataToMerge(detail, chunk, config, startX, startZ);
-			data = DataPointUtil.mergeMultiData(dataToMergeVertical, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
-			
-			
-			//lodDim.clear(detailLevel, posX, posZ);
-			if (data != null && data.length != 0)
-			{
-				posX = LevelPosUtil.convert((byte) 0, chunk.getPos().getX() * 16 + startX, detail.detailLevel);
-				posZ = LevelPosUtil.convert((byte) 0, chunk.getPos().getZ() * 16 + startZ, detail.detailLevel);
-				lodDim.addVerticalData(detailLevel, posX, posZ, data, false);
-			}
+			posX = LevelPosUtil.convert((byte) 0, chunk.getPos().getX() * 16 + startX, detail.detailLevel);
+			posZ = LevelPosUtil.convert((byte) 0, chunk.getPos().getZ() * 16 + startZ, detail.detailLevel);
+			lodDim.mergeMultiData(detailLevel, posX, posZ, false, dataToMergeVertical, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
 		}
 		lodDim.updateData(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getPos().getX(), chunk.getPos().getZ());
 		//executeTime = System.currentTimeMillis() - executeTime;

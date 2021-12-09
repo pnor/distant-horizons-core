@@ -263,6 +263,7 @@ public class DataPointUtil
 	 * @param maxVerticalData max vertical size of the merged data
 	 * @return one column of correctly parsed data
 	 */
+	@Deprecated
 	public static long[] mergeMultiData(long[] dataToMerge, int inputVerticalData, int maxVerticalData)
 	{
 		int size = dataToMerge.length / inputVerticalData;

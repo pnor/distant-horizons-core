@@ -610,4 +610,16 @@ public class LodRegion
 	{
 		return getLevel(LodUtil.REGION_DETAIL_LEVEL).toString();
 	}
+	
+	public void mergeMultiData(byte detailLevel, int posX, int posZ, long[] dataToMergeVertical, int inputVerticalData, int maxVerticalData)
+	{
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
+		// The dataContainer could have null entries if the
+		// detailLevel changes.
+		if (this.dataContainer[detailLevel] == null)
+			this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
+		
+		this.dataContainer[detailLevel].mergeMultiData(posX, posZ, dataToMergeVertical, inputVerticalData, maxVerticalData);
+	}
 }
