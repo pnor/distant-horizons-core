@@ -910,7 +910,7 @@ public class LodDimension
 		isRegionDirty[i][j] = val;
 	}
 	
-	public void mergeMultiData(byte detailLevel, int posX, int posZ, boolean dontSave, long[] dataToMergeVertical, int inputVerticalData, int maxVerticalData)
+	public void mergeMultiData(byte detailLevel, int posX, int posZ, boolean dontSave, long[] dataToMergeVertical, int inputVerticalData)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -920,7 +920,7 @@ public class LodDimension
 		if (region == null)
 			return;
 		
-		region.mergeMultiData(detailLevel, posX, posZ, dataToMergeVertical, inputVerticalData, maxVerticalData);
+		region.mergeMultiData(detailLevel, posX, posZ, dataToMergeVertical, inputVerticalData);
 		
 		// only save valid LODs to disk
 		if (!dontSave && fileHandler != null)

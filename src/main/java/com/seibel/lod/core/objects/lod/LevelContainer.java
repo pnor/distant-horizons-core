@@ -113,5 +113,5 @@ public interface LevelContainer
 	 */
 	int getMaxNumberOfLods();
 	
-	void mergeMultiData(int posX, int posZ, long[] dataToMergeVertical, int inputVerticalData, int maxVerticalData);
+	void mergeMultiData(int posX, int posZ, long[] dataToMergeVertical, int inputVerticalData);
 }

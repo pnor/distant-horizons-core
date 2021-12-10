@@ -219,7 +219,7 @@ public class VerticalLevelContainer implements LevelContainer
 					dataToMerge[(z * 2 + x) * lowerMaxVertical + verticalIndex] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
 			}
 		}
-		mergeMultiData(posX, posZ, dataToMerge, lowerMaxVertical, getMaxVerticalData());
+		mergeMultiData(posX, posZ, dataToMerge, lowerMaxVertical);
 	}
 	
 	@Override
@@ -315,15 +315,13 @@ public class VerticalLevelContainer implements LevelContainer
 	 * This method merge column of multiple data together
 	 * @param dataToMerge one or more columns of data
 	 * @param inputVerticalData vertical size of an input data
-	 * @param maxVerticalData max vertical size of the merged data
 	 */
-	public void mergeMultiData(int posX, int posZ, long[] dataToMerge, int inputVerticalData, int maxVerticalData)
+	public void mergeMultiData(int posX, int posZ, long[] dataToMerge, int inputVerticalData)
 	{
 		int size = dataToMerge.length / inputVerticalData;
-		
+		final int arrayPos = (posX * this.size + posZ) * maxVerticalData;
 		// We initialize the arrays that are going to be used
 		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((DataPointUtil.WORLD_HEIGHT / 2 + 1) * 2);
-		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
 		
 		
 		int genMode = DistanceGenerationMode.FULL.complexity;
@@ -459,7 +457,7 @@ public class VerticalLevelContainer implements LevelContainer
 			return;
 		if (allVoid)
 		{
-			dataPoint[0] = DataPointUtil.createVoidDataPoint(genMode);
+			dataContainer[arrayPos] = DataPointUtil.createVoidDataPoint(genMode);
 			return;
 		}
 		
@@ -488,11 +486,13 @@ public class VerticalLevelContainer implements LevelContainer
 		//As standard the vertical lods are ordered from top to bottom
 		for (j = count - 1; j >= 0; j--)
 		{
-			final int arrayPos = posX * size * maxVerticalData + posZ * maxVerticalData + j;
+			if (j >= heightAndDepth.length / 2)
+				break;
+			
 			height = heightAndDepth[j * 2];
 			depth = heightAndDepth[j * 2 + 1];
 			
-			if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
+			if ((depth == 0 && height == 0))
 				break;
 			
 			int numberOfChildren = 0;
@@ -555,10 +555,10 @@ public class VerticalLevelContainer implements LevelContainer
 			
 			if (allEmpty)
 				//no child has been initialized
-				dataContainer[arrayPos] = DataPointUtil.EMPTY_DATA;
+				dataContainer[arrayPos + j] = DataPointUtil.EMPTY_DATA;
 			else if (allVoid)
 				//all the children are void
-				dataContainer[arrayPos] = DataPointUtil.createVoidDataPoint(tempGenMode);
+				dataContainer[arrayPos + j] = DataPointUtil.createVoidDataPoint(tempGenMode);
 			else
 			{
 				//we have at least 1 child
@@ -568,7 +568,7 @@ public class VerticalLevelContainer implements LevelContainer
 				tempBlue = tempBlue / numberOfChildren;
 				tempLightBlock = tempLightBlock / numberOfChildren;
 				tempLightSky = tempLightSky / numberOfChildren;
-				dataContainer[arrayPos] = DataPointUtil.createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+				dataContainer[arrayPos + j] = DataPointUtil.createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
 			}
 		}
 	}

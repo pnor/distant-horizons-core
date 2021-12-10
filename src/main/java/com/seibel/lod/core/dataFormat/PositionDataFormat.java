@@ -40,7 +40,7 @@ public class PositionDataFormat
 		return positionData;
 	}
 	
-	public static String toString(int verticalData, short positionData)
+	public static String toString(short verticalData, short positionData)
 	{
 		return getLodCount(verticalData) + " " +
 					   getLightFlag(verticalData)  + " " +

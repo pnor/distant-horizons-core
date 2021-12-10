@@ -184,17 +184,6 @@ public interface ILodConfigWrapperSingleton
 			{
 				String DESC = "Graphics options that are a bit more technical.";
 				
-				LodTemplate LOD_TEMPLATE_DEFAULT = LodTemplate.CUBIC;
-				String LOD_TEMPLATE_DESC = ""
-						+ " How should the LODs be drawn? \n"
-						+ " NOTE: Currently only " + LodTemplate.CUBIC + " is implemented! \n"
-						+ " \n"
-						+ " " + LodTemplate.CUBIC + ": LOD Chunks are drawn as rectangular prisms (boxes). \n"
-						+ " " + LodTemplate.TRIANGULAR + ": LOD Chunks smoothly transition between other. \n"
-						+ " " + LodTemplate.DYNAMIC + ": LOD Chunks smoothly transition between each other, \n"
-						+ " " + "         unless a neighboring chunk is at a significantly different height. \n";
-				LodTemplate getLodTemplate();
-				void setLodTemplate(LodTemplate newLodTemplate);
 				
 				boolean DISABLE_DIRECTIONAL_CULLING_DEFAULT = false;
 				String DISABLE_DIRECTIONAL_CULLING_DESC = ""

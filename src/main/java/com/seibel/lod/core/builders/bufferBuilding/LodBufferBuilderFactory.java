@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.enums.config.LodTemplate;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -418,7 +419,7 @@ public class LodBufferBuilderFactory
 										break;
 									
 									//We send the call to create the vertices
-									CONFIG.client().graphics().advancedGraphics().getLodTemplate().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
+									LodTemplate.CUBIC.template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
 											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
