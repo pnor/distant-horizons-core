@@ -22,6 +22,7 @@ package com.seibel.lod.core.render;
 import java.awt.Color;
 import java.util.HashSet;
 
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -49,8 +50,6 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -94,7 +93,8 @@ public class LodRenderer
 	@SuppressWarnings("unused")
 	private int[][][] storageBufferIds;
 	
-	private AbstractChunkPosWrapper vbosCenter = FACTORY.createChunkPos();
+	private int vbosCenterX = 0;
+	private int vbosCenterZ = 0;
 	
 	
 	/** This is used to determine if the LODs should be regenerated */
@@ -193,7 +193,7 @@ public class LodRenderer
 		if ((partialRegen || fullRegen) && !lodBufferBuilderFactory.generatingBuffers && !lodBufferBuilderFactory.newBuffersAvailable())
 		{
 			// generate the LODs on a separate thread to prevent stuttering or freezing
-			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos(), true);
+			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), true);
 			
 			// the regen process has been started,
 			// it will be done when lodBufferBuilder.newBuffersAvailable()
@@ -376,8 +376,10 @@ public class LodRenderer
 			boolean renderBufferStorage = CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
 			
 			// where the center of the buffers is (needed when culling regions)
-			RegionPos vboCenterRegionPos = new RegionPos(vbosCenter);
-			RegionPos vboPos = new RegionPos();
+			int vboCenterRegionPosX = vbosCenterX;
+			int vboCenterRegionPosZ = vbosCenterZ;
+			int vboPosX;
+			int vboPosZ;
 			
 			
 			// render each of the buffers
@@ -385,10 +387,13 @@ public class LodRenderer
 			{
 				for (int z = 0; z < vbos.length; z++)
 				{
-					vboPos.x = x + vboCenterRegionPos.x - (lodDim.getWidth() / 2);
-					vboPos.z = z + vboCenterRegionPos.z - (lodDim.getWidth() / 2);
+					vboPosX = x + vboCenterRegionPosX - (lodDim.getWidth() / 2);
+					vboPosZ = z + vboCenterRegionPosZ - (lodDim.getWidth() / 2);
 					
-					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(), MC_RENDER.getLookAtVector(), vboPos.blockPos()))
+					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
+							MC_RENDER.getLookAtVector(),
+							LodUtil.convertLevelPos(LodUtil.REGION_DETAIL_LEVEL, vboPosX, LodUtil.BLOCK_DETAIL_LEVEL),
+							LodUtil.convertLevelPos(LodUtil.REGION_DETAIL_LEVEL, vboPosZ, LodUtil.BLOCK_DETAIL_LEVEL)))
 					{
 						// fog may be different from region to region
 						applyFog(shaderProgram, 
@@ -579,9 +584,10 @@ public class LodRenderer
 		// translate the camera relative to the regions' center
 		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
 		// accuracy vs the model view matrix, which only uses floats)
-		AbstractBlockPosWrapper bufferPos = vbosCenter.getWorldPosition();
-		double xDiff = projectedView.x - bufferPos.getX();
-		double zDiff = projectedView.z - bufferPos.getZ();
+		int bufferPosX = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterX, LodUtil.CHUNK_DETAIL_LEVEL);
+		int bufferPosZ = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterZ, LodUtil.CHUNK_DETAIL_LEVEL);
+		double xDiff = projectedView.x - bufferPosX;
+		double zDiff = projectedView.z - bufferPosZ;
 		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
 		
 		return mcModelViewMatrix;
@@ -593,9 +599,10 @@ public class LodRenderer
 	 */
 	private Vec3f getTranslatedCameraPos()
 	{
-		AbstractBlockPosWrapper worldCenter = vbosCenter.getWorldPosition();
+		int worldCenterX = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterX, LodUtil.CHUNK_DETAIL_LEVEL);
+		int worldCenterZ = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterZ, LodUtil.CHUNK_DETAIL_LEVEL);
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
-		return new Vec3f((float)cameraPos.x - worldCenter.getX(), (float)cameraPos.y, (float)cameraPos.z - worldCenter.getZ());
+		return new Vec3f((float)cameraPos.x - worldCenterX, (float)cameraPos.y, (float)cameraPos.z - worldCenterZ);
 	}
 
 	/**
@@ -671,7 +678,8 @@ public class LodRenderer
 		VertexBuffersAndOffset result = lodBufferBuilderFactory.getVertexBuffers();
 		vbos = result.vbos;
 		storageBufferIds = result.storageBufferIds;
-		vbosCenter = result.drawableCenterChunkPos;
+		vbosCenterX = result.drawableCenterChunkPosX;
+		vbosCenterZ = result.drawableCenterChunkPosZ;
 	}
 	
 	/** Calls the BufferBuilder's destroyBuffers method. */

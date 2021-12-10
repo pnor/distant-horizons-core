@@ -27,7 +27,6 @@ import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 
 /**
  * Builds LODs as rectangular prisms.
@@ -43,7 +42,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	}
 	
 	@Override
-	public void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
+	public void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerY, int playerZ, long data, Map<LodDirection, long[]> adjData,
 			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (vertexOptimizer == null)
@@ -65,7 +64,9 @@ public class CubicLodTemplate extends AbstractLodTemplate
 				DataPointUtil.getDepth(data),
 				blockWidth,
 				posX * blockWidth, 0, posZ * blockWidth, // x, y, z offset
-				bufferCenterBlockPos,
+				playerX,
+				playerY,
+				playerZ,
 				adjData,
 				color,
 				DataPointUtil.getLightSkyAlt(data),
@@ -78,7 +79,7 @@ public class CubicLodTemplate extends AbstractLodTemplate
 	private void generateBoundingBox(VertexOptimizer vertexOptimizer,
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
-			AbstractBlockPosWrapper bufferCenterBlockPos,
+			int playerX, int playerY, int playerZ,
 			Map<LodDirection, long[]> adjData,
 			int color, byte skyLight, byte blockLight,
 			boolean[] adjShadeDisabled)
@@ -95,14 +96,13 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		// offset the AABB by its x/z position in the world since
 		// it uses doubles to specify its location, unlike the model view matrix
 		// which only uses floats
-		double x = -bufferCenterBlockPos.getX();
-		double z = -bufferCenterBlockPos.getZ();
+		double x = -playerX;
+		double z = -playerZ;
 		vertexOptimizer.reset();
 		vertexOptimizer.setColor(color, adjShadeDisabled);
 		vertexOptimizer.setLights(skyLight, blockLight);
 		vertexOptimizer.setWidth(width, height - depth, width);
 		vertexOptimizer.setOffset((int) (xOffset + x), (int) (depth + yOffset), (int) (zOffset + z));
-		vertexOptimizer.setUpCulling(32, bufferCenterBlockPos);
 		vertexOptimizer.setAdjData(adjData);
 	}
 	
@@ -113,9 +113,6 @@ public class CubicLodTemplate extends AbstractLodTemplate
 		byte blockLight;
 		for (LodDirection lodDirection : VertexOptimizer.DIRECTIONS)
 		{
-			if(vertexOptimizer.isCulled(lodDirection))
-				continue;
-			
 			int verticalFaceIndex = 0;
 			while (vertexOptimizer.shouldRenderFace(lodDirection, verticalFaceIndex))
 			{

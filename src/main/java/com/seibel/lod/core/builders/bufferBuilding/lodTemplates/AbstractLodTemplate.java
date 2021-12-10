@@ -37,7 +37,7 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 public abstract class AbstractLodTemplate
 {
 	/** Uploads the given LOD to the buffer. */
-	public abstract void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
+	public abstract void addLodToBuffer(LodBufferBuilder buffer,  int playerX, int playerY, int playerZ, long data, Map<LodDirection, long[]> adjData,
 			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled);
 	
 	/** add the given position and color to the buffer */

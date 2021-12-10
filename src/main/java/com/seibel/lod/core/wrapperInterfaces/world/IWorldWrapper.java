@@ -36,11 +36,9 @@ public interface IWorldWrapper
 	
 	WorldType getWorldType();
 	
-	int getBlockLight(AbstractBlockPosWrapper blockPos);
+	int getBlockLight(int x, int y, int z);
 	
-	int getSkyLight(AbstractBlockPosWrapper blockPos);
-	
-	IBiomeWrapper getBiome(AbstractBlockPosWrapper blockPos);
+	int getSkyLight(int x, int y, int z);
 	
 	boolean hasCeiling();
 	

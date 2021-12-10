@@ -39,7 +39,7 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 public class DynamicLodTemplate extends AbstractLodTemplate
 {
 	@Override
-	public void addLodToBuffer(LodBufferBuilder buffer, AbstractBlockPosWrapper bufferCenterBlockPos, long data, Map<LodDirection, long[]> adjData,
+	public void addLodToBuffer(LodBufferBuilder buffer,  int playerX, int playerY, int playerZ, long data, Map<LodDirection, long[]> adjData,
 			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		ClientApi.LOGGER.error(DynamicLodTemplate.class.getSimpleName() + " is not implemented!");
