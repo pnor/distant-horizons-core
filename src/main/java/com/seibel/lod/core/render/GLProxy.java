@@ -57,7 +57,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * https://stackoverflow.com/questions/63509735/massive-performance-loss-with-glmapbuffer <br><br>
  * 
  * @author James Seibel
- * @version 12-8-2021
+ * @version 12-9-2021
  */
 public class GLProxy
 {
@@ -261,41 +261,6 @@ public class GLProxy
 		LodShader vertexShader = null;
 		LodShader fragmentShader = null;
 		
-		try
-		{
-			// get the shaders from the resource folder
-			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "shaders/standard.vert", false);
-			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "shaders/flat_shaded.frag", false);
-			
-			// this can be used when testing shaders, 
-			// since we can't hot swap the files in the resource folder 
-//			vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "C:/Users/James Seibel/Desktop/shaders/standard.vert", true);
-//			fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "C:/Users/James Seibel/Desktop/shaders/flat_shaded.frag", true);
-			
-			
-			// create the shaders
-			
-			lodShaderProgram = new LodShaderProgram();
-		    
-		    // Attach the compiled shaders to the program
-		    lodShaderProgram.attachShader(vertexShader);
-		    lodShaderProgram.attachShader(fragmentShader);
-		    
-		    // activate the fragment shader output
-		    GL30.glBindFragDataLocation(lodShaderProgram.id, 0, "fragColor");
-		    
-		    // attach the shader program to the OpenGL context
-		    lodShaderProgram.link();
-		    
-		    // after the shaders have been attached to the program
-		    // we don't need their OpenGL references anymore
-		    GL20.glDeleteShader(vertexShader.id);
-		    GL20.glDeleteShader(fragmentShader.id);
-		}
-		catch (Exception e)
-		{
-			ClientApi.LOGGER.error("Unable to compile shaders. Error: " + e.getMessage());
-		}
 		// get the shaders from the resource folder
 		// Use File.separator ONLY if the file is external (not in the resourse), otherwise use "/"
 		vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "shaders/standard.vert", false);
@@ -308,6 +273,7 @@ public class GLProxy
 		
 		
 		// create the shaders
+		
 		lodShaderProgram = new LodShaderProgram();
 	    
 	    // Attach the compiled shaders to the program, throws RuntimeException on link error
@@ -324,7 +290,6 @@ public class GLProxy
 	    // we don't need their OpenGL references anymore
 	    GL20.glDeleteShader(vertexShader.id);
 	    GL20.glDeleteShader(fragmentShader.id);
-
 	}
 	
 	
