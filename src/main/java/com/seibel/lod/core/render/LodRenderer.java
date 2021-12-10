@@ -573,8 +573,8 @@ public class LodRenderer
 		// translate the camera relative to the regions' center
 		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
 		// accuracy vs the model view matrix, which only uses floats)
-		int bufferPosX = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterX, LodUtil.CHUNK_DETAIL_LEVEL);
-		int bufferPosZ = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterZ, LodUtil.CHUNK_DETAIL_LEVEL);
+		int bufferPosX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
+		int bufferPosZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
 		double xDiff = projectedView.x - bufferPosX;
 		double zDiff = projectedView.z - bufferPosZ;
 		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
@@ -588,8 +588,8 @@ public class LodRenderer
 	 */
 	private Vec3f getTranslatedCameraPos()
 	{
-		int worldCenterX = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterX, LodUtil.CHUNK_DETAIL_LEVEL);
-		int worldCenterZ = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, vbosCenterZ, LodUtil.CHUNK_DETAIL_LEVEL);
+		int worldCenterX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
+		int worldCenterZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		return new Vec3f((float)cameraPos.x - worldCenterX, (float)cameraPos.y, (float)cameraPos.z - worldCenterZ);
 	}
