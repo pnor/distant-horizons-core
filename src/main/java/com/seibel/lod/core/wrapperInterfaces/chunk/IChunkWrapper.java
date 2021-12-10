@@ -46,6 +46,7 @@ public interface IChunkWrapper
 	int getChunkPosZ();
 	int getRegionPosX();
 	int getRegionPosZ();
+	int getMaxY(int x, int z);
 	int getMaxX();
 	int getMaxZ();
 	int getMinX();
