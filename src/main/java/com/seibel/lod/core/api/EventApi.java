@@ -184,14 +184,16 @@ public class EventApi
 	{
 		if (CONFIG.client().advanced().debugging().getDebugKeybindingsEnabled())
 		{
-			if (key == GLFW.GLFW_KEY_F4 && keyAction == GLFW.GLFW_PRESS)
+			if (key == GLFW.GLFW_KEY_F8 && keyAction == GLFW.GLFW_PRESS)
 			{
 				CONFIG.client().advanced().debugging().setDebugMode(CONFIG.client().advanced().debugging().getDebugMode().getNext());
+				MC.sendChatMessage("F8: Set debug mode " + CONFIG.client().advanced().debugging().getDebugMode());
 			}
 			
 			if (key == GLFW.GLFW_KEY_F6 && keyAction == GLFW.GLFW_PRESS)
 			{
 				CONFIG.client().advanced().debugging().setDrawLods(!CONFIG.client().advanced().debugging().getDrawLods());
+				MC.sendChatMessage("F6: Set rendering " + CONFIG.client().advanced().debugging().getDrawLods());
 			}
 		}
 	}

@@ -440,7 +440,7 @@ public interface ILodConfigWrapperSingleton
 				
 				boolean DEBUG_KEYBINDINGS_ENABLED_DEFAULT = true;
 				String DEBUG_KEYBINDINGS_ENABLED_DESC = ""
-						+ " If true the F4 key can be used to cycle through the different debug modes. \n"
+						+ " If true the F8 key can be used to cycle through the different debug modes. \n"
 						+ " and the F6 key can be used to enable and disable LOD rendering.";
 				boolean getDebugKeybindingsEnabled();
 				void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings);
