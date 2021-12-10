@@ -215,9 +215,6 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		
 		long[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
 		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
-		
-		int chunkPosX = chunk.getChunkPosX();
-		int chunkPosZ = chunk.getChunkPosZ();
 		int height;
 		int depth;
 		int color;
@@ -244,7 +241,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			zAbs = chunk.getMinZ() + zRel;
 			
 			//Calculate the height of the lod
-			yAbs = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET + 1;
+			yAbs = chunk.getMaxY(xRel, zRel); //DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET + 1;
 			int count = 0;
 			boolean topBlock = true;
 			while (yAbs > 0)
@@ -308,6 +305,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	/** Find the highest valid point from the Top */
 	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
+		
 		short height = DEFAULT_HEIGHT;
 		if (config.useHeightmap)
 			height = (short) chunk.getHeightMapValue(xAbs, zAbs);
