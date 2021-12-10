@@ -374,24 +374,15 @@ public class LodRenderer
 			boolean renderBufferStorage = CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
 			
 			// where the center of the buffers is (needed when culling regions)
-			int vboCenterRegionPosX = vbosCenterX;
-			int vboCenterRegionPosZ = vbosCenterZ;
-			int vboPosX;
-			int vboPosZ;
-			
-			
 			// render each of the buffers
 			for (int x = 0; x < vbos.length; x++)
 			{
 				for (int z = 0; z < vbos.length; z++)
 				{
-					vboPosX = x + vboCenterRegionPosX - (lodDim.getWidth() / 2);
-					vboPosZ = z + vboCenterRegionPosZ - (lodDim.getWidth() / 2);
-					
 					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
 							MC_RENDER.getLookAtVector(),
-							LodUtil.convertLevelPos(LodUtil.REGION_DETAIL_LEVEL, vboPosX, LodUtil.BLOCK_DETAIL_LEVEL),
-							LodUtil.convertLevelPos(LodUtil.REGION_DETAIL_LEVEL, vboPosZ, LodUtil.BLOCK_DETAIL_LEVEL)))
+							LodUtil.convertLevelPos(x + vbosCenterX - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL),
+							LodUtil.convertLevelPos(z + vbosCenterZ - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL, LodUtil.BLOCK_DETAIL_LEVEL)))
 					{
 						// fog may be different from region to region
 						applyFog(shaderProgram, 
