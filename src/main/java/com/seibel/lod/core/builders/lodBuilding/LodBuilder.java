@@ -170,7 +170,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		int startZ;
 		
 		
-		LodRegion region = lodDim.getRegion(chunk.getPos().getRegionX(), chunk.getPos().getRegionZ());
+		LodRegion region = lodDim.getRegion(chunk.getRegionPosX(), chunk.getRegionPosZ());
 		if (region == null)
 			return;
 		
@@ -204,12 +204,12 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			//lodDim.clear(detailLevel, posX, posZ);
 			if (data != null && data.length != 0)
 			{
-				posX = LevelPosUtil.convert((byte) 0, chunk.getPos().getX() * 16 + startX, detail.detailLevel);
-				posZ = LevelPosUtil.convert((byte) 0, chunk.getPos().getZ() * 16 + startZ, detail.detailLevel);
+				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, detail.detailLevel);
+				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, detail.detailLevel);
 				lodDim.addVerticalData(detailLevel, posX, posZ, data, false);
 			}
 		}
-		lodDim.updateData(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getPos().getX(), chunk.getPos().getZ());
+		lodDim.updateData(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getChunkPosX(), chunk.getChunkPosZ());
 		//executeTime = System.currentTimeMillis() - executeTime;
 		//if (executeTime > 0) ClientApi.LOGGER.info("generateLodNodeFromChunk level: " + detailLevel + " time ms: " + executeTime);
 	}
@@ -223,7 +223,8 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		long[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
 		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
 		
-		AbstractChunkPosWrapper chunkPos = chunk.getPos();
+		int chunkPosX = chunk.getChunkPosX();
+		int chunkPosZ = chunk.getChunkPosZ();
 		int height;
 		int depth;
 		int color;
@@ -240,15 +241,14 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		boolean hasCeiling = MC.getWrappedClientWorld().getDimensionType().hasCeiling();
 		boolean hasSkyLight = MC.getWrappedClientWorld().getDimensionType().hasSkyLight();
 		boolean isDefault;
-		AbstractBlockPosWrapper blockPos = FACTORY.createBlockPos();
 		int index;
 		
 		for (index = 0; index < size * size; index++)
 		{
 			xRel = startX + index % size;
 			zRel = startZ + index / size;
-			xAbs = chunkPos.getMinBlockX() + xRel;
-			zAbs = chunkPos.getMinBlockZ() + zRel;
+			xAbs = chunk.getMinX() + xRel;
+			zAbs = chunk.getMinZ() + zRel;
 			
 			//Calculate the height of the lod
 			yAbs = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET + 1;
@@ -256,7 +256,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			boolean topBlock = true;
 			while (yAbs > 0)
 			{
-				height = determineHeightPointFrom(chunk, config, xRel, yAbs, zRel, blockPos);
+				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
 				
 				// If the lod is at the default height, it must be void data
 				if (height == DEFAULT_HEIGHT)
@@ -268,21 +268,17 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 				
 				yAbs = height - 1;
 				// We search light on above air block
-				depth = determineBottomPointFrom(chunk, config, xRel, yAbs, zRel, blockPos);
+				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs);
 				if (hasCeiling && topBlock)
 				{
 					yAbs = depth;
-					blockPos.set(xAbs, yAbs, zAbs);
-					light = getLightValue(chunk, blockPos, true, hasSkyLight, true);
-					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs, blockPos);
-					blockPos.set(xAbs, yAbs - 1, zAbs);
+					light = getLightValue(chunk, xAbs,yAbs,zAbs, true, hasSkyLight, true);
+					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
 				}
 				else
 				{
-					blockPos.set(xAbs, yAbs, zAbs);
-					light = getLightValue(chunk, blockPos, hasCeiling, hasSkyLight, topBlock);
-					color = generateLodColor(chunk, config, xRel, yAbs, zRel, blockPos);
-					blockPos.set(xAbs, yAbs + 1, zAbs);
+					light = getLightValue(chunk, xAbs, yAbs, zAbs, hasCeiling, hasSkyLight, topBlock);
+					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
 				}
 				lightBlock = light & 0b1111;
 				lightSky = (light >> 4) & 0b1111;
@@ -301,14 +297,13 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	 * Find the lowest valid point from the bottom.
 	 * Used when creating a vertical LOD.
 	 */
-	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, AbstractBlockPosWrapper blockPos)
+	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
 		short depth = DEFAULT_DEPTH;
 		
 		for (int y = yAbs; y >= 0; y--)
 		{
-			blockPos.set(xAbs, y, zAbs);
-			if (!isLayerValidLodPoint(chunk, blockPos))
+			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs))
 			{
 				depth = (short) (y + 1);
 				break;
@@ -318,7 +313,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	}
 	
 	/** Find the highest valid point from the Top */
-	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, AbstractBlockPosWrapper blockPos)
+	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
 		short height = DEFAULT_HEIGHT;
 		if (config.useHeightmap)
@@ -327,8 +322,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		{
 			for (int y = yAbs; y >= 0; y--)
 			{
-				blockPos.set(xAbs, y, zAbs);
-				if (isLayerValidLodPoint(chunk, blockPos))
+				if (isLayerValidLodPoint(chunk, xAbs, y, zAbs))
 				{
 					height = (short) (y + 1);
 					break;
@@ -348,19 +342,18 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	 * Generate the color for the given chunk using biome water color, foliage
 	 * color, and grass color.
 	 */
-	private int generateLodColor(IChunkWrapper chunk, LodBuilderConfig builderConfig, int xRel, int yAbs, int zRel, AbstractBlockPosWrapper blockPos)
+	private int generateLodColor(IChunkWrapper chunk, LodBuilderConfig builderConfig, int x, int y, int z)
 	{
 		int colorInt;
 		if (builderConfig.useBiomeColors)
 		{
 			// I have no idea why I need to bit shift to the right, but
 			// if I don't the biomes don't show up correctly.
-			colorInt = chunk.getBiome(xRel, yAbs, zRel).getColorForBiome(xRel, zRel);
+			colorInt = chunk.getBiome(x, y, z).getColorForBiome(x, z);
 		}
 		else
 		{
-			blockPos.set(chunk.getPos().getMinBlockX() + xRel, yAbs, chunk.getPos().getMinBlockZ() + zRel);
-			colorInt = getColorForBlock(chunk, blockPos);
+			colorInt = getColorForBlock(chunk, x, y, z);
 			
 			// if we are skipping non-full and non-solid blocks that means we ignore
 			// snow, flowers, etc. Get the above block so we can still get the color
@@ -368,8 +361,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			int aboveColorInt = 0;
 			if (config.client().worldGenerator().getBlocksToAvoid().nonFull || config.client().worldGenerator().getBlocksToAvoid().noCollision)
 			{
-				blockPos.set(chunk.getPos().getMinBlockX() + xRel, yAbs + 1, chunk.getPos().getMinBlockZ() + zRel);
-				aboveColorInt = getColorForBlock(chunk, blockPos);
+				aboveColorInt = getColorForBlock(chunk, x, y, z);
 			}
 			
 			//if (colorInt == 0 && yAbs > 0)
@@ -386,7 +378,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	}
 	
 	/** Gets the light value for the given block position */
-	private int getLightValue(IChunkWrapper chunk, AbstractBlockPosWrapper blockPos, boolean hasCeiling, boolean hasSkyLight, boolean topBlock)
+	private int getLightValue(IChunkWrapper chunk, int x, int y, int z, boolean hasCeiling, boolean hasSkyLight, boolean topBlock)
 	{
 		int skyLight = 0;
 		int blockLight;
@@ -395,25 +387,25 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		
 		IWorldWrapper world = MC.getWrappedServerWorld();
 		
-		int blockBrightness = chunk.getEmittedBrightness(blockPos);
+		int blockBrightness = chunk.getEmittedBrightness(x, y, z);
 		// get the air block above or below this block
 		if (hasCeiling && topBlock)
-			blockPos.set(blockPos.getX(), blockPos.getY() - 1, blockPos.getZ());
+			y--;
 		else
-			blockPos.set(blockPos.getX(), blockPos.getY() + 1, blockPos.getZ());
+			y++;
 		
 		
 		
 		if (world != null)
 		{
 			// server world sky light (always accurate)
-			blockLight = world.getBlockLight(blockPos);
+			blockLight = world.getBlockLight(x,y,z);
 			if (topBlock && !hasCeiling && hasSkyLight)
 				skyLight = DEFAULT_MAX_LIGHT;
 			else
 			{
 				if (hasSkyLight)
-					skyLight = world.getSkyLight(blockPos);
+					skyLight = world.getSkyLight(x,y,z);
 				//else
 				//	skyLight = 0;
 			}
@@ -421,7 +413,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			{
 				// we are on predicted terrain, and we don't know what the light here is,
 				// lets just take a guess
-				if (blockPos.getY() >= MC.getWrappedClientWorld().getSeaLevel() - 5)
+				if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 				{
 					skyLight = 12;
 					isDefault = 1;
@@ -442,7 +434,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			else
 			{
 				// client world sky light (almost never accurate)
-				blockLight = world.getBlockLight(blockPos);
+				blockLight = world.getBlockLight(x,y,z);
 				// estimate what the lighting should be
 				if (hasSkyLight || !hasCeiling)
 				{
@@ -451,14 +443,14 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 					else
 					{
 						if (hasSkyLight)
-							skyLight = world.getSkyLight(blockPos);
+							skyLight = world.getSkyLight(x,y,z);
 						//else
 						//	skyLight = 0;
 						if (!chunk.isLightCorrect() && (skyLight == 0 || skyLight == 15))
 						{
 							// we don't know what the light here is,
 							// lets just take a guess
-							if (blockPos.getY() >= MC.getWrappedClientWorld().getSeaLevel() - 5)
+							if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 							{
 								skyLight = 12;
 								isDefault = 1;
@@ -477,24 +469,19 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	}
 	
 	/** Returns a color int for the given block. */
-	private int getColorForBlock(IChunkWrapper chunk, AbstractBlockPosWrapper blockPos)
+	private int getColorForBlock(IChunkWrapper chunk, int x, int y, int z)
 	{
 		int colorOfBlock;
 		int colorInt;
 		
-		int xRel = blockPos.getX() - chunk.getPos().getMinBlockX();
-		int zRel = blockPos.getZ() - chunk.getPos().getMinBlockZ();
-		//int x = blockPos.getX();
-		int y = blockPos.getY();
-		//int z = blockPos.getZ();
 		
 		IBlockColorWrapper blockColorWrapper;
-		IBlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(blockPos);
+		IBlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(x, y, z);
 		
-		if (chunk.isWaterLogged(blockPos))
+		if (chunk.isWaterLogged(x, y, z))
 			blockColorWrapper = BLOCK_COLOR.getWaterColor();
 		else
-			blockColorWrapper = chunk.getBlockColorWrapper(blockPos);
+			blockColorWrapper = chunk.getBlockColorWrapper(x, y, z);
 		
 		if (blockShapeWrapper.isToAvoid())
 			return 0;
@@ -504,7 +491,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		
 		if (blockColorWrapper.hasTint())
 		{
-			IBiomeWrapper biome = chunk.getBiome(xRel, y, zRel);
+			IBiomeWrapper biome = chunk.getBiome(x, y, z);
 			int tintValue;
 			if (blockColorWrapper.hasGrassTint())
 				// grass and green plants
@@ -524,15 +511,15 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	
 	
 	/** Is the block at the given blockPos a valid LOD point? */
-	private boolean isLayerValidLodPoint(IChunkWrapper chunk, AbstractBlockPosWrapper blockPos)
+	private boolean isLayerValidLodPoint(IChunkWrapper chunk, int x, int y, int z)
 	{
-		if (chunk.isWaterLogged(blockPos))
+		if (chunk.isWaterLogged(x, y, z))
 			return true;
 		
 		boolean nonFullAvoidance = config.client().worldGenerator().getBlocksToAvoid().nonFull;
 		boolean noCollisionAvoidance = config.client().worldGenerator().getBlocksToAvoid().noCollision;
 		
-		IBlockShapeWrapper block = chunk.getBlockShapeWrapper(blockPos);
+		IBlockShapeWrapper block = chunk.getBlockShapeWrapper(x, y, z);
 		return !block.isToAvoid()
 					   && !(nonFullAvoidance && block.isNonFull())
 					   && !(noCollisionAvoidance && block.hasNoCollision());

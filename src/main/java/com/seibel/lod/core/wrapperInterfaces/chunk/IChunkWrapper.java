@@ -23,6 +23,8 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
+import com.seibel.lod.forge.wrappers.block.BlockShapeWrapper;
+import net.minecraft.block.Block;
 
 /**
  * @author James Seibel
@@ -32,21 +34,26 @@ public interface IChunkWrapper
 {
 	int getHeight();
 	
-	boolean isPositionInWater(AbstractBlockPosWrapper blockPos);
+	boolean isPositionInWater(int x, int y, int z);
 	
 	int getHeightMapValue(int xRel, int zRel);
 	
-	IBiomeWrapper getBiome(int xRel, int yAbs, int zRel);
+	IBiomeWrapper getBiome(int x, int y, int z);
+	IBlockColorWrapper getBlockColorWrapper(int x, int y, int z);
+	IBlockShapeWrapper getBlockShapeWrapper(int x, int y, int z);
 	
-	IBlockColorWrapper getBlockColorWrapper(AbstractBlockPosWrapper blockPos);
-	
-	IBlockShapeWrapper getBlockShapeWrapper(AbstractBlockPosWrapper blockPos);
-	
-	AbstractChunkPosWrapper getPos();
+	int getChunkPosX();
+	int getChunkPosZ();
+	int getRegionPosX();
+	int getRegionPosZ();
+	int getMaxX();
+	int getMaxZ();
+	int getMinX();
+	int getMinZ();
 	
 	boolean isLightCorrect();
 	
-	boolean isWaterLogged(AbstractBlockPosWrapper blockPos);
+	boolean isWaterLogged(int x, int y, int z);
 	
-	int getEmittedBrightness(AbstractBlockPosWrapper blockPos);
+	int getEmittedBrightness(int x, int y, int z);
 }

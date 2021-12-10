@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.minecraft.util.math.BlockPos;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -144,14 +145,17 @@ public class LodBufferBuilderFactory
 	
 	private volatile VertexOptimizer[][] vertexOptimizerCache;
 	private volatile PosToRenderContainer[][] setsToRender;
-	private volatile RegionPos center;
+	private volatile int centerRegionX = 0;
+	private volatile int centerRegionZ = 0;
 	
 	/**
 	 * This is the ChunkPosWrapper the player was at the last time the buffers were built.
 	 * IE the center of the buffers last time they were built
 	 */
-	private volatile AbstractChunkPosWrapper drawableCenterChunkPos = WRAPPER_FACTORY.createChunkPos();
-	private volatile AbstractChunkPosWrapper buildableCenterChunkPos = WRAPPER_FACTORY.createChunkPos();
+	private volatile int drawableCenterChunkPosX = 0;
+	private volatile int drawableCenterChunkPosZ = 0;
+	private volatile int buildableCenterChunkPosX = 0;
+	private volatile int buildableCenterChunkPosZ = 0;
 	
 	
 	
@@ -173,7 +177,7 @@ public class LodBufferBuilderFactory
 	 * swapped with the drawable buffers in the LodRenderer to be drawn.
 	 */
 	public void generateLodBuffersAsync(LodRenderer renderer, LodDimension lodDim,
-			AbstractBlockPosWrapper playerBlockPos, boolean fullRegen)
+			int playerX, int playerY, int playerZ, boolean fullRegen)
 	{
 		
 		// only allow one generation process to happen at a time
@@ -191,7 +195,7 @@ public class LodBufferBuilderFactory
 		generatingBuffers = true;
 		
 		
-		Thread thread = new Thread(() -> generateLodBuffersThread(renderer, lodDim, playerBlockPos, fullRegen));
+		Thread thread = new Thread(() -> generateLodBuffersThread(renderer, lodDim, playerX, playerY, playerZ, fullRegen));
 		
 		mainGenThread.execute(thread);
 	}
@@ -200,15 +204,17 @@ public class LodBufferBuilderFactory
 	// more easily edited by hot swapping. Because, As far as James is aware
 	// you can't hot swap lambda expressions.
 	private void generateLodBuffersThread(LodRenderer renderer, LodDimension lodDim,
-			AbstractBlockPosWrapper playerBlockPos, boolean fullRegen)
+			int playerX, int playerY, int playerZ, boolean fullRegen)
 	{
 		bufferLock.lock();
 		
 		try
 		{
 			// round the player's block position down to the nearest chunk BlockPos
-			AbstractChunkPosWrapper playerChunkPos = WRAPPER_FACTORY.createChunkPos(playerBlockPos);
-			AbstractBlockPosWrapper playerBlockPosRounded = playerChunkPos.getWorldPosition();
+			int playerChunkX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.CHUNK_DETAIL_LEVEL);
+			int playerChunkZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.CHUNK_DETAIL_LEVEL);
+			int playerRegionX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.REGION_DETAIL_LEVEL);
+			int playerRegionZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.REGION_DETAIL_LEVEL);
 			
 			
 			//long startTime = System.currentTimeMillis();
@@ -216,11 +222,6 @@ public class LodBufferBuilderFactory
 			ArrayList<Callable<Boolean>> nodeToRenderThreads = new ArrayList<>(lodDim.getWidth() * lodDim.getWidth());
 			
 			startBuffers(fullRegen, lodDim);
-			
-			
-			RegionPos playerRegionPos = new RegionPos(playerChunkPos);
-			if (center == null)
-				center = playerRegionPos;
 			
 			if (setsToRender == null)
 				setsToRender = new PosToRenderContainer[lodDim.getWidth()][lodDim.getWidth()];
@@ -235,14 +236,15 @@ public class LodBufferBuilderFactory
 				vertexOptimizerCache = new VertexOptimizer[lodDim.getWidth()][lodDim.getWidth()];
 			
 			// this will be the center of the VBOs once they have been built
-			buildableCenterChunkPos = playerChunkPos;
+			buildableCenterChunkPosX = playerChunkX;
+			buildableCenterChunkPosZ = playerChunkZ;
 			
 			
 			//================================//
 			// create the nodeToRenderThreads //
 			//================================//
 			
-			skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerBlockPos);
+			skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerX, playerY, playerZ);
 			
 			for (int xRegion = 0; xRegion < lodDim.getWidth(); xRegion++)
 			{
@@ -308,8 +310,8 @@ public class LodBufferBuilderFactory
 							lodDim.getPosToRender(
 									posToRender,
 									regionPos,
-									playerBlockPosRounded.getX(),
-									playerBlockPosRounded.getZ());
+									playerX,
+									playerZ);
 							
 							
 							
@@ -327,14 +329,14 @@ public class LodBufferBuilderFactory
 								posX = posToRender.getNthPosX(index);
 								posZ = posToRender.getNthPosZ(index);
 								
-								int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkPos.getX();
-								int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkPos.getZ();
+								int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkX;
+								int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkZ;
 								
 								//We don't want to render this fake block if
 								//The block is inside the render distance with, is not bigger than a chunk and is positioned in a chunk set as vanilla rendered
 								//
 								//The block is in the player chunk or in a chunk adjacent to the player
-								if(isThisPositionGoingToBeRendered(detailLevel, posX, posZ, playerChunkPos, vanillaRenderedChunks, gameChunkRenderDistance))
+								if(isThisPositionGoingToBeRendered(detailLevel, posX, posZ, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance))
 								{
 									continue;
 								}
@@ -355,8 +357,8 @@ public class LodBufferBuilderFactory
 									xAdj = posX + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).x;
 									zAdj = posZ + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).z;
 									long data;
-									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkPos.getX();
-									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkPos.getZ();
+									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkX;
+									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
 									adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
 									
 									//If the adj block is rendered in the same region and with same detail
@@ -365,7 +367,7 @@ public class LodBufferBuilderFactory
 									// We avoid cases where the adjPosition is in player chunk while the position is not
 									// to always have a wall underwater
 									if(posToRender.contains(detailLevel, xAdj, zAdj)
-										&& !isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkPos, vanillaRenderedChunks, gameChunkRenderDistance)
+										&& !isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance)
 										&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
 									{
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
@@ -382,7 +384,7 @@ public class LodBufferBuilderFactory
 										
 										adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
 										
-										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkPos, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
+										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
 													&& !DataPointUtil.isVoid(data))
 										{
 											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
@@ -418,7 +420,7 @@ public class LodBufferBuilderFactory
 										break;
 									
 									//We send the call to create the vertices
-									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
+									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerY, playerZ, data, adjData,
 											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
@@ -488,12 +490,12 @@ public class LodBufferBuilderFactory
 		}
 	}
 	
-	private boolean isThisPositionGoingToBeRendered(byte detailLevel, int posX, int posZ, AbstractChunkPosWrapper playerChunkPos, boolean[][] vanillaRenderedChunks, int gameChunkRenderDistance){
+	private boolean isThisPositionGoingToBeRendered(byte detailLevel, int posX, int posZ, int chunkPosX, int chunkPosZ, boolean[][] vanillaRenderedChunks, int gameChunkRenderDistance){
 		
 		
 		// skip any chunks that Minecraft is going to render
-		int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkPos.getX();
-		int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkPos.getZ();
+		int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - chunkPosX;
+		int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - chunkPosZ;
 
 		// check if the chunk is on the border
 		boolean isItBorderPos;
@@ -1016,7 +1018,8 @@ public class LodBufferBuilderFactory
 				drawableStorageBufferIds = buildableStorageBufferIds;
 				buildableStorageBufferIds = tmpStorage;
 				
-				drawableCenterChunkPos = buildableCenterChunkPos;
+				drawableCenterChunkPosX = buildableCenterChunkPosX;
+				drawableCenterChunkPosZ = buildableCenterChunkPosZ;
 				
 				// the vbos have been swapped
 				switchVbos = false;
@@ -1032,7 +1035,7 @@ public class LodBufferBuilderFactory
 			}
 		}
 		
-		return new VertexBuffersAndOffset(drawableVbos, drawableStorageBufferIds, drawableCenterChunkPos);
+		return new VertexBuffersAndOffset(drawableVbos, drawableStorageBufferIds, drawableCenterChunkPosX, drawableCenterChunkPosZ);
 	}
 	
 	/** A simple container to pass multiple objects back in the getVertexBuffers method. */
@@ -1040,13 +1043,15 @@ public class LodBufferBuilderFactory
 	{
 		public final LodVertexBuffer[][][] vbos;
 		public final int[][][] storageBufferIds;
-		public final AbstractChunkPosWrapper drawableCenterChunkPos;
+		public int drawableCenterChunkPosX;
+		public int drawableCenterChunkPosZ;
 		
-		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, AbstractChunkPosWrapper newDrawableCenterChunkPos)
+		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, int newDrawableCenterChunkPosX, int newDrawableCenterChunkPosZ)
 		{
 			vbos = newVbos;
 			storageBufferIds = newStorageBufferIds;
-			drawableCenterChunkPos = newDrawableCenterChunkPos;
+			drawableCenterChunkPosX = newDrawableCenterChunkPosX;
+			drawableCenterChunkPosZ = newDrawableCenterChunkPosZ;
 		}
 	}
 	

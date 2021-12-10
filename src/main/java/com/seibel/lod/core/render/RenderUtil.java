@@ -85,11 +85,11 @@ public class RenderUtil
 	 * Returns true if one of the region's 4 corners is in front
 	 * of the camera.
 	 */
-	public static boolean isRegionInViewFrustum(AbstractBlockPosWrapper playerBlockPos, Vec3f cameraDir, AbstractBlockPosWrapper vboCenterPos)
+	public static boolean isRegionInViewFrustum(AbstractBlockPosWrapper playerBlockPos, Vec3f cameraDir, int vboCenterPosX, int vboCenterPosZ)
 	{
 		// convert the vbo position into a direction vector
 		// starting from the player's position
-		Vec3f vboVec = new Vec3f(vboCenterPos.getX(), 0, vboCenterPos.getZ());
+		Vec3f vboVec = new Vec3f(vboCenterPosX, 0, vboCenterPosZ);
 		Vec3f playerVec = new Vec3f(playerBlockPos.getX(), playerBlockPos.getY(), playerBlockPos.getZ());
 		
 		vboVec.subtract(playerVec);

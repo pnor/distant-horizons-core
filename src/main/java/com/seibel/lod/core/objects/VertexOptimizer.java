@@ -200,8 +200,6 @@ public class VertexOptimizer
 	public final Map<LodDirection, byte[]> skyLights;
 	public byte blockLight;
 	
-	/** Holds if the given direction should be culled or not */
-	public final boolean[] culling;
 	
 	
 	/** creates an empty box */
@@ -235,8 +233,6 @@ public class VertexOptimizer
 			put(LodDirection.SOUTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
 			put(LodDirection.NORTH, new int[LodUtil.MAX_NUMBER_OF_VERTICAL_LODS]);
 		}};
-		
-		culling = new boolean[6];
 	}
 	
 	/** Set the light of the columns */
@@ -309,31 +305,6 @@ public class VertexOptimizer
 		}
 	}
 	
-	/** determine which faces should be culled */
-	public void setUpCulling(int cullingDistance, AbstractBlockPosWrapper playerPos)
-	{
-		for (LodDirection lodDirection : DIRECTIONS)
-		{
-			if (lodDirection == LodDirection.DOWN || lodDirection == LodDirection.WEST || lodDirection == LodDirection.NORTH)
-				culling[DIRECTION_INDEX.get(lodDirection)] = playerPos.get(lodDirection.getAxis()) > getFacePos(lodDirection) + cullingDistance;
-			
-			else if (lodDirection == LodDirection.UP || lodDirection == LodDirection.EAST || lodDirection == LodDirection.SOUTH)
-				culling[DIRECTION_INDEX.get(lodDirection)] = playerPos.get(lodDirection.getAxis()) < getFacePos(lodDirection) - cullingDistance;
-			
-			culling[DIRECTION_INDEX.get(lodDirection)] = false;
-		}
-	}
-	
-	/**
-	 * @param lodDirection direction that we want to check if it's culled
-	 * @return true if and only if the face of the direction is culled
-	 */
-	public boolean isCulled(LodDirection lodDirection)
-	{
-		return culling[DIRECTION_INDEX.get(lodDirection)];
-	}
-	
-	
 	/**
 	 * This method create all the shared face culling based on the adjacent data
 	 * @param adjData data adjacent to the column we are going to render
@@ -363,9 +334,6 @@ public class VertexOptimizer
 		//TODO clean some similar cases
 		for (LodDirection lodDirection : ADJ_DIRECTIONS)
 		{
-			if (isCulled(lodDirection))
-				continue;
-			
 			long[] dataPoint = adjData.get(lodDirection);
 			if (dataPoint == null || DataPointUtil.isVoid(dataPoint[0]))
 			{
@@ -518,17 +486,6 @@ public class VertexOptimizer
 		boxOffset[X] = xOffset;
 		boxOffset[Y] = yOffset;
 		boxOffset[Z] = zOffset;
-	}
-	
-	/**
-	 * This method return the position of a face in the axis of the face
-	 * This is useful for the face culling
-	 * @param lodDirection that we want to check
-	 * @return position in the axis of the face
-	 */
-	public int getFacePos(LodDirection lodDirection)
-	{
-		return boxOffset[FACE_DIRECTION.get(lodDirection)[0]] + boxWidth[FACE_DIRECTION.get(lodDirection)[0]] * FACE_DIRECTION.get(lodDirection)[1];
 	}
 	
 	/**
