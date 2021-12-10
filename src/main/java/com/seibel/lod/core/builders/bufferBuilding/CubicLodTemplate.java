@@ -121,8 +121,8 @@ public class CubicLodTemplate
 		byte blockLight;
 		for (LodDirection lodDirection : VertexOptimizer.DIRECTIONS)
 		{
-			if(vertexOptimizer.isCulled(lodDirection))
-				continue;
+			//if(vertexOptimizer.isCulled(lodDirection))
+			//	continue;
 			
 			int verticalFaceIndex = 0;
 			while (vertexOptimizer.shouldRenderFace(lodDirection, verticalFaceIndex))
