@@ -224,7 +224,7 @@ public class EventApi
 		
 		int newWidth = (int) Math.ceil(chunksWide / (float) LodUtil.REGION_WIDTH_IN_CHUNKS);
 		// make sure we have an odd number of regions
-		newWidth += (newWidth & 1) == 0 ? 1 : 2;
+		newWidth += (newWidth & 1) == 0 ? 1 : 0;
 		
 		// do the dimensions need to change in size?
 		if (ApiShared.lodBuilder.defaultDimensionWidthInRegions != newWidth || recalculateWidths)
