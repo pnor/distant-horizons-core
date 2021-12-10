@@ -529,12 +529,12 @@ public class LodRenderer
 		// far fog //
 		
 		if (CONFIG.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
-			fogConfig.farFogStart = farPlaneBlockDistance * 1.6f * 0.9f;
+			fogConfig.farFogStart = farPlaneBlockDistance * 0.9f;
 		else
 			// for more realistic fog when using FAR
-			fogConfig.farFogStart = Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f * 1.6f);
+			fogConfig.farFogStart = Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f);
 		
-		fogConfig.farFogEnd = farPlaneBlockDistance * 1.6f;
+		fogConfig.farFogEnd = farPlaneBlockDistance;
 	
 		
 		// near fog //
