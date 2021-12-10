@@ -61,7 +61,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  * This is where LODs are draw to the world.
  * 
  * @author James Seibel
- * @version 12-8-2021
+ * @version 12-9-2021
  */
 public class LodRenderer
 {
@@ -101,8 +101,6 @@ public class LodRenderer
 	private int[] previousPos = new int[] { 0, 0, 0 };
 	
 	// these variables are used to determine if the buffers should be rebuilt
-	private float prevSkyBrightness = 0;
-	private double prevBrightness = 0;
 	private int prevRenderDistance = 0;
 	private long prevPlayerPosTime = 0;
 	private long prevVanillaChunkTime = 0;
@@ -476,7 +474,7 @@ public class LodRenderer
 		GL30.glBindVertexArray(GLProxy.getInstance().vertexArrayObjectId);
         
 		// let OpenGL know how our buffer is set up
-		int vertexByteCount = (Float.BYTES * 3) + (Byte.BYTES * 4) + Byte.BYTES + Byte.BYTES; // TODO move this into the template
+		int vertexByteCount = LodUtil.LOD_VERTEX_FORMAT.getByteSize();
         GL20.glEnableVertexAttribArray(posAttrib);
         GL20.glVertexAttribPointer(posAttrib, 3, GL15.GL_FLOAT, false, vertexByteCount, 0);
         GL20.glEnableVertexAttribArray(colAttrib);

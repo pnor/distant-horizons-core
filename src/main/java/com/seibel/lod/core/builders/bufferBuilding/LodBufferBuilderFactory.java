@@ -68,7 +68,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * rendered by the LodRenderer.
  * 
  * @author James Seibel
- * @version 12-8-2021
+ * @version 12-9-2021
  */
 public class LodBufferBuilderFactory
 {
@@ -418,7 +418,7 @@ public class LodBufferBuilderFactory
 										break;
 									
 									//We send the call to create the vertices
-									CONFIG.client().graphics().advancedGraphics().getLodTemplate().template.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
+									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerBlockPosRounded, data, adjData,
 											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
@@ -879,7 +879,7 @@ public class LodBufferBuilderFactory
 		if (vbo.id != -1 && GLProxy.getInstance().getGlContext() == GLProxyContext.LOD_BUILDER)
 		{
 			// this is how many points will be rendered
-			vbo.vertexCount = (uploadBuffer.capacity() / ((Float.BYTES * 3) + (Byte.BYTES * 4) + Byte.BYTES + Byte.BYTES)); // TODO make this change with the LodTemplate
+			vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
 			
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo.id);
 			try

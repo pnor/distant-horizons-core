@@ -26,8 +26,6 @@ import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
-import com.seibel.lod.core.enums.config.HorizontalScale;
-import com.seibel.lod.core.enums.config.LodTemplate;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -43,7 +41,7 @@ import com.seibel.lod.core.util.LodUtil;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 12-1-2021
+ * @version 12-9-2021
  */
 public interface ILodConfigWrapperSingleton
 {
@@ -183,18 +181,6 @@ public interface ILodConfigWrapperSingleton
 			interface IAdvancedGraphics
 			{
 				String DESC = "Graphics options that are a bit more technical.";
-				
-				LodTemplate LOD_TEMPLATE_DEFAULT = LodTemplate.CUBIC;
-				String LOD_TEMPLATE_DESC = ""
-						+ " How should the LODs be drawn? \n"
-						+ " NOTE: Currently only " + LodTemplate.CUBIC + " is implemented! \n"
-						+ " \n"
-						+ " " + LodTemplate.CUBIC + ": LOD Chunks are drawn as rectangular prisms (boxes). \n"
-						+ " " + LodTemplate.TRIANGULAR + ": LOD Chunks smoothly transition between other. \n"
-						+ " " + LodTemplate.DYNAMIC + ": LOD Chunks smoothly transition between each other, \n"
-						+ " " + "         unless a neighboring chunk is at a significantly different height. \n";
-				LodTemplate getLodTemplate();
-				void setLodTemplate(LodTemplate newLodTemplate);
 				
 				boolean DISABLE_DIRECTIONAL_CULLING_DEFAULT = false;
 				String DISABLE_DIRECTIONAL_CULLING_DESC = ""

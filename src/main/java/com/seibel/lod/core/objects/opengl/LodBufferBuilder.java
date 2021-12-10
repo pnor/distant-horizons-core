@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
  * OpenGL buffers.
  * 
  * @author James Seibel
- * @version 12-8-2021
+ * @version 12-9-2021
  */
 public class LodBufferBuilder
 {
@@ -83,7 +83,7 @@ public class LodBufferBuilder
 	/** make sure the buffer doesn't overflow when inserting new elements */
 	private void ensureVertexCapacity()
 	{
-		this.ensureCapacity(this.format.getVertexSize());
+		this.ensureCapacity(this.format.getByteSize());
 	}
 	private void ensureCapacity(int vertexSizeInBytes)
 	{
@@ -282,7 +282,7 @@ public class LodBufferBuilder
 		{
 			this.building = false;
 			this.vertexCounts.add(new LodBufferBuilder.DrawState(this.format, this.vertices, this.mode));
-			this.totalRenderedBytes += this.vertices * this.format.getVertexSize();
+			this.totalRenderedBytes += this.vertices * this.format.getByteSize();
 			this.vertices = 0;
 			this.currentElement = null;
 			this.elementIndex = 0;
@@ -450,7 +450,7 @@ public class LodBufferBuilder
 	{
 		LodBufferBuilder.DrawState bufferbuilder$drawstate = this.vertexCounts.get(this.lastRenderedCountIndex++);
 		this.buffer.position(this.totalUploadedBytes);
-		this.totalUploadedBytes += bufferbuilder$drawstate.vertexCount() * bufferbuilder$drawstate.format().getVertexSize();
+		this.totalUploadedBytes += bufferbuilder$drawstate.vertexCount() * bufferbuilder$drawstate.format().getByteSize();
 		this.buffer.limit(this.totalUploadedBytes);
 		if (this.lastRenderedCountIndex == this.vertexCounts.size() && this.vertices == 0)
 		{
@@ -543,10 +543,10 @@ public class LodBufferBuilder
 	// Forge added methods
 	public void putBulkData(ByteBuffer buffer)
 	{
-		ensureCapacity(buffer.limit() + this.format.getVertexSize());
-		this.buffer.position(this.vertices * this.format.getVertexSize());
+		ensureCapacity(buffer.limit() + this.format.getByteSize());
+		this.buffer.position(this.vertices * this.format.getByteSize());
 		this.buffer.put(buffer);
-		this.vertices += buffer.limit() / this.format.getVertexSize();
+		this.vertices += buffer.limit() / this.format.getByteSize();
 		this.nextElementByte += buffer.limit();
 	}
 	

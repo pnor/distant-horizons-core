@@ -35,13 +35,13 @@ import it.unimi.dsi.fastutil.ints.IntList;
  * were commented out since we didn't need them.
  * 
  * @author James Seibel
- * @version 11-13-2021
+ * @version 12-9-2021
  */
 public class LodVertexFormat
 {
 	private final ImmutableList<LodVertexFormatElement> elements;
 	private final IntList offsets = new IntArrayList();
-	private final int vertexSize;
+	private final int byteSize;
 	
 	public LodVertexFormat(ImmutableList<LodVertexFormatElement> elementList)
 	{
@@ -54,17 +54,12 @@ public class LodVertexFormat
 			i += LodVertexFormatElement.getByteSize();
 		}
 		
-		this.vertexSize = i;
+		this.byteSize = i;
 	}
 	
-	public int getIntegerSize()
+	public int getByteSize()
 	{
-		return this.getVertexSize() / 4;
-	}
-	
-	public int getVertexSize()
-	{
-		return this.vertexSize;
+		return this.byteSize;
 	}
 	
 	public ImmutableList<LodVertexFormatElement> getElements()
@@ -98,7 +93,7 @@ public class LodVertexFormat
 		else if (obj != null && this.getClass() == obj.getClass())
 		{
 			LodVertexFormat vertexformat = (LodVertexFormat) obj;
-			return this.vertexSize == vertexformat.vertexSize && this.elements.equals(vertexformat.elements);
+			return this.byteSize == vertexformat.byteSize && this.elements.equals(vertexformat.elements);
 		}
 		else
 		{
