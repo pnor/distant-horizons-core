@@ -23,8 +23,6 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
-import com.seibel.lod.forge.wrappers.block.BlockShapeWrapper;
-import net.minecraft.block.Block;
 
 /**
  * @author James Seibel
