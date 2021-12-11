@@ -64,9 +64,9 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** If no blocks are found in the area in determineBottomPointForArea return this */
-	public static final short DEFAULT_DEPTH = 0;
+	public static final short DEFAULT_DEPTH = -64; //TODO replace with value from version specific constants
 	/** If no blocks are found in the area in determineHeightPointForArea return this */
-	public static final short DEFAULT_HEIGHT = -64;
+	public static final short DEFAULT_HEIGHT = -64; //TODO replace with value from version specific constants
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
 	
@@ -299,7 +299,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	{
 		short depth = DEFAULT_DEPTH;
 		
-		for (int y = yAbs; y >= 0; y--)
+		for (int y = yAbs; y >= DEFAULT_DEPTH; y--)
 		{
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs))
 			{
@@ -319,7 +319,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			height = (short) chunk.getHeightMapValue(xAbs, zAbs);
 		else
 		{
-			for (int y = yAbs; y >= 0; y--)
+			for (int y = yAbs; y >= DEFAULT_HEIGHT; y--)
 			{
 				if (isLayerValidLodPoint(chunk, xAbs, y, zAbs))
 				{
