@@ -66,7 +66,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	/** If no blocks are found in the area in determineBottomPointForArea return this */
 	public static final short DEFAULT_DEPTH = 0;
 	/** If no blocks are found in the area in determineHeightPointForArea return this */
-	public static final short DEFAULT_HEIGHT = 0;
+	public static final short DEFAULT_HEIGHT = -64;
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
 	
@@ -252,7 +252,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			yAbs = chunk.getMaxY(xRel,zRel);
 			int count = 0;
 			boolean topBlock = true;
-			while (yAbs > 0)
+			while (yAbs > DEFAULT_HEIGHT)
 			{
 				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
 				
@@ -313,7 +313,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 	/** Find the highest valid point from the Top */
 	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
-		
+		//TODO find a way to skip bottom of the world
 		short height = DEFAULT_HEIGHT;
 		if (config.useHeightmap)
 			height = (short) chunk.getHeightMapValue(xAbs, zAbs);
