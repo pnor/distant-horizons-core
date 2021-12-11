@@ -190,7 +190,7 @@ public class LodRenderer
 		if ((partialRegen || fullRegen) && !lodBufferBuilderFactory.generatingBuffers && !lodBufferBuilderFactory.newBuffersAvailable())
 		{
 			// generate the LODs on a separate thread to prevent stuttering or freezing
-			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), true);
+			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), fullRegen);
 			
 			// the regen process has been started,
 			// it will be done when lodBufferBuilder.newBuffersAvailable()
