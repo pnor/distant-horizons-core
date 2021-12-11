@@ -279,7 +279,7 @@ public class LodRenderer
 	        int blockSkyLightAttrib = shaderProgram.getAttributeLocation("blockSkyLight");
 	        // TODO the block sky light is being passed in correctly but the data
 	        // 		we were given appears to be incorrect, so we won't use it for now
-	        //shaderProgram.enableVertexAttribute(blockSkyLightAttrib); 
+	        shaderProgram.enableVertexAttribute(blockSkyLightAttrib);
 	        int blockLightAttrib = shaderProgram.getAttributeLocation("blockLight");
 	        shaderProgram.enableVertexAttribute(blockLightAttrib);
 	        
@@ -417,7 +417,7 @@ public class LodRenderer
 			
 			GL20.glDisableVertexAttribArray(posAttrib);
 			GL20.glDisableVertexAttribArray(colAttrib);
-//			GL20.glDisableVertexAttribArray(blockSkyLightAttrib);
+			GL20.glDisableVertexAttribArray(blockSkyLightAttrib);
 			GL20.glDisableVertexAttribArray(blockLightAttrib);
 		}
 		
@@ -477,9 +477,9 @@ public class LodRenderer
         GL20.glEnableVertexAttribArray(colAttrib);
         GL20.glVertexAttribPointer(colAttrib, 4, GL15.GL_UNSIGNED_BYTE, true, vertexByteCount, Float.BYTES * 3);
         GL20.glEnableVertexAttribArray(blockLightAttrib);
-        GL20.glVertexAttribPointer(blockLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * (3 + 1));
-//        GL20.glEnableVertexAttribArray(blockSkyLightAttrib);
-//        GL20.glVertexAttribPointer(blockSkyLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * (3 + 1 + 1));
+        GL20.glVertexAttribPointer(blockLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * 3 + 4);
+        GL20.glEnableVertexAttribArray(blockSkyLightAttrib);
+        GL20.glVertexAttribPointer(blockSkyLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * 3 + 5);
         
         
         // draw the LODs
