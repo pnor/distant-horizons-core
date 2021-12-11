@@ -140,7 +140,7 @@ public class LodWorldGenerator
 						// an easy way to do so.
 						
 						// add the near positions
-						if (posToGenerate.getNthDetail(nearIndex, true) != 0 && nearIndex < posToGenerate.getNumberOfNearPos())
+						if (nearIndex < posToGenerate.getNumberOfNearPos() && posToGenerate.getNthDetail(nearIndex, true) != 0)
 						{
 							detailLevel = (byte) (posToGenerate.getNthDetail(nearIndex, true) - 1);
 							posX = posToGenerate.getNthPosX(nearIndex, true);
