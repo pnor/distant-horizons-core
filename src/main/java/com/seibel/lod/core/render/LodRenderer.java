@@ -382,8 +382,8 @@ public class LodRenderer
 					//int tempY = LodUtil.convertLevelPos(z + vbosCenterZ - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL, LodUtil.BLOCK_DETAIL_LEVEL);
 					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
 							MC_RENDER.getLookAtVector(),
-							vbosCenterX,
-							vbosCenterZ))
+							vbosCenterX + LodUtil.convertLevelPos(x - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL),
+							vbosCenterZ + LodUtil.convertLevelPos(z - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL)))
 					{
 						// fog may be different from region to region
 						applyFog(shaderProgram, 
