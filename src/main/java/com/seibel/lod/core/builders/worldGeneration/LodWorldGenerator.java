@@ -41,6 +41,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGeneratorWrapper;
 
 /**
  * A singleton that handles all long distance LOD world generation.
@@ -257,7 +258,7 @@ public class LodWorldGenerator
 	{
 		// try
 		{
-			var worldGenWrapper = WRAPPER_FACTORY.createWorldGenerator(newLodBuilder, lodDim, worldWrapper);
+			AbstractWorldGeneratorWrapper worldGenWrapper = WRAPPER_FACTORY.createWorldGenerator(newLodBuilder, lodDim, worldWrapper);
 			// only generate LodChunks if they can
 			// be added to the current LodDimension
 			
