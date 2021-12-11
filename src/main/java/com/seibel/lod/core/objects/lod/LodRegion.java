@@ -385,7 +385,7 @@ public class LodRegion
 					{
 						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z))
 						{
-							if (requireCorrectDetailLevel)
+							if (!requireCorrectDetailLevel)
 								childrenCount++;
 							else
 								getPosToRender(posToRender, childDetailLevel, childPosX + x, childPosZ + z, playerPosX, playerPosZ, requireCorrectDetailLevel);
@@ -394,7 +394,7 @@ public class LodRegion
 				}
 				
 				
-				if (requireCorrectDetailLevel)
+				if (!requireCorrectDetailLevel)
 				{
 					// If all the four children exist go deeper
 					if (childrenCount == 4)
