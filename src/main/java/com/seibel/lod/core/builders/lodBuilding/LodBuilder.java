@@ -358,9 +358,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 			// of the snow, flower, etc. that may be above this block
 			int aboveColorInt = 0;
 			if (config.client().worldGenerator().getBlocksToAvoid().nonFull || config.client().worldGenerator().getBlocksToAvoid().noCollision)
-			{
-				aboveColorInt = getColorForBlock(chunk, x, y, z);
-			}
+				aboveColorInt = getColorForBlock(chunk, x, y + 1, z);
 			
 			//if (colorInt == 0 && yAbs > 0)
 			// if this block is invisible, check the block below it
