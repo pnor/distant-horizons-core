@@ -38,7 +38,6 @@ import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
@@ -573,8 +572,10 @@ public class LodRenderer
 		// translate the camera relative to the regions' center
 		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
 		// accuracy vs the model view matrix, which only uses floats)
-		int bufferPosX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
-		int bufferPosZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
+		//int bufferPosX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
+		//int bufferPosZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
+		int bufferPosX = vbosCenterX;
+		int bufferPosZ = vbosCenterZ;
 		double xDiff = projectedView.x - bufferPosX;
 		double zDiff = projectedView.z - bufferPosZ;
 		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
@@ -588,8 +589,10 @@ public class LodRenderer
 	 */
 	private Vec3f getTranslatedCameraPos()
 	{
-		int worldCenterX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
-		int worldCenterZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
+		//int worldCenterX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
+		//int worldCenterZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
+		int worldCenterX = vbosCenterX;
+		int worldCenterZ = vbosCenterZ;
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		return new Vec3f((float)cameraPos.x - worldCenterX, (float)cameraPos.y, (float)cameraPos.z - worldCenterZ);
 	}
@@ -667,8 +670,8 @@ public class LodRenderer
 		VertexBuffersAndOffset result = lodBufferBuilderFactory.getVertexBuffers();
 		vbos = result.vbos;
 		storageBufferIds = result.storageBufferIds;
-		vbosCenterX = result.drawableCenterChunkPosX;
-		vbosCenterZ = result.drawableCenterChunkPosZ;
+		vbosCenterX = result.drawableCenterBlockPosX;
+		vbosCenterZ = result.drawableCenterBlockPosZ;
 	}
 	
 	/** Calls the BufferBuilder's destroyBuffers method. */

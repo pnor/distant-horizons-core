@@ -30,7 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
-import net.minecraft.util.math.BlockPos;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -59,8 +58,6 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -154,8 +151,8 @@ public class LodBufferBuilderFactory
 	 */
 	private volatile int drawableCenterChunkPosX = 0;
 	private volatile int drawableCenterChunkPosZ = 0;
-	private volatile int buildableCenterChunkPosX = 0;
-	private volatile int buildableCenterChunkPosZ = 0;
+	private volatile int buildableCenterBlockPosX = 0;
+	private volatile int buildableCenterBlockPosZ = 0;
 	
 	
 	
@@ -236,8 +233,10 @@ public class LodBufferBuilderFactory
 				vertexOptimizerCache = new VertexOptimizer[lodDim.getWidth()][lodDim.getWidth()];
 			
 			// this will be the center of the VBOs once they have been built
-			buildableCenterChunkPosX = playerChunkX;
-			buildableCenterChunkPosZ = playerChunkZ;
+			//buildableCenterChunkPosX = playerChunkX;
+			//buildableCenterChunkPosZ = playerChunkZ;
+			buildableCenterBlockPosX = playerX;
+			buildableCenterBlockPosZ = playerZ;
 			
 			
 			//================================//
@@ -1018,8 +1017,8 @@ public class LodBufferBuilderFactory
 				drawableStorageBufferIds = buildableStorageBufferIds;
 				buildableStorageBufferIds = tmpStorage;
 				
-				drawableCenterChunkPosX = buildableCenterChunkPosX;
-				drawableCenterChunkPosZ = buildableCenterChunkPosZ;
+				drawableCenterChunkPosX = buildableCenterBlockPosX;
+				drawableCenterChunkPosZ = buildableCenterBlockPosZ;
 				
 				// the vbos have been swapped
 				switchVbos = false;
@@ -1043,15 +1042,15 @@ public class LodBufferBuilderFactory
 	{
 		public final LodVertexBuffer[][][] vbos;
 		public final int[][][] storageBufferIds;
-		public int drawableCenterChunkPosX;
-		public int drawableCenterChunkPosZ;
+		public int drawableCenterBlockPosX;
+		public int drawableCenterBlockPosZ;
 		
-		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, int newDrawableCenterChunkPosX, int newDrawableCenterChunkPosZ)
+		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, int newDrawableCenterBlockPosX, int newDrawableCenterBlockPosZ)
 		{
 			vbos = newVbos;
 			storageBufferIds = newStorageBufferIds;
-			drawableCenterChunkPosX = newDrawableCenterChunkPosX;
-			drawableCenterChunkPosZ = newDrawableCenterChunkPosZ;
+			drawableCenterBlockPosX = newDrawableCenterBlockPosX;
+			drawableCenterBlockPosZ = newDrawableCenterBlockPosZ;
 		}
 	}
 	
