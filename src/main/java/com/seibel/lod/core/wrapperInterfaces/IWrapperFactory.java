@@ -45,4 +45,7 @@ public interface IWrapperFactory
 	
 	
 	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper);
+	
+	// FIXME: A temp getter for chunk gen mutli thread settings. Using default for backward compatibility
+	default boolean isWorldGeneratorSingleThreaded() {return false;}
 }

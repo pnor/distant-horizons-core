@@ -21,7 +21,6 @@ package com.seibel.lod.core.api;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.seibel.lod.core.builders.worldGeneration.LodGenWorker;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -81,7 +80,8 @@ public class EventApi
 		if (lodDim == null)
 			return;
 		
-		LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ClientApi.renderer, ApiShared.lodBuilder);
+		// FIXME: This is in server thread. We shouldn't be accessing the client's renderer!
+		LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
 	}
 	
 	
@@ -147,7 +147,7 @@ public class EventApi
 			
 			// if this isn't done unfinished tasks may be left in the queue
 			// preventing new LodChunks form being generated
-			LodGenWorker.restartExecutorService();
+			LodWorldGenerator.INSTANCE.restartExecutorService();
 			
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);
 			ApiShared.lodWorld.deselectWorld();

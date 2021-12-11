@@ -25,11 +25,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
@@ -56,6 +57,9 @@ public class LodWorldGenerator
 	
 	/** This holds the thread used to create LOD generation requests off the main thread. */
 	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator"));
+	private ExecutorService genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
+			new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+	
 	
 	/** we only want to queue up one generator thread at a time */
 	private boolean generatorThreadRunning = false;
@@ -83,19 +87,14 @@ public class LodWorldGenerator
 	 */
 	public static final LodWorldGenerator INSTANCE = new LodWorldGenerator();
 	
-	
-	
-	private LodWorldGenerator()
-	{
-		
-	}
+	private LodWorldGenerator() {}
 	
 	/**
 	 * Queues up LodNodeGenWorkers for the given lodDimension.
 	 * @param renderer needed so the LodNodeGenWorkers can flag that the
 	 * buffers need to be rebuilt.
 	 */
-	public void queueGenerationRequests(LodDimension lodDim, LodRenderer renderer, LodBuilder lodBuilder)
+	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder)
 	{
 		if (CONFIG.client().worldGenerator().getDistanceGenerationMode() != DistanceGenerationMode.NONE
 				&& !generatorThreadRunning
@@ -107,7 +106,7 @@ public class LodWorldGenerator
 			// just in case the config changed
 			maxChunkGenRequests = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads() * 8;
 			
-			Thread generatorThread = new Thread(() ->
+			Runnable generatorFunc = (() ->
 			{
 				try
 				{
@@ -159,8 +158,7 @@ public class LodWorldGenerator
 							
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
-							LodGenWorker genWorker = new LodGenWorker(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
-							genWorker.queueWork();
+							queueWork(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
 						}
 						
 						
@@ -185,8 +183,7 @@ public class LodWorldGenerator
 							
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
-							LodGenWorker genWorker = new LodGenWorker(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
-							genWorker.queueWork();
+							queueWork(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
 						}
 					}
 					
@@ -201,9 +198,138 @@ public class LodWorldGenerator
 					generatorThreadRunning = false;
 				}
 			});
-			
-			mainGenThread.execute(generatorThread);
+			if (WRAPPER_FACTORY.isWorldGeneratorSingleThreaded()) {
+				generatorFunc.run();
+			} else {
+				mainGenThread.execute(generatorFunc);
+			}
 		} // if distanceGenerationMode != DistanceGenerationMode.NONE && !generatorThreadRunning
 	} // queueGenerationRequests
+	
+	private void queueWork(AbstractChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
+			LodBuilder newLodBuilder,
+			LodDimension newLodDimension, IWorldWrapper serverWorld)
+	{
+		// just a few sanity checks
+		if (newPos == null)
+			throw new IllegalArgumentException("LodChunkGenWorker must have a non-null ChunkPos");
+		
+		if (newLodBuilder == null)
+			throw new IllegalArgumentException("LodChunkGenThread requires a non-null LodChunkBuilder");
+		
+		if (newLodDimension == null)
+			throw new IllegalArgumentException("LodChunkGenThread requires a non-null LodDimension");
+		
+		if (serverWorld == null)
+			throw new IllegalArgumentException("LodChunkGenThread requires a non-null ServerWorld");
+		
+		Runnable method = (() -> {generateChunk(newPos, newGenerationMode,
+				newLodBuilder, newLodDimension, serverWorld);});
+		
+		if (CONFIG.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.FULL
+			|| WRAPPER_FACTORY.isWorldGeneratorSingleThreaded())
+		{
+			// if we are using FULL generation there is no reason
+			// to queue up a bunch of generation requests,
+			// because MC's internal server (as of 1.16.5) only
+			// responds with a single thread. And we don't
+			// want to cause more lag than necessary or queue up
+			// requests that may end up being unneeded.
+			// In 1.17+, world generation becomes completely single
+			// threaded. So to allow that, we check the boolean for
+			// whether the wrapper requires single thread
+			method.run();
+		}
+		else
+		{
+			// Every other method can
+			// be done asynchronously
+			genSubThreads.execute(method);
+		}
+		
+		// useful for debugging
+//    	ClientProxy.LOGGER.info(thread.lodDim.getNumberOfLods());
+//    	ClientProxy.LOGGER.info(genThreads.toString());
+	}
+	
+	private void generateChunk(AbstractChunkPosWrapper pos, DistanceGenerationMode generationMode, 
+			LodBuilder newLodBuilder, LodDimension lodDim, IWorldWrapper worldWrapper)
+	{
+		// try
+		{
+			var worldGenWrapper = WRAPPER_FACTORY.createWorldGenerator(newLodBuilder, lodDim, worldWrapper);
+			// only generate LodChunks if they can
+			// be added to the current LodDimension
+			
+			if (lodDim.regionIsInRange(pos.getX() / LodUtil.REGION_WIDTH_IN_CHUNKS, pos.getZ() / LodUtil.REGION_WIDTH_IN_CHUNKS))
+			{					
+				switch (generationMode)
+				{
+				case NONE:
+					// don't generate
+					break;
+				case BIOME_ONLY:
+				case BIOME_ONLY_SIMULATE_HEIGHT:
+					// fastest
+					worldGenWrapper.generateBiomesOnly(pos, generationMode);
+					break;
+				case SURFACE:
+					// faster
+					worldGenWrapper.generateSurface(pos);
+					break;
+				case FEATURES:
+					// fast
+					worldGenWrapper.generateFeatures(pos);
+					break;
+				case FULL:
+					// very slow
+					worldGenWrapper.generateFull(pos);
+					break;
+				}
+
+//				boolean dataExistence = lodDim.doesDataExist(new LevelPos((byte) 3, pos.x, pos.z));
+//				if (dataExistence)
+//					ClientProxy.LOGGER.info(pos.x + " " + pos.z + " Success!");
+//				else
+//					ClientProxy.LOGGER.info(pos.x + " " + pos.z);
+
+				// shows the pool size, active threads, queued tasks and completed tasks
+//				ClientProxy.LOGGER.info(genThreads.toString());
+				
+			}// if in range
+		}
+		// catch (Exception e)
+		// {
+		// 	ClientApi.LOGGER.error(LodWorldGenerator.class.getSimpleName() + ": ran into an error: " + e.getMessage());
+		// 	e.printStackTrace();
+		// }
+		// finally
+		{
+			// decrement how many threads are running
+			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.addAndGet(-1);
+			
+			// this position is no longer being generated
+			LodWorldGenerator.INSTANCE.positionsWaitingToBeGenerated.remove(pos);
+		}
+	}// run
+	
+	/**
+	 * Stops the current genThreads if they are running
+	 * and then recreates the Executor service. <br><br>
+	 * <p>
+	 * This is done to clear any outstanding tasks
+	 * that may exist after the player leaves their current world.
+	 * If this isn't done unfinished tasks may be left in the queue
+	 * preventing new LodChunks form being generated.
+	 */
+	public void restartExecutorService()
+	{
+		if (genSubThreads != null && !genSubThreads.isShutdown())
+		{
+			genSubThreads.shutdownNow();
+		}
+		genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
+				new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+	}
 	
 }
