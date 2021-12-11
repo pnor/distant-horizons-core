@@ -92,7 +92,7 @@ public class LodWorldGenerator
 	
 	/**
 	 * Queues up LodNodeGenWorkers for the given lodDimension.
-	 * @param renderer needed so the LodNodeGenWorkers can flag that the
+	 * renderer needed so the LodNodeGenWorkers can flag that the
 	 * buffers need to be rebuilt.
 	 */
 	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder)
