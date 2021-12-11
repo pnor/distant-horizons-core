@@ -126,7 +126,7 @@ public class LodGenWorker
 		@Override
 		public void run()
 		{
-			try
+			//try
 			{
 				// only generate LodChunks if they can
 				// be added to the current LodDimension
@@ -172,12 +172,12 @@ public class LodGenWorker
 					
 				}// if in range
 			}
-			catch (Exception e)
-			{
-				ClientApi.LOGGER.error(LodChunkGenThread.class.getSimpleName() + ": ran into an error: " + e.getMessage());
-				e.printStackTrace();
-			}
-			finally
+			//catch (Exception e)
+			//{
+			//	ClientApi.LOGGER.error(LodChunkGenThread.class.getSimpleName() + ": ran into an error: " + e.getMessage());
+			//	e.printStackTrace();
+			//}
+			//finally
 			{
 				// decrement how many threads are running
 				LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.addAndGet(-1);

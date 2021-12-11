@@ -22,6 +22,7 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -470,9 +471,19 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 		int colorOfBlock;
 		int colorInt;
 		
-		
+		IBlockShapeWrapper blockShapeWrapper;
 		IBlockColorWrapper blockColorWrapper;
-		IBlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(x, y, z);
+		try
+		{
+			blockShapeWrapper = chunk.getBlockShapeWrapper(x, y, z);
+		}
+		catch (Exception e)
+		{
+			//TODO fix the cause of the bug, bot it's symptoms
+			//ClientApi.LOGGER.error(LodBuilder.class.getSimpleName() + ": ran into an error: " + e.getMessage());
+			//e.printStackTrace();
+			return 0;
+		}
 		
 		if (chunk.isWaterLogged(x, y, z))
 			blockColorWrapper = BLOCK_COLOR.getWaterColor();
