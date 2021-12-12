@@ -48,7 +48,6 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
-import com.seibel.lod.forge.wrappers.chunk.ChunkWrapper;
 
 /**
  * This object is in charge of creating Lod related objects.
@@ -65,9 +64,9 @@ import com.seibel.lod.forge.wrappers.chunk.ChunkWrapper;
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** If no blocks are found in the area in determineBottomPointForArea return this */
-	public static final short DEFAULT_DEPTH = ChunkWrapper.MIN_HEIGHT;
+	public static final short DEFAULT_DEPTH = 0;
 	/** If no blocks are found in the area in determineHeightPointForArea return this */
-	public static final short DEFAULT_HEIGHT = ChunkWrapper.MIN_HEIGHT;
+	public static final short DEFAULT_HEIGHT = 0;
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
 	
