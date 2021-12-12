@@ -232,9 +232,9 @@ public class LodWorldGenerator
 		Runnable method = (() -> {generateChunk(newPos, newGenerationMode,
 				newLodBuilder, newLodDimension, serverWorld);});
 		
-		if (newGenerationMode == DistanceGenerationMode.FULL
-			|| VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(newGenerationMode))
+		if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(newGenerationMode))
 		{
+			// --Note: This is now using version constants--
 			// if we are using FULL generation there is no reason
 			// to queue up a bunch of generation requests,
 			// because MC's internal server (as of 1.16.5) only
@@ -268,7 +268,7 @@ public class LodWorldGenerator
 			// be added to the current LodDimension
 			
 			if (lodDim.regionIsInRange(pos.getX() / LodUtil.REGION_WIDTH_IN_CHUNKS, pos.getZ() / LodUtil.REGION_WIDTH_IN_CHUNKS))
-			{					
+			{
 				switch (generationMode)
 				{
 				case NONE:
