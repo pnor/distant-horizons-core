@@ -121,12 +121,12 @@ public interface ILodConfigWrapperSingleton
 				
 				HorizontalQuality HORIZONTAL_QUALITY_DEFAULT = HorizontalQuality.MEDIUM;
 				String HORIZONTAL_QUALITY_DESC = ""
-						+ " This indicates the exponential base of the quadratic drop-off \n"
+						+ " This indicates how much farther away each drop in quality is. \n"
 						+ "\n"
-						+ " " + HorizontalQuality.LOWEST + ": base " + HorizontalQuality.LOWEST.quadraticBase + ". \n"
-						+ " " + HorizontalQuality.LOW + ": base " + HorizontalQuality.LOW.quadraticBase + ". \n"
-						+ " " + HorizontalQuality.MEDIUM + ": base " + HorizontalQuality.MEDIUM.quadraticBase + ". \n"
-						+ " " + HorizontalQuality.HIGH + ": base " + HorizontalQuality.HIGH.quadraticBase + ". \n"
+						+ " " + HorizontalQuality.LOWEST + ": each drop in quality is the same distance away. \n"
+						+ " " + HorizontalQuality.LOW + ": each drop in quality is " + HorizontalQuality.LOW.quadraticBase + " times farther away. \n"
+						+ " " + HorizontalQuality.MEDIUM + ": each drop in quality is " + HorizontalQuality.MEDIUM.quadraticBase + " times farther away. \n"
+						+ " " + HorizontalQuality.HIGH + ": each drop in quality is " + HorizontalQuality.HIGH.quadraticBase + " times farther away. \n"
 						+ "\n"
 						+ " Lowest Quality: " + HorizontalQuality.LOWEST
 						+ " Highest Quality: " + HorizontalQuality.HIGH;
