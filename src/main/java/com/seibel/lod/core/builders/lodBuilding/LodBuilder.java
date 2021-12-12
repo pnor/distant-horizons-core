@@ -22,6 +22,7 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -109,8 +110,8 @@ public class LodBuilder
 		Thread thread = new Thread(() ->
 		{
 			//noinspection GrazieInspection
-			try
-			{
+			//try
+			//{
 				// we need a loaded client world in order to
 				// get the textures for blocks
 				if (MC.getWrappedClientWorld() == null)
@@ -133,14 +134,14 @@ public class LodBuilder
 					lodDim = lodWorld.getLodDimension(dim);
 				}
 				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode));
-			}
-			catch (IllegalArgumentException | NullPointerException e)
-			{
-				e.printStackTrace();
-				// if the world changes while LODs are being generated
-				// they will throw errors as they try to access things that no longer
-				// exist.
-			}
+			//}
+			//catch (IllegalArgumentException | NullPointerException e)
+			//{
+			//	e.printStackTrace();
+			//	// if the world changes while LODs are being generated
+			//	// they will throw errors as they try to access things that no longer
+			//	// exist.
+			//}
 		});
 		lodGenThreadPool.execute(thread);
 	}
@@ -469,27 +470,19 @@ public class LodBuilder
 		int colorOfBlock;
 		int colorInt;
 		
-		IBlockShapeWrapper blockShapeWrapper;
-		IBlockColorWrapper blockColorWrapper;
-		try
-		{
-			blockShapeWrapper = chunk.getBlockShapeWrapper(x, y, z);
-		}
-		catch (Exception e)
-		{
-			//TODO fix the cause of the bug, bot it's symptoms
-			//ClientApi.LOGGER.error(LodBuilder.class.getSimpleName() + ": ran into an error: " + e.getMessage());
-			//e.printStackTrace();
+		IBlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(x, y, z);
+		
+		if (blockShapeWrapper == null || blockShapeWrapper.isToAvoid())
 			return 0;
-		}
+		
+		IBlockColorWrapper blockColorWrapper;
 		
 		if (chunk.isWaterLogged(x, y, z))
 			blockColorWrapper = BLOCK_COLOR.getWaterColor();
 		else
 			blockColorWrapper = chunk.getBlockColorWrapper(x, y, z);
 		
-		if (blockShapeWrapper.isToAvoid())
-			return 0;
+		
 		
 		colorOfBlock = blockColorWrapper.getColor();
 		
@@ -525,6 +518,7 @@ public class LodBuilder
 		boolean noCollisionAvoidance = config.client().worldGenerator().getBlocksToAvoid().noCollision;
 		
 		IBlockShapeWrapper block = chunk.getBlockShapeWrapper(x, y, z);
+		if (block == null) return false;
 		return !block.isToAvoid()
 					   && !(nonFullAvoidance && block.isNonFull())
 					   && !(noCollisionAvoidance && block.hasNoCollision());

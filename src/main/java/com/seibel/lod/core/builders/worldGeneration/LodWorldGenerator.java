@@ -165,7 +165,7 @@ public class LodWorldGenerator
 						
 						
 						// add the far positions
-						if (posToGenerate.getNthDetail(farIndex, false) != 0 && farIndex < posToGenerate.getNumberOfFarPos())
+						if (farIndex < posToGenerate.getNumberOfFarPos() && posToGenerate.getNthDetail(farIndex, false) != 0)
 						{
 							detailLevel = (byte) (posToGenerate.getNthDetail(farIndex, false) - 1);
 							posX = posToGenerate.getNthPosX(farIndex, false);
