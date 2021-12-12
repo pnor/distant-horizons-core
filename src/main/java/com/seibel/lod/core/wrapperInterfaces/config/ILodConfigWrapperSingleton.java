@@ -34,6 +34,7 @@ import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.MinDefaultMax;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 
 /**
  * This holds the config defaults, setters/getters
@@ -41,7 +42,7 @@ import com.seibel.lod.core.util.LodUtil;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 12-9-2021
+ * @version 12-11-2021
  */
 public interface ILodConfigWrapperSingleton
 {
@@ -269,8 +270,15 @@ public interface ILodConfigWrapperSingleton
 			void setGenerationPriority(GenerationPriority newGenerationPriority);
 			
 			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.SURFACE;
-			String DISTANCE_GENERATION_MODE_DESC = ""
+			public static String getDistanceGenerationModeDesc(IVersionConstants versionConstants)
+			{		
+				return ""
 					+ " How detailed should fake chunks be generated outside the vanilla render distance? \n"
+					+ "\n"
+					+ " The times are the amount of time it took one of the developer's PC to generate \n"
+					+ " one chunk in Minecraft 1.16.5 and may be inaccurate for different Minecraft versions. \n"
+					+ " They are included to give a rough estimate as to how the different options \n"
+					+ " may perform in comparison to each other. \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.NONE + " \n"
 					+ " Don't run the distance generator. \n"
@@ -280,35 +288,36 @@ public interface ILodConfigWrapperSingleton
 					+ " Only generate the biomes and use the biome's \n"
 					+ " grass color, water color, or snow color. \n"
 					+ " Doesn't generate height, everything is shown at sea level. \n"
-					+ " Multithreaded - Fastest (2-5 ms) \n"
+					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.BIOME_ONLY) + " - Fastest (2-5 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT + " \n"
 					+ " Same as " + DistanceGenerationMode.BIOME_ONLY + ", except instead \n"
 					+ " of always using sea level as the LOD height \n"
 					+ " different biome types (mountain, ocean, forest, etc.) \n"
 					+ " use predetermined heights to simulate having height data. \n"
-					+ " Multithreaded - Fastest (2-5 ms) \n"
+					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT) + " - Fastest (2-5 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.SURFACE + " \n"
 					+ " Generate the world surface, \n"
 					+ " this does NOT include trees, \n"
 					+ " or structures. \n"
-					+ " Multithreaded - Faster (10-20 ms) \n"
+					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.SURFACE) + " - Faster (10-20 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.FEATURES + " \n"
 					+ " Generate everything except structures. \n"
 					+ " WARNING: This may cause world generation bugs or instability! \n"
-					+ " Multithreaded - Fast (15-20 ms) \n"
+					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.FEATURES) + " - Fast (15-20 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.FULL + " \n"
 					+ " Ask the local server to generate/load each chunk. \n"
 					+ " This will show player made structures, which can \n"
 					+ " be useful if you are adding the mod to a pre-existing world. \n"
 					+ " This is the most compatible, but causes server/simulation lag. \n"
-					+ " SingleThreaded - Slow (15-50 ms, with spikes up to 200 ms) \n"
+					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.FULL) + " - Slow (15-50 ms, with spikes up to 200 ms) \n"
 					+ "\n"
 					+ " The multithreaded options may increase CPU load significantly (while generating) \n"
 					+ " depending on how many world generation threads you have allocated. \n";
+			}
 			DistanceGenerationMode getDistanceGenerationMode();
 			void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode);
 			
@@ -347,6 +356,13 @@ public interface ILodConfigWrapperSingleton
 					+ " This wont't affect performance.";
 			BlocksToAvoid getBlocksToAvoid();
 			void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
+			
+			
+			/** description helper method */
+			static String multiOrSingleThreadText(IVersionConstants versionConstants, DistanceGenerationMode distanceGenerationMode) 
+			{
+				return versionConstants.isWorldGeneratorSingleThreaded(distanceGenerationMode) ? "Singlethreaded" : "Multithreaded"; 
+			};
 		}
 		
 		

@@ -22,7 +22,6 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -36,12 +35,10 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -55,18 +52,19 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * @author Cola
  * @author Leonardo Amato
  * @author James Seibel
- * @version 10-22-2021
+ * @version 12-11-2021
  */
-@SuppressWarnings("GrazieInspection") public class LodBuilder
+@SuppressWarnings("GrazieInspection")
+public class LodBuilder
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
-	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
+	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
 	/** If no blocks are found in the area in determineBottomPointForArea return this */
-	public static final short DEFAULT_DEPTH = 0;
+	public static final short DEFAULT_DEPTH = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 	/** If no blocks are found in the area in determineHeightPointForArea return this */
-	public static final short DEFAULT_HEIGHT = 0;
+	public static final short DEFAULT_HEIGHT = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
 	

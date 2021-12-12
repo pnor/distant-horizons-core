@@ -26,7 +26,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
@@ -36,6 +35,7 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -47,13 +47,14 @@ import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGenera
  * A singleton that handles all long distance LOD world generation.
  * @author Leonardo Amato
  * @author James Seibel
- * @version 9-25-2021
+ * @version 12-11-2021
  */
 public class LodWorldGenerator
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
+	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
 	
 	/** This holds the thread used to create LOD generation requests off the main thread. */
@@ -199,9 +200,13 @@ public class LodWorldGenerator
 					generatorThreadRunning = false;
 				}
 			});
-			if (WRAPPER_FACTORY.isWorldGeneratorSingleThreaded()) {
+			
+			if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(CONFIG.client().worldGenerator().getDistanceGenerationMode()))
+			{
 				generatorFunc.run();
-			} else {
+			}
+			else
+			{
 				mainGenThread.execute(generatorFunc);
 			}
 		} // if distanceGenerationMode != DistanceGenerationMode.NONE && !generatorThreadRunning
@@ -227,8 +232,8 @@ public class LodWorldGenerator
 		Runnable method = (() -> {generateChunk(newPos, newGenerationMode,
 				newLodBuilder, newLodDimension, serverWorld);});
 		
-		if (CONFIG.client().worldGenerator().getDistanceGenerationMode() == DistanceGenerationMode.FULL
-			|| WRAPPER_FACTORY.isWorldGeneratorSingleThreaded())
+		if (newGenerationMode == DistanceGenerationMode.FULL
+			|| VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(newGenerationMode))
 		{
 			// if we are using FULL generation there is no reason
 			// to queue up a bunch of generation requests,
