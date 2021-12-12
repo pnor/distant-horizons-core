@@ -22,7 +22,6 @@ package com.seibel.lod.core.render;
 import java.awt.Color;
 import java.util.HashSet;
 
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -48,7 +47,7 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -59,7 +58,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  * This is where LODs are draw to the world.
  * 
  * @author James Seibel
- * @version 12-9-2021
+ * @version 12-12-2021
  */
 public class LodRenderer
 {
@@ -67,7 +66,6 @@ public class LodRenderer
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
-	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	
 	/**
@@ -89,7 +87,6 @@ public class LodRenderer
 	 * These have to be separate because we can't override the
 	 * buffers in the VBOs (and we don't want to)
 	 */
-	@SuppressWarnings("unused")
 	private int[][][] storageBufferIds;
 	
 	private int vbosCenterX = 0;
