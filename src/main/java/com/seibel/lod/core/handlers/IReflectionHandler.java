@@ -19,8 +19,10 @@
 
 package com.seibel.lod.core.handlers;
 
+import java.util.HashSet;
+
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
-import com.seibel.lod.core.objects.math.Mat4f;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 
 /**
  * A singleton used to get variables from methods
@@ -35,7 +37,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
  * different MC versions.
  * 
  * @author James Seibel
- * @version 11-26-2021
+ * @version 12-12-2021
  */
 public interface IReflectionHandler
 {
@@ -45,14 +47,9 @@ public interface IReflectionHandler
 	/** @returns if Vivecraft is present. Attempts to find the "VRRenderer" class. */
 	boolean vivecraftPresent();
 	
-	/**
-	 * Modifies the projection matrix's clip planes.
-	 * The projection matrix must be in column-major format.
-	 * 
-	 * @param projectionMatrix The projection matrix to be modified.
-	 * @param newNearClipPlane the new near clip plane value.
-	 * @param newFarClipPlane the new far clip plane value.
-	 * @return The modified matrix.
-	 */
-	Mat4f ModifyProjectionClipPlanes(Mat4f projectionMatrix, float newNearClipPlane, float newFarClipPlane);
+	/** @returns if Sodium (or a sodium like) mod is present. Attempts to find the "SodiumWorldRenderer" class. */
+	boolean sodiumPresent();
+	
+	/** @returns a HashSet containing every chunk that is currently being rendered by Sodium. */
+	HashSet<AbstractChunkPosWrapper> getSodiumRenderedChunks();
 }
