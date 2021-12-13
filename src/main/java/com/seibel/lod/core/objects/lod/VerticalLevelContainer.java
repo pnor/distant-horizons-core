@@ -19,12 +19,8 @@
 
 package com.seibel.lod.core.objects.lod;
 
-import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.forge.wrappers.VersionConstants;
+import com.seibel.lod.core.util.*;
+import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 
 /**
  * 
@@ -124,7 +120,8 @@ public class VerticalLevelContainer implements LevelContainer
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		int x = size * size * tempMaxVerticalData;
 		long[] tempDataContainer = new long[x];
-		short minHeight = (short) VersionConstants.INSTANCE.getMinimumWorldHeight();
+		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
+		short minHeight = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 		
 		if (version == 6)
 		{
@@ -277,7 +274,8 @@ public class VerticalLevelContainer implements LevelContainer
 		long current;
 		boolean allGenerated = true;
 		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
-		short minHeight = (short) VersionConstants.INSTANCE.getMinimumWorldHeight();
+		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
+		short minHeight = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 		
 		tempData[index] = detailLevel;
 		index++;
