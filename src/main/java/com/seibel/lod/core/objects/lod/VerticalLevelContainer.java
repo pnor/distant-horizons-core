@@ -278,7 +278,7 @@ public class VerticalLevelContainer implements LevelContainer
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		
-		//we
+		//we combine every position of the input
 		for(short data : inputPositionDataToMerge)
 		{
 			genMode = (byte) Math.min(genMode, PositionDataFormat.getGenerationMode(data));
@@ -307,6 +307,20 @@ public class VerticalLevelContainer implements LevelContainer
 		
 		//STEP 3//
 		//now we firstly merge the height and depth values of the input data
+		//in this process we do a sort of "projection" of the data on a single column
+		
+		/* simple visualization of the process
+		input:       ->    projection:
+		| | |				|
+		  |   |				|
+		  |					|
+		  
+		  
+		|     				|
+		    
+		    |				|
+		      |      		|
+		 */
 		
 		int inputSize = 1 << inputDetailLevel;
 		// I'll disable the ThreadMap array for the initial testing ThreadMapUtil.getHeightAndDepth(inputVerticalSize * 2 * 4)
@@ -320,7 +334,20 @@ public class VerticalLevelContainer implements LevelContainer
 		//In this process we can easily compute the count of this position to be inserted in the positionDataContainer
 		//if the size of the array heightAndDepth is over the maxVerticalSize, then we use that
 		//otherwise we use the size of the heightAndDepth
-		
+		/* simple visualization of the process
+		before:			after:
+			|				|
+			|				|
+			|				|
+		 
+		 
+			|				|
+		        we fill-->  |
+			|				|
+			|				|
+			
+		this way we reduce from verticalSize 3 to verticalSize 2
+		 */
 		
 		
 		//STEP 5//
