@@ -24,6 +24,7 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.forge.wrappers.VersionConstants;
 
 /**
  * 
@@ -123,6 +124,7 @@ public class VerticalLevelContainer implements LevelContainer
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		int x = size * size * tempMaxVerticalData;
 		long[] tempDataContainer = new long[x];
+		short minHeight = (short) VersionConstants.INSTANCE.getMinimumWorldHeight();
 		
 		if (version == 6)
 		{
@@ -138,17 +140,17 @@ public class VerticalLevelContainer implements LevelContainer
 						DataPointUtil.getRed(newData),
 						DataPointUtil.getGreen(newData),
 						DataPointUtil.getBlue(newData),
-						DataPointUtil.getHeight(newData) - DataPointUtil.VERTICAL_OFFSET,
-						DataPointUtil.getDepth(newData) - DataPointUtil.VERTICAL_OFFSET,
+						DataPointUtil.getHeight(newData) - minHeight,
+						DataPointUtil.getDepth(newData) - minHeight,
 						DataPointUtil.getLightSky(newData),
 						DataPointUtil.getLightBlock(newData),
 						DataPointUtil.getGenerationMode(newData),
-						DataPointUtil.getFlag(newData)
-				);
+						DataPointUtil.getFlag(newData));
+				
 				tempDataContainer[i] = newData;
 			}
 		}
-		else //if (version == 7)
+		else if (version == 7)
 		{
 			for (int i = 0; i < x; i++)
 			{
@@ -156,7 +158,61 @@ public class VerticalLevelContainer implements LevelContainer
 				for (tempIndex = 0; tempIndex < 8; tempIndex++)
 					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 				index += 8;
+				
+				newData = DataPointUtil.createDataPoint(
+						DataPointUtil.getAlpha(newData),
+						DataPointUtil.getRed(newData),
+						DataPointUtil.getGreen(newData),
+						DataPointUtil.getBlue(newData),
+						DataPointUtil.getHeight(newData) - 64 - minHeight,
+						DataPointUtil.getDepth(newData) - 64 - minHeight,
+						DataPointUtil.getLightSky(newData),
+						DataPointUtil.getLightBlock(newData),
+						DataPointUtil.getGenerationMode(newData),
+						DataPointUtil.getFlag(newData));
+				
 				tempDataContainer[i] = newData;
+			}
+		}
+		else //if (version == 8)
+		{
+			short tempMinHeight = inputData[index];
+			index++;
+			tempMinHeight |= inputData[index] << 8;
+			index++;
+			if (tempMinHeight != minHeight)
+			{
+				for (int i = 0; i < x; i++)
+				{
+					newData = 0;
+					for (tempIndex = 0; tempIndex < 8; tempIndex++)
+						newData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 8;
+					newData = DataPointUtil.createDataPoint(
+							DataPointUtil.getAlpha(newData),
+							DataPointUtil.getRed(newData),
+							DataPointUtil.getGreen(newData),
+							DataPointUtil.getBlue(newData),
+							DataPointUtil.getHeight(newData) + tempMinHeight - minHeight,
+							DataPointUtil.getDepth(newData) + tempMinHeight - minHeight,
+							DataPointUtil.getLightSky(newData),
+							DataPointUtil.getLightBlock(newData),
+							DataPointUtil.getGenerationMode(newData),
+							DataPointUtil.getFlag(newData));
+					
+					tempDataContainer[i] = newData;
+				}
+			}
+			else
+			{
+				for (int i = 0; i < x; i++)
+				{
+					newData = 0;
+					for (tempIndex = 0; tempIndex < 8; tempIndex++)
+						newData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 8;
+					tempDataContainer[i] = newData;
+				}
 			}
 		}
 		
@@ -221,11 +277,17 @@ public class VerticalLevelContainer implements LevelContainer
 		long current;
 		boolean allGenerated = true;
 		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
+		short minHeight = (short) VersionConstants.INSTANCE.getMinimumWorldHeight();
 		
 		tempData[index] = detailLevel;
 		index++;
 		tempData[index] = (byte) maxVerticalData;
 		index++;
+		tempData[index] = (byte) (minHeight & 0xFF);
+		index++;
+		tempData[index] = (byte) ((minHeight >> 8) & 0xFF);
+		index++;
+		
 		int j;
 		for (int i = 0; i < x; i++)
 		{

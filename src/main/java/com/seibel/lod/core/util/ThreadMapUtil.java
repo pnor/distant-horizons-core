@@ -145,7 +145,7 @@ public class ThreadMapUtil
 			int size = 1;
 			for (int i = LodUtil.DETAIL_OPTIONS - 1; i >= 0; i--)
 			{
-				array[i] = new byte[2 + 8 * size * size * DetailDistanceUtil.getMaxVerticalData(i)];
+				array[i] = new byte[4 + 8 * size * size * DetailDistanceUtil.getMaxVerticalData(i)];
 				size = size << 1;
 			}
 			saveContainer.put(Thread.currentThread().getName(), array);
