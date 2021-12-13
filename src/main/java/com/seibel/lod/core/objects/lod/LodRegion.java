@@ -601,7 +601,7 @@ public class LodRegion
 	
 	public int getMaxVerticalData(byte detailLevel)
 	{
-		return dataContainer[detailLevel].getMaxVerticalData();
+		return dataContainer[detailLevel].getVerticalSize();
 	}
 	
 	

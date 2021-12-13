@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.objects.lod;
 
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 
@@ -33,23 +32,29 @@ public class VerticalLevelContainer implements LevelContainer
 	
 	public final byte detailLevel;
 	public final int size;
-	public final int maxVerticalData;
+	public final int verticalSize;
 	
 	public final long[] dataContainer;
 	
 	//Currently these variable are not used. We are going to use them in the new data format
-	public final int sectionCount = 32*32;
+	public final int[] verticalDataContainer = null;
+	public final int[] colorDataContainer = null;
+	public final byte[] lightDataContainer = null;
+	public final short[] positionDataContainer = null;
+	
+	/* TO BE USED IN THE FUTURE
 	public final short[] sectionVerticalSize = null;
 	public final int[][] verticalDataContainer = null;
 	public final int[][] colorDataContainer = null;
 	public final byte[][] lightDataContainer = null;
 	public final short[] positionDataContainer = null;
+	*/
 	
 	public VerticalLevelContainer(byte detailLevel)
 	{
 		this.detailLevel = detailLevel;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-		maxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
+		verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
 		dataContainer = new long[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
 	}
 	
@@ -62,21 +67,21 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public void clear(int posX, int posZ)
 	{
-		for (int verticalIndex = 0; verticalIndex < maxVerticalData; verticalIndex++)
-			dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = DataPointUtil.EMPTY_DATA;
+		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
+			dataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = DataPointUtil.EMPTY_DATA;
 	}
 	
 	@Override
 	public boolean addData(long data, int posX, int posZ, int verticalIndex)
 	{
-		dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = data;
+		dataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = data;
 		return true;
 	}
 	@Override
 	public boolean addVerticalData(long[] data, int posX, int posZ)
 	{
-		for (int verticalIndex = 0; verticalIndex < maxVerticalData; verticalIndex++)
-			dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = data[verticalIndex];
+		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
+			dataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = data[verticalIndex];
 		return true;
 	}
 	
@@ -89,19 +94,19 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public long getData(int posX, int posZ, int verticalIndex)
 	{
-		return dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex];
+		return dataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex];
 	}
 	
 	@Override
 	public long getSingleData(int posX, int posZ)
 	{
-		return dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData];
+		return dataContainer[posX * size * verticalSize + posZ * verticalSize];
 	}
 	
 	@Override
-	public int getMaxVerticalData()
+	public int getVerticalSize()
 	{
-		return maxVerticalData;
+		return verticalSize;
 	}
 	
 	public int getSize()
@@ -232,30 +237,24 @@ public class VerticalLevelContainer implements LevelContainer
 				dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, tempMaxVerticalData, tempMaxVerticalData2);
 				System.arraycopy(dataToMerge, 0, tempDataContainer2, i * tempMaxVerticalData2, tempMaxVerticalData2);
 			}
-			maxVerticalData = tempMaxVerticalData2;
+			verticalSize = tempMaxVerticalData2;
 			this.dataContainer = tempDataContainer2;
 		}
 		else
 		{
-			maxVerticalData = tempMaxVerticalData;
+			verticalSize = tempMaxVerticalData;
 			this.dataContainer = tempDataContainer;
 		}
 	}
 	
-	/*
-	public boolean addData(short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, int[] inputLightData, int posX, int posZ, int verticalIndex)
-	{
-		dataContainer[posX * size * maxVerticalData + posZ * maxVerticalData + verticalIndex] = data;
-		return true;
-	}
-	*/
 	/**
 	 * This method merge column of multiple data together
 	 * @return one column of correctly parsed data
 	 */
-	/*
-	public void mergeMultiData(short[] positionDataToMerge, int[] verticalDataToMerge, int[] verticalDataToMerge, int[] verticalDataToMerge, int inputVerticalData, int maxVerticalData)
+	public void mergeAndAddData(short[] inputPositionDataToMerge, int[] inputVerticalData, int[] inputColorData, int[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
+	
+	/*
 		int size = verticalDataToMerge.length / inputVerticalData;
 		
 		// We initialize the arrays that are going to be used
@@ -389,7 +388,9 @@ public class VerticalLevelContainer implements LevelContainer
 				else
 					break;
 			}
-		}*/
+		}
+	 	*/
+	 }
 		
 		@Override
 	public LevelContainer expand()
@@ -417,7 +418,7 @@ public class VerticalLevelContainer implements LevelContainer
 					dataToMerge[(z * 2 + x) * lowerMaxVertical + verticalIndex] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
 			}
 		}
-		data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getMaxVerticalData());
+		data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getVerticalSize());
 		
 		addVerticalData(data, posX, posZ);
 	}
@@ -436,7 +437,7 @@ public class VerticalLevelContainer implements LevelContainer
 		
 		tempData[index] = detailLevel;
 		index++;
-		tempData[index] = (byte) maxVerticalData;
+		tempData[index] = (byte) verticalSize;
 		index++;
 		tempData[index] = (byte) (minHeight & 0xFF);
 		index++;
@@ -446,9 +447,9 @@ public class VerticalLevelContainer implements LevelContainer
 		int j;
 		for (int i = 0; i < x; i++)
 		{
-			for (j = 0; j < maxVerticalData; j++)
+			for (j = 0; j < verticalSize; j++)
 			{
-				current = dataContainer[i * maxVerticalData + j];
+				current = dataContainer[i * verticalSize + j];
 				for (tempIndex = 0; tempIndex < 8; tempIndex++)
 					tempData[index + tempIndex] = (byte) (current >>> (8 * tempIndex));
 				index += 8;
@@ -487,7 +488,7 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public int getMaxNumberOfLods()
 	{
-		return size * size * getMaxVerticalData();
+		return size * size * getVerticalSize();
 	}
 	
 	

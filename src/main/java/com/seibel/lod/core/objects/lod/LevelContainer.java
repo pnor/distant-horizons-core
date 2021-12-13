@@ -81,7 +81,7 @@ public interface LevelContainer
 	byte getDetailLevel();
 	
 	
-	int getMaxVerticalData();
+	int getVerticalSize();
 	
 	/** Clears the dataPoint at the given array index */
 	void clear(int posX, int posZ);
