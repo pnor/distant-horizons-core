@@ -257,6 +257,14 @@ public class VerticalLevelContainer implements LevelContainer
 	 */
 	public void mergeAndAddData(int posZ, int posX, short[] inputPositionDataToMerge, int[] inputVerticalData, int[] inputColorData, int[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
+		mergeAndAddData(0, inputPositionDataToMerge.length, posZ, posX, inputPositionDataToMerge, inputVerticalData, inputColorData, inputLightData, inputDetailLevel, inputVerticalSize);
+	}
+	/**
+	 * This method merge column of multiple data together
+	 * @return one column of correctly parsed data
+	 */
+	public void mergeAndAddData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionDataToMerge, int[] inputVerticalData, int[] inputColorData, int[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	{
 		
 		
 		//STEP 1//
@@ -278,13 +286,16 @@ public class VerticalLevelContainer implements LevelContainer
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		
-		//we combine every position of the input
-		for(short data : inputPositionDataToMerge)
+		short tempPositionData;
+		//we combine every position in the slice of the input
+		//I THINK YOU CAN SEE HOW TO USE THE SLICE FROM HERE
+		for(int index = sliceStart; index <=sliceEnd; index++)
 		{
-			genMode = (byte) Math.min(genMode, PositionDataFormat.getGenerationMode(data));
-			correctLight &= PositionDataFormat.getFlag(data);
-			allVoid &= PositionDataFormat.isVoid(data);
-			allEmpty &= PositionDataFormat.doesItExist(data);
+			tempPositionData = inputPositionDataToMerge[index];
+			genMode = (byte) Math.min(genMode, PositionDataFormat.getGenerationMode(tempPositionData));
+			correctLight &= PositionDataFormat.getFlag(tempPositionData);
+			allVoid &= PositionDataFormat.isVoid(tempPositionData);
+			allEmpty &= PositionDataFormat.doesItExist(tempPositionData);
 		}
 		
 		//Case 1: should never happen but we use this just in case
