@@ -14,7 +14,7 @@ public class LightFormat
 	
 	public byte formatLightAsByte(byte skyLight, byte blockLight)
 	{
-		return (byte) (((skyLight & SKY_LIGHT_MASK) << BYTE_SKY_LIGHT_SHIFT) | ((blockLight & BLOCK_LIGHT_MASK) << BYTE_BLOCK_LIGHT_SHIFT));
+		return (byte) (((skyLight & SKY_LIGHT_MASK) << (BYTE_SKY_LIGHT_SHIFT + 4)) | ((blockLight & BLOCK_LIGHT_MASK) << (BYTE_BLOCK_LIGHT_SHIFT + 4)));
 	}
 	
 	public int formatLightAsInt(byte skyLight, byte blockLight)
@@ -24,7 +24,7 @@ public class LightFormat
 	
 	public int convertByteToIntFormat(byte lights)
 	{
-		return 0;
+		return formatLightAsInt((byte) ((lights >>> BYTE_SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK), (byte) ((lights >>> BYTE_BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK));
 	}
 	
 	public byte getSkyLight(byte lights)

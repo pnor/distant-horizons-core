@@ -10,17 +10,28 @@ public class VerticalDataFormat
 	public final static byte LEVEL_SHIFT = 3;
 	public final static byte BOTTOM_TYPE_SHIFT = 2;
 	public final static byte TRANSPARENCY_SHIFT = 1;
-	public final static byte EMPTY_LOD_SHIFT = 0;
+	public final static byte EXISTENCE_SHIFT = 0;
 	
+	
+	public final static int FULL_MASK = ~0;
 	
 	public final static int HEIGHT_MASK = 0b1111_1111_1111;
 	public final static int DEPTH_MASK = 0b1111_1111_1111;
 	public final static int LEVEL_MASK = 0b111;
 	public final static int TRANSPARENCY_MASK = 0b1;
 	public final static int BOTTOM_TYPE_MASK = 0b1;
-	public final static int EMPTY_LOD_MASK = 0b1;
+	public final static int EXISTENCE_MASK = 0b1;
+	
+	
+	public final static int HEIGHT_RESET = ~(HEIGHT_MASK << HEIGHT_SHIFT);
+	public final static int DEPTH_RESET = ~(DEPTH_MASK << DEPTH_SHIFT);
+	public final static int LEVEL_RESET = ~(LEVEL_MASK << LEVEL_SHIFT);
+	public final static int TRANSPARENCY_RESET = ~(TRANSPARENCY_MASK << BOTTOM_TYPE_SHIFT);
+	public final static int BOTTOM_TYPE_RESET = ~(BOTTOM_TYPE_MASK << TRANSPARENCY_SHIFT);
+	public final static int EXISTENCE_RESET = ~(EXISTENCE_MASK << EXISTENCE_SHIFT);
 	
 	public final static int EMPTY_LOD = 0;
+	
 	
 	public static int createVerticalData(int height, int depth, int level, boolean transparent, boolean bottom)
 	{
@@ -32,7 +43,7 @@ public class VerticalDataFormat
 			verticalData |= BOTTOM_TYPE_MASK << BOTTOM_TYPE_SHIFT;
 		if (transparent)
 			verticalData |= TRANSPARENCY_MASK << TRANSPARENCY_SHIFT;
-		verticalData |= EMPTY_LOD_MASK << EMPTY_LOD_SHIFT;
+		verticalData |= EXISTENCE_MASK << EXISTENCE_SHIFT;
 		
 		return verticalData;
 	}
@@ -64,7 +75,37 @@ public class VerticalDataFormat
 	
 	public static boolean doesItExist(int verticalData)
 	{
-		return (((verticalData >>> EMPTY_LOD_SHIFT) & EMPTY_LOD_MASK) == 1);
+		return (((verticalData >>> EXISTENCE_SHIFT) & EXISTENCE_MASK) == 1);
 	}
 	
+	
+	public static int setHeight(int verticalData, int height)
+	{
+		return verticalData | ((height & HEIGHT_MASK) << HEIGHT_SHIFT);
+	}
+	
+	public static int setDepth(int verticalData, int depth)
+	{
+		return verticalData | ((depth & DEPTH_MASK) << DEPTH_SHIFT);
+	}
+	
+	public static int setLevel(int verticalData, int level)
+	{
+		return verticalData | ((level & LEVEL_MASK) << LEVEL_SHIFT);
+	}
+	
+	public static int setTransparency(int verticalData)
+	{
+		return verticalData | ((TRANSPARENCY_MASK) << TRANSPARENCY_SHIFT);
+	}
+	
+	public static int setBottom(int verticalData)
+	{
+		return verticalData | ((BOTTOM_TYPE_MASK) << BOTTOM_TYPE_SHIFT);
+	}
+	
+	public static int setExistence(int verticalData)
+	{
+		return verticalData | ((EXISTENCE_MASK) << EXISTENCE_SHIFT);
+	}
 }

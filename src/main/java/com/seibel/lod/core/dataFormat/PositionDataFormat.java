@@ -44,26 +44,42 @@ public class PositionDataFormat
 	{
 		return (byte) ((dataPoint >>> LOD_COUNT_SHIFT) & LOD_COUNT_MASK);
 	}
-	
 	public static boolean getFlag(short dataPoint)
 	{
 		return ((dataPoint >>> CORRECT_LIGHT_SHIFT) & CORRECT_LIGHT_MASK) == 1;
 	}
-	
 	public static byte getGenerationMode(short dataPoint)
 	{
 		return (byte) ((dataPoint >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
 	}
-	
-	
 	public static boolean isVoid(short dataPoint)
 	{
 		return (((dataPoint >>> VOID_SHIFT) & VOID_MASK) == 1);
 	}
-	
 	public static boolean doesItExist(short dataPoint)
 	{
 		return (((dataPoint >>> EXISTENCE_SHIFT) & EXISTENCE_MASK) == 1);
+	}
+	
+	public static short setLodCount(short dataPoint, short lodCount)
+	{
+		return (short) (dataPoint | ((lodCount & LOD_COUNT_MASK) << LOD_COUNT_SHIFT));
+	}
+	public static short setFlag(short dataPoint)
+	{
+		return (short) (dataPoint | ((CORRECT_LIGHT_MASK) << CORRECT_LIGHT_SHIFT));
+	}
+	public static short setGenerationMode(short dataPoint, byte generationMode)
+	{
+		return (short) (dataPoint | ((generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT));
+	}
+	public static short setVoid(short dataPoint)
+	{
+		return (short) (dataPoint | (VOID_MASK << VOID_SHIFT));
+	}
+	public static short setExistence(short dataPoint)
+	{
+		return (short) (dataPoint | (EXISTENCE_MASK << EXISTENCE_SHIFT));
 	}
 	
 }
