@@ -647,6 +647,7 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 	}
 	
+	//SPLITTED VERSION OF THE MERGE AND ADD
 	private void resetPosition(int posX, int posZ)
 	{
 		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
@@ -658,7 +659,7 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 	}
 	
-	private boolean mergePositionData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData)
+	private boolean mergeAndAddPositionData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData)
 	{
 		
 		//We start by populating the PositionDataToMerge
@@ -699,7 +700,7 @@ public class VerticalLevelContainer implements LevelContainer
 		return true;
 	}
 	
-	private void mergeVerticalData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	private void mergeAndAddVerticalData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
 		//STEP 3//
 		//now we firstly merge the height and depth values of the input data
@@ -913,7 +914,7 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	
-	private void mergeColorLightData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	private void mergeAndAddColorLightData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
 		//STEP 5//
 		//we now get the top lods on each vertical index and we merge
@@ -1021,6 +1022,7 @@ public class VerticalLevelContainer implements LevelContainer
 			{
 				childPosX = 2 * posX + x;
 				childPosZ = 2 * posZ + z;
+				
 				for (int verticalIndex = 0; verticalIndex < lowerMaxVertical; verticalIndex++)
 					dataToMerge[(z * 2 + x) * lowerMaxVertical + verticalIndex] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
 			}
@@ -1028,6 +1030,37 @@ public class VerticalLevelContainer implements LevelContainer
 		data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getVerticalSize());
 		
 		addVerticalData(data, posX, posZ);
+	}
+	
+	public void newUpdateData(VerticalLevelContainer lowerLevelContainer, int posX, int posZ)
+	{
+		//We reset the array
+		int lowerVerticalSize = lowerLevelContainer.getVerticalSize();
+		byte lowerDetailLevel = lowerLevelContainer.detailLevel;
+		short[] positionDataToMerge = new short[4];
+		int[] verticalDataToMerge = new int[4 * lowerVerticalSize];;
+		int[] colorDataToMerge = new int[4 * lowerVerticalSize];;
+		byte[] ligthDataToMerge = new byte[4 * lowerVerticalSize];;
+		
+		int childPosX;
+		int childPosZ;
+		long[] data;
+		for (int x = 0; x <= 1; x++)
+		{
+			for (int z = 0; z <= 1; z++)
+			{
+				childPosX = 2 * posX + x;
+				childPosZ = 2 * posZ + z;
+				positionDataToMerge[z * 2 + x] = lowerLevelContainer.getPositionData(childPosX, childPosZ);
+				for (int verticalIndex = 0; verticalIndex < lowerVerticalSize; verticalIndex++)
+				{
+					verticalDataToMerge[(z * 2 + x) * lowerVerticalSize + verticalIndex] = lowerLevelContainer.getVerticalData(childPosX, childPosZ, verticalIndex);
+					colorDataToMerge[(z * 2 + x) * lowerVerticalSize + verticalIndex] = lowerLevelContainer.getColorData(childPosX, childPosZ, verticalIndex);
+					ligthDataToMerge[(z * 2 + x) * lowerVerticalSize + verticalIndex] = lowerLevelContainer.getLightData(childPosX, childPosZ, verticalIndex);
+				}
+			}
+		}
+		mergeAndAddData(posX,posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, ligthDataToMerge, lowerDetailLevel, lowerVerticalSize);
 	}
 	
 	@Override
