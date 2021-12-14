@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.seibel.lod.core.dataFormat.PositionDataFormat;
+import com.seibel.lod.core.dataFormat.VerticalDataFormat;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
@@ -43,6 +44,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import javafx.geometry.Pos;
 
 
 
@@ -675,7 +677,7 @@ public class LodDimension
 		
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		if (region == null)
-			return DataPointUtil.EMPTY_DATA;
+			return PositionDataFormat.EMPTY_DATA;
 		
 		return region.getPositionData(detailLevel, posX, posZ);
 	}
@@ -688,7 +690,7 @@ public class LodDimension
 		
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		if (region == null)
-			return DataPointUtil.EMPTY_DATA;
+			return VerticalDataFormat.EMPTY_LOD;
 		
 		return region.getVerticalData(detailLevel, posX, posZ, verticalIndex);
 	}

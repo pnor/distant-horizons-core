@@ -23,6 +23,7 @@ import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
+import org.lwjgl.system.CallbackI;
 
 import java.util.logging.Level;
 
@@ -284,8 +285,11 @@ public class VerticalLevelContainer implements LevelContainer
 	public void addData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
 		
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("-------- \n Started work on position : " + detailLevel + " " + posX + " " + posZ + "\n");
 		
 		//STEP 1//
+		stringBuilder.append("started step 1\n");
 		//We initially reset this position of the data container
 		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
 		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
@@ -296,8 +300,8 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 		
 		
-		
 		//STEP 2//
+		stringBuilder.append("started step 2\n");
 		//We start by populating the PositionDataToMerge
 		byte genMode = DistanceGenerationMode.FULL.complexity;
 		boolean correctLight = true;
@@ -313,13 +317,15 @@ public class VerticalLevelContainer implements LevelContainer
 			genMode = (byte) Math.min(genMode, PositionDataFormat.getGenerationMode(tempPositionData));
 			correctLight &= PositionDataFormat.getFlag(tempPositionData);
 			allVoid &= PositionDataFormat.isVoid(tempPositionData);
-			allEmpty &= PositionDataFormat.doesItExist(tempPositionData);
+			allEmpty &= !PositionDataFormat.doesItExist(tempPositionData);
 		}
 		
 		//Case 1: should never happen but we use this just in case
 		//if all the data is empty (maybe a bug) then we simply return
 		if (allEmpty)
 		{
+			stringBuilder.append("ended with case 1\n");
+			System.out.println(stringBuilder);
 			return;
 		}
 		
@@ -327,15 +333,20 @@ public class VerticalLevelContainer implements LevelContainer
 		//if all the data is empty (maybe a bug) then we simply return
 		if (allVoid)
 		{
+			stringBuilder.append("ended with case 2\n");
+			System.out.println(stringBuilder);
 			positionDataContainer[posX * size + posZ] = PositionDataFormat.createVoidPositionData(genMode);
 			return;
 		}
 		
 		//Case 3: data is non void and non empty, we continue
+		stringBuilder.append("continuing with case 3\n");
 		positionDataContainer[posX * size + posZ] = PositionDataFormat.createPositionData(0, correctLight, genMode);
+		stringBuilder.append("current position data " + getPositionData(posX,posZ) + "\n");
 		
 		
 		//STEP 3//
+		stringBuilder.append("started step 3\n");
 		//now we firstly merge the height and depth values of the input data
 		//in this process we do a sort of "projection" of the data on a single column
 		
@@ -355,7 +366,6 @@ public class VerticalLevelContainer implements LevelContainer
 		int inputSize = 1 << inputDetailLevel;
 		// I'll disable the ThreadMap array for the initial testing //ThreadMapUtil.getHeightAndDepth(inputVerticalSize * 2 * 4)
 		short[] heightAndDepth = new short[inputVerticalSize * 2 * 4];
-		
 		int tempVerticalData;
 		short depth;
 		short height;
@@ -477,6 +487,7 @@ public class VerticalLevelContainer implements LevelContainer
 		
 		
 		//STEP 4//
+		stringBuilder.append("started step 4\n");
 		//we merge height and depth to respect the verticalSize of this LevelContainer
 		//and we save the values directly in the VerticalDataContainer
 		//In this process we can easily compute the count of this position to be inserted in the positionDataContainer
@@ -521,13 +532,17 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 		
 		short lodCount = 0;
-		for (j = 0; j < count; j--)
+		for (j = count-1 ; j>= 0 ; j--)
 		{
 			height = heightAndDepth[j * 2];
 			depth = heightAndDepth[j * 2 + 1];
 			
 			if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
 				break;
+			
+			stringBuilder.append("\n\nadded vertical pos " + j + "\n");
+			stringBuilder.append("red " + height + "\n");
+			stringBuilder.append("green " + depth + "\n");
 			
 			setVerticalData(
 					VerticalDataFormat.createVerticalData(height, depth, 0, false, false),
@@ -544,8 +559,9 @@ public class VerticalLevelContainer implements LevelContainer
 						lodCount),
 				posX,
 				posZ);
-		
+		stringBuilder.append("current position data " + getPositionData(posX,posZ) + "\n");
 		//STEP 5//
+		stringBuilder.append("started step 5\n");
 		//we now get the top lods on each vertical index and we merge
 		//the color, the data and ligth of all of them
 		
@@ -618,9 +634,19 @@ public class VerticalLevelContainer implements LevelContainer
 			tempBlue = tempBlue / numberOfChildren;
 			tempLightBlock = tempLightBlock / numberOfChildren;
 			tempLightSky = tempLightSky / numberOfChildren;
+			
+			stringBuilder.append("\n\nadded in vertical index " + verticalIndex + "\n");
+			stringBuilder.append("alpha " + tempAlpha + "\n");
+			stringBuilder.append("red " + tempRed + "\n");
+			stringBuilder.append("green " + tempGreen + "\n");
+			stringBuilder.append("blue " + tempBlue + "\n");
+			stringBuilder.append("block " + tempLightBlock + "\n");
+			stringBuilder.append("sky " + tempLightSky + "\n");
 			setColorData(ColorFormat.createColorData(tempAlpha, tempRed, tempGreen, tempBlue), posX, posZ, verticalIndex);
 			setLightData(LightFormat.formatLightAsByte((byte) tempLightSky, (byte) tempLightBlock), posX, posZ, verticalIndex);
 		}
+		stringBuilder.append("process ended");
+		System.out.println(stringBuilder);
 	}
 	
 	
@@ -663,7 +689,7 @@ public class VerticalLevelContainer implements LevelContainer
 			}
 		}
 		
-		addData(posX,posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, ligthDataToMerge, lowerLevelContainer.getDetailLevel(), lowerVerticalSize);
+		addData(posX, posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, ligthDataToMerge, lowerLevelContainer.getDetailLevel(), lowerVerticalSize);
 	}
 	
 	@Override
