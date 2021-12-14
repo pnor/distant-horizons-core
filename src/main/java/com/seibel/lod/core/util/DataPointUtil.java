@@ -378,7 +378,7 @@ public class DataPointUtil
 						{
 							if (!botExtend)
 							{
-								ClientApi.LOGGER.info("datapoint bug: " + Arrays.toString(heightAndDepth));
+								//ClientApi.LOGGER.info("datapoint bug: " + Arrays.toString(heightAndDepth));
 								//only top is within some exiting block, extending it
 								topPos++; //to make it easier
 								heightAndDepth[topPos * 2] = height;
