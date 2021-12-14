@@ -61,6 +61,7 @@ public class ClientApi
 	private boolean firstTimeSetupComplete = false;
 	private boolean configOverrideReminderPrinted = false;
 	
+	private boolean rendererDisabledBecauseOfExceptions = false;
 	
 	
 	private ClientApi()
@@ -112,9 +113,17 @@ public class ClientApi
 				profiler.pop(); // get out of "terrain"
 				profiler.push("LOD");
 				
-				
-				ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
-				
+				if (!rendererDisabledBecauseOfExceptions) {
+					try {
+						ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
+					} catch (RuntimeException e) {
+						rendererDisabledBecauseOfExceptions = true;
+						try {
+							//ClientApi.renderer.ma  ();
+						} catch (RuntimeException welpLookLikeWeWillLeakResource) {}
+						throw e;
+					}
+				}
 				profiler.pop(); // end LOD
 				profiler.push("terrain"); // go back into "terrain"
 			}
@@ -172,6 +181,8 @@ public class ClientApi
 	//=================//
 	// Lod maintenance //
 	//=================//
+	
+	// FIXME: I need a onLastFrameCleanup() callback in Render Thread... Which calls renderer.cleanup()
 	
 	/** This event is called once during the first frame Minecraft renders in the world. */
 	public void firstFrameSetup()
