@@ -23,6 +23,7 @@ import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
+import javafx.geometry.Pos;
 
 /**
  *
@@ -386,7 +387,7 @@ public class VerticalLevelContainer implements LevelContainer
 		int i;
 		int ii;
 		//We collect the indexes of the data, ordered by the depth
-		for (int positionIndex = 0; positionIndex < size; positionIndex++)
+		for (int positionIndex = sliceStart; positionIndex <= sliceEnd; positionIndex++)
 		{
 			tempPositionData = inputPositionData[positionIndex];
 			if (!PositionDataFormat.doesItExist(tempPositionData) || PositionDataFormat.isVoid(tempPositionData))
@@ -563,7 +564,7 @@ public class VerticalLevelContainer implements LevelContainer
 		//we update the count
 		setPositionData(
 				PositionDataFormat.setLodCount(
-						PositionDataFormat.createPositionData(0, correctLight, genMode),
+						getPositionData(posX,posZ),
 						lodCount),
 				posX,
 				posZ);
@@ -597,7 +598,7 @@ public class VerticalLevelContainer implements LevelContainer
 			int tempLightBlock = 0;
 			int tempLightSky = 0;
 			
-			for (int positionIndex = 0; positionIndex < size; positionIndex++)
+			for (int positionIndex = sliceStart; positionIndex <= sliceEnd; positionIndex++)
 			{
 				tempPositionData = inputPositionData[positionIndex];
 				
@@ -644,135 +645,193 @@ public class VerticalLevelContainer implements LevelContainer
 			setColorData(ColorFormat.createColorData(tempAlpha, tempRed, tempGreen, tempBlue), posX, posZ, verticalIndex);
 			setLightData(LightFormat.formatLightAsByte((byte) tempLightSky, (byte) tempLightBlock), posX, posZ, verticalIndex);
 		}
+	}
+	
+	private void resetPosition(int posX, int posZ)
+	{
+		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
+		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
+		{
+			verticalDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = VerticalDataFormat.EMPTY_LOD;
+			lightDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
+			colorDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
+		}
+	}
+	
+	private boolean mergePositionData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData)
+	{
 		
-		/* OLD CODE FOR REFERENCE
-		int size = dataToMerge.length / inputVerticalData;
-		
-		// We initialize the arrays that are going to be used
-		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT / 2 + 1) * 2);
-		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
-		
-		
-		int genMode = DistanceGenerationMode.FULL.complexity;
+		//We start by populating the PositionDataToMerge
+		byte genMode = DistanceGenerationMode.FULL.complexity;
+		boolean correctLight = true;
 		boolean allEmpty = true;
 		boolean allVoid = true;
-		boolean allDefault;
-		long singleData;
 		
+		short tempPositionData;
+		//we combine every position in the slice of the input
+		//I THINK YOU CAN SEE HOW TO USE THE SLICE FROM HERE
+		for (int positionIndex = sliceStart; positionIndex <= sliceEnd; positionIndex++)
+		{
+			tempPositionData = inputPositionData[positionIndex];
+			genMode = (byte) Math.min(genMode, PositionDataFormat.getGenerationMode(tempPositionData));
+			correctLight &= PositionDataFormat.getFlag(tempPositionData);
+			allVoid &= PositionDataFormat.isVoid(tempPositionData);
+			allEmpty &= PositionDataFormat.doesItExist(tempPositionData);
+		}
 		
+		//Case 1: should never happen but we use this just in case
+		//if all the data is empty (maybe a bug) then we simply return
+		if (allEmpty)
+		{
+			return false;
+		}
+		
+		//Case 2: if all the data is void
+		//if all the data is empty (maybe a bug) then we simply return
+		if (allVoid)
+		{
+			positionDataContainer[posX * size + posZ] = PositionDataFormat.createVoidPositionData(genMode);
+			return false;
+		}
+		
+		//Case 3: data is non void and non empty, we continue
+		positionDataContainer[posX * size + posZ] = PositionDataFormat.createPositionData(0, correctLight, genMode);
+		return true;
+	}
+	
+	private void mergeVerticalData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	{
+		//STEP 3//
+		//now we firstly merge the height and depth values of the input data
+		//in this process we do a sort of "projection" of the data on a single column
+		
+		/* simple visualization of the process
+		input:       ->    projection:
+		| | |				|
+		  |   |				|
+		  |					|
+		  
+		  
+		|     				|
+		    
+		    |				|
+		      |      		|
+		 */
+		
+		int inputSize = 1 << inputDetailLevel;
+		// I'll disable the ThreadMap array for the initial testing //ThreadMapUtil.getHeightAndDepth(inputVerticalSize * 2 * 4)
+		short[] heightAndDepth = new short[inputVerticalSize * 2 * 4];
+		short tempPositionData;
+		int tempVerticalData;
 		short depth;
 		short height;
 		int count = 0;
 		int i;
 		int ii;
-		int dataIndex;
 		//We collect the indexes of the data, ordered by the depth
-		for (int index = 0; index < size; index++)
+		for (int positionIndex = sliceStart; positionIndex < sliceEnd; positionIndex++)
 		{
-			for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
+			tempPositionData = inputPositionData[positionIndex];
+			if (!PositionDataFormat.doesItExist(tempPositionData) || PositionDataFormat.isVoid(tempPositionData))
+				continue;
+			for (int verticalIndex = 0; verticalIndex < inputVerticalSize; verticalIndex++)
 			{
-				singleData = dataToMerge[index * inputVerticalData + dataIndex];
-				if (doesItExist(singleData))
+				tempVerticalData = inputVerticalData[positionIndex * inputVerticalSize + verticalIndex];
+				if (VerticalDataFormat.doesItExist(tempVerticalData))
 				{
-					genMode = Math.min(genMode, getGenerationMode(singleData));
-					allEmpty = false;
-					if (!isVoid(singleData))
+					depth = VerticalDataFormat.getDepth(tempVerticalData);
+					height = VerticalDataFormat.getDepth(tempVerticalData);
+					
+					int botPos = -1;
+					int topPos = -1;
+					//values fall in between and possibly require extension of array
+					boolean botExtend = false;
+					boolean topExtend = false;
+					for (i = 0; i < count; i++)
 					{
-						allVoid = false;
-						depth = getDepth(singleData);
-						height = getHeight(singleData);
-						
-						int botPos = -1;
-						int topPos = -1;
-						//values fall in between and possibly require extension of array
-						boolean botExtend = false;
-						boolean topExtend = false;
-						for (i = 0; i < count; i++)
+						if (depth <= heightAndDepth[i * 2] && depth >= heightAndDepth[i * 2 + 1])
 						{
-							if (depth <= heightAndDepth[i * 2] && depth >= heightAndDepth[i * 2 + 1])
-							{
-								botPos = i;
-								break;
-							}
-							else if (depth < heightAndDepth[i * 2 + 1] && ((i + 1 < count && depth > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
-							{
-								botPos = i;
-								botExtend = true;
-								break;
-							}
+							botPos = i;
+							break;
 						}
-						for (i = 0; i < count; i++)
+						else if (depth < heightAndDepth[i * 2 + 1] && ((i + 1 < count && depth > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
 						{
-							if (height <= heightAndDepth[i * 2] && height >= heightAndDepth[i * 2 + 1])
-							{
-								topPos = i;
-								break;
-							}
-							else if (height < heightAndDepth[i * 2 + 1] && ((i + 1 < count && height > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
-							{
-								topPos = i;
-								topExtend = true;
-								break;
-							}
+							botPos = i;
+							botExtend = true;
+							break;
 						}
-						if (topPos == -1)
+					}
+					for (i = 0; i < count; i++)
+					{
+						if (height <= heightAndDepth[i * 2] && height >= heightAndDepth[i * 2 + 1])
 						{
-							if (botPos == -1)
-							{
-								//whole block falls above
-								extendArray(heightAndDepth, 2, 0, 1, count);
-								heightAndDepth[0] = height;
-								heightAndDepth[1] = depth;
-								count++;
-							}
-							else if (!botExtend)
-							{
-								//only top falls above extending it there, while bottom is inside existing
-								shrinkArray(heightAndDepth, 2, 0, botPos, count);
-								heightAndDepth[0] = height;
-								count -= botPos;
-							}
-							else
-							{
-								//top falls between some blocks, extending those as well
-								shrinkArray(heightAndDepth, 2, 0, botPos, count);
-								heightAndDepth[0] = height;
-								heightAndDepth[1] = depth;
-								count -= botPos;
-							}
+							topPos = i;
+							break;
 						}
-						else if (!topExtend)
+						else if (height < heightAndDepth[i * 2 + 1] && ((i + 1 < count && height > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
 						{
-							if (!botExtend)
-								//both top and bottom are within some exiting blocks, possibly merging them
-								heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
-							else
-								//top falls between some blocks, extending it there
-								heightAndDepth[topPos * 2 + 1] = depth;
-							shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+							topPos = i;
+							topExtend = true;
+							break;
+						}
+					}
+					if (topPos == -1)
+					{
+						if (botPos == -1)
+						{
+							//whole block falls above
+							DataMergeUtil.extendArray(heightAndDepth, 2, 0, 1, count);
+							heightAndDepth[0] = height;
+							heightAndDepth[1] = depth;
+							count++;
+						}
+						else if (!botExtend)
+						{
+							//only top falls above extending it there, while bottom is inside existing
+							DataMergeUtil.shrinkArray(heightAndDepth, 2, 0, botPos, count);
+							heightAndDepth[0] = height;
+							count -= botPos;
+						}
+						else
+						{
+							//top falls between some blocks, extending those as well
+							DataMergeUtil.shrinkArray(heightAndDepth, 2, 0, botPos, count);
+							heightAndDepth[0] = height;
+							heightAndDepth[1] = depth;
+							count -= botPos;
+						}
+					}
+					else if (!topExtend)
+					{
+						if (!botExtend)
+							//both top and bottom are within some exiting blocks, possibly merging them
+							heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+						else
+							//top falls between some blocks, extending it there
+							heightAndDepth[topPos * 2 + 1] = depth;
+						DataMergeUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+						count -= botPos - topPos;
+					}
+					else
+					{
+						if (!botExtend)
+						{
+							//only top is within some exiting block, extending it
+							topPos++; //to make it easier
+							heightAndDepth[topPos * 2] = height;
+							heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+							DataMergeUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
 							count -= botPos - topPos;
 						}
 						else
 						{
-							if (!botExtend)
-							{
-								//only top is within some exiting block, extending it
-								topPos++; //to make it easier
-								heightAndDepth[topPos * 2] = height;
-								heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
-								shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-								count -= botPos - topPos;
-							}
-							else
-							{
-								//both top and bottom are outside existing blocks
-								shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-								count -= botPos - topPos;
-								extendArray(heightAndDepth, 2, topPos + 1, 1, count);
-								count++;
-								heightAndDepth[topPos * 2 + 2] = height;
-								heightAndDepth[topPos * 2 + 3] = depth;
-							}
+							//both top and bottom are outside existing blocks
+							DataMergeUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+							count -= botPos - topPos;
+							DataMergeUtil.extendArray(heightAndDepth, 2, topPos + 1, 1, count);
+							count++;
+							heightAndDepth[topPos * 2 + 2] = height;
+							heightAndDepth[topPos * 2 + 3] = depth;
 						}
 					}
 				}
@@ -781,20 +840,34 @@ public class VerticalLevelContainer implements LevelContainer
 			}
 		}
 		
-		//We check if there is any data that's not empty or void
-		if (allEmpty)
-			return dataPoint;
-		if (allVoid)
-		{
-			dataPoint[0] = createVoidDataPoint(genMode);
-			return dataPoint;
-		}
+		
+		
+		//STEP 4//
+		//we merge height and depth to respect the verticalSize of this LevelContainer
+		//and we save the values directly in the VerticalDataContainer
+		//In this process we can easily compute the count of this position to be inserted in the positionDataContainer
+		//if the size of the array heightAndDepth is over the maxVerticalSize, then we use that
+		//otherwise we use the size of the heightAndDepth
+		/* simple visualization of the process
+		before:			after:
+			|				|
+			|				|
+			|				|
+		 
+		 
+			|				|
+		        we fill-->  |
+			|				|
+			|				|
+			
+		this way we reduce from verticalSize 3 to verticalSize 2
+		 */
 		
 		//we limit the vertical portion to maxVerticalData
 		int j = 0;
-		while (count > maxVerticalData)
+		while (count > verticalSize)
 		{
-			ii = WORLD_HEIGHT - VERTICAL_OFFSET;
+			ii = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET;
 			for (i = 0; i < count - 1; i++)
 			{
 				if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)
@@ -812,14 +885,62 @@ public class VerticalLevelContainer implements LevelContainer
 			//System.arraycopy(heightAndDepth, j + 1, heightAndDepth, j, count - j - 1);
 			count--;
 		}
-		//As standard the vertical lods are ordered from top to bottom
-		for (j = count - 1; j >= 0; j--)
+		
+		short lodCount = 0;
+		for (j = 0; j < count; j--)
 		{
 			height = heightAndDepth[j * 2];
 			depth = heightAndDepth[j * 2 + 1];
 			
 			if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
 				break;
+			
+			setVerticalData(
+					VerticalDataFormat.createVerticalData(height, depth, 0, false, false),
+					posX,
+					posZ,
+					lodCount);
+			lodCount++;
+		}
+		
+		//we update the count
+		setPositionData(
+				PositionDataFormat.setLodCount(
+						getPositionData(posX,posZ),
+						lodCount),
+				posX,
+				posZ);
+	}
+	
+	
+	private void mergeColorLightData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	{
+		//STEP 5//
+		//we now get the top lods on each vertical index and we merge
+		//the color, the data and ligth of all of them
+		
+		short tempPositionData;
+		int tempVerticalData;
+		int tempColorData;
+		byte tempLightData;
+		
+		int storedVerticalData;
+		
+		int newVerticalData = 0;
+		int newColorData = 0;
+		byte newLightData = 0;
+		
+		int height;
+		int depth;
+		
+		short lodCount = PositionDataFormat.getLodCount(getPositionData(posX,posZ));
+		
+		//As standard the vertical lods are ordered from top to bottom
+		for (int verticalIndex = lodCount; verticalIndex >= 0; verticalIndex--)
+		{
+			storedVerticalData = getVerticalData(posX, posZ, verticalIndex);
+			height = VerticalDataFormat.getHeight(storedVerticalData);
+			depth = VerticalDataFormat.getDepth(storedVerticalData);
 			
 			int numberOfChildren = 0;
 			int tempAlpha = 0;
@@ -828,78 +949,54 @@ public class VerticalLevelContainer implements LevelContainer
 			int tempBlue = 0;
 			int tempLightBlock = 0;
 			int tempLightSky = 0;
-			byte tempGenMode = DistanceGenerationMode.FULL.complexity;
-			allEmpty = true;
-			allVoid = true;
-			allDefault = true;
-			long data = 0;
 			
-			for (int index = 0; index < size; index++)
+			for (int positionIndex = sliceStart; positionIndex <= sliceEnd; positionIndex++)
 			{
-				for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
+				tempPositionData = inputPositionData[positionIndex];
+				
+				if (!PositionDataFormat.doesItExist(tempPositionData) || PositionDataFormat.isVoid(tempPositionData))
+					continue;
+				for (int inputVerticalIndex = 0; inputVerticalIndex < inputVerticalSize; inputVerticalIndex++)
 				{
-					singleData = dataToMerge[index * inputVerticalData + dataIndex];
-					if (doesItExist(singleData) && !isVoid(singleData))
+					tempVerticalData = inputVerticalData[positionIndex * inputVerticalSize + inputVerticalIndex];
+					tempColorData = inputColorData[positionIndex * inputVerticalSize + inputVerticalIndex];
+					tempLightData = inputLightData[positionIndex * inputVerticalSize + inputVerticalIndex];
+					if (VerticalDataFormat.doesItExist(tempVerticalData))
 					{
-						
-						if ((depth <= getDepth(singleData) && getDepth(singleData) <= height)
-									|| (depth <= getHeight(singleData) && getHeight(singleData) <= height))
+						if ((depth <= VerticalDataFormat.getDepth(tempVerticalData) && VerticalDataFormat.getDepth(tempVerticalData) <= height)
+									|| (depth <= VerticalDataFormat.getHeight(tempVerticalData) && VerticalDataFormat.getHeight(tempVerticalData) <= height))
 						{
-							if (getHeight(singleData) > getHeight(data))
-								data = singleData;
+							if (VerticalDataFormat.getHeight(tempVerticalData) > VerticalDataFormat.getHeight(newVerticalData))
+							{
+								newVerticalData = tempColorData;
+								newColorData = tempVerticalData;
+								newLightData = tempLightData;
+							}
 						}
 					}
 					else
 						break;
 				}
-				if (!doesItExist(data))
-				{
-					singleData = dataToMerge[index * inputVerticalData];
-					data = createVoidDataPoint(getGenerationMode(singleData));
-				}
 				
-				if (doesItExist(data))
-				{
-					allEmpty = false;
-					if (!isVoid(data))
-					{
-						numberOfChildren++;
-						allVoid = false;
-						tempAlpha += getAlpha(data);
-						tempRed += getRed(data);
-						tempGreen += getGreen(data);
-						tempBlue += getBlue(data);
-						tempLightBlock += getLightBlock(data);
-						tempLightSky += getLightSky(data);
-						if (!getFlag(data)) allDefault = false;
-					}
-					tempGenMode = (byte) Math.min(tempGenMode, getGenerationMode(data));
-				}
-				else
-					tempGenMode = (byte) Math.min(tempGenMode, DistanceGenerationMode.NONE.complexity);
+				numberOfChildren++;
+				tempAlpha += ColorFormat.getAlpha(newColorData);
+				tempRed += ColorFormat.getRed(newColorData);
+				tempGreen += ColorFormat.getGreen(newColorData);
+				tempBlue += ColorFormat.getBlue(newColorData);
+				tempLightBlock += LightFormat.getBlockLight(newLightData);
+				tempLightSky += LightFormat.getSkyLight(newLightData);
 			}
 			
-			if (allEmpty)
-				//no child has been initialized
-				dataPoint[j] = EMPTY_DATA;
-			else if (allVoid)
-				//all the children are void
-				dataPoint[j] = createVoidDataPoint(tempGenMode);
-			else
-			{
-				//we have at least 1 child
-				tempAlpha = tempAlpha / numberOfChildren;
-				tempRed = tempRed / numberOfChildren;
-				tempGreen = tempGreen / numberOfChildren;
-				tempBlue = tempBlue / numberOfChildren;
-				tempLightBlock = tempLightBlock / numberOfChildren;
-				tempLightSky = tempLightSky / numberOfChildren;
-				dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
-			}
+			//we have at least 1 child
+			tempAlpha = tempAlpha / numberOfChildren;
+			tempRed = tempRed / numberOfChildren;
+			tempGreen = tempGreen / numberOfChildren;
+			tempBlue = tempBlue / numberOfChildren;
+			tempLightBlock = tempLightBlock / numberOfChildren;
+			tempLightSky = tempLightSky / numberOfChildren;
+			setColorData(ColorFormat.createColorData(tempAlpha, tempRed, tempGreen, tempBlue), posX, posZ, verticalIndex);
+			setLightData(LightFormat.formatLightAsByte((byte) tempLightSky, (byte) tempLightBlock), posX, posZ, verticalIndex);
 		}
-		return dataPoint;
-		*/
-		
 	}
 	
 	@Override
