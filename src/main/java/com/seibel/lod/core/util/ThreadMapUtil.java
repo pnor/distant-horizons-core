@@ -54,7 +54,6 @@ public class ThreadMapUtil
 	//________________________//
 	
 	public static final ConcurrentMap<String, boolean[]> adjShadeDisabled = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, Map<LodDirection, long[]>> adjDataMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, VertexOptimizer> boxMap = new ConcurrentHashMap<>();
 	
 	
@@ -71,28 +70,6 @@ public class ThreadMapUtil
 		return adjShadeDisabled.get(Thread.currentThread().getName());
 	}
 	
-	/** returns the array NOT cleared every time */
-	public static Map<LodDirection, long[]> getAdjDataArray(int verticalData)
-	{
-		if (!adjDataMap.containsKey(Thread.currentThread().getName())
-				|| (adjDataMap.get(Thread.currentThread().getName()) == null)
-				|| (adjDataMap.get(Thread.currentThread().getName()).get(LodDirection.NORTH) == null)
-				|| (adjDataMap.get(Thread.currentThread().getName()).get(LodDirection.NORTH).length != verticalData))
-		{
-			adjDataMap.put(Thread.currentThread().getName(), new HashMap<>());
-			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.UP, new long[1]);
-			adjDataMap.get(Thread.currentThread().getName()).put(LodDirection.DOWN, new long[1]);
-			for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
-				adjDataMap.get(Thread.currentThread().getName()).put(lodDirection, new long[verticalData]);
-		}
-		else
-		{
-			
-			for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
-				Arrays.fill(adjDataMap.get(Thread.currentThread().getName()).get(lodDirection), DataPointUtil.EMPTY_DATA);
-		}
-		return adjDataMap.get(Thread.currentThread().getName());
-	}
 	
 	public static VertexOptimizer getBox()
 	{
@@ -199,11 +176,11 @@ public class ThreadMapUtil
 		return verticalUpdate.get(Thread.currentThread().getName())[detailLevel];
 	}
 	
+	
 	/** clears all arrays so they will have to be rebuilt */
 	public static void clearMaps()
 	{
 		adjShadeDisabled.clear();
-		adjDataMap.clear();
 		boxMap.clear();
 		threadSingleUpdateMap.clear();
 		threadBuilderArrayMap.clear();

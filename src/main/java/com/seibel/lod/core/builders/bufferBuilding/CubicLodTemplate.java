@@ -21,6 +21,9 @@ package com.seibel.lod.core.builders.bufferBuilding;
 
 import java.util.Map;
 
+import com.seibel.lod.core.dataFormat.ColorFormat;
+import com.seibel.lod.core.dataFormat.LightFormat;
+import com.seibel.lod.core.dataFormat.VerticalDataFormat;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.VertexOptimizer;
@@ -36,7 +39,7 @@ import com.seibel.lod.core.util.LodUtil;
  */
 public class CubicLodTemplate
 {
-	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerY, int playerZ, long data, Map<LodDirection, long[]> adjData,
+	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerY, int playerZ, int verticalData, int colorData, byte lightData,
 			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (vertexOptimizer == null)
@@ -49,22 +52,21 @@ public class CubicLodTemplate
 		if (debugging != DebugMode.OFF)
 			color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel].getRGB();
 		else
-			color = DataPointUtil.getColor(data);
+			color = ColorFormat.getColor(colorData);
 		
 		
 		generateBoundingBox(
 				vertexOptimizer,
-				DataPointUtil.getHeight(data),
-				DataPointUtil.getDepth(data),
+				VerticalDataFormat.getHeight(verticalData),
+				VerticalDataFormat.getDepth(verticalData),
 				blockWidth,
 				posX * blockWidth, 0, posZ * blockWidth, // x, y, z offset
 				playerX,
 				playerY,
 				playerZ,
-				adjData,
 				color,
-				DataPointUtil.getLightSkyAlt(data),
-				DataPointUtil.getLightBlock(data),
+				LightFormat.getSkyLight(lightData),
+				LightFormat.getBlockLight(lightData),
 				adjShadeDisabled);
 		
 		addBoundingBoxToBuffer(buffer, vertexOptimizer);
@@ -88,7 +90,6 @@ public class CubicLodTemplate
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
 			int playerX, int playerY, int playerZ,
-			Map<LodDirection, long[]> adjData,
 			int color, byte skyLight, byte blockLight,
 			boolean[] adjShadeDisabled)
 	{
@@ -111,7 +112,7 @@ public class CubicLodTemplate
 		vertexOptimizer.setLights(skyLight, blockLight);
 		vertexOptimizer.setWidth(width, height - depth, width);
 		vertexOptimizer.setOffset((int) (xOffset + x), (int) (depth + yOffset), (int) (zOffset + z));
-		vertexOptimizer.setAdjData(adjData);
+		vertexOptimizer.setAdjData();
 	}
 	
 	private static void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer)

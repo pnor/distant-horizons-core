@@ -22,7 +22,10 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.dataFormat.ColorFormat;
+import com.seibel.lod.core.dataFormat.LightFormat;
+import com.seibel.lod.core.dataFormat.PositionDataFormat;
+import com.seibel.lod.core.dataFormat.VerticalDataFormat;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -199,17 +202,7 @@ public class LodBuilder
 			startZ = detail.startZ[i];
 			
 			long[] data;
-			long[] dataToMergeVertical = createVerticalDataToMerge(detail, chunk, config, startX, startZ);
-			data = DataPointUtil.mergeMultiData(dataToMergeVertical, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData(detailLevel));
-			
-			
-			//lodDim.clear(detailLevel, posX, posZ);
-			if (data != null && data.length != 0)
-			{
-				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, detail.detailLevel);
-				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, detail.detailLevel);
-				lodDim.addVerticalData(detailLevel, posX, posZ, data, false);
-			}
+			createAndAddData(lodDim, detail, chunk, config, startX, startZ);
 		}
 		lodDim.updateData(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getChunkPosX(), chunk.getChunkPosZ());
 		//executeTime = System.currentTimeMillis() - executeTime;
@@ -217,13 +210,18 @@ public class LodBuilder
 	}
 	
 	/** creates a vertical DataPoint */
-	private long[] createVerticalDataToMerge(HorizontalResolution detail, IChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
+	private void createAndAddData(LodDimension lodDimension, HorizontalResolution detail, IChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
 	{
 		// equivalent to 2^detailLevel
 		int size = 1 << detail.detailLevel;
 		
-		long[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail.detailLevel);
 		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
+		
+		short[] positionDataToMerge = new short[size*size];
+		int[] verticalDataToMerge = new int[size*size*verticalData];
+		int[] colorDataToMerge = new int[size*size*verticalData];
+		byte[] lightDataToMerge = new byte[size*size*verticalData];
+		
 		int height;
 		int depth;
 		int color;
@@ -253,6 +251,7 @@ public class LodBuilder
 			yAbs = chunk.getMaxY(xRel,zRel);
 			int count = 0;
 			boolean topBlock = true;
+			boolean voidData = false;
 			while (yAbs > DEFAULT_HEIGHT)
 			{
 				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
@@ -261,7 +260,7 @@ public class LodBuilder
 				if (height == DEFAULT_HEIGHT)
 				{
 					if (topBlock)
-						dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
+						voidData = true;
 					break;
 				}
 				
@@ -285,13 +284,24 @@ public class LodBuilder
 				lightSky = (light >> 4) & 0b1111;
 				isDefault = ((light >> 8)) == 1;
 				
-				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height, depth, color, lightSky, lightBlock, generation, isDefault);
+				
+				verticalDataToMerge[index * verticalData + count] = VerticalDataFormat.createVerticalData(height, depth, 0 , false, false);
+				colorDataToMerge[index * verticalData + count] = ColorFormat.createColorData(color);
+				lightDataToMerge[index * verticalData + count] = LightFormat.formatLightAsByte((byte) lightSky, (byte) lightBlock);
+				
 				topBlock = false;
 				yAbs = depth - 1;
 				count++;
 			}
+			if(voidData)
+				positionDataToMerge[index * verticalData] = PositionDataFormat.createVoidPositionData((byte) generation);
+			else
+				positionDataToMerge[index] = PositionDataFormat.createPositionData(count, true, (byte) generation);
 		}
-		return dataToMerge;
+		
+		int posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, detail.detailLevel);
+		int posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, detail.detailLevel);
+		lodDimension.addData(detail.detailLevel, posX, posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, lightDataToMerge, detail.detailLevel, verticalData, false);
 	}
 	
 	/**

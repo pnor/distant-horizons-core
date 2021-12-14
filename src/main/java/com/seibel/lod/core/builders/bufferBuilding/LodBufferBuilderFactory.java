@@ -20,16 +20,14 @@
 package com.seibel.lod.core.builders.bufferBuilding;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.dataFormat.PositionDataFormat;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -295,7 +293,8 @@ public class LodBufferBuilderFactory
 							int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
 							
 							//we get or create the map that will contain the adj data
-							Map<LodDirection, long[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
+							
+							/**TODO insert this in threadMapUtil*/
 							
 							//previous setToRender cache
 							if (setsToRender[xR][zR] == null)
@@ -320,6 +319,10 @@ public class LodBufferBuilderFactory
 							short gameChunkRenderDistance = (short) (vanillaRenderedChunks.length / 2 - 1);
 							
 							
+							
+							int[] adjVerticalArray;
+							int[] adjColorArray;
+							byte[] adjLightArray;
 							
 							for (int index = 0; index < posToRender.getNumberOfPos(); index++)
 							{
@@ -352,10 +355,15 @@ public class LodBufferBuilderFactory
 								//We check every adj block in each direction
 								for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
 								{
+									vertexOptimizer.resetAdjData(lodDirection);
+									adjVerticalArray = vertexOptimizer.getAdjVerticalArray(lodDirection);
+									adjColorArray = vertexOptimizer.getAdjColorArray(lodDirection);
+									adjLightArray = vertexOptimizer.getAdjLightArray(lodDirection);
 									
 									xAdj = posX + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).x;
 									zAdj = posZ + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).z;
-									long data;
+									int verticalData;
+									byte lightData;
 									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkX;
 									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
 									adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
@@ -371,23 +379,30 @@ public class LodBufferBuilderFactory
 									{
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
 										{
-											data = lodDim.getData(detailLevel, xAdj, zAdj, verticalIndex);
 											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = false;
-											adjData.get(lodDirection)[verticalIndex] = data;
+											adjLightArray[verticalIndex] = (byte) lodDim.getLightData(detailLevel, xAdj, zAdj, verticalIndex);
+											adjColorArray[verticalIndex] = lodDim.getVerticalData(detailLevel, xAdj, zAdj, verticalIndex);
+											adjVerticalArray[verticalIndex] = lodDim.getColorData(detailLevel, xAdj, zAdj, verticalIndex);
 										}
 									}
 									else
 									{
 										//Otherwise, we check if this position is
-										data = lodDim.getSingleData(detailLevel, xAdj, zAdj);
+										/*
+										adjLightData.get(lodDirection)[0] = 0;
+										adjVerticalData.get(lodDirection)[0] = 0;
 										
-										adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
+										short positionData = lodDim.getPositionData(detailLevel, xAdj, zAdj);
+										//we take the highest point
+										int color = lodDim.getColorData(detailLevel, xAdj, zAdj, PositionDataFormat.getLodCount(positionData));
+										
+										adjVerticalData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
 										
 										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
 													&& !DataPointUtil.isVoid(data))
 										{
 											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
-										}
+										}*/
 									}
 								}
 								
@@ -395,31 +410,61 @@ public class LodBufferBuilderFactory
 								// We render every vertical lod present in this position
 								// We only stop when we find a block that is void or non-existing block
 								long data;
-								for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ); verticalIndex++)
+								
+								short positionData = lodDim.getPositionData(detailLevel,posX,posZ);
+								short lodCount = PositionDataFormat.getLodCount(positionData);
+								for (int verticalIndex = 0; verticalIndex < lodCount; verticalIndex++)
 								{
 									
 									//we get the above block as adj UP
 									if (verticalIndex > 0)
-										adjData.get(LodDirection.UP)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex - 1);
+									{
+										vertexOptimizer.setAdjData(
+												LodDirection.UP,
+												lodDim.getVerticalData(detailLevel, posX, posZ, verticalIndex - 1),
+												lodDim.getColorData(detailLevel, posX, posZ, verticalIndex - 1),
+												(byte) lodDim.getLightData(detailLevel, posX, posZ, verticalIndex - 1),
+												0);
+									}
 									else
-										adjData.get(LodDirection.UP)[0] = DataPointUtil.EMPTY_DATA;
+									{
+										vertexOptimizer.setAdjData(
+												LodDirection.UP,
+												0,
+												0,
+												(byte) 0,
+												0);
+									}
 									
 									
 									//we get the below block as adj DOWN
-									if (verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ) - 1)
-										adjData.get(LodDirection.DOWN)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex + 1);
+									if (verticalIndex < lodCount)
+									{
+										vertexOptimizer.setAdjData(
+												LodDirection.DOWN,
+												lodDim.getVerticalData(detailLevel, posX, posZ, verticalIndex + 1),
+												lodDim.getColorData(detailLevel, posX, posZ, verticalIndex + 1),
+												(byte) lodDim.getLightData(detailLevel, posX, posZ, verticalIndex + 1),
+												0);
+									}
 									else
-										adjData.get(LodDirection.DOWN)[0] = DataPointUtil.EMPTY_DATA;
+									{
+										vertexOptimizer.setAdjData(
+												LodDirection.DOWN,
+												0,
+												0,
+												(byte) 0,
+												0);
+									}
 									
 									//We extract the data to render
-									data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);
+									int verticalData = lodDim.getVerticalData(detailLevel, posX, posZ, verticalIndex);
+									int colorData = lodDim.getColorData(detailLevel, posX, posZ, verticalIndex);
+									byte lightData = (byte) lodDim.getLightData(detailLevel, posX, posZ, verticalIndex);
 									
-									//If the data is not renderable (Void or non-existing) we stop since there is no data left in this position
-									if (DataPointUtil.isVoid(data) || !DataPointUtil.doesItExist(data))
-										break;
 									
 									//We send the call to create the vertices
-									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerY, playerZ, data, adjData,
+									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerY, playerZ, verticalData, colorData, lightData,
 											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
