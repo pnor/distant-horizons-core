@@ -232,7 +232,7 @@ public class VerticalLevelContainer implements LevelContainer
 		{
 			short tempMinHeight = inputData[index];
 			index++;
-			tempMinHeight |= inputData[index] << 8;
+			tempMinHeight |= (((short) inputData[index]) & 0xff) << 8;
 			index++;
 			if (tempMinHeight != minHeight)
 			{
@@ -240,7 +240,7 @@ public class VerticalLevelContainer implements LevelContainer
 				{
 					newData = 0;
 					for (tempIndex = 0; tempIndex < 8; tempIndex++)
-						newData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+						newData |= (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 					index += 8;
 					newData = DataPointUtil.createDataPoint(
 							DataPointUtil.getAlpha(newData),
@@ -263,7 +263,7 @@ public class VerticalLevelContainer implements LevelContainer
 				{
 					newData = 0;
 					for (tempIndex = 0; tempIndex < 8; tempIndex++)
-						newData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+						newData |= (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
 					index += 8;
 					tempDataContainer[i] = newData;
 				}
