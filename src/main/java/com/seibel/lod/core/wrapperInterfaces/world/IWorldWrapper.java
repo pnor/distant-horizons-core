@@ -52,7 +52,10 @@ public interface IWorldWrapper
 	
 	int getSeaLevel();
 	
-	short getMinHeight();
+	default short getMinHeight()
+	{
+		return 0;
+	}
 	
 	/** @throws UnsupportedOperationException if the WorldWrapper isn't for a ServerWorld */
 	File getSaveFolder() throws UnsupportedOperationException;
