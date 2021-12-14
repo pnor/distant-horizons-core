@@ -29,6 +29,8 @@ import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 
+import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIGHT;
+
 /**
  * Builds LODs as rectangular prisms.
  * @author James Seibel
@@ -134,7 +136,7 @@ public class CubicLodTemplate
 					color = vertexOptimizer.getColor(lodDirection);
 					addPosAndColor(buffer,
 							vertexOptimizer.getX(lodDirection, vertexIndex),
-							vertexOptimizer.getY(lodDirection, vertexIndex, verticalFaceIndex),
+							vertexOptimizer.getY(lodDirection, vertexIndex, verticalFaceIndex + MIN_WORLD_HEIGHT),
 							vertexOptimizer.getZ(lodDirection, vertexIndex),
 							color, skyLight, blockLight );
 				}

@@ -285,7 +285,7 @@ public class LodBuilder
 				lightSky = (light >> 4) & 0b1111;
 				isDefault = ((light >> 8)) == 1;
 				
-				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height, depth, color, lightSky, lightBlock, generation, isDefault);
+				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height - MIN_WORLD_HEIGHT, depth - MIN_WORLD_HEIGHT, color, lightSky, lightBlock, generation, isDefault);
 				topBlock = false;
 				yAbs = depth - 1;
 				count++;
