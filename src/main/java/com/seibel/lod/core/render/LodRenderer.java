@@ -2,7 +2,7 @@
  *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
  *    licensed under the GNU GPL v3 License.
  *
- *    Copyright (C) 2020  James Seibel
+ *    Copyright (C) 2021  James Seibel
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -41,8 +41,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
-import com.seibel.lod.core.objects.rending.LodFogConfig;
-import com.seibel.lod.core.render.shader.LodShaderProgram;
+import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
@@ -67,15 +66,15 @@ public class LodRenderer
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
 	
-	
 	/**
 	 * If true the LODs colors will be replaced with
 	 * a checkerboard, this can be used for debugging.
 	 */
 	public DebugMode previousDebugMode = DebugMode.OFF;
 	
-	private int farPlaneBlockDistance;
-	
+	// This tells us if the renderer is enabled or not. If in a world, it should be enabled.
+	private boolean isSetupComplete = false;
+	private volatile boolean markToCleanup = false;
 	
 	/** This is used to generate the buildable buffers */
 	private final LodBufferBuilderFactory lodBufferBuilderFactory;
@@ -87,11 +86,14 @@ public class LodRenderer
 	 * These have to be separate because we can't override the
 	 * buffers in the VBOs (and we don't want to)
 	 */
-	private int[][][] storageBufferIds;
+	private int[][][] storageBufferIds = null;
+	
+	// The shader program
+	LodRenderProgram shaderProgram = null;
+	LightmapTexture lightmapTexture = null;
 	
 	private int vbosCenterX = 0;
 	private int vbosCenterZ = 0;
-	
 	
 	/** This is used to determine if the LODs should be regenerated */
 	private int[] previousPos = new int[] { 0, 0, 0 };
@@ -120,21 +122,19 @@ public class LodRenderer
 	public boolean[][] vanillaRenderedChunks;
 	public boolean vanillaRenderedChunksChanged;
 	public boolean vanillaRenderedChunksEmptySkip = false;
-	public int vanillaBlockRenderedDistance;
-	
-	
-	
+
 	
 	public LodRenderer(LodBufferBuilderFactory newLodNodeBufferBuilder)
 	{
 		lodBufferBuilderFactory = newLodNodeBufferBuilder;
 	}
 	
+	public void markForCleanup() {
+		markToCleanup = true;
+	}
 	
 	
-	
-	
-	
+	private LodDimension lastLodDimension = null;
 	
 	/**
 	 * Besides drawing the LODs this method also starts
@@ -157,6 +157,8 @@ public class LodRenderer
 			return;
 		}
 		
+		
+		
 		if (MC_RENDER.playerHasBlindnessEffect())
 		{
 			// if the player is blind, don't render LODs,
@@ -165,15 +167,18 @@ public class LodRenderer
 			return;
 		}
 		
-		if (CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
-			GLProxy.getInstance().disableLegacyFog();
-		
-		
-		
-		
 		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// starting here...
 		determineIfLodsShouldRegenerate(lodDim, partialTicks);
+
+		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
+		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
+		if (markToCleanup || (lastLodDimension != null && lodDim != lastLodDimension)) {
+			markToCleanup = false;
+			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
+			lastLodDimension = lodDim;
+			fullRegen = true;
+		}
 		
 		//=================//
 		// create the LODs //
@@ -204,19 +209,28 @@ public class LodRenderer
 			swapBuffers();
 		}
 		
+		if (vbos == null) {
+			// There is still no vbos, which means nothing needs to be drawn. So no rendering needed
+			// (Vbos should be setup by now)
+			return;
+		}
 		
+		//===================//
+		// draw params setup //
+		//===================//
 		
+		profiler.push("LOD draw setup");
 		
-		
-		//===============//
-		// initial setup //
-		//===============//
-		
-		profiler.push("LOD setup");
-		
+		// Get or setup the gl proxy and the needed objects
+		if (!GLProxy.hasInstance() && isSetupComplete)
+			ClientApi.LOGGER.warn("GLProxy has not yet been inited yet renderer state is enabled!");
+
 		GLProxy glProxy = GLProxy.getInstance();
+		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
+		if (!isSetupComplete) setup();
 		
-		
+		if (CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
+			GLProxy.getInstance().disableLegacyFog();
 		
 		// set the required open GL settings
 		
@@ -235,196 +249,85 @@ public class LodRenderer
 		// get MC's shader program
 		int currentProgram = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 		
-		
+		// Get the matrixs for rendering
 		Mat4f modelViewMatrix = translateModelViewMatrix(mcModelViewMatrix, partialTicks);
-		vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
+		int vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
+		int farPlaneBlockDistance;
 		// required for setupFog and setupProjectionMatrix
 		if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
 			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
 		
+		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
+		LodFogConfig fogSettings = new LodFogConfig(CONFIG, REFLECTION_HANDLER, farPlaneBlockDistance, vanillaBlockRenderedDistance);
+
+		//==============//
+		// shader setup //
+		//==============//
 		
-		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance);
+		// Bind and update the lightmap data
+		lightmapTexture.bind();
+		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
+
+		shaderProgram.bind();
+		// Fill the uniform data. Note: GL_TEXTURE_2D == texture bindpoint 0
+		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(),
+				getFogColor(), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
+
+		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
+		shaderProgram.fillUniformDataForFog(fogSettings);
+
+		//===========//
+		// rendering //
+		//===========//
 		
-		LodFogConfig fogSettings = determineFogConfig();
+		profiler.popPush("LOD draw");
 		
+		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
+		boolean renderBufferStorage = CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
 		
-		
-		
-		
-		
-		if (vbos != null)
+		// where the center of the buffers is (needed when culling regions)
+		// render each of the buffers
+		for (int x = 0; x < vbos.length; x++)
 		{
-			//==============//
-			// shader setup //
-			//==============//
-			
-			// can be used when testing shaders
-			// glProxy.createShaderProgram();
-			
-			
-			LodShaderProgram shaderProgram = glProxy.lodShaderProgram;
-			shaderProgram.use();
-			
-			
-			// determine the VertexArrayObject's element positions
-	        int posAttrib = shaderProgram.getAttributeLocation("vPosition");
-	        shaderProgram.enableVertexAttribute(posAttrib);
-	        int colAttrib = shaderProgram.getAttributeLocation("color");
-	        shaderProgram.enableVertexAttribute(colAttrib);
-	        int blockSkyLightAttrib = shaderProgram.getAttributeLocation("blockSkyLight");
-	        // TODO the block sky light is being passed in correctly but the data
-	        // 		we were given appears to be incorrect, so we won't use it for now
-	        shaderProgram.enableVertexAttribute(blockSkyLightAttrib);
-	        int blockLightAttrib = shaderProgram.getAttributeLocation("blockLight");
-	        shaderProgram.enableVertexAttribute(blockLightAttrib);
-	        
-	        
-	        
-	        // global uniforms
-	        int mvmUniform = shaderProgram.getUniformLocation("modelViewMatrix");
-	        shaderProgram.setUniform(mvmUniform, modelViewMatrix);
-			int projUniform = shaderProgram.getUniformLocation("projectionMatrix");
-			shaderProgram.setUniform(projUniform, projectionMatrix);
-			int cameraUniform = shaderProgram.getUniformLocation("cameraPos");
-			shaderProgram.setUniform(cameraUniform, getTranslatedCameraPos());
-			int fogColorUniform = shaderProgram.getUniformLocation("fogColor");
-			shaderProgram.setUniform(fogColorUniform, getFogColor());
-			
-			
-			int skyLightUniform = shaderProgram.getUniformLocation("worldSkyLight");
-			shaderProgram.setUniform(skyLightUniform, (int) (MC.getSkyDarken(partialTicks) * 15));
-			
-			int lightMapUniform = shaderProgram.getUniformLocation("lightMap");
-			
-			
-			
-			GL20.glBindTexture(GL20.GL_TEXTURE_2D, glProxy.lightMapTextureId);
-			
-			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_S, GL20.GL_CLAMP_TO_BORDER);
-			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, GL20.GL_CLAMP_TO_BORDER);
-			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_NEAREST);
-			GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_NEAREST);
-			
-			
-			// get the latest lightmap from MC
-			try
+			for (int z = 0; z < vbos.length; z++)
 			{
-				int lightMapHeight = MC_RENDER.getLightmapTextureHeight();
-				int lightMapWidth = MC_RENDER.getLightmapTextureWidth();
-				int[] pixels = MC_RENDER.getLightmapPixels();
-				
-				// comment me out to see when the lightmap is changing
-//				boolean same = true;
-//				int badIndex = 0;
-//				if (testArray != null && pixels != null)
-//				for (int i = 0; i < pixels.length; i++)
-//				{
-//					if(pixels[i] != testArray[i])
-//					{
-//						same = false;
-//						badIndex = i;
-//						break;	
-//					}
-//				}
-//				testArray = pixels;
-//				MC.sendChatMessage(same + " " + badIndex);
-				
-				// comment this line out to prevent uploading the new lightmap
-				GL20.glTexImage2D(GL20.GL_TEXTURE_2D, 0, GL20.GL_RGBA, lightMapWidth,
-						lightMapHeight, 0, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixels);
-				
-				// TODO is this needed/correct?
-				shaderProgram.setUniform(lightMapUniform, 0);
-			}
-			catch (Exception e)
-			{
-				ClientApi.LOGGER.info(e.getMessage(), e);
-			}
-			
-			
-			
-			// region dependent uniforms
-			int fogEnabledUniform = shaderProgram.getUniformLocation("fogEnabled");
-			int nearFogEnabledUniform = shaderProgram.getUniformLocation("nearFogEnabled");
-			int farFogEnabledUniform = shaderProgram.getUniformLocation("farFogEnabled");
-			// near
-			int nearFogStartUniform = shaderProgram.getUniformLocation("nearFogStart");
-			int nearFogEndUniform = shaderProgram.getUniformLocation("nearFogEnd");
-			// far
-			int farFogStartUniform = shaderProgram.getUniformLocation("farFogStart");
-			int farFogEndUniform = shaderProgram.getUniformLocation("farFogEnd");
-			
-			
-			
-			
-			
-			//===========//
-			// rendering //
-			//===========//
-			
-			profiler.popPush("LOD draw");
-			
-			boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
-			boolean renderBufferStorage = CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
-			
-			// where the center of the buffers is (needed when culling regions)
-			// render each of the buffers
-			for (int x = 0; x < vbos.length; x++)
-			{
-				for (int z = 0; z < vbos.length; z++)
+				//int tempX = LodUtil.convertLevelPos(x + vbosCenterX - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL);
+				//int tempY = LodUtil.convertLevelPos(z + vbosCenterZ - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL, LodUtil.BLOCK_DETAIL_LEVEL);
+				if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
+						MC_RENDER.getLookAtVector(),
+						vbosCenterX + LodUtil.convertLevelPos(x - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL),
+						vbosCenterZ + LodUtil.convertLevelPos(z - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL)))
 				{
-					//int tempX = LodUtil.convertLevelPos(x + vbosCenterX - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL);
-					//int tempY = LodUtil.convertLevelPos(z + vbosCenterZ - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL, LodUtil.BLOCK_DETAIL_LEVEL);
-					if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
-							MC_RENDER.getLookAtVector(),
-							vbosCenterX + LodUtil.convertLevelPos(x - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL),
-							vbosCenterZ + LodUtil.convertLevelPos(z - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL)))
+					
+					// actual rendering
+					int bufferId = 0;
+					for (int i = 0; i < vbos[x][z].length; i++)
 					{
-						// fog may be different from region to region
-						applyFog(shaderProgram, 
-								fogSettings, fogEnabledUniform, nearFogEnabledUniform, farFogEnabledUniform, 
-								nearFogStartUniform, nearFogEndUniform, farFogStartUniform, farFogEndUniform);
-						
-						
-						// actual rendering
-						int bufferId = 0;
-						for (int i = 0; i < vbos[x][z].length; i++)
-						{
-							bufferId = (storageBufferIds != null && renderBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
-							drawArrays(bufferId, vbos[x][z][i].vertexCount, posAttrib, colAttrib, blockLightAttrib, blockSkyLightAttrib);
-						}
+						bufferId = (storageBufferIds != null && renderBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
+						if (bufferId==0) continue;
+						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferId);
+						shaderProgram.bindVertexBuffer(bufferId);
+						GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
+						shaderProgram.unbindVertexBuffer();
 						
 					}
+					
 				}
 			}
-			
-			
-			GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
-			
-			//================//
-			// render cleanup //
-			//================//
-			
-			// if this cleanup isn't done MC will crash
-			// when trying to render its own terrain
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-			GL30.glBindVertexArray(0);
-			
-			GL20.glDisableVertexAttribArray(posAttrib);
-			GL20.glDisableVertexAttribArray(colAttrib);
-			GL20.glDisableVertexAttribArray(blockSkyLightAttrib);
-			GL20.glDisableVertexAttribArray(blockLightAttrib);
 		}
 		
+		//================//
+		// render cleanup //
+		//================//
 		
+		// if this cleanup isn't done MC will crash
+		// when trying to render its own terrain
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		
-		
-		
-		//=========//
-		// cleanup //
-		//=========//
+		lightmapTexture.unbind();
+		shaderProgram.unbind();
 		
 		profiler.popPush("LOD cleanup");
 		
@@ -433,117 +336,39 @@ public class LodRenderer
 		
 		GL20.glUseProgram(currentProgram);
 		
-		// clear the depth buffer so everything is drawn
-		// over the LODs
+		// clear the depth buffer so everything is drawn over the LODs
 		GL15.glClear(GL15.GL_DEPTH_BUFFER_BIT);
 		
-		
-		 
 		// end of internal LOD profiling
 		profiler.pop();
 	}
-	
-	// Temporary variables James was using while working with the shader lightmap
-	int[] testArray = null;
-	int testInt = 0;
-
-
-
-
-	
-	
-	/** This is where the actual drawing happens. */
-	private void drawArrays(int glBufferId, int vertexCount, int posAttrib, int colAttrib, int blockLightAttrib, int blockSkyLightAttrib)
-	{
-		if (glBufferId == 0)
-			return;
-		
-		// can be used to check for OpenGL errors
-//		int error = GL15.glGetError();
-//		ClientApi.LOGGER.info(Integer.toHexString(error));
-		
-		
-        // bind the buffer we are going to draw
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glBufferId);
-		GL30.glBindVertexArray(GLProxy.getInstance().vertexArrayObjectId);
-        
-		// let OpenGL know how our buffer is set up
-		int vertexByteCount = LodUtil.LOD_VERTEX_FORMAT.getByteSize();
-        GL20.glEnableVertexAttribArray(posAttrib);
-        GL20.glVertexAttribPointer(posAttrib, 3, GL15.GL_FLOAT, false, vertexByteCount, 0);
-        GL20.glEnableVertexAttribArray(colAttrib);
-        GL20.glVertexAttribPointer(colAttrib, 4, GL15.GL_UNSIGNED_BYTE, true, vertexByteCount, Float.BYTES * 3);
-        GL20.glEnableVertexAttribArray(blockLightAttrib);
-        GL20.glVertexAttribPointer(blockLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * 3 + 4);
-        GL20.glEnableVertexAttribArray(blockSkyLightAttrib);
-        GL20.glVertexAttribPointer(blockSkyLightAttrib, 1, GL15.GL_UNSIGNED_BYTE, false, vertexByteCount, Float.BYTES * 3 + 5);
-        
-        
-        // draw the LODs
-		GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, vertexCount);
-	}
-	
-	
-	
-	
-	
 	
 	//=================//
 	// Setup Functions //
 	//=================//
 	
-
+	/** Setup all render objects - REQUIRES to be in render thread */
+	private void setup() {
+		if (isSetupComplete) {
+			ClientApi.LOGGER.warn("Renderer setup called but it has already completed setup!");
+			return;
+		}
+		if (!GLProxy.hasInstance()) {
+			ClientApi.LOGGER.warn("Renderer setup called but GLProxy has not yet been setup!");
+			return;
+		}
+		
+		isSetupComplete = true;
+		shaderProgram = new LodRenderProgram();
+		lightmapTexture = new LightmapTexture();
+	}
+	
 	/** Create all buffers that will be used. */
 	public void setupBuffers(LodDimension lodDim)
 	{
 		lodBufferBuilderFactory.setupBuffers(lodDim);
 	}
-	
-	
-	
-	
-	/** Return what fog settings should be used when rendering. */
-	private LodFogConfig determineFogConfig()
-	{
-		LodFogConfig fogConfig = new LodFogConfig();
-		
-		
-		fogConfig.fogDrawMode = CONFIG.client().graphics().fogQuality().getFogDrawMode();
-		if (fogConfig.fogDrawMode == FogDrawMode.USE_OPTIFINE_SETTING)
-			fogConfig.fogDrawMode = REFLECTION_HANDLER.getFogDrawMode();
-		
-		
-		// how different distances are drawn depends on the quality set
-		fogConfig.fogDistance = CONFIG.client().graphics().fogQuality().getFogDistance();
-		
-		
-		
-		
-		
-		// far fog //
-		
-		if (CONFIG.client().graphics().fogQuality().getFogDistance() == FogDistance.NEAR_AND_FAR)
-			fogConfig.farFogStart = farPlaneBlockDistance * 0.9f;
-		else
-			// for more realistic fog when using FAR
-			fogConfig.farFogStart = Math.min(vanillaBlockRenderedDistance * 1.5f, farPlaneBlockDistance * 0.9f);
-		
-		fogConfig.farFogEnd = farPlaneBlockDistance;
-	
-		
-		// near fog //
-		
-		// the reason that I wrote fogEnd then fogStart backwards
-		// is because we are using fog backwards to how
-		// it is normally used, hiding near objects
-		// instead of far objects.
-		fogConfig.nearFogEnd = vanillaBlockRenderedDistance * 1.41f;
-		fogConfig.nearFogStart = vanillaBlockRenderedDistance * 1.6f;
-		
-		
-		return fogConfig;
-	}
-	
+
 	private Color getFogColor()
 	{
 		Color fogColor;
@@ -601,7 +426,7 @@ public class LodRenderer
 	 * @param currentProjectionMatrix this is Minecraft's current projection matrix
 	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
 	 */
-	private Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance)
+	private static Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance, int farPlaneBlockDistance)
 	{
 		//Create a copy of the current matrix, so the current matrix isn't modified.
 		Mat4f lodProj = currentProjectionMatrix.copy();
@@ -614,37 +439,40 @@ public class LodRenderer
 		return lodProj;
 	}
 	
-	private void applyFog(LodShaderProgram shaderProgram, 
-			LodFogConfig fogSettings, int fogEnabledUniform, int nearFogEnabledUniform, int farFogEnabledUniform, 
-			int nearFogStartUniform, int nearFogEndUniform, int farFogStartUniform, int farFogEndUniform)
-	{
-		if (fogSettings.fogDrawMode != FogDrawMode.FOG_DISABLED)
-		{
-			shaderProgram.setUniform(fogEnabledUniform, true);
-			shaderProgram.setUniform(nearFogEnabledUniform, fogSettings.fogDistance != FogDistance.FAR);
-			shaderProgram.setUniform(farFogEnabledUniform, fogSettings.fogDistance != FogDistance.NEAR);
-			
-			// near
-			shaderProgram.setUniform(nearFogStartUniform, fogSettings.nearFogStart);
-			shaderProgram.setUniform(nearFogEndUniform, fogSettings.nearFogEnd);
-			// far
-			shaderProgram.setUniform(farFogStartUniform, fogSettings.farFogStart);
-			shaderProgram.setUniform(farFogEndUniform, fogSettings.farFogEnd);
+	//======================//
+	// Cleanup Functions    //
+	//======================//
+
+	/** cleanup and free all render objects. REQUIRES to be in render thread
+	 *  (Many objects are Native, outside of JVM, and need manual cleanup)  */ 
+	private void cleanup() {
+		if (!isSetupComplete) {
+			ClientApi.LOGGER.warn("Renderer cleanup called but Renderer has not completed setup!");
+			return;
 		}
-		else
-		{
-			shaderProgram.setUniform(fogEnabledUniform, false);
+		if (!GLProxy.hasInstance()) {
+			ClientApi.LOGGER.warn("Renderer Cleanup called but the GLProxy has never been inited!");
+			return;
 		}
+		isSetupComplete = false;
+		ClientApi.LOGGER.info("Renderer Cleanup Started");
+		//GLProxy.getInstance().setGlContext(GLProxyContext.LOD_BUILDER);
+		
+		shaderProgram.free();
+		lightmapTexture.free();
+		//GLProxy.getInstance().setGlContext(GLProxyContext.NONE);
+		ClientApi.LOGGER.info("Renderer Cleanup Complete");
 	}
-	
-	
-	
-	
+
+	/** Calls the BufferBuilder's destroyBuffers method. */
+	public void destroyBuffers()
+	{
+		lodBufferBuilderFactory.destroyBuffers();
+	}
 	
 	//======================//
 	// Other Misc Functions //
 	//======================//
-	
 	
 	/**
 	 * If this is called then the next time "drawLODs" is called
@@ -672,14 +500,6 @@ public class LodRenderer
 		vbosCenterX = result.drawableCenterBlockPosX;
 		vbosCenterZ = result.drawableCenterBlockPosZ;
 	}
-	
-	/** Calls the BufferBuilder's destroyBuffers method. */
-	public void destroyBuffers()
-	{
-		lodBufferBuilderFactory.destroyBuffers();
-	}
-	
-	
 	
 	/** Determines if the LODs should have a fullRegen or partialRegen */
 	private void determineIfLodsShouldRegenerate(LodDimension lodDim, float partialTicks)
