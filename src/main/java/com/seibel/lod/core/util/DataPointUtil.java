@@ -21,7 +21,10 @@ package com.seibel.lod.core.util;
 
 import static com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.skyLightPlayer;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+
+import java.util.Arrays;
 
 /**
  * 
@@ -375,6 +378,7 @@ public class DataPointUtil
 						{
 							if (!botExtend)
 							{
+								ClientApi.LOGGER.info("datapoint bug: " + Arrays.toString(heightAndDepth));
 								//only top is within some exiting block, extending it
 								topPos++; //to make it easier
 								heightAndDepth[topPos * 2] = height;
