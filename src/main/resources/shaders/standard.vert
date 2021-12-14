@@ -34,8 +34,8 @@ void main()
 	float skyLightTex = blockSkyLight / 16.0;
 	
 	// we don't really need alpha in the lightmap
-//	vertexColor = color * vec4(texture(lightMap, vec2(blockLightTex, skyLightTex)).xyz, 1);
-	vertexColor = color * texture(lightMap, vec2(blockLightTex, skyLightTex));
+//	vertexColor = color * vec4(texture(lightMap, vec2(skyLightTex, blockLightTex)).xyz, 1);
+	vertexColor = color * texture(lightMap, vec2(skyLightTex, blockLightTex));
 	
 	
 	
