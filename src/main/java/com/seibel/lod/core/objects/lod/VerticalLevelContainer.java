@@ -273,23 +273,18 @@ public class VerticalLevelContainer implements LevelContainer
 	 * This method merge column of multiple data together
 	 * @return one column of correctly parsed data
 	 */
-	public void addData(int posZ, int posX, short[] inputPositionDataToMerge, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	public void addData(int posX, int posZ, short[] inputPositionDataToMerge, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
-		addData(0, inputPositionDataToMerge.length -1 , posZ, posX, inputPositionDataToMerge, inputVerticalData, inputColorData, inputLightData, inputDetailLevel, inputVerticalSize);
+		addData(0, inputPositionDataToMerge.length -1 , posX, posZ, inputPositionDataToMerge, inputVerticalData, inputColorData, inputLightData, inputDetailLevel, inputVerticalSize);
 	}
 	
 	/**
 	 * This method merge column of multiple data together
 	 * @return one column of correctly parsed data
 	 */
-	public void addData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	public void addData(int sliceStart, int sliceEnd, int posX, int posZ, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
-		
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("-------- \n Started work on position : " + detailLevel + " " + posX + " " + posZ + "\n");
-		
 		//STEP 1//
-		stringBuilder.append("started step 1\n");
 		//We initially reset this position of the data container
 		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
 		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
@@ -301,7 +296,6 @@ public class VerticalLevelContainer implements LevelContainer
 		
 		
 		//STEP 2//
-		stringBuilder.append("started step 2\n");
 		//We start by populating the PositionDataToMerge
 		byte genMode = DistanceGenerationMode.FULL.complexity;
 		boolean correctLight = true;
@@ -324,8 +318,6 @@ public class VerticalLevelContainer implements LevelContainer
 		//if all the data is empty (maybe a bug) then we simply return
 		if (allEmpty)
 		{
-			stringBuilder.append("ended with case 1\n");
-			//System.out.println(stringBuilder);
 			return;
 		}
 		
@@ -333,20 +325,15 @@ public class VerticalLevelContainer implements LevelContainer
 		//if all the data is empty (maybe a bug) then we simply return
 		if (allVoid)
 		{
-			stringBuilder.append("ended with case 2\n");
-			//System.out.println(stringBuilder);
 			positionDataContainer[posX * size + posZ] = PositionDataFormat.createVoidPositionData(genMode);
 			return;
 		}
 		
 		//Case 3: data is non void and non empty, we continue
-		stringBuilder.append("continuing with case 3\n");
 		positionDataContainer[posX * size + posZ] = PositionDataFormat.createPositionData(0, correctLight, genMode);
-		stringBuilder.append("current position data " + getPositionData(posX,posZ) + "\n");
 		
 		
 		//STEP 3//
-		stringBuilder.append("started step 3\n");
 		//now we firstly merge the height and depth values of the input data
 		//in this process we do a sort of "projection" of the data on a single column
 		
@@ -376,7 +363,6 @@ public class VerticalLevelContainer implements LevelContainer
 		for (int positionIndex = sliceStart; positionIndex <= sliceEnd; positionIndex++)
 		{
 			tempPositionData = inputPositionData[positionIndex];
-			stringBuilder.append(" checking pos " + positionIndex + "\n");
 			if (!PositionDataFormat.doesItExist(tempPositionData) || PositionDataFormat.isVoid(tempPositionData))
 				continue;
 			for (int verticalIndex = 0; verticalIndex < inputVerticalSize; verticalIndex++)
@@ -386,7 +372,6 @@ public class VerticalLevelContainer implements LevelContainer
 				{
 					depth = VerticalDataFormat.getDepth(tempVerticalData);
 					height = VerticalDataFormat.getHeight(tempVerticalData);
-					stringBuilder.append(" found " + height + " " + depth + "\n");
 					int botPos = -1;
 					int topPos = -1;
 					//values fall in between and possibly require extension of array
@@ -484,10 +469,8 @@ public class VerticalLevelContainer implements LevelContainer
 					break;
 			}
 		}
-		stringBuilder.append("counted " + count +  " lods \n");
 		
 		//STEP 4//
-		stringBuilder.append("started step 4\n");
 		//we merge height and depth to respect the verticalSize of this LevelContainer
 		//and we save the values directly in the VerticalDataContainer
 		//In this process we can easily compute the count of this position to be inserted in the positionDataContainer
@@ -531,61 +514,37 @@ public class VerticalLevelContainer implements LevelContainer
 			count--;
 		}
 		
-		short lodCount = 0;
-		for (j = count-1 ; j>= 0 ; j--)
-		{
-			height = heightAndDepth[j * 2];
-			depth = heightAndDepth[j * 2 + 1];
-			stringBuilder.append("vertical " + j + "\n");
-			stringBuilder.append("checking height" + height + "\n");
-			stringBuilder.append("checking depth " + depth + "\n");
-			
-			if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
-				break;
-			
-			stringBuilder.append("added vertical pos \n");
-			stringBuilder.append("height " + height + "\n");
-			stringBuilder.append("depth " + depth + "\n");
-			
-			setVerticalData(
-					VerticalDataFormat.createVerticalData(height, depth, 0, false, false),
-					posX,
-					posZ,
-					lodCount - 1);
-			lodCount++;
-		}
 		
-		stringBuilder.append("adding to the count " + lodCount + "\n");
 		//we update the count
-		setPositionData(
-				PositionDataFormat.setLodCount(
-						getPositionData(posX,posZ),
-						lodCount),
-				posX,
-				posZ);
-		stringBuilder.append("current position data " + getPositionData(posX,posZ) + "\n");
 		//STEP 5//
-		stringBuilder.append("started step 5\n");
 		//we now get the top lods on each vertical index and we merge
 		//the color, the data and ligth of all of them
 		
 		boolean allDefault;
 		int tempColorData;
 		byte tempLightData;
+		int verticalIndex;
 		int storedVerticalData;
 		int newVerticalData = 0;
 		int newColorData = 0;
 		byte newLightData = 0;
 		//As standard the vertical lods are ordered from top to bottom
-		for (int verticalIndex = lodCount; verticalIndex >= 0; verticalIndex--)
+		short lodCount = 0;
+		for (j = count - 1; j >= 0; j--)
 		{
-			storedVerticalData = getVerticalData(posX, posZ, verticalIndex);
-			height = VerticalDataFormat.getHeight(storedVerticalData);
-			depth = VerticalDataFormat.getDepth(storedVerticalData);
+			height = heightAndDepth[j * 2];
+			depth = heightAndDepth[j * 2 + 1];
 			
-			if ((depth == 0 && height == 0) || verticalIndex >= heightAndDepth.length / 2)
+			if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
 				break;
 			
+			verticalIndex = lodCount;
+			lodCount++;
+			setVerticalData(
+					VerticalDataFormat.createVerticalData(height, depth, 0, false, false),
+					posX,
+					posZ,
+					verticalIndex);
 			int numberOfChildren = 0;
 			int tempAlpha = 0;
 			int tempRed = 0;
@@ -612,8 +571,8 @@ public class VerticalLevelContainer implements LevelContainer
 						{
 							if (VerticalDataFormat.getHeight(tempVerticalData) > VerticalDataFormat.getHeight(newVerticalData))
 							{
-								newVerticalData = tempColorData;
-								newColorData = tempVerticalData;
+								newVerticalData = tempVerticalData;
+								newColorData = tempColorData;
 								newLightData = tempLightData;
 							}
 						}
@@ -639,18 +598,16 @@ public class VerticalLevelContainer implements LevelContainer
 			tempLightBlock = tempLightBlock / numberOfChildren;
 			tempLightSky = tempLightSky / numberOfChildren;
 			
-			stringBuilder.append("\n\nadded in vertical index " + verticalIndex + "\n");
-			stringBuilder.append("alpha " + tempAlpha + "\n");
-			stringBuilder.append("red " + tempRed + "\n");
-			stringBuilder.append("green " + tempGreen + "\n");
-			stringBuilder.append("blue " + tempBlue + "\n");
-			stringBuilder.append("block " + tempLightBlock + "\n");
-			stringBuilder.append("sky " + tempLightSky + "\n");
 			setColorData(ColorFormat.createColorData(tempAlpha, tempRed, tempGreen, tempBlue), posX, posZ, verticalIndex);
 			setLightData(LightFormat.formatLightAsByte((byte) tempLightSky, (byte) tempLightBlock), posX, posZ, verticalIndex);
 		}
-		stringBuilder.append("process ended");
-		//System.out.println(stringBuilder);
+		
+		setPositionData(
+				PositionDataFormat.setLodCount(
+						getPositionData(posX,posZ),
+						lodCount),
+				posX,
+				posZ);
 	}
 	
 	
