@@ -334,9 +334,9 @@ public class DataPointUtil
 								break;
 							}
 						}
-						if (topPos == -1)
+						if (topPos < 0)
 						{
-							if (botPos == -1)
+							if (botPos < 0)
 							{
 								//whole block falls above
 								extendArray(heightAndDepth, 2, 0, 1, count);
