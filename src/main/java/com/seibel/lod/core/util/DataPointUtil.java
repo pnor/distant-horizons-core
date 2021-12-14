@@ -334,9 +334,9 @@ public class DataPointUtil
 								break;
 							}
 						}
-						if (topPos < 0)
+						if (topPos == -1)
 						{
-							if (botPos < 0)
+							if (botPos == -1)
 							{
 								//whole block falls above
 								extendArray(heightAndDepth, 2, 0, 1, count);
@@ -373,12 +373,13 @@ public class DataPointUtil
 						}
 						else
 						{
-							if (!botExtend && botPos >=0)
+							if (!botExtend)
 							{
 								//only top is within some exiting block, extending it
 								topPos++; //to make it easier
 								heightAndDepth[topPos * 2] = height;
-								heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+								short temp = heightAndDepth[botPos * 2 + 1];
+								heightAndDepth[topPos * 2 + 1] = temp;
 								shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
 								count -= botPos - topPos;
 							}
