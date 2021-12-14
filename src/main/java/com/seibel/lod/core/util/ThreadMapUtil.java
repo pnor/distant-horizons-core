@@ -178,6 +178,7 @@ public class ThreadMapUtil
 		{
 			heightAndDepthMap.put(Thread.currentThread().getName(), new short[arrayLength]);
 		}
+		Arrays.fill(heightAndDepthMap.get(Thread.currentThread().getName()), Short.MIN_VALUE);
 		return heightAndDepthMap.get(Thread.currentThread().getName());
 	}
 	

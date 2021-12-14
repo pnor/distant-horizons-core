@@ -378,8 +378,7 @@ public class DataPointUtil
 								//only top is within some exiting block, extending it
 								topPos++; //to make it easier
 								heightAndDepth[topPos * 2] = height;
-								short temp = heightAndDepth[botPos * 2 + 1];
-								heightAndDepth[topPos * 2 + 1] = temp;
+								heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
 								shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
 								count -= botPos - topPos;
 							}
