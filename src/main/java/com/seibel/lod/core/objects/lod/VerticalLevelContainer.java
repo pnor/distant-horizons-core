@@ -385,7 +385,7 @@ public class VerticalLevelContainer implements LevelContainer
 				if (VerticalDataFormat.doesItExist(tempVerticalData))
 				{
 					depth = VerticalDataFormat.getDepth(tempVerticalData);
-					height = VerticalDataFormat.getDepth(tempVerticalData);
+					height = VerticalDataFormat.getHeight(tempVerticalData);
 					stringBuilder.append(" found " + height + " " + depth + "\n");
 					int botPos = -1;
 					int topPos = -1;
