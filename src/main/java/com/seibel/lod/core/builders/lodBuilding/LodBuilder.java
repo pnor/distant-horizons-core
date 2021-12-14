@@ -35,7 +35,6 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
@@ -58,11 +57,10 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class LodBuilder
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
-	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
+	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class);
 	
 	
-	public static final short MIN_WORLD_HEIGHT = (short)VERSION_CONSTANTS.getMinimumWorldHeight();
+	public static final short MIN_WORLD_HEIGHT = MC.getWrappedClientWorld().getMinHeight();
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
 	

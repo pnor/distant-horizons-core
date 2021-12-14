@@ -22,7 +22,7 @@ package com.seibel.lod.core.objects.lod;
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
-import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
 /**
  *
@@ -31,7 +31,7 @@ import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
  */
 public class VerticalLevelContainer implements LevelContainer
 {
-	
+	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	public final byte detailLevel;
 	public final int size;
 	public final int verticalSize;
@@ -177,8 +177,7 @@ public class VerticalLevelContainer implements LevelContainer
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		int x = size * size * tempMaxVerticalData;
 		long[] tempDataContainer = new long[x];
-		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
-		short minHeight = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
+		short minHeight = MC.getWrappedClientWorld().getMinHeight();
 		
 		if (version == 6)
 		{
@@ -1070,8 +1069,7 @@ public class VerticalLevelContainer implements LevelContainer
 		long current;
 		boolean allGenerated = true;
 		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
-		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
-		short minHeight = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
+		short minHeight = MC.getWrappedClientWorld().getMinHeight();
 		
 		tempData[index] = detailLevel;
 		index++;
