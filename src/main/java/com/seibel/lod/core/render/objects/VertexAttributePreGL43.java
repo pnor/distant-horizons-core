@@ -128,6 +128,20 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 					" does not match the provided expected stride size " + expectedStrideSize + "!");
 		strideSize = currentOffset;
 		ClientApi.LOGGER.info("Vertex Attribute (pre GL43) completed.");
+		
+		// Debug logging
+		ClientApi.LOGGER.info("Vertex Attribute Debug Data:");
+		
+		for (int i=0; i< pointers.length; i++) {
+			VertexPointer pointer = pointers[i];
+			if (pointer==null) {
+				ClientApi.LOGGER.info(i + ": Null");
+				continue;
+				}
+			ClientApi.LOGGER.info(i + ": "+pointer.elementCount+", "+
+				pointer.glType+", "+pointer.normalized+", "+strideSize+", "+pointersOffset[i]);
+		}
+		
 	}
 
 }

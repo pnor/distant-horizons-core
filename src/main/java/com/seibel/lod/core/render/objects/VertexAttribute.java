@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.render.objects;
 
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
@@ -38,34 +39,34 @@ public abstract class VertexAttribute {
 			this.byteSize = byteSize;
 		}
 		public static VertexPointer addFloatPointer(boolean normalized) {
-			return new VertexPointer(1, GL20.GL_FLOAT, normalized, 4);
+			return new VertexPointer(1, GL15.GL_FLOAT, normalized, 4);
 		}
 		public static VertexPointer addVec2Pointer(boolean normalized) {
-			return new VertexPointer(2, GL20.GL_FLOAT, normalized, 8);
+			return new VertexPointer(2, GL15.GL_FLOAT, normalized, 8);
 		}
 		public static VertexPointer addVec3Pointer(boolean normalized) {
-			return new VertexPointer(3, GL20.GL_FLOAT, normalized, 12);
+			return new VertexPointer(3, GL15.GL_FLOAT, normalized, 12);
 		}
 		public static VertexPointer addVec4Pointer(boolean normalized) {
-			return new VertexPointer(1, GL20.GL_FLOAT, normalized, 16);
+			return new VertexPointer(1, GL15.GL_FLOAT, normalized, 16);
 		}
 		public static VertexPointer addUnsignedBytePointer(boolean normalized) {
-			return new VertexPointer(1, GL20.GL_UNSIGNED_BYTE, normalized, 1);
+			return new VertexPointer(1, GL15.GL_UNSIGNED_BYTE, normalized, 1);
 		}
 		public static VertexPointer addUnsignedBytesPointer(int elementCount, boolean normalized) {
-			return new VertexPointer(elementCount, GL20.GL_UNSIGNED_BYTE, normalized, elementCount);
+			return new VertexPointer(elementCount, GL15.GL_UNSIGNED_BYTE, normalized, elementCount);
 		}
 		public static VertexPointer addIntPointer(boolean normalized) {
-			return new VertexPointer(1, GL20.GL_INT, normalized, 4);
+			return new VertexPointer(1, GL15.GL_INT, normalized, 4);
 		}
 		public static VertexPointer addIvec2Pointer(boolean normalized) {
-			return new VertexPointer(2, GL20.GL_INT, normalized, 8);
+			return new VertexPointer(2, GL15.GL_INT, normalized, 8);
 		}
 		public static VertexPointer addIvec3Pointer(boolean normalized) {
-			return new VertexPointer(3, GL20.GL_INT, normalized, 12);
+			return new VertexPointer(3, GL15.GL_INT, normalized, 12);
 		}
 		public static VertexPointer addIvec4Pointer(boolean normalized) {
-			return new VertexPointer(4, GL20.GL_INT, normalized, 16);
+			return new VertexPointer(4, GL15.GL_INT, normalized, 16);
 		}
 	}
 	

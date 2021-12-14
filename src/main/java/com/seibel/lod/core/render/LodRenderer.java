@@ -226,11 +226,9 @@ public class LodRenderer
 		//===================//
 		
 		profiler.push("LOD draw setup");
-		
-		// Get or setup the gl proxy and the needed objects
-		if (!GLProxy.hasInstance() && isSetupComplete)
-			ClientApi.LOGGER.warn("GLProxy has not yet been inited yet renderer state is enabled!");
 
+		int currentProgram = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+		
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
 		if (!isSetupComplete) setup();
 		
@@ -250,7 +248,6 @@ public class LodRenderer
 		GL15.glEnable(GL15.GL_BLEND);
 		
 		// get MC's shader program
-		int currentProgram = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 		
 		// Get the matrixs for rendering
 		Mat4f modelViewMatrix = translateModelViewMatrix(mcModelViewMatrix, partialTicks);
@@ -317,7 +314,7 @@ public class LodRenderer
 						shaderProgram.bind();
 						shaderProgram.bindVertexBuffer(bufferId);
 						GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
-						shaderProgram.unbindVertexBuffer();
+						//shaderProgram.unbindVertexBuffer();
 						
 					}
 					
@@ -332,11 +329,11 @@ public class LodRenderer
 		// if this cleanup isn't done MC will crash
 		// when trying to render its own terrain
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		
+
 		lightmapTexture.unbind();
 		shaderProgram.unbind();
 		lightmapTexture.free();
-		
+
 		profiler.popPush("LOD cleanup");
 		
 		GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_FILL);
