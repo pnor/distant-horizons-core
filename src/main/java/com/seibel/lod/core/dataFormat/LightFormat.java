@@ -12,27 +12,27 @@ public class LightFormat
 	public final static byte SKY_LIGHT_MASK = 0b1111;
 	
 	
-	public byte formatLightAsByte(byte skyLight, byte blockLight)
+	public static byte formatLightAsByte(byte skyLight, byte blockLight)
 	{
 		return (byte) (((skyLight & SKY_LIGHT_MASK) << (BYTE_SKY_LIGHT_SHIFT + 4)) | ((blockLight & BLOCK_LIGHT_MASK) << (BYTE_BLOCK_LIGHT_SHIFT + 4)));
 	}
 	
-	public int formatLightAsInt(byte skyLight, byte blockLight)
+	public static int formatLightAsInt(byte skyLight, byte blockLight)
 	{
 		return ((skyLight & SKY_LIGHT_MASK) << INT_SKY_LIGHT_SHIFT) | ((blockLight & BLOCK_LIGHT_MASK) << INT_BLOCK_LIGHT_SHIFT);
 	}
 	
-	public int convertByteToIntFormat(byte lights)
+	public static int convertByteToIntFormat(byte lights)
 	{
 		return formatLightAsInt((byte) ((lights >>> BYTE_SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK), (byte) ((lights >>> BYTE_BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK));
 	}
 	
-	public byte getSkyLight(byte lights)
+	public static byte getSkyLight(byte lights)
 	{
 		return (byte) ((lights >>> BYTE_SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
-	public byte getBlockLight(byte lights)
+	public static byte getBlockLight(byte lights)
 	{
 		return (byte) ((lights >>> BYTE_BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK);
 	}
