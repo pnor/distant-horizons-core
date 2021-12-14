@@ -325,7 +325,7 @@ public class VerticalLevelContainer implements LevelContainer
 		if (allEmpty)
 		{
 			stringBuilder.append("ended with case 1\n");
-			System.out.println(stringBuilder);
+			//System.out.println(stringBuilder);
 			return;
 		}
 		
@@ -334,7 +334,7 @@ public class VerticalLevelContainer implements LevelContainer
 		if (allVoid)
 		{
 			stringBuilder.append("ended with case 2\n");
-			System.out.println(stringBuilder);
+			//System.out.println(stringBuilder);
 			positionDataContainer[posX * size + posZ] = PositionDataFormat.createVoidPositionData(genMode);
 			return;
 		}
@@ -376,6 +376,7 @@ public class VerticalLevelContainer implements LevelContainer
 		for (int positionIndex = sliceStart; positionIndex <= sliceEnd; positionIndex++)
 		{
 			tempPositionData = inputPositionData[positionIndex];
+			stringBuilder.append(" checking pos " + positionIndex + "\n");
 			if (!PositionDataFormat.doesItExist(tempPositionData) || PositionDataFormat.isVoid(tempPositionData))
 				continue;
 			for (int verticalIndex = 0; verticalIndex < inputVerticalSize; verticalIndex++)
@@ -385,7 +386,7 @@ public class VerticalLevelContainer implements LevelContainer
 				{
 					depth = VerticalDataFormat.getDepth(tempVerticalData);
 					height = VerticalDataFormat.getDepth(tempVerticalData);
-					
+					stringBuilder.append(" found " + height + " " + depth + "\n");
 					int botPos = -1;
 					int topPos = -1;
 					//values fall in between and possibly require extension of array
@@ -483,8 +484,7 @@ public class VerticalLevelContainer implements LevelContainer
 					break;
 			}
 		}
-		
-		
+		stringBuilder.append("counted " + count +  " lods \n");
 		
 		//STEP 4//
 		stringBuilder.append("started step 4\n");
@@ -536,22 +536,26 @@ public class VerticalLevelContainer implements LevelContainer
 		{
 			height = heightAndDepth[j * 2];
 			depth = heightAndDepth[j * 2 + 1];
+			stringBuilder.append("vertical " + j + "\n");
+			stringBuilder.append("checking height" + height + "\n");
+			stringBuilder.append("checking depth " + depth + "\n");
 			
 			if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
 				break;
 			
-			stringBuilder.append("\n\nadded vertical pos " + j + "\n");
-			stringBuilder.append("red " + height + "\n");
-			stringBuilder.append("green " + depth + "\n");
+			stringBuilder.append("added vertical pos \n");
+			stringBuilder.append("height " + height + "\n");
+			stringBuilder.append("depth " + depth + "\n");
 			
 			setVerticalData(
 					VerticalDataFormat.createVerticalData(height, depth, 0, false, false),
 					posX,
 					posZ,
-					lodCount);
+					lodCount - 1);
 			lodCount++;
 		}
 		
+		stringBuilder.append("adding to the count " + lodCount + "\n");
 		//we update the count
 		setPositionData(
 				PositionDataFormat.setLodCount(
@@ -646,7 +650,7 @@ public class VerticalLevelContainer implements LevelContainer
 			setLightData(LightFormat.formatLightAsByte((byte) tempLightSky, (byte) tempLightBlock), posX, posZ, verticalIndex);
 		}
 		stringBuilder.append("process ended");
-		System.out.println(stringBuilder);
+		//System.out.println(stringBuilder);
 	}
 	
 	

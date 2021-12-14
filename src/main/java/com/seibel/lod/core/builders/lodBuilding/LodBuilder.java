@@ -49,6 +49,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import org.lwjgl.system.CallbackI;
 
 /**
  * This object is in charge of creating Lod related objects.
@@ -242,6 +243,8 @@ public class LodBuilder
 		boolean isDefault;
 		int index;
 		
+		StringBuilder string = new StringBuilder();
+		
 		for (index = 0; index < size * size; index++)
 		{
 			xRel = startX + index % size;
@@ -254,6 +257,7 @@ public class LodBuilder
 			int count = 0;
 			boolean topBlock = true;
 			boolean voidData = false;
+			string.append("position " + index + "\n");
 			while (yAbs > DEFAULT_HEIGHT)
 			{
 				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
@@ -290,6 +294,7 @@ public class LodBuilder
 				verticalDataToMerge[index * verticalData + count] = VerticalDataFormat.createVerticalData(height, depth, 0 , false, false);
 				colorDataToMerge[index * verticalData + count] = ColorFormat.createColorData(color);
 				lightDataToMerge[index * verticalData + count] = LightFormat.formatLightAsByte((byte) lightSky, (byte) lightBlock);
+				string.append(" vertical " + VerticalDataFormat.getHeight(verticalDataToMerge[index * verticalData + count]) + " " + VerticalDataFormat.getDepth(verticalDataToMerge[index * verticalData + count])+ "\n");
 				
 				topBlock = false;
 				yAbs = depth - 1;
@@ -304,6 +309,7 @@ public class LodBuilder
 		int posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, detail.detailLevel);
 		int posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, detail.detailLevel);
 		lodDimension.addData(detail.detailLevel, posX, posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, lightDataToMerge, detail.detailLevel, verticalData, false);
+		System.out.println(string);
 	}
 	
 	/**
