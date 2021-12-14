@@ -136,7 +136,7 @@ public class CubicLodTemplate
 					color = vertexOptimizer.getColor(lodDirection);
 					addPosAndColor(buffer,
 							vertexOptimizer.getX(lodDirection, vertexIndex),
-							vertexOptimizer.getY(lodDirection, vertexIndex, verticalFaceIndex + MIN_WORLD_HEIGHT),
+							vertexOptimizer.getY(lodDirection, vertexIndex, verticalFaceIndex) + MIN_WORLD_HEIGHT,
 							vertexOptimizer.getZ(lodDirection, vertexIndex),
 							color, skyLight, blockLight );
 				}
