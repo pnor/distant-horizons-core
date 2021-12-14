@@ -272,14 +272,12 @@ public class LodBuilder
 				{
 					yAbs = depth;
 					light = getLightValue(chunk, xAbs,yAbs,zAbs, true, hasSkyLight, true);
-					//TODO don't ask me why, but apparently it works
-					color = generateLodColor(chunk, config, xAbs, yAbs - MIN_WORLD_HEIGHT, zAbs);
+					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
 				}
 				else
 				{
 					light = getLightValue(chunk, xAbs, yAbs, zAbs, hasCeiling, hasSkyLight, topBlock);
-					//TODO don't ask me why, but apparently it works
-					color = generateLodColor(chunk, config, xAbs, yAbs - MIN_WORLD_HEIGHT, zAbs);
+					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
 				}
 				lightBlock = light & 0b1111;
 				lightSky = (light >> 4) & 0b1111;

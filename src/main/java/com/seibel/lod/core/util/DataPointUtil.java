@@ -415,7 +415,7 @@ public class DataPointUtil
 		int j = 0;
 		while (count > maxVerticalData)
 		{
-			ii = WORLD_HEIGHT - VERTICAL_OFFSET;
+			ii = WORLD_HEIGHT;
 			for (i = 0; i < count - 1; i++)
 			{
 				if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)

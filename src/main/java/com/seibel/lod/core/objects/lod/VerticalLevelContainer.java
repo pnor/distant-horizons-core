@@ -524,7 +524,7 @@ public class VerticalLevelContainer implements LevelContainer
 		int j = 0;
 		while (count > verticalSize)
 		{
-			ii = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET;
+			ii = DataPointUtil.WORLD_HEIGHT;
 			for (i = 0; i < count - 1; i++)
 			{
 				if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)
@@ -867,7 +867,7 @@ public class VerticalLevelContainer implements LevelContainer
 		int j = 0;
 		while (count > verticalSize)
 		{
-			ii = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET;
+			ii = DataPointUtil.WORLD_HEIGHT;
 			for (i = 0; i < count - 1; i++)
 			{
 				if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)
