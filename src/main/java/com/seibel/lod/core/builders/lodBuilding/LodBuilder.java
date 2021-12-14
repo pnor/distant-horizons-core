@@ -310,6 +310,8 @@ public class LodBuilder
 				break;
 			}
 		}
+		if (depth > 400)
+			ClientApi.LOGGER.info("datapoint bug: x:" + xAbs + " y:" + depth + " z:" + zAbs);
 		return depth;
 	}
 	
