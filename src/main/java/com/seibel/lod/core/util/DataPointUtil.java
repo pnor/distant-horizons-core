@@ -21,10 +21,8 @@ package com.seibel.lod.core.util;
 
 import static com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.skyLightPlayer;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 
-import java.util.Arrays;
 
 /**
  * 
