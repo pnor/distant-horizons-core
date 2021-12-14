@@ -121,7 +121,8 @@ public class EventApi
 	{
 		// the player just unloaded a world/dimension
 		ThreadMapUtil.clearMaps();
-		ClientApi.renderer.markForCleanup();
+		// ClientApi.renderer.markForCleanup();
+		// ClientApi.renderer.destroyBuffers();
 		
 		new Thread(() -> checkIfDisconnectedFromServer()).start();
 	}
@@ -161,6 +162,7 @@ public class EventApi
 			recalculateWidths = true;
 			// TODO: Check if after the refactoring, is this still needed
 			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
+			ClientApi.INSTANCE.rendererDisabledBecauseOfExceptions = false;
 			
 			// make sure the nulled objects are freed.
 			// (this prevents an out of memory error when

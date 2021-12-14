@@ -166,19 +166,16 @@ public class LodRenderer
 			// which blindness relies on.
 			return;
 		}
+
+		GLProxy glProxy = GLProxy.getInstance();
+		if (CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
+			glProxy.disableLegacyFog();
+
 		
 		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// starting here...
 		determineIfLodsShouldRegenerate(lodDim, partialTicks);
 
-		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
-		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
-		if (markToCleanup || (lastLodDimension != null && lodDim != lastLodDimension)) {
-			markToCleanup = false;
-			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
-			lastLodDimension = lodDim;
-			fullRegen = true;
-		}
 		
 		//=================//
 		// create the LODs //
@@ -214,6 +211,15 @@ public class LodRenderer
 			// (Vbos should be setup by now)
 			return;
 		}
+
+		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
+		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
+		if (markToCleanup || (lastLodDimension != null && lodDim != lastLodDimension)) {
+			markToCleanup = false;
+			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
+			lastLodDimension = lodDim;
+			//fullRegen = true;
+		}
 		
 		//===================//
 		// draw params setup //
@@ -225,12 +231,9 @@ public class LodRenderer
 		if (!GLProxy.hasInstance() && isSetupComplete)
 			ClientApi.LOGGER.warn("GLProxy has not yet been inited yet renderer state is enabled!");
 
-		GLProxy glProxy = GLProxy.getInstance();
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
 		if (!isSetupComplete) setup();
 		
-		if (CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
-			GLProxy.getInstance().disableLegacyFog();
 		
 		// set the required open GL settings
 		
@@ -267,13 +270,16 @@ public class LodRenderer
 		//==============//
 		
 		// Bind and update the lightmap data
-		lightmapTexture.bind();
-		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
-
+		GL20.glActiveTexture(GL20.GL_TEXTURE0);
+		
 		shaderProgram.bind();
 		// Fill the uniform data. Note: GL_TEXTURE_2D == texture bindpoint 0
 		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(),
 				getFogColor(), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
+
+		lightmapTexture = new LightmapTexture();
+		lightmapTexture.bind();
+		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
 
 		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
 		shaderProgram.fillUniformDataForFog(fogSettings);
@@ -308,6 +314,7 @@ public class LodRenderer
 						bufferId = (storageBufferIds != null && renderBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
 						if (bufferId==0) continue;
 						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferId);
+						shaderProgram.bind();
 						shaderProgram.bindVertexBuffer(bufferId);
 						GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
 						shaderProgram.unbindVertexBuffer();
@@ -328,6 +335,7 @@ public class LodRenderer
 		
 		lightmapTexture.unbind();
 		shaderProgram.unbind();
+		lightmapTexture.free();
 		
 		profiler.popPush("LOD cleanup");
 		
@@ -360,7 +368,7 @@ public class LodRenderer
 		
 		isSetupComplete = true;
 		shaderProgram = new LodRenderProgram();
-		lightmapTexture = new LightmapTexture();
+		//lightmapTexture = new LightmapTexture();
 	}
 	
 	/** Create all buffers that will be used. */
@@ -459,7 +467,7 @@ public class LodRenderer
 		//GLProxy.getInstance().setGlContext(GLProxyContext.LOD_BUILDER);
 		
 		shaderProgram.free();
-		lightmapTexture.free();
+		//lightmapTexture.free();
 		//GLProxy.getInstance().setGlContext(GLProxyContext.NONE);
 		ClientApi.LOGGER.info("Renderer Cleanup Complete");
 	}

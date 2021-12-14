@@ -61,7 +61,7 @@ public class ClientApi
 	private boolean firstTimeSetupComplete = false;
 	private boolean configOverrideReminderPrinted = false;
 	
-	private boolean rendererDisabledBecauseOfExceptions = false;
+	public boolean rendererDisabledBecauseOfExceptions = false;
 	
 	
 	private ClientApi()
