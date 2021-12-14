@@ -22,7 +22,6 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -62,10 +61,6 @@ public class LodBuilder
 	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class); 
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
-	/** If no blocks are found in the area in determineBottomPointForArea return this */
-	public static final short DEFAULT_DEPTH = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
-	/** If no blocks are found in the area in determineHeightPointForArea return this */
-	public static final short DEFAULT_HEIGHT = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 	
 	public static final short MIN_WORLD_HEIGHT = (short)VERSION_CONSTANTS.getMinimumWorldHeight();
 	/** Minecraft's max light value */
@@ -250,15 +245,15 @@ public class LodBuilder
 			zAbs = chunk.getMinZ() + zRel;
 			
 			//Calculate the height of the lod
-			yAbs = chunk.getMaxY(xRel,zRel);
+			yAbs = chunk.getMaxY(xRel,zRel) - MIN_WORLD_HEIGHT;
 			int count = 0;
 			boolean topBlock = true;
-			while (yAbs > DEFAULT_HEIGHT)
+			while (yAbs > 0)
 			{
 				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
 				
 				// If the lod is at the default height, it must be void data
-				if (height == DEFAULT_HEIGHT)
+				if (height == 0)
 				{
 					if (topBlock)
 						dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
@@ -283,7 +278,7 @@ public class LodBuilder
 				lightSky = (light >> 4) & 0b1111;
 				isDefault = ((light >> 8)) == 1;
 				
-				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height - MIN_WORLD_HEIGHT, depth - MIN_WORLD_HEIGHT, color, lightSky, lightBlock, generation, isDefault);
+				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height, depth, color, lightSky, lightBlock, generation, isDefault);
 				topBlock = false;
 				yAbs = depth - 1;
 				count++;
@@ -298,9 +293,9 @@ public class LodBuilder
 	 */
 	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
-		short depth = DEFAULT_DEPTH;
+		short depth = 0;
 		
-		for (int y = yAbs; y >= DEFAULT_DEPTH; y--)
+		for (int y = yAbs; y >= 0; y--)
 		{
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs))
 			{
@@ -315,12 +310,12 @@ public class LodBuilder
 	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
 		//TODO find a way to skip bottom of the world
-		short height = DEFAULT_HEIGHT;
+		short height = 0;
 		if (config.useHeightmap)
 			height = (short) chunk.getHeightMapValue(xAbs, zAbs);
 		else
 		{
-			for (int y = yAbs; y >= DEFAULT_HEIGHT; y--)
+			for (int y = yAbs; y >= 0; y--)
 			{
 				if (isLayerValidLodPoint(chunk, xAbs, y, zAbs))
 				{
