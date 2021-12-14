@@ -373,7 +373,7 @@ public class DataPointUtil
 						}
 						else
 						{
-							if (!botExtend)
+							if (!botExtend && botPos >=0)
 							{
 								//only top is within some exiting block, extending it
 								topPos++; //to make it easier
