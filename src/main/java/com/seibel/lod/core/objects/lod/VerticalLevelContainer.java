@@ -1035,15 +1035,13 @@ public class VerticalLevelContainer implements LevelContainer
 	{
 		//We reset the array
 		int lowerVerticalSize = lowerLevelContainer.getVerticalSize();
-		byte lowerDetailLevel = lowerLevelContainer.detailLevel;
 		short[] positionDataToMerge = new short[4];
-		int[] verticalDataToMerge = new int[4 * lowerVerticalSize];;
-		int[] colorDataToMerge = new int[4 * lowerVerticalSize];;
-		byte[] ligthDataToMerge = new byte[4 * lowerVerticalSize];;
+		int[] verticalDataToMerge = new int[4 * lowerVerticalSize];
+		int[] colorDataToMerge = new int[4 * lowerVerticalSize];
+		byte[] ligthDataToMerge = new byte[4 * lowerVerticalSize];
 		
 		int childPosX;
 		int childPosZ;
-		long[] data;
 		for (int x = 0; x <= 1; x++)
 		{
 			for (int z = 0; z <= 1; z++)
@@ -1053,13 +1051,14 @@ public class VerticalLevelContainer implements LevelContainer
 				positionDataToMerge[z * 2 + x] = lowerLevelContainer.getPositionData(childPosX, childPosZ);
 				for (int verticalIndex = 0; verticalIndex < lowerVerticalSize; verticalIndex++)
 				{
-					verticalDataToMerge[(z * 2 + x) * lowerVerticalSize + verticalIndex] = lowerLevelContainer.getVerticalData(childPosX, childPosZ, verticalIndex);
-					colorDataToMerge[(z * 2 + x) * lowerVerticalSize + verticalIndex] = lowerLevelContainer.getColorData(childPosX, childPosZ, verticalIndex);
-					ligthDataToMerge[(z * 2 + x) * lowerVerticalSize + verticalIndex] = lowerLevelContainer.getLightData(childPosX, childPosZ, verticalIndex);
+					final int i = (z * 2 + x) * lowerVerticalSize + verticalIndex;
+					verticalDataToMerge[i] = lowerLevelContainer.getVerticalData(childPosX, childPosZ, verticalIndex);
+					colorDataToMerge[i] = lowerLevelContainer.getColorData(childPosX, childPosZ, verticalIndex);
+					ligthDataToMerge[i] = lowerLevelContainer.getLightData(childPosX, childPosZ, verticalIndex);
 				}
 			}
 		}
-		mergeAndAddData(posX,posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, ligthDataToMerge, lowerDetailLevel, lowerVerticalSize);
+		mergeAndAddData(posX,posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, ligthDataToMerge, lowerLevelContainer.detailLevel, lowerVerticalSize);
 	}
 	
 	@Override
