@@ -2,7 +2,7 @@
  *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
  *    licensed under the GNU GPL v3 License.
  *
- *    Copyright (C) 2020  James Seibel
+ *    Copyright (C) 2021  James Seibel
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.render.shader;
+package com.seibel.lod.core.render.objects;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -28,6 +28,8 @@ import java.io.InputStreamReader;
 
 import org.lwjgl.opengl.GL20;
 
+import com.seibel.lod.core.api.ClientApi;
+
 /**
  * This object holds a OpenGL reference to a shader
  * and allows for reading in and compiling a shader file.
@@ -35,31 +37,42 @@ import org.lwjgl.opengl.GL20;
  * @author James Seibel
  * @version 11-8-2021
  */
-public class LodShader
+public class Shader
 {	
 	/** OpenGL shader ID */
 	public final int id;
 	
-	
-	
-	/** Creates a shader with specified type. */
-	public LodShader(int type)
-	{
-		id = GL20.glCreateShader(type);
-	}
-	
-	
-	
-	/**
-	 * Loads a shader from file.
-	 *
+	/** Creates a shader with specified type.
 	 * @param type Either GL_VERTEX_SHADER or GL_FRAGMENT_SHADER.
 	 * @param path File path of the shader
 	 * @param absoluteFilePath If false the file path is relative to the resource jar folder.
-	 * @throws Exception if the shader fails to compile 
+	 * @throws RuntimeException if the shader fails to compile 
 	 */
-	public static LodShader loadShader(int type, String path, boolean absoluteFilePath)
+	public Shader(int type, String path, boolean absoluteFilePath)
 	{
+		ClientApi.LOGGER.info("Loading shader at "+path);
+		// Create an empty shader object
+		id = GL20.glCreateShader(type);
+		StringBuilder source = loadFile(path, absoluteFilePath);
+		GL20.glShaderSource(id, source);
+
+		GL20.glCompileShader(id);
+		// check if the shader compiled
+		int status = GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS);
+		if (status != GL20.GL_TRUE) {
+			String message = "Shader compiler error. Details: "+GL20.glGetShaderInfoLog(id);
+			free(); // important!
+			throw new RuntimeException(message);
+		}
+		ClientApi.LOGGER.info("Shader at "+path+" loaded sucessfully.");
+	}
+
+	// REMEMBER to always free the resource!
+	public void free() {
+		GL20.glDeleteShader(id);
+	}
+	
+	private StringBuilder loadFile(String path, boolean absoluteFilePath) {
 		StringBuilder stringBuilder = new StringBuilder();
 		
 		try
@@ -70,7 +83,7 @@ public class LodShader
 				// Throws FileNotFoundException
 				in = new FileInputStream(path); // Note: this should use OS path seperator
 			} else {
-				in = LodShader.class.getClassLoader().getResourceAsStream(path); // Note: path seperator should be '/'
+				in = Shader.class.getClassLoader().getResourceAsStream(path); // Note: path seperator should be '/'
 				if (in == null) {
 					throw new FileNotFoundException("Shader file not found in resource: "+path);
 				}
@@ -86,39 +99,6 @@ public class LodShader
 		{
 			throw new RuntimeException("Unable to load shader from file [" + path + "]. Error: " + e.getMessage());
 		}
-		CharSequence shaderFileSource = stringBuilder.toString();
-		
-		return createShader(type, shaderFileSource);
+		return stringBuilder;
 	}
-	
-	/**
-	 * Creates a shader with the specified type and source.
-	 *
-	 * @param type   Either GL_VERTEX_SHADER or GL_FRAGMENT_SHADER.
-	 * @param source Source of the shader
-	 * @throws Exception if the shader fails to compile
-	 */
-	public static LodShader createShader(int type, CharSequence source)
-	{
-		LodShader shader = new LodShader(type);
-		GL20.glShaderSource(shader.id, source);
-		shader.compile();
-		
-		return shader;
-	}
-	
-	/** 
-	 * Compiles the shader and checks its status afterwards.
-	 * @throws Exception if the shader fails to compile
-	 */
-	public void compile()
-	{
-		GL20.glCompileShader(id);
-		
-		// check if the shader compiled
-		int status = GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS);
-		if (status != GL20.GL_TRUE)
-			throw new RuntimeException("Shader compiler error. Details: "+GL20.glGetShaderInfoLog(id));
-	}
-	
 }

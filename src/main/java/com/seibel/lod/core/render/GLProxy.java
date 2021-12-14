@@ -2,7 +2,7 @@
  *    This file is part of the Distant Horizon mod (formerly the LOD Mod),
  *    licensed under the GNU GPL v3 License.
  *
- *    Copyright (C) 2020  James Seibel
+ *    Copyright (C) 2021  James Seibel
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -27,8 +27,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLCapabilities;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -36,8 +34,6 @@ import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
-import com.seibel.lod.core.render.shader.LodShader;
-import com.seibel.lod.core.render.shader.LodShaderProgram;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -84,18 +80,10 @@ public class GLProxy
 	/** the proxyWorker's GL capabilities */
 	public final GLCapabilities proxyWorkerGlCapabilities;
 	
-	
-	
-	/** This program contains all shaders required when rendering LODs */
-	public LodShaderProgram lodShaderProgram;
-	/** This is the VAO that is used when rendering */
-	public final int vertexArrayObjectId;
-	/** This is the 2D texture that holds MC's lightmap */
-	public final int lightMapTextureId;
-	
-	
 	/** Requires OpenGL 4.5, and offers the best buffer uploading */
 	public final boolean bufferStorageSupported;
+	
+	public final boolean openGL43VertexAttributeSupported;
 	
 	/** Requires OpenGL 3.0 */
 	public final boolean mapBufferRangeSupported;
@@ -109,6 +97,8 @@ public class GLProxy
 	 */
 	private GLProxy()
 	{
+        // this must be created on minecraft's render context to work correctly
+		
 		ClientApi.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
 		
 		// getting Minecraft's context has to be done on the render thread,
@@ -147,10 +137,6 @@ public class GLProxy
 		proxyWorkerGlCapabilities = GL.createCapabilities();
 		
 		
-		
-		
-		
-		
 		//==================================//
 		// get any GPU related capabilities //
 		//==================================//
@@ -168,7 +154,8 @@ public class GLProxy
 			MC.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 2.0 or greater."));
 		}
 		
-		
+		// Check if we can use the make-over version of Vertex Attribute, which is available in GL4.3 or after
+		openGL43VertexAttributeSupported = minecraftGlCapabilities.OpenGL43;
 		
 		// get specific capabilities
 		bufferStorageSupported = lodBuilderGlCapabilities.glBufferStorage != 0;
@@ -218,27 +205,6 @@ public class GLProxy
 			CONFIG.client().advanced().buffers().setGpuUploadMethod(uploadMethod);
 			ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Upload method set to [" + uploadMethod + "].");
 		}
-		
-		
-		
-		
-		//==============//
-		// shader setup //
-		//==============//
-		
-		setGlContext(GLProxyContext.MINECRAFT);
-		
-		createShaderProgram();
-        
-        // Note: VAO objects can not be shared between contexts,
-        // this must be created on minecraft's render context to work correctly
-        vertexArrayObjectId = GL30.glGenVertexArrays();
-        
-        lightMapTextureId = GL30.glGenTextures();
-        
-        
-        
-		
 		//==========//
 		// clean up //
 		//==========//
@@ -246,52 +212,9 @@ public class GLProxy
 		// Since this is created on the render thread, make sure the Minecraft context is used in the end
         setGlContext(GLProxyContext.MINECRAFT);
 		
-		
 		// GLProxy creation success
 		ClientApi.LOGGER.info(GLProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
 	}
-	
-	/** 
-	 * Creates all required shaders
-	 * @throws RuntimeException
-	 * @throws FileNotFoundException
-	 */
-	public void createShaderProgram()
-	{
-		LodShader vertexShader = null;
-		LodShader fragmentShader = null;
-		
-		// get the shaders from the resource folder
-		// Use File.separator ONLY if the file is external (not in the resourse), otherwise use "/"
-		vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "shaders/standard.vert", false);
-		fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "shaders/flat_shaded.frag", false);
-		
-		// this can be used when testing shaders, 
-		// since we can't hot swap the files in the resource folder 
-		// vertexShader = LodShader.loadShader(GL20.GL_VERTEX_SHADER, "C:/Users/James Seibel/Desktop/shaders/standard.vert", true);
-		// fragmentShader = LodShader.loadShader(GL20.GL_FRAGMENT_SHADER, "C:/Users/James Seibel/Desktop/shaders/flat_shaded.frag", true);
-		
-		
-		// create the shaders
-		
-		lodShaderProgram = new LodShaderProgram();
-	    
-	    // Attach the compiled shaders to the program, throws RuntimeException on link error
-	    lodShaderProgram.attachShader(vertexShader);
-	    lodShaderProgram.attachShader(fragmentShader);
-	    
-	    // activate the fragment shader output
-	    GL30.glBindFragDataLocation(lodShaderProgram.id, 0, "fragColor");
-	    
-	    // attach the shader program to the OpenGL context
-	    lodShaderProgram.link();
-	    
-	    // after the shaders have been attached to the program
-	    // we don't need their OpenGL references anymore
-	    GL20.glDeleteShader(vertexShader.id);
-	    GL20.glDeleteShader(fragmentShader.id);
-	}
-	
 	
 	/**
 	 * A wrapper function to make switching contexts easier. <br>
@@ -362,21 +285,16 @@ public class GLProxy
 					+ "no context [0].");
 	}
 	
+	public static boolean hasInstance() {
+		return instance != null;
+	}
 	
 	public static GLProxy getInstance()
 	{
 		if (instance == null)
 			instance = new GLProxy();
-		
 		return instance;
 	}
-	
-	
-	
-	
-	
-	
-
 	
 	/** 
 	 * Asynchronously calls the given runnable on proxy's OpenGL context.

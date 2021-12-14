@@ -17,12 +17,13 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.render.shader;
+package com.seibel.lod.core.render.objects;
 
 import java.awt.Color;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -39,126 +40,84 @@ import com.seibel.lod.core.objects.math.Vec3f;
  * @author James Seibel
  * @version 11-26-2021
  */
-public class LodShaderProgram
+public class ShaderProgram
 {
 	/** Stores the handle of the program. */
 	public final int id;
 	
 	/** Creates a shader program. */
-	public LodShaderProgram()
+	// FIXME: A better way to set the fragData output name
+	public ShaderProgram(String vert, String frag, String fragDataOutputName)
 	{
+		Shader vertShader = new Shader(GL20.GL_VERTEX_SHADER, vert, false);
+		Shader fragShader = new Shader(GL20.GL_FRAGMENT_SHADER, frag, false);
+		
 		id = GL20.glCreateProgram();
+		
+		GL20.glAttachShader(this.id, vertShader.id);
+		GL20.glAttachShader(this.id, fragShader.id);
+	    //GL30.glBindFragDataLocation(id, 0, fragDataOutputName);
+		GL20.glLinkProgram(this.id);
+		
+		vertShader.free(); // important!
+		fragShader.free(); // important!
+		
+		int status = GL20.glGetProgrami(this.id, GL20.GL_LINK_STATUS);
+		if (status != GL20.GL_TRUE) {
+			String message = "Shader Link Error. Details: "+GL20.glGetProgramInfoLog(this.id);
+			free(); // important!
+			throw new RuntimeException(message);
+		}
 	}
 	
-	
-	
 	/** Calls GL20.glUseProgram(this.id) */
-	public void use()
+	public void bind()
 	{
 		GL20.glUseProgram(id);
 	}
-	
-	/**
-	 * Calls GL20.glAttachShader(this.id, shader.id)
-	 *
-	 * @param shader Shader to get attached
-	 */
-	public void attachShader(LodShader shader)
-	{
-		GL20.glAttachShader(this.id, shader.id);
+	public void unbind() {
+		GL20.glUseProgram(0);
 	}
 	
-
-	/**
-	 * Links the shader program to the current OpenGL context.
-	 * @throws Exception Exception if the program failed to link
-	 */
-	public void link()
+	// REMEMBER to always free the resource!
+	public void free()
 	{
-		GL20.glLinkProgram(this.id);
-	    checkLinkStatus();
+		GL20.glDeleteProgram(id);
 	}
 	
-	/**
-	 * Checks if the program was linked successfully.
-	 * @throws Exception if the program failed to link
-	 */
-	public void checkLinkStatus()
-	{
-		int status = GL20.glGetProgrami(this.id, GL20.GL_LINK_STATUS);
-		if (status != GL20.GL_TRUE)
-			throw new RuntimeException("Shader Link Error. Details: "+GL20.glGetProgramInfoLog(this.id));
-	}
-	
-	
-	
-	
-	/**
+	/** WARNING: Slow native call! Cache it if possible!
 	 * Gets the location of an attribute variable with specified name.
 	 * Calls GL20.glGetAttribLocation(id, name)
 	 *
 	 * @param name Attribute name
-	 *
+	 * @throws RuntimeException if attribute not found
 	 * @return Location of the attribute
 	 */
 	public int getAttributeLocation(CharSequence name)
 	{
-		return GL20.glGetAttribLocation(id, name);
+		int i = GL20.glGetAttribLocation(id, name);
+		if (i==-1) throw new RuntimeException("Attribute name not found: "+name);
+		return i;
 	}
 	
-	/**
-	 * Calls GL20.glEnableVertexAttribArray(location)
-	 * 
-	 * @param location Location of the vertex attribute
-	 */
-	public void enableVertexAttribute(int location)
-	{
-		GL20.glEnableVertexAttribArray(location);
-	}
-	
-	/**
-	 * Calls GL20.glDisableVertexAttribArray(location)
-	 * 
-	 * @param location Location of the vertex attribute
-	 */
-	public void disableVertexAttribute(int location)
-	{
-		GL20.glDisableVertexAttribArray(location);
-	}
-	
-	/**
-	 * Sets the vertex attribute pointer.
-	 * Calls GL20.glVertexAttribPointer(...)
-	 *
-	 * @param location Location of the vertex attribute
-	 * @param size     Number of values per vertex
-	 * @param stride   Offset between consecutive generic vertex attributes in
-	 *                 bytes
-	 * @param offset   Offset of the first component of the first generic vertex
-	 *                 attribute in bytes
-	 */
-	public void pointVertexAttribute(int location, int size, int stride, int offset)
-	{
-		GL20.glVertexAttribPointer(location, size, GL20.GL_FLOAT, false, stride, offset);
-	}
-	
-	/**
+	/** WARNING: Slow native call! Cache it if possible!
 	 * Gets the location of a uniform variable with specified name.
 	 * Calls GL20.glGetUniformLocation(id, name)
 	 *
 	 * @param name Uniform name
-	 *
-	 * @return -1 = error value, 0 = first value, 1 = second value, etc.
+	 * @throws RuntimeException if uniform not found
+	 * @return Location of the Uniform
 	 */
 	public int getUniformLocation(CharSequence name)
 	{
-		return GL20.glGetUniformLocation(id, name);
+		int i = GL20.glGetUniformLocation(id, name);
+		if (i==-1) throw new RuntimeException("Uniform name not found: "+name);
+		return i;
 	}
-	
-	
 	
 	public void setUniform(int location, boolean value)
 	{
+		// This use -1 for false as that equals all one set
 		GL20.glUniform1i(location, value ? 1 : 0);
 	}
 	
@@ -197,7 +156,5 @@ public class LodShaderProgram
 	{
 		GL20.glUniform4f(location, value.getRed() / 256.0f, value.getGreen() / 256.0f, value.getBlue() / 256.0f, value.getAlpha() / 256.0f);
 	}
-	
-
 	
 }
