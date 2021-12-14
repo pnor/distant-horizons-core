@@ -63,9 +63,9 @@ public class LodBuilder
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
 	/** If no blocks are found in the area in determineBottomPointForArea return this */
-	public static final short DEFAULT_DEPTH = 0;//(short) VERSION_CONSTANTS.getMinimumWorldHeight();
+	public static final short DEFAULT_DEPTH = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 	/** If no blocks are found in the area in determineHeightPointForArea return this */
-	public static final short DEFAULT_HEIGHT = 0;//(short) VERSION_CONSTANTS.getMinimumWorldHeight();
+	public static final short DEFAULT_HEIGHT = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 	
 	public static final short MIN_WORLD_HEIGHT = (short)VERSION_CONSTANTS.getMinimumWorldHeight();
 	/** Minecraft's max light value */
