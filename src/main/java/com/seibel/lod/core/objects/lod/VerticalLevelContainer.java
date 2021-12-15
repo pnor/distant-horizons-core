@@ -174,11 +174,11 @@ public class VerticalLevelContainer implements LevelContainer
 					tempVerticalData |= ((int) inputData[index + tempIndex]) << (8 * tempIndex);
 					tempColorData |= ((int) inputData[index + tempIndex + 4]) << (8 * tempIndex);
 				}
-				verticalDataContainer[i] = tempVerticalData;
-				colorDataContainer[i] = tempColorData;
+				verticalDataContainer[i * verticalSize + j] = tempVerticalData;
+				colorDataContainer[i * verticalSize + j] = tempColorData;
 				index += 8;
 				
-				lightDataContainer[i] = inputData[index];
+				lightDataContainer[i * verticalSize + j] = inputData[index];
 				index++;
 			}
 			tempData = 0;
