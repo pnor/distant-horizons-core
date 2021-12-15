@@ -2,10 +2,10 @@ package com.seibel.lod.core.render.objects;
 
 import java.util.ArrayList;
 
+import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL43;
 
 import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.render.objects.VertexAttribute.VertexPointer;
 
 // In OpenGL 4.3 and later, Vertex Attribute got a make-over.
 // Now it provides support for buffer binding points natively.
@@ -19,8 +19,6 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 
 	int numberOfBindingPoints = 0;
 	int strideSize = 0;
-
-	ArrayList<VertexPointer> pointersBuilder;
 	
 	public VertexAttributePostGL43() {
 		super();
@@ -50,11 +48,12 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 
 	@Override
 	public void setVertexAttribute(int bindingPoint, int attributeIndex, VertexPointer attribute) {
-		GL43.glVertexAttribFormat(attributeIndex, attribute.elementCount,
-				attribute.glType, attribute.normalized, strideSize);
+		GL43.glVertexAttribFormat(attributeIndex, attribute.elementCount, attribute.glType, 
+				attribute.normalized, strideSize); // Here strideSize is new attrib offset
 		strideSize += attribute.byteSize;
 		if (numberOfBindingPoints <= bindingPoint) numberOfBindingPoints = bindingPoint+1;
 		GL43.glVertexAttribBinding(attributeIndex, bindingPoint);
+		GL43.glEnableVertexAttribArray(attributeIndex);
 	}
 
 	@Override
@@ -63,7 +62,8 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 			ClientApi.LOGGER.error("Vertex Attribute calculated stride size " + strideSize +
 					" does not match the provided expected stride size " + expectedStrideSize + "!");
 		}
-		ClientApi.LOGGER.info("Vertex Attribute (GL43+) completed.");
+		ClientApi.LOGGER.info("Vertex Attribute (GL43+) completed. It contains "+numberOfBindingPoints
+				+" binding points and a stride size of "+strideSize);
 	}
 
 }
