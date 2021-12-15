@@ -37,7 +37,7 @@ import com.seibel.lod.core.util.LodUtil;
 public class CubicLodTemplate
 {
 	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerY, int playerZ, int verticalData, int colorData, byte lightData,
-			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
+			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging)
 	{
 		if (vertexOptimizer == null)
 			return;
@@ -63,8 +63,7 @@ public class CubicLodTemplate
 				playerZ,
 				color,
 				LightFormat.getSkyLight(lightData),
-				LightFormat.getBlockLight(lightData),
-				adjShadeDisabled);
+				LightFormat.getBlockLight(lightData));
 		
 		addBoundingBoxToBuffer(buffer, vertexOptimizer);
 	}
@@ -87,8 +86,7 @@ public class CubicLodTemplate
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
 			int playerX, int playerY, int playerZ,
-			int color, byte skyLight, byte blockLight,
-			boolean[] adjShadeDisabled)
+			int color, byte skyLight, byte blockLight)
 	{
 		// don't add an LOD if it is empty
 		if (height == -1 && depth == -1)
@@ -105,7 +103,7 @@ public class CubicLodTemplate
 		double x = -playerX;
 		double z = -playerZ;
 		vertexOptimizer.reset();
-		vertexOptimizer.setColor(color, adjShadeDisabled);
+		vertexOptimizer.setColor(color);
 		vertexOptimizer.setLights(skyLight, blockLight);
 		vertexOptimizer.setWidth(width, height - depth, width);
 		vertexOptimizer.setOffset((int) (xOffset + x), (int) (depth + yOffset), (int) (zOffset + z));

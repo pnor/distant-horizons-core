@@ -33,6 +33,7 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import javafx.scene.effect.Light;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 /**
  * This class handles all the vertex optimization that's needed for a column of lods. W
@@ -198,7 +199,7 @@ public class VertexOptimizer
 	public Map<LodDirection, int[]> adjVerticalData;
 	public Map<LodDirection, int[]> adjColorData;
 	public Map<LodDirection, byte[]> adjLightData;
-	
+	public boolean[] adjShadeDisabled;
 	
 	public final Map<LodDirection, int[]> adjHeight;
 	public final Map<LodDirection, int[]> adjDepth;
@@ -213,6 +214,7 @@ public class VertexOptimizer
 	{
 		
 		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
+		adjShadeDisabled = new boolean[VertexOptimizer.DIRECTIONS.length];
 		adjVerticalData = new HashMap<>();
 		adjLightData = new HashMap<>();
 		adjColorData = new HashMap<>();
@@ -265,6 +267,7 @@ public class VertexOptimizer
 		Arrays.fill(adjVerticalData.get(direction),0);
 		Arrays.fill(adjColorData.get(direction),0);
 		Arrays.fill(adjLightData.get(direction), (byte) 0);
+		Arrays.fill(adjShadeDisabled, false);
 	}
 	
 	public int[] getAdjVerticalArray(LodDirection direction)
@@ -300,9 +303,8 @@ public class VertexOptimizer
 	/**
 	 * Set the color of the columns
 	 * @param color color to add
-	 * @param adjShadeDisabled this array indicates which face does not need shading
 	 */
-	public void setColor(int color, boolean[] adjShadeDisabled)
+	public void setColor(int color)
 	{
 		this.color = color;
 		for (LodDirection lodDirection : DIRECTIONS)

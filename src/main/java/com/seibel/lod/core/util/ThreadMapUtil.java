@@ -230,22 +230,7 @@ public class ThreadMapUtil
 	// used in BufferBuilder  //
 	//________________________//
 	
-	public static final ConcurrentMap<String, boolean[]> adjShadeDisabled = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, VertexOptimizer> boxMap = new ConcurrentHashMap<>();
-	
-	
-	
-	/** returns the array NOT cleared every time */
-	public static boolean[] getAdjShadeDisabledArray()
-	{
-		if (!adjShadeDisabled.containsKey(Thread.currentThread().getName())
-				|| (adjShadeDisabled.get(Thread.currentThread().getName()) == null))
-		{
-			adjShadeDisabled.put(Thread.currentThread().getName(), new boolean[VertexOptimizer.DIRECTIONS.length]);
-		}
-		Arrays.fill(adjShadeDisabled.get(Thread.currentThread().getName()), false);
-		return adjShadeDisabled.get(Thread.currentThread().getName());
-	}
 	
 	
 	public static VertexOptimizer getBox()
@@ -257,27 +242,6 @@ public class ThreadMapUtil
 		}
 		boxMap.get(Thread.currentThread().getName()).reset();
 		return boxMap.get(Thread.currentThread().getName());
-	}
-	
-	
-	
-	
-	/** returns the array filled with 0's */
-	public static long[] getBuilderVerticalArray(int detailLevel)
-	{
-		if (!threadBuilderVerticalArrayMap.containsKey(Thread.currentThread().getName()) || (threadBuilderVerticalArrayMap.get(Thread.currentThread().getName()) == null))
-		{
-			long[][] array = new long[5][];
-			int size;
-			for (int i = 0; i < 5; i++)
-			{
-				size = 1 << i;
-				array[i] = new long[size * size * (VerticalDataFormat.WORLD_HEIGHT / 2 + 1)];
-			}
-			threadBuilderVerticalArrayMap.put(Thread.currentThread().getName(), array);
-		}
-		Arrays.fill(threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel], 0);
-		return threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel];
 	}
 	
 	/** returns the array NOT cleared every time */
@@ -319,7 +283,6 @@ public class ThreadMapUtil
 	/** clears all arrays so they will have to be rebuilt */
 	public static void clearMaps()
 	{
-		adjShadeDisabled.clear();
 		boxMap.clear();
 		threadSingleUpdateMap.clear();
 		threadBuilderArrayMap.clear();

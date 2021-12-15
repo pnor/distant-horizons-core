@@ -27,7 +27,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.dataFormat.ColorFormat;
 import com.seibel.lod.core.dataFormat.PositionDataFormat;
+import com.seibel.lod.core.dataFormat.VerticalDataFormat;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
@@ -286,7 +288,6 @@ public class LodBufferBuilderFactory
 							boolean posNotInPlayerChunk;
 							boolean adjPosInPlayerChunk;
 							VertexOptimizer vertexOptimizer = ThreadMapUtil.getBox();
-							boolean[] adjShadeDisabled = ThreadMapUtil.getAdjShadeDisabledArray();
 							
 							// determine how many LODs we can stack vertically
 							int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
@@ -344,12 +345,6 @@ public class LodBufferBuilderFactory
 								
 								//we check if the block to render is not in player chunk
 								posNotInPlayerChunk = !(chunkXdist == 0 && chunkZdist == 0);
-										
-																					// We extract the adj data in the four cardinal direction
-								
-								// we first reset the adjShadeDisabled. This is used to disable the shade on the border when we have transparent block like water or glass
-								// to avoid having a "darker border" underground
-								Arrays.fill(adjShadeDisabled, false);
 								
 								//We check every adj block in each direction
 								for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
@@ -378,7 +373,7 @@ public class LodBufferBuilderFactory
 									{
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
 										{
-											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = false;
+											vertexOptimizer.adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = false;
 											adjLightArray[verticalIndex] = (byte) lodDim.getLightData(detailLevel, xAdj, zAdj, verticalIndex);
 											adjColorArray[verticalIndex] = lodDim.getVerticalData(detailLevel, xAdj, zAdj, verticalIndex);
 											adjVerticalArray[verticalIndex] = lodDim.getColorData(detailLevel, xAdj, zAdj, verticalIndex);
@@ -387,21 +382,16 @@ public class LodBufferBuilderFactory
 									else
 									{
 										//Otherwise, we check if this position is
-										/*
-										adjLightData.get(lodDirection)[0] = 0;
-										adjVerticalData.get(lodDirection)[0] = 0;
+										short adjPositionData = lodDim.getPositionData(detailLevel, xAdj, zAdj);
+										int adjColorData = lodDim.getColorData(detailLevel, xAdj, zAdj,0);
 										
-										short positionData = lodDim.getPositionData(detailLevel, xAdj, zAdj);
-										//we take the highest point
-										int color = lodDim.getColorData(detailLevel, xAdj, zAdj, PositionDataFormat.getLodCount(positionData));
-										
-										adjVerticalData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
+										vertexOptimizer.getAdjVerticalArray(lodDirection)[0] = VerticalDataFormat.EMPTY_LOD;
 										
 										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
-													&& !DataPointUtil.isVoid(data))
+													&& !PositionDataFormat.isVoid(adjPositionData))
 										{
-											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
-										}*/
+											vertexOptimizer.adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = ColorFormat.getAlpha(adjColorData) < 255;
+										}
 									}
 								}
 								
@@ -464,7 +454,7 @@ public class LodBufferBuilderFactory
 									
 									//We send the call to create the vertices
 									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerY, playerZ, verticalData, colorData, lightData,
-											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
+											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode);
 								}
 								
 							} // for pos to in list to render
