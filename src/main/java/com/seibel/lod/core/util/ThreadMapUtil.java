@@ -251,9 +251,13 @@ public class ThreadMapUtil
 		{
 			byte[][] array = new byte[LodUtil.DETAIL_OPTIONS][];
 			int size = 1;
+			int posSize;
+			int fullSize;
 			for (int i = LodUtil.DETAIL_OPTIONS - 1; i >= 0; i--)
 			{
-				array[i] = new byte[4 + 8 * size * size * DetailDistanceUtil.getMaxVerticalData(i)];
+				posSize = size * size;
+				fullSize = size * size * DetailDistanceUtil.getMaxVerticalData(i);
+				array[i] = new byte[4 + 2 * posSize + (4 + 4 + 1) * fullSize];
 				size = size << 1;
 			}
 			saveContainer.put(Thread.currentThread().getName(), array);

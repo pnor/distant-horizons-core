@@ -35,9 +35,9 @@ import java.util.logging.Level;
 public class VerticalLevelContainer implements LevelContainer
 {
 	
-	public final byte detailLevel;
-	public final int size;
-	public final int verticalSize;
+	public byte detailLevel;
+	public int size;
+	public int verticalSize;
 	
 	//Currently these variable are not used. We are going to use them in the new data format
 	public int[] verticalDataContainer;
@@ -143,7 +143,6 @@ public class VerticalLevelContainer implements LevelContainer
 		size = 0;
 		verticalSize = 0;
 		
-		/*
 		int tempMaxVerticalData;
 		int tempIndex;
 		int index = 0;
@@ -153,11 +152,16 @@ public class VerticalLevelContainer implements LevelContainer
 		tempMaxVerticalData = inputData[index] & 0b01111111;
 		index++;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-		int x = size * size * tempMaxVerticalData;
-		long[] tempDataContainer = new long[x];
+		int numberOfPosition = size * size;
+		
+		verticalDataContainer = new int[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+		colorDataContainer = new int[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+		lightDataContainer = new byte[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+		positionDataContainer = new short[size * size];
+		
 		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 		short minHeight = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
-		
+		/*
 		if (version == 6)
 		{
 			for (int i = 0; i < x; i++)
@@ -245,6 +249,100 @@ public class VerticalLevelContainer implements LevelContainer
 					index += 8;
 					tempDataContainer[i] = newData;
 				}
+			}
+		}
+		*/
+		short newPositionData;
+		int newVerticalData;
+		int newColorData;
+		byte newLightData;
+		
+		short tempMinHeight = inputData[index];
+		index++;
+		tempMinHeight |= inputData[index] << 8;
+		index++;
+		if (tempMinHeight != minHeight)
+		{
+			for (int positionIndex = 0; positionIndex < numberOfPosition; positionIndex++)
+			{
+				newPositionData = 0;
+				for (tempIndex = 0; tempIndex < 2; tempIndex++)
+					newPositionData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+				index += 2;
+				positionDataContainer[positionIndex] = newPositionData;
+				
+				for (int verticalIndex = 0; verticalIndex < tempMaxVerticalData; verticalIndex++)
+				{
+					newVerticalData = 0;
+					for (tempIndex = 0; tempIndex < 4; tempIndex++)
+						newVerticalData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 4;
+					
+					
+					newVerticalData = VerticalDataFormat.createVerticalData(
+							VerticalDataFormat.getHeight(newVerticalData) + tempMinHeight - minHeight,
+							VerticalDataFormat.getDepth(newVerticalData) + tempMinHeight - minHeight,
+							VerticalDataFormat.getLevel(newVerticalData),
+							VerticalDataFormat.isTransparent(newVerticalData),
+							VerticalDataFormat.isBottom(newVerticalData));
+					
+					verticalDataContainer[positionIndex] = newVerticalData;
+					
+					newColorData = 0;
+					for (tempIndex = 0; tempIndex < 4; tempIndex++)
+						newColorData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 4;
+					colorDataContainer[positionIndex] = newColorData;
+					
+					newLightData = 0;
+					for (tempIndex = 0; tempIndex < 1; tempIndex++)
+						newLightData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 1;
+					lightDataContainer[positionIndex] = newLightData;
+				}
+				
+			}
+		}
+		else
+		{
+			for (int positionIndex = 0; positionIndex < numberOfPosition; positionIndex++)
+			{
+				newPositionData = 0;
+				for (tempIndex = 0; tempIndex < 2; tempIndex++)
+					newPositionData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+				index += 2;
+				positionDataContainer[positionIndex] = newPositionData;
+				
+				for (int verticalIndex = 0; verticalIndex < tempMaxVerticalData; verticalIndex++)
+				{
+					newVerticalData = 0;
+					for (tempIndex = 0; tempIndex < 4; tempIndex++)
+						newVerticalData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 4;
+					verticalDataContainer[positionIndex] = newVerticalData;
+					
+					newColorData = 0;
+					for (tempIndex = 0; tempIndex < 4; tempIndex++)
+						newColorData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 4;
+					colorDataContainer[positionIndex] = newColorData;
+					
+					newLightData = 0;
+					for (tempIndex = 0; tempIndex < 1; tempIndex++)
+						newLightData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+					index += 1;
+					lightDataContainer[positionIndex] = newLightData;
+				}
+			}
+		}
+		/*{
+			for (int i = 0; i < numberOfPosition; i++)
+			{
+				newData = 0;
+				for (tempIndex = 0; tempIndex < 8; tempIndex++)
+					newData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
+				index += 8;
+				tempDataContainer[i] = newData;
 			}
 		}
 		
@@ -616,10 +714,15 @@ public class VerticalLevelContainer implements LevelContainer
 		//We reset the array
 		int lowerVerticalSize = lowerLevelContainer.getVerticalSize();
 		byte lowerDetailLevel = lowerLevelContainer.getDetailLevel();
-		short[] positionDataToMerge = ThreadMapUtil.getPositionDataArray();
+		int size = (1 << lowerDetailLevel);
+		/*short[] positionDataToMerge = ThreadMapUtil.getPositionDataArray();
 		int[] verticalDataToMerge = ThreadMapUtil.getVerticalDataArray(lowerDetailLevel);
 		int[] colorDataToMerge = ThreadMapUtil.getColorDataArray(lowerDetailLevel);
-		byte[] ligthDataToMerge = ThreadMapUtil.getLightDataArray(lowerDetailLevel);
+		byte[] ligthDataToMerge = ThreadMapUtil.getLightDataArray(lowerDetailLevel);*/
+		short[] positionDataToMerge = new short[4];
+		int[] verticalDataToMerge = new int[4 * lowerVerticalSize];
+		int[] colorDataToMerge = new int[4 * lowerVerticalSize];
+		byte[] ligthDataToMerge = new byte[4 * lowerVerticalSize];
 		
 		int childPosX;
 		int childPosZ;
@@ -650,10 +753,13 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public byte[] toDataString()
 	{
-		/*int index = 0;
-		int x = size * size;
+		int index = 0;
+		int numberOfPos = size * size;
 		int tempIndex;
-		long current;
+		short positionData;
+		int verticalData;
+		int colorData;
+		byte lightData;
 		boolean allGenerated = true;
 		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
 		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
@@ -668,23 +774,38 @@ public class VerticalLevelContainer implements LevelContainer
 		tempData[index] = (byte) ((minHeight >> 8) & 0xFF);
 		index++;
 		
-		int j;
-		for (int i = 0; i < x; i++)
+		int verticalIndex;
+		for (int positionIndex = 0; positionIndex < numberOfPos; positionIndex++)
 		{
-			for (j = 0; j < verticalSize; j++)
-			{
-				current = dataContainer[i * verticalSize + j];
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					tempData[index + tempIndex] = (byte) (current >>> (8 * tempIndex));
-				index += 8;
-			}
-			if (!DataPointUtil.doesItExist(dataContainer[i]))
+			positionData = positionDataContainer[positionIndex];
+			
+			if (!PositionDataFormat.doesItExist(positionData))
 				allGenerated = false;
+			
+			for (tempIndex = 0; tempIndex < 2; tempIndex++)
+				tempData[index + tempIndex] = (byte) (positionData >>> (8 * tempIndex));
+			index += 2;
+			
+			for (verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
+			{
+				verticalData = verticalDataContainer[positionIndex * verticalSize + verticalIndex];
+				for (tempIndex = 0; tempIndex < 4; tempIndex++)
+					tempData[index + tempIndex] = (byte) (verticalData >>> (8 * tempIndex));
+				index += 4;
+				
+				colorData = colorDataContainer[positionIndex * verticalSize + verticalIndex];
+				for (tempIndex = 0; tempIndex < 4; tempIndex++)
+					tempData[index + tempIndex] = (byte) (colorData >>> (8 * tempIndex));
+				index += 4;
+				
+				lightData = lightDataContainer[positionIndex * verticalSize + verticalIndex];
+				tempData[index] = lightData;
+				index += 1;
+			}
 		}
 		if (allGenerated)
 			tempData[1] |= 0b10000000;
-		return tempData;*/
-		return null;
+		return tempData;
 	}
 	
 	@Override
