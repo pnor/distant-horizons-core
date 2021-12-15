@@ -78,7 +78,7 @@ public class ThreadMapUtil
 			short[][] tempArray = new short[count][];
 			for(int tempDetail = 0; tempDetail < count; tempDetail++)
 			{
-				tempArray[tempDetail] = new short[(1 << tempDetail)];
+				tempArray[tempDetail] = new short[(1 << tempDetail) * (1 << tempDetail)];
 			}
 			positionDataBuildingArrayMap.put(Thread.currentThread().getName(), tempArray);
 		}
@@ -98,7 +98,7 @@ public class ThreadMapUtil
 			int[][] tempArray = new int[count][];
 			for(int tempDetail = 0; tempDetail < count; tempDetail++)
 			{
-				tempArray[tempDetail] = new int[(1 << tempDetail) * verticalSize];
+				tempArray[tempDetail] = new int[(1 << tempDetail) * (1 << tempDetail) * verticalSize];
 			}
 			verticalDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
 		}
@@ -118,7 +118,7 @@ public class ThreadMapUtil
 			int[][] tempArray = new int[count][];
 			for(int tempDetail = 0; tempDetail < count; tempDetail++)
 			{
-				tempArray[tempDetail] = new int[(1 << tempDetail) * verticalSize];
+				tempArray[tempDetail] = new int[(1 << tempDetail) * (1 << tempDetail) * verticalSize];
 			}
 			colorDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
 		}
@@ -138,7 +138,7 @@ public class ThreadMapUtil
 			byte[][] tempArray = new byte[count][];
 			for(int tempDetail = 0; tempDetail < count; tempDetail++)
 			{
-				tempArray[tempDetail] = new byte[(1 << tempDetail) * verticalSize];
+				tempArray[tempDetail] = new byte[(1 << tempDetail) * (1 << tempDetail) * verticalSize];
 			}
 			lightDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
 		}

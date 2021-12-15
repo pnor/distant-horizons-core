@@ -276,7 +276,7 @@ public class VerticalLevelContainer implements LevelContainer
 	public void addData(int posX, int posZ, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
 		int sliceStart = 0;
-		int sliceEnd = inputPositionData.length;
+		int sliceEnd = inputPositionData.length - 1;
 		//STEP 1//
 		//We initially reset this position of the data container
 		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
