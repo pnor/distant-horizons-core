@@ -30,7 +30,7 @@ import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGenera
  * This handles creating abstract wrapper objects.
  * 
  * @author James Seibel
- * @version 12-12-2021
+ * @version 12-14-2021
  */
 public interface IWrapperFactory
 {	
@@ -39,7 +39,13 @@ public interface IWrapperFactory
 	
 	
 	AbstractChunkPosWrapper createChunkPos();
-	AbstractChunkPosWrapper createChunkPos(long xAndZPositionCombined);
+	public default AbstractChunkPosWrapper createChunkPos(long xAndZPositionCombined)
+	{
+		int x = (int) (xAndZPositionCombined & Integer.MAX_VALUE);
+		int z = (int) (xAndZPositionCombined >> Long.SIZE / 2) & Integer.MAX_VALUE;
+		
+		return createChunkPos(x, z);
+	}
 	AbstractChunkPosWrapper createChunkPos(int x, int z);
 	AbstractChunkPosWrapper createChunkPos(AbstractChunkPosWrapper newChunkPos);
 	AbstractChunkPosWrapper createChunkPos(AbstractBlockPosWrapper blockPos);
