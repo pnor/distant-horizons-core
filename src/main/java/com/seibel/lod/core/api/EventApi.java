@@ -21,6 +21,7 @@ package com.seibel.lod.core.api;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -105,6 +106,8 @@ public class EventApi
 	public void worldLoadEvent(IWorldWrapper world)
 	{
 		DataPointUtil.WORLD_HEIGHT = world.getHeight();
+		LodBuilder.MIN_WORLD_HEIGHT = world.getMinHeight(); // This updates the World height
+		
 		//LodNodeGenWorker.restartExecutorService();
 		//ThreadMapUtil.clearMaps();
 		

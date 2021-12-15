@@ -60,7 +60,9 @@ public class LodBuilder
 	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class);
 	
 	
-	public static final short MIN_WORLD_HEIGHT = MC.getWrappedClientWorld().getMinHeight();
+	/** This cannot be final! Different world have different height, and in menu, this causes Null Exceptions*/
+	//public static final short MIN_WORLD_HEIGHT = MC.getWrappedClientWorld().getMinHeight();
+	public static short MIN_WORLD_HEIGHT = 0; // Currently modified in EventApi.onWorldLoaded(...)
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
 	
