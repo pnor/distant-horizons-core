@@ -790,7 +790,7 @@ public class LodDimension
 	/** Save all dirty regions in this LodDimension to file. */
 	public void saveDirtyRegionsToFileAsync()
 	{
-		//fileHandler.saveDirtyRegionsToFileAsync();
+		fileHandler.saveDirtyRegionsToFileAsync();
 	}
 	
 	

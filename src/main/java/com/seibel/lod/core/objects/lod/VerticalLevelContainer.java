@@ -22,10 +22,6 @@ package com.seibel.lod.core.objects.lod;
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
-import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
-import org.lwjgl.system.CallbackI;
-
-import java.util.logging.Level;
 
 /**
  *
@@ -35,9 +31,10 @@ import java.util.logging.Level;
 public class VerticalLevelContainer implements LevelContainer
 {
 	
-	public byte detailLevel;
-	public int size;
-	public int verticalSize;
+	public final byte detailLevel;
+	public final int size;
+	public final int verticalSize;
+	public final short minWorldHeight;
 	
 	//Currently these variable are not used. We are going to use them in the new data format
 	public int[] verticalDataContainer;
@@ -50,10 +47,11 @@ public class VerticalLevelContainer implements LevelContainer
 		this.detailLevel = detailLevel;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
-		verticalDataContainer = new int[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
-		colorDataContainer = new int[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
-		lightDataContainer = new byte[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+		verticalDataContainer = new int[size * size * verticalSize];
+		colorDataContainer = new int[size * size * verticalSize];
+		lightDataContainer = new byte[size * size * verticalSize];
 		positionDataContainer = new short[size * size];
+		minWorldHeight = 0;
 	}
 	
 	@Override
@@ -138,11 +136,59 @@ public class VerticalLevelContainer implements LevelContainer
 	
 	public VerticalLevelContainer(byte[] inputData, int version)
 	{
-		//TO REMOVE
-		detailLevel = 0;
-		size = 0;
-		verticalSize = 0;
+		int tempMaxverticalSize;
+		int tempIndex;
+		int index = 0;
+		int tempVerticalData;
+		int tempColorData;
+		short tempData;
+		detailLevel = inputData[index];
+		index++;
+		tempMaxverticalSize = inputData[index] & 0b01111111;
+		index++;
 		
+		tempData = 0;
+		for (tempIndex = 0; tempIndex < 2; tempIndex++)
+			tempData |= ((short) inputData[index + tempIndex]) << (8 * tempIndex);
+		index += 2;
+		minWorldHeight = tempData;
+		
+		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+		int x = size * size;
+		
+		verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
+		
+		verticalDataContainer = new int[x * verticalSize];
+		colorDataContainer = new int[x * verticalSize];
+		lightDataContainer = new byte[x * verticalSize];
+		positionDataContainer = new short[x];
+		
+		for (int i = 0; i < x; i++)
+		{
+			for (int j = 0; j < verticalSize; j++)
+			{
+				tempVerticalData = 0;
+				tempColorData = 0;
+				for (tempIndex = 0; tempIndex < 4; tempIndex++)
+				{
+					tempVerticalData |= ((int) inputData[index + tempIndex]) << (8 * tempIndex);
+					tempColorData |= ((int) inputData[index + tempIndex + 4]) << (8 * tempIndex);
+				}
+				verticalDataContainer[i] = tempVerticalData;
+				colorDataContainer[i] = tempColorData;
+				index += 8;
+				
+				lightDataContainer[i] = inputData[index];
+				index++;
+			}
+			tempData = 0;
+			for (tempIndex = 0; tempIndex < 2; tempIndex++)
+				tempData |= ((short) inputData[index + tempIndex]) << (8 * tempIndex);
+			index += 2;
+			positionDataContainer[i] = tempData;
+		}
+		
+		/*
 		int tempMaxVerticalData;
 		int tempIndex;
 		int index = 0;
@@ -152,16 +198,11 @@ public class VerticalLevelContainer implements LevelContainer
 		tempMaxVerticalData = inputData[index] & 0b01111111;
 		index++;
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-		int numberOfPosition = size * size;
-		
-		verticalDataContainer = new int[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
-		colorDataContainer = new int[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
-		lightDataContainer = new byte[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
-		positionDataContainer = new short[size * size];
-		
+		int x = size * size * tempMaxVerticalData;
+		long[] tempDataContainer = new long[x];
 		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 		short minHeight = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
-		/*
+		
 		if (version == 6)
 		{
 			for (int i = 0; i < x; i++)
@@ -249,100 +290,6 @@ public class VerticalLevelContainer implements LevelContainer
 					index += 8;
 					tempDataContainer[i] = newData;
 				}
-			}
-		}
-		*/
-		short newPositionData;
-		int newVerticalData;
-		int newColorData;
-		byte newLightData;
-		
-		short tempMinHeight = inputData[index];
-		index++;
-		tempMinHeight |= inputData[index] << 8;
-		index++;
-		if (tempMinHeight != minHeight)
-		{
-			for (int positionIndex = 0; positionIndex < numberOfPosition; positionIndex++)
-			{
-				newPositionData = 0;
-				for (tempIndex = 0; tempIndex < 2; tempIndex++)
-					newPositionData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-				index += 2;
-				positionDataContainer[positionIndex] = newPositionData;
-				
-				for (int verticalIndex = 0; verticalIndex < tempMaxVerticalData; verticalIndex++)
-				{
-					newVerticalData = 0;
-					for (tempIndex = 0; tempIndex < 4; tempIndex++)
-						newVerticalData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-					index += 4;
-					
-					
-					newVerticalData = VerticalDataFormat.createVerticalData(
-							VerticalDataFormat.getHeight(newVerticalData) + tempMinHeight - minHeight,
-							VerticalDataFormat.getDepth(newVerticalData) + tempMinHeight - minHeight,
-							VerticalDataFormat.getLevel(newVerticalData),
-							VerticalDataFormat.isTransparent(newVerticalData),
-							VerticalDataFormat.isBottom(newVerticalData));
-					
-					verticalDataContainer[positionIndex] = newVerticalData;
-					
-					newColorData = 0;
-					for (tempIndex = 0; tempIndex < 4; tempIndex++)
-						newColorData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-					index += 4;
-					colorDataContainer[positionIndex] = newColorData;
-					
-					newLightData = 0;
-					for (tempIndex = 0; tempIndex < 1; tempIndex++)
-						newLightData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-					index += 1;
-					lightDataContainer[positionIndex] = newLightData;
-				}
-				
-			}
-		}
-		else
-		{
-			for (int positionIndex = 0; positionIndex < numberOfPosition; positionIndex++)
-			{
-				newPositionData = 0;
-				for (tempIndex = 0; tempIndex < 2; tempIndex++)
-					newPositionData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-				index += 2;
-				positionDataContainer[positionIndex] = newPositionData;
-				
-				for (int verticalIndex = 0; verticalIndex < tempMaxVerticalData; verticalIndex++)
-				{
-					newVerticalData = 0;
-					for (tempIndex = 0; tempIndex < 4; tempIndex++)
-						newVerticalData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-					index += 4;
-					verticalDataContainer[positionIndex] = newVerticalData;
-					
-					newColorData = 0;
-					for (tempIndex = 0; tempIndex < 4; tempIndex++)
-						newColorData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-					index += 4;
-					colorDataContainer[positionIndex] = newColorData;
-					
-					newLightData = 0;
-					for (tempIndex = 0; tempIndex < 1; tempIndex++)
-						newLightData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-					index += 1;
-					lightDataContainer[positionIndex] = newLightData;
-				}
-			}
-		}
-		/*{
-			for (int i = 0; i < numberOfPosition; i++)
-			{
-				newData = 0;
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					newData |= ((long) inputData[index + tempIndex]) << (8 * tempIndex);
-				index += 8;
-				tempDataContainer[i] = newData;
 			}
 		}
 		
@@ -714,15 +661,10 @@ public class VerticalLevelContainer implements LevelContainer
 		//We reset the array
 		int lowerVerticalSize = lowerLevelContainer.getVerticalSize();
 		byte lowerDetailLevel = lowerLevelContainer.getDetailLevel();
-		int size = (1 << lowerDetailLevel);
-		/*short[] positionDataToMerge = ThreadMapUtil.getPositionDataArray();
+		short[] positionDataToMerge = ThreadMapUtil.getPositionDataArray();
 		int[] verticalDataToMerge = ThreadMapUtil.getVerticalDataArray(lowerDetailLevel);
 		int[] colorDataToMerge = ThreadMapUtil.getColorDataArray(lowerDetailLevel);
-		byte[] ligthDataToMerge = ThreadMapUtil.getLightDataArray(lowerDetailLevel);*/
-		short[] positionDataToMerge = new short[4];
-		int[] verticalDataToMerge = new int[4 * lowerVerticalSize];
-		int[] colorDataToMerge = new int[4 * lowerVerticalSize];
-		byte[] ligthDataToMerge = new byte[4 * lowerVerticalSize];
+		byte[] ligthDataToMerge = ThreadMapUtil.getLightDataArray(lowerDetailLevel);
 		
 		int childPosX;
 		int childPosZ;
@@ -753,55 +695,99 @@ public class VerticalLevelContainer implements LevelContainer
 	@Override
 	public byte[] toDataString()
 	{
-		int index = 0;
-		int numberOfPos = size * size;
+		/*byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
+		
+		int tempMaxverticalSize;
 		int tempIndex;
-		short positionData;
-		int verticalData;
-		int colorData;
-		byte lightData;
+		int index = 0;
+		int tempVerticalData;
+		int tempColorData;
+		short tempData;
+		detailLevel = inputData[index];
+		index++;
+		tempMaxverticalSize = inputData[index] & 0b01111111;
+		index++;
+		
+		tempData = 0;
+		for (tempIndex = 0; tempIndex < 2; tempIndex++)
+			tempData |= ((short) inputData[index + tempIndex]) << (8 * tempIndex);
+		index += 2;
+		minWorldHeight = tempData;
+		
+		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+		int x = size * size;
+		
+		verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
+		
+		verticalDataContainer = new int[x * verticalSize];
+		colorDataContainer = new int[x * verticalSize];
+		lightDataContainer = new byte[x * verticalSize];
+		positionDataContainer = new short[x];
+		
+		for (int i = 0; i < x; i++)
+		{
+			for (int j = 0; j < verticalSize; j++)
+			{
+				tempVerticalData = 0;
+				tempColorData = 0;
+				for (tempIndex = 0; tempIndex < 4; tempIndex++)
+				{
+					tempVerticalData |= ((int) inputData[index + tempIndex]) << (8 * tempIndex);
+					tempColorData |= ((int) inputData[index + tempIndex]) << (8 * tempIndex);
+				}
+				verticalDataContainer[i] = tempVerticalData;
+				colorDataContainer[i] = tempColorData;
+				index += 8;
+				
+				lightDataContainer[i] = inputData[index];
+				index++;
+			}
+			tempData = 0;
+			for (tempIndex = 0; tempIndex < 2; tempIndex++)
+				tempData |= ((short) inputData[index + tempIndex]) << (8 * tempIndex);
+			index += 2;
+			positionDataContainer[i] = tempData;
+		}*/
+		
+		int index = 0;
+		int x = size * size;
+		int tempIndex;
+		int tempVerticalData;
+		int tempColorData;
 		boolean allGenerated = true;
 		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
-		final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
-		short minHeight = (short) VERSION_CONSTANTS.getMinimumWorldHeight();
 		
 		tempData[index] = detailLevel;
 		index++;
 		tempData[index] = (byte) verticalSize;
 		index++;
-		tempData[index] = (byte) (minHeight & 0xFF);
+		tempData[index] = (byte) (minWorldHeight & 0xFF);
 		index++;
-		tempData[index] = (byte) ((minHeight >> 8) & 0xFF);
+		tempData[index] = (byte) ((minWorldHeight >> 8) & 0xFF);
 		index++;
 		
-		int verticalIndex;
-		for (int positionIndex = 0; positionIndex < numberOfPos; positionIndex++)
+		int j;
+		for (int i = 0; i < x; i++)
 		{
-			positionData = positionDataContainer[positionIndex];
-			
-			if (!PositionDataFormat.doesItExist(positionData))
-				allGenerated = false;
-			
-			for (tempIndex = 0; tempIndex < 2; tempIndex++)
-				tempData[index + tempIndex] = (byte) (positionData >>> (8 * tempIndex));
-			index += 2;
-			
-			for (verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
+			for (j = 0; j < verticalSize; j++)
 			{
-				verticalData = verticalDataContainer[positionIndex * verticalSize + verticalIndex];
+				tempVerticalData = verticalDataContainer[i * verticalSize + j];
+				tempColorData = colorDataContainer[i * verticalSize + j];
 				for (tempIndex = 0; tempIndex < 4; tempIndex++)
-					tempData[index + tempIndex] = (byte) (verticalData >>> (8 * tempIndex));
-				index += 4;
-				
-				colorData = colorDataContainer[positionIndex * verticalSize + verticalIndex];
-				for (tempIndex = 0; tempIndex < 4; tempIndex++)
-					tempData[index + tempIndex] = (byte) (colorData >>> (8 * tempIndex));
-				index += 4;
-				
-				lightData = lightDataContainer[positionIndex * verticalSize + verticalIndex];
-				tempData[index] = lightData;
-				index += 1;
+				{
+					tempData[index + tempIndex] = (byte) (tempVerticalData >>> (8 * tempIndex));
+					tempData[index + tempIndex + 4] = (byte) (tempColorData >>> (8 * tempIndex));
+				}
+				index += 8;
+				tempData[index] = lightDataContainer[i * verticalSize + j];
+				index++;
 			}
+			tempData[index] = (byte) (positionDataContainer[i * verticalSize] & 0xFF);
+			index++;
+			tempData[index] = (byte) ((positionDataContainer[i * verticalSize] >> 8) & 0xFF);
+			index++;
+			if (!VerticalDataFormat.doesItExist(verticalDataContainer[i]))
+				allGenerated = false;
 		}
 		if (allGenerated)
 			tempData[1] |= 0b10000000;

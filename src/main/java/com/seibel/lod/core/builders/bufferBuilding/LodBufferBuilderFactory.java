@@ -427,7 +427,7 @@ public class LodBufferBuilderFactory
 									
 									
 									//we get the below block as adj DOWN
-									if (verticalIndex < lodCount)
+									if (verticalIndex < lodCount - 1)
 									{
 										vertexOptimizer.setAdjData(
 												LodDirection.DOWN,

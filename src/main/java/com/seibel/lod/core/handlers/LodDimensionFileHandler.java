@@ -208,7 +208,7 @@ public class LodDimensionFileHandler
 							
 							break;
 						}
-						else if (fileVersion < LOD_SAVE_FILE_VERSION)
+						else// if (fileVersion <= LOD_SAVE_FILE_VERSION)
 						{
 							//this is old, but readable version
 							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
@@ -216,15 +216,6 @@ public class LodDimensionFileHandler
 							inputStream.close();
 							// add the data to our region
 							region.addLevelContainer(new VerticalLevelContainer(data, fileVersion));
-						} else
-						{
-							// this file is a readable version,
-							// read the file
-							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
-							inputStream.read(data);
-							inputStream.close();
-							// add the data to our region
-							region.addLevelContainer(new VerticalLevelContainer(data, LOD_SAVE_FILE_VERSION));
 						}
 					}
 					catch (IOException ioEx)

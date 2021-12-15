@@ -65,7 +65,7 @@ public interface IMinecraftRenderWrapper
 	 * This method returns the ChunkPos of all chunks that Minecraft
 	 * is going to render this frame.
 	 */
-	HashSet<AbstractChunkPosWrapper> getRenderedChunks();
+	HashSet<AbstractChunkPosWrapper> getVanillaRenderedChunks();
 
 	/** @returns null if there was a issue getting the lightmap */
 	int[] getLightmapPixels();

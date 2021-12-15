@@ -369,7 +369,7 @@ public class LodUtil
 		
 		
 		// get the chunks that are going to be rendered by Minecraft
-		HashSet<AbstractChunkPosWrapper> posToSkip = MC_RENDER.getRenderedChunks();
+		HashSet<AbstractChunkPosWrapper> posToSkip = MC_RENDER.getVanillaRenderedChunks();
 		
 		
 		// remove everything outside the skipRadius,
