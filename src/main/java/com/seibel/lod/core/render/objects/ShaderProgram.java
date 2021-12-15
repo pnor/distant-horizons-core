@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -44,9 +43,10 @@ public class ShaderProgram
 {
 	/** Stores the handle of the program. */
 	public final int id;
-	
-	/** Creates a shader program. */
-	// FIXME: A better way to set the fragData output name
+
+	// TODO: A better way to set the fragData output name
+	/** Creates a shader program.
+	  * This will bind ShaderProgram */
 	public ShaderProgram(String vert, String frag, String fragDataOutputName)
 	{
 		Shader vertShader = new Shader(GL20.GL_VERTEX_SHADER, vert, false);
@@ -68,13 +68,15 @@ public class ShaderProgram
 			free(); // important!
 			throw new RuntimeException(message);
 		}
+		GL20.glUseProgram(id); // This HAVE to be a direct call to prevent calling the overloaded version
 	}
 	
-	/** Calls GL20.glUseProgram(this.id) */
+	/** This will bind ShaderProgram */
 	public void bind()
 	{
 		GL20.glUseProgram(id);
 	}
+	/** This will unbind ShaderProgram */
 	public void unbind() {
 		GL20.glUseProgram(0);
 	}
@@ -114,33 +116,39 @@ public class ShaderProgram
 		if (i==-1) throw new RuntimeException("Uniform name not found: "+name);
 		return i;
 	}
-	
+
+	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, boolean value)
 	{
 		// This use -1 for false as that equals all one set
 		GL20.glUniform1i(location, value ? 1 : 0);
 	}
-	
+
+	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, int value)
 	{
 		GL20.glUniform1i(location, value);
 	}
-	
+
+	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, float value)
 	{
 		GL20.glUniform1f(location, value);
 	}
-	
+
+	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, Vec3f value)
 	{
 		GL20.glUniform3f(location, value.x, value.y, value.z);
 	}
-	
+
+	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, Vec3d value)
 	{
 		GL20.glUniform3f(location, (float) value.x, (float) value.y, (float) value.z);
 	}
-	
+
+	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, Mat4f value)
 	{
 		try (MemoryStack stack = MemoryStack.stackPush())
@@ -151,7 +159,8 @@ public class ShaderProgram
 		}
 	}
 	
-	/** Converts the color's RGBA values into values between 0 and 1. */
+	/** Converts the color's RGBA values into values between 0 and 1.
+	  * Requires ShaderProgram binded. */
 	public void setUniform(int location, Color value)
 	{
 		GL20.glUniform4f(location, value.getRed() / 256.0f, value.getGreen() / 256.0f, value.getBlue() / 256.0f, value.getAlpha() / 256.0f);

@@ -3,12 +3,8 @@ package com.seibel.lod.core.render.objects;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
-
 public class LightmapTexture {
-	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	public final int id;
+	public int id;
 	
 	public LightmapTexture() {
 		id = GL30.glGenTextures();
@@ -29,6 +25,9 @@ public class LightmapTexture {
 	// private int[] testArray;
 	
 	public void fillData(int lightMapWidth, int lightMapHeight, int[] pixels) {
+		GL20.glDeleteTextures(id);
+		id = GL30.glGenTextures();
+		GL20.glBindTexture(GL20.GL_TEXTURE_2D, id);
 		if (pixels.length != lightMapWidth*lightMapHeight)
 			throw new RuntimeException("Lightmap Width*Height not equal to pixels provided!");
 		

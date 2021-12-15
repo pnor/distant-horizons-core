@@ -19,34 +19,40 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 
 	int numberOfBindingPoints = 0;
 	int strideSize = 0;
-	
+
+	// This will bind VertexAttribute
 	public VertexAttributePostGL43() {
-		super();
+		super(); // also bind VertexAttribute
 	}
 	
 	@Override
+	// Requires VertexAttribute binded, VertexBuffer binded
 	public void bindBufferToAllBindingPoint(int buffer) {
 		for (int i=0; i<numberOfBindingPoints; i++)
 			GL43.glBindVertexBuffer(i, buffer, 0, strideSize);
 	}
 
 	@Override
+	// Requires VertexAttribute binded, VertexBuffer binded
 	public void bindBufferToBindingPoint(int buffer, int bindingPoint) {
 		GL43.glBindVertexBuffer(bindingPoint, buffer, 0, strideSize);
 	}
 
 	@Override
-	public void unbindBufferFromAllBindingPoint() {
+	// Requires VertexAttribute binded
+	public void unbindBuffersFromAllBindingPoint() {
 		for (int i=0; i<numberOfBindingPoints; i++)
 			GL43.glBindVertexBuffer(i, 0, 0, 0);
 	}
 
 	@Override
-	public void unbindBufferFromBindingPoint(int bindingPoint) {
+	// Requires VertexAttribute binded
+	public void unbindBuffersFromBindingPoint(int bindingPoint) {
 		GL43.glBindVertexBuffer(bindingPoint, 0, 0, 0);
 	}
 
 	@Override
+	// Requires VertexAttribute binded
 	public void setVertexAttribute(int bindingPoint, int attributeIndex, VertexPointer attribute) {
 		GL43.glVertexAttribFormat(attributeIndex, attribute.elementCount, attribute.glType, 
 				attribute.normalized, strideSize); // Here strideSize is new attrib offset
@@ -57,6 +63,7 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 	}
 
 	@Override
+	// Requires VertexAttribute binded
 	public void completeAndCheck(int expectedStrideSize) {
 		if (strideSize != expectedStrideSize) {
 			ClientApi.LOGGER.error("Vertex Attribute calculated stride size " + strideSize +

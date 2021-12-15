@@ -61,11 +61,10 @@ public class LodRenderProgram extends ShaderProgram {
 	public final int nearFogEndUniform;
 	public final int farFogStartUniform;
 	public final int farFogEndUniform;
-	
+
+	// This will bind  VertexAttribute
 	public LodRenderProgram() {
 		super(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH, "fragColor");
-		
-		super.bind();
 		
         posAttrib = getAttributeLocation("vPosition");
         colAttrib = getAttributeLocation("color");
@@ -92,18 +91,16 @@ public class LodRenderProgram extends ShaderProgram {
 		
 		// TODO: Add better use of the LODFormat thing
 		int vertexByteCount = LodUtil.LOD_VERTEX_FORMAT.getByteSize();
-		if (GLProxy.getInstance().openGL43VertexAttributeSupported)
-			vao = new VertexAttributePostGL43();
+		if (GLProxy.getInstance().VertexAttributeBufferBindingSupported)
+			vao = new VertexAttributePostGL43(); // also binds VertexAttribute
 		else
-			vao = new VertexAttributePreGL43();
-		vao.bind();
+			vao = new VertexAttributePreGL43(); // also binds VertexAttribute
+		//vao.bind();
 		vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false));
 		vao.setVertexAttribute(0, colAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true));
 		vao.setVertexAttribute(0, blockSkyLightAttrib, VertexAttribute.VertexPointer.addUnsignedBytePointer(false));
 		vao.setVertexAttribute(0, blockLightAttrib, VertexAttribute.VertexPointer.addUnsignedBytePointer(false));
 		vao.completeAndCheck(vertexByteCount);
-		//vao.unbind();
-		//super.unbind();
 	}
 	
 	// Override ShaderProgram.bind()
@@ -128,7 +125,7 @@ public class LodRenderProgram extends ShaderProgram {
 	}
 	
 	public void unbindVertexBuffer() {
-		vao.unbindBufferFromAllBindingPoint();
+		vao.unbindBuffersFromAllBindingPoint();
 	}
 	
 	public void fillUniformData(Mat4f modelViewMatrix, Mat4f projectionMatrix, Vec3f cameraPos, Color fogColor, int skyLight, int lightmapBindPoint) {

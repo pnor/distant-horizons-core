@@ -23,8 +23,6 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import com.seibel.lod.core.api.ClientApi;
-
 public abstract class VertexAttribute {
 	
 	public static final class VertexPointer {
@@ -74,13 +72,18 @@ public abstract class VertexAttribute {
 	/** Stores the handle of the VertexAttribute. */
 	public final int id;
 	
+	// This will bind VertexAttribute
 	protected VertexAttribute() {
 		id = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(id);
 	}
-	
+
+	// This will bind VertexAttribute
 	public void bind() {
 		GL30.glBindVertexArray(id);
 	}
+	
+	// This will unbind VertexAttribute
 	public void unbind() {
 		GL30.glBindVertexArray(0);
 	}
@@ -90,16 +93,16 @@ public abstract class VertexAttribute {
 		GL30.glDeleteVertexArrays(id);
 	}
 	
-	// Requires Vao binded
+	// Requires VertexAttribute binded, VertexBuffer binded
 	public abstract void bindBufferToAllBindingPoint(int buffer);
-	// Requires Vao binded
+	// Requires VertexAttribute binded, VertexBuffer binded
 	public abstract void bindBufferToBindingPoint(int buffer, int bindingPoint);
-	// Requires Vao binded
-	public abstract void unbindBufferFromAllBindingPoint();
-	// Requires Vao binded
-	public abstract void unbindBufferFromBindingPoint(int bindingPoint);
-	// Requires Vao binded
+	// Requires VertexAttribute binded
+	public abstract void unbindBuffersFromAllBindingPoint();
+	// Requires VertexAttribute binded
+	public abstract void unbindBuffersFromBindingPoint(int bindingPoint);
+	// Requires VertexAttribute binded
 	public abstract void setVertexAttribute(int bindingPoint, int attributeIndex, VertexPointer attribute);
-	// Requires Vao binded
+	// Requires VertexAttribute binded
 	public abstract void completeAndCheck(int expectedStrideSize);
 }

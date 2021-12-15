@@ -160,8 +160,8 @@ public class EventApi
 			
 			// prevent issues related to the buffer builder
 			// breaking or retaining previous data when changing worlds.
-			ClientApi.renderer.markForCleanup();
 			ClientApi.renderer.destroyBuffers();
+			ClientApi.renderer.requestCleanup();
 			recalculateWidths = true;
 			// TODO: Check if after the refactoring, is this still needed
 			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);

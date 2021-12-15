@@ -22,17 +22,17 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	
 	TreeMap<Integer, TreeSet<Integer>> bindingPointsToIndexBuilder;
 	ArrayList<VertexPointer> pointersBuilder;
-	
+
+	// This will bind VertexAttribute
 	public VertexAttributePreGL43() {
-		super();
+		super(); // also bind VertexAttribute
 		bindingPointsToIndexBuilder = new TreeMap<Integer, TreeSet<Integer>>();
 		pointersBuilder = new ArrayList<VertexPointer>();
 	}
 	
 	@Override
+	// Requires VertexAttribute binded, VertexBuffer binded
 	public void bindBufferToAllBindingPoint(int buffer) {
-		GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, buffer);
-		
 		for (int i=0; i<pointers.length; i++)
 			GL20.glEnableVertexAttribArray(i);
 		
@@ -45,10 +45,8 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	}
 
 	@Override
+	// Requires VertexAttribute binded, VertexBuffer binded
 	public void bindBufferToBindingPoint(int buffer, int bindingPoint) {
-
-		GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, buffer);
-		
 		int[] toBind = bindingPointsToIndex[bindingPoint];
 		
 		for (int i=0; i<toBind.length; i++)
@@ -63,13 +61,15 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 
 	}
 	@Override
-	public void unbindBufferFromAllBindingPoint() {
+	// Requires VertexAttribute binded
+	public void unbindBuffersFromAllBindingPoint() {
 		for (int i=0; i<pointers.length; i++)
 			GL20.glDisableVertexAttribArray(i);
 	}
 
 	@Override
-	public void unbindBufferFromBindingPoint(int bindingPoint) {
+	// Requires VertexAttribute binded
+	public void unbindBuffersFromBindingPoint(int bindingPoint) {
 		int[] toBind = bindingPointsToIndex[bindingPoint];
 		
 		for (int i=0; i<toBind.length; i++)
@@ -77,6 +77,7 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	}
 
 	@Override
+	// Requires VertexAttribute binded
 	public void setVertexAttribute(int bindingPoint, int attributeIndex, VertexPointer attribute) {
 		TreeSet<Integer> intArray = bindingPointsToIndexBuilder.get(bindingPoint);
 		if (intArray == null) {
@@ -94,6 +95,7 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	}
 
 	@Override
+	// Requires VertexAttribute binded
 	public void completeAndCheck(int expectedStrideSize) {
 		int maxBindPointNumber = bindingPointsToIndexBuilder.lastKey();
 		bindingPointsToIndex = new int[maxBindPointNumber+1][];
@@ -105,7 +107,6 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 				bindingPointsToIndex[i][j] = iter.next();
 			}
 		});
-		
 		
 		pointers = pointersBuilder.toArray(new VertexPointer[pointersBuilder.size()]);
 		pointersOffset = new int[pointers.length];
@@ -131,11 +132,12 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 		
 		// Debug logging
 		ClientApi.LOGGER.info("Vertex Attribute Debug Data:");
+		ClientApi.LOGGER.info("AttributeIndex: ElementCount, glType, normalized, strideSize, offset");
 		
 		for (int i=0; i< pointers.length; i++) {
 			VertexPointer pointer = pointers[i];
 			if (pointer==null) {
-				ClientApi.LOGGER.info(i + ": Null");
+				ClientApi.LOGGER.warn(i + ": Null!!!!");
 				continue;
 				}
 			ClientApi.LOGGER.info(i + ": "+pointer.elementCount+", "+

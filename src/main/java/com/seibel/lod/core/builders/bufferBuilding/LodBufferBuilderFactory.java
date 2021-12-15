@@ -316,6 +316,8 @@ public class LodBufferBuilderFactory
 							
 							// keep a local version, so we don't have to worry about indexOutOfBounds Exceptions
 							// if it changes in the LodRenderer while we are working here
+							// FIXME: THIS IS NOT HOW IT WORKS! We also can't just loop and copy it. Think of an
+							// idea to fix this!
 							boolean[][] vanillaRenderedChunks = renderer.vanillaRenderedChunks;
 							short gameChunkRenderDistance = (short) (vanillaRenderedChunks.length / 2 - 1);
 							
@@ -331,6 +333,7 @@ public class LodBufferBuilderFactory
 								int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkX;
 								int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkZ;
 								
+								// FIXME: We don't need to ignore rendered chunks! Just build it and leave it for the renderer to decide!
 								//We don't want to render this fake block if
 								//The block is inside the render distance with, is not bigger than a chunk and is positioned in a chunk set as vanilla rendered
 								//
@@ -796,14 +799,7 @@ public class LodBufferBuilderFactory
 			glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
 			
 			// determine the upload method
-			GpuUploadMethod uploadMethod = CONFIG.client().advanced().buffers().getGpuUploadMethod();
-			if (!glProxy.bufferStorageSupported && uploadMethod == GpuUploadMethod.BUFFER_STORAGE)
-			{
-				// if buffer storage isn't supported
-				// default to SUB_DATA
-				CONFIG.client().advanced().buffers().setGpuUploadMethod(GpuUploadMethod.SUB_DATA);
-				uploadMethod = GpuUploadMethod.SUB_DATA;
-			}
+			GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod(); 
 			
 			// determine the upload timeout
 			int uploadTimeoutInMS = CONFIG.client().advanced().buffers().getGpuUploadTimeoutInMilliseconds();

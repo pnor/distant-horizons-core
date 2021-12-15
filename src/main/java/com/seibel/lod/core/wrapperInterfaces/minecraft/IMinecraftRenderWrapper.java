@@ -125,4 +125,10 @@ public interface IMinecraftRenderWrapper
 	int getLightmapTextureWidth();
 	/** @returns -1 if there was an issue getting the lightmap */
 	public int getLightmapGLFormat();
+	
+	/** Try and disable vanilla fog. Return true if successful, or false if not able to.
+	  *  If we are still using legacy fog, this method will not be called. */
+	public default boolean tryDisableVanillaFog() {
+		return false;
+	}
 }

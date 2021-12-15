@@ -58,10 +58,10 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 public class GLProxy
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	private static final ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
-	
+
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	private static GLProxy instance = null;
 	
@@ -80,13 +80,20 @@ public class GLProxy
 	/** the proxyWorker's GL capabilities */
 	public final GLCapabilities proxyWorkerGlCapabilities;
 	
-	/** Requires OpenGL 4.5, and offers the best buffer uploading */
+	/** Requires OpenGL 4.4, and offers the best buffer uploading */
 	public final boolean bufferStorageSupported;
 	
-	public final boolean openGL43VertexAttributeSupported;
+	/** Requires OpenGL 4.5 */
+	public final boolean namedObjectSupported;
+
+	/** Requires OpenGL 4.3 */
+	public final boolean VertexAttributeBufferBindingSupported;
 	
-	/** Requires OpenGL 3.0 */
-	public final boolean mapBufferRangeSupported;
+	/** Requires OpenGL 3.0, which will current min requirement as 3.3, should always be true */
+	@Deprecated
+	public final boolean mapBufferRangeSupported = true;
+	
+	private final GpuUploadMethod preferredUploadMethod;
 	
 	
 	
@@ -113,7 +120,15 @@ public class GLProxy
 		// get Minecraft's context
 		minecraftGlContext = GLFW.glfwGetCurrentContext();
 		minecraftGlCapabilities = GL.getCapabilities();
-		
+
+		// crash the game if the GPU doesn't support OpenGL 3.3
+		if (!minecraftGlCapabilities.OpenGL33)
+		{
+			// Note: as of MC 1.17 this shouldn't happen since MC
+			// requires OpenGL 3.3, but for older MC version this will warn the player.
+			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GLProxy.class.getSimpleName() + " and discovered this GPU doesn't support OpenGL 3.3 or greater.";
+			MC.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 3.3 or greater."));
+		}
 		
 		// context creation setup
 		GLFW.glfwDefaultWindowHints();
@@ -123,7 +138,6 @@ public class GLProxy
 		// but this can be explicitly set for testing
 //		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
 //		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
-		
 		
 		// create the LodBuilder context
 		lodBuilderGlContext = GLFW.glfwCreateWindow(64, 48, "LOD Builder Window", 0L, minecraftGlContext);
@@ -135,7 +149,12 @@ public class GLProxy
 		proxyWorkerGlContext = GLFW.glfwCreateWindow(64, 48, "LOD proxy worker Window", 0L, minecraftGlContext);
 		GLFW.glfwMakeContextCurrent(proxyWorkerGlContext);
 		proxyWorkerGlCapabilities = GL.createCapabilities();
-		
+
+		// Check if we can use the make-over version of Vertex Attribute, which is available in GL4.3 or after
+		VertexAttributeBufferBindingSupported = minecraftGlCapabilities.glBindVertexBuffer != 0L; // Nullptr
+
+		// Check if we can use the named version of all calls, which is available in GL4.5 or after
+		namedObjectSupported = minecraftGlCapabilities.glNamedBufferData != 0L; //Nullptr
 		
 		//==================================//
 		// get any GPU related capabilities //
@@ -145,66 +164,31 @@ public class GLProxy
 		
 		ClientApi.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
 		
-		// crash the game if the GPU doesn't support OpenGL 2.0
-		if (!minecraftGlCapabilities.OpenGL20)
-		{
-			// Note: as of MC 1.17 this shouldn't happen since MC
-			// requires OpenGL 3.3, but just in case.
-			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GLProxy.class.getSimpleName() + " and discoverd this GPU doesn't support OpenGL 2.0 or greater.";
-			MC.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 2.0 or greater."));
-		}
-		
-		// Check if we can use the make-over version of Vertex Attribute, which is available in GL4.3 or after
-		openGL43VertexAttributeSupported = minecraftGlCapabilities.OpenGL43;
 		
 		// get specific capabilities
-		bufferStorageSupported = lodBuilderGlCapabilities.glBufferStorage != 0;
-		mapBufferRangeSupported = lodBuilderGlCapabilities.glMapBufferRange != 0;
+		// Check if we can use the Buffer Storage, which is available in GL4.4 or after
+		bufferStorageSupported = lodBuilderGlCapabilities.glBufferStorage != 0L; // Nullptr
 		
 		// display the capabilities
 		if (!bufferStorageSupported)
 		{
-			String fallBackVersion = mapBufferRangeSupported ? "3.0" : "1.5";  
-			ClientApi.LOGGER.warn("This GPU doesn't support Buffer Storage (OpenGL 4.5), falling back to OpenGL " + fallBackVersion + ". This may cause stuttering and reduced performance.");			
+			ClientApi.LOGGER.warn("This GPU doesn't support Buffer Storage (OpenGL 4.4), falling back to using other methods.");			
 		}
 		
-		
-		// if using AUTO gpuUpload
-		// determine a good default for the GPU
-		if (CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.AUTO)
+		String vendor = GL15.glGetString(GL15.GL_VENDOR).toUpperCase(); // example return: "NVIDIA CORPORATION"
+		if (vendor.contains("NVIDIA") || vendor.contains("GEFORCE"))
 		{
-			GpuUploadMethod uploadMethod;
-			String vendor = GL15.glGetString(GL15.GL_VENDOR).toUpperCase(); // example return: "NVIDIA CORPORATION"
-			if (vendor.contains("NVIDIA") || vendor.contains("GEFORCE"))
-			{
-				// NVIDIA card
-				
-				if (bufferStorageSupported)
-				{
-					uploadMethod = GpuUploadMethod.BUFFER_STORAGE;
-				}
-				else
-				{
-					uploadMethod = GpuUploadMethod.SUB_DATA;
-				}
-			}
-			else
-			{
-				// AMD or Intel card
-				
-				if (mapBufferRangeSupported)
-				{
-					uploadMethod = GpuUploadMethod.BUFFER_MAPPING;
-				}
-				else
-				{
-					uploadMethod = GpuUploadMethod.DATA;
-				}
-			}
-			
-			CONFIG.client().advanced().buffers().setGpuUploadMethod(uploadMethod);
-			ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Upload method set to [" + uploadMethod + "].");
+			// NVIDIA card
+			preferredUploadMethod = bufferStorageSupported ? GpuUploadMethod.BUFFER_STORAGE : GpuUploadMethod.SUB_DATA;
 		}
+		else
+		{
+			// AMD or Intel card
+			preferredUploadMethod = GpuUploadMethod.BUFFER_MAPPING;
+		}
+		
+		ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
+		
 		//==========//
 		// clean up //
 		//==========//
@@ -296,6 +280,19 @@ public class GLProxy
 		return instance;
 	}
 	
+	public GpuUploadMethod getGpuUploadMethod() {
+		GpuUploadMethod method = CONFIG.client().advanced().buffers().getGpuUploadMethod();
+
+		if (!bufferStorageSupported && method == GpuUploadMethod.BUFFER_STORAGE)
+		{
+			// if buffer storage isn't supported
+			// default to SUB_DATA
+			method = GpuUploadMethod.SUB_DATA;
+		}
+		
+		return method == GpuUploadMethod.AUTO ? preferredUploadMethod : method;
+	}
+	
 	/** 
 	 * Asynchronously calls the given runnable on proxy's OpenGL context.
 	 * Useful for creating/destroying OpenGL objects in a thread
@@ -335,7 +332,7 @@ public class GLProxy
 	 * This only works with Legacy OpenGL because James hasn't
 	 * looking into a way for it to work with Modern OpenGL.
 	 */
-	public void disableLegacyFog()
+	public boolean disableLegacyFog()
 	{
 		// make sure this is a legacy OpenGL context 
 		if (minecraftGlCapabilities.glFogf != 0)
@@ -348,7 +345,9 @@ public class GLProxy
 			GL11.glFogf(GL11.GL_FOG_START, 0.0f);
 			GL11.glFogf(GL11.GL_FOG_END, Float.MAX_VALUE);
 			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.0f);
+			return true;
 		}
+		return false;
 	}
 	
 	

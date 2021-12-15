@@ -22,9 +22,7 @@ package com.seibel.lod.core.render;
 import java.awt.Color;
 import java.util.HashSet;
 
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL33;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
@@ -34,7 +32,6 @@ import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -74,7 +71,6 @@ public class LodRenderer
 	
 	// This tells us if the renderer is enabled or not. If in a world, it should be enabled.
 	private boolean isSetupComplete = false;
-	private volatile boolean markToCleanup = false;
 	
 	/** This is used to generate the buildable buffers */
 	private final LodBufferBuilderFactory lodBufferBuilderFactory;
@@ -90,7 +86,6 @@ public class LodRenderer
 	
 	// The shader program
 	LodRenderProgram shaderProgram = null;
-	LightmapTexture lightmapTexture = null;
 	
 	private int vbosCenterX = 0;
 	private int vbosCenterZ = 0;
@@ -114,6 +109,7 @@ public class LodRenderer
 	 */
 	private volatile boolean partialRegen = false;
 	private volatile boolean fullRegen = true;
+	private volatile boolean markToCleanup = false;
 	
 	/**
 	 * This HashSet contains every chunk that Vanilla Minecraft
@@ -122,19 +118,15 @@ public class LodRenderer
 	public boolean[][] vanillaRenderedChunks;
 	public boolean vanillaRenderedChunksChanged;
 	public boolean vanillaRenderedChunksEmptySkip = false;
+	
+	private boolean canVanillaFogBeDisabled = true;
 
+	public void requestCleanup() {markToCleanup = true;}
 	
 	public LodRenderer(LodBufferBuilderFactory newLodNodeBufferBuilder)
 	{
 		lodBufferBuilderFactory = newLodNodeBufferBuilder;
 	}
-	
-	public void markForCleanup() {
-		markToCleanup = true;
-	}
-	
-	
-	private LodDimension lastLodDimension = null;
 	
 	/**
 	 * Besides drawing the LODs this method also starts
@@ -167,10 +159,14 @@ public class LodRenderer
 			return;
 		}
 
+		// get MC's shader program
+		int currentProgram = GL33.glGetInteger(GL33.GL_CURRENT_PROGRAM);
+		
 		GLProxy glProxy = GLProxy.getInstance();
-		if (CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
-			glProxy.disableLegacyFog();
-
+		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
+			if (!glProxy.disableLegacyFog())
+				if (!MC_RENDER.tryDisableVanillaFog())
+					canVanillaFogBeDisabled = false;
 		
 		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// starting here...
@@ -214,11 +210,9 @@ public class LodRenderer
 
 		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
 		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
-		if (markToCleanup || (lastLodDimension != null && lodDim != lastLodDimension)) {
+		if (markToCleanup) {
 			markToCleanup = false;
 			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
-			lastLodDimension = lodDim;
-			//fullRegen = true;
 		}
 		
 		//===================//
@@ -227,28 +221,32 @@ public class LodRenderer
 		
 		profiler.push("LOD draw setup");
 
-		int currentProgram = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-		
-		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
-		if (!isSetupComplete) setup();
-		
-		
+		/*---------Set GL State--------*/
 		// set the required open GL settings
-		
 		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME)
-			GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_LINE);
+			GL33.glPolygonMode(GL33.GL_FRONT_AND_BACK, GL33.GL_LINE);
 		else
-			GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_FILL);
-		
-		GL15.glEnable(GL15.GL_CULL_FACE);
-		GL15.glEnable(GL15.GL_DEPTH_TEST);
+			GL33.glPolygonMode(GL33.GL_FRONT_AND_BACK, GL33.GL_FILL);
+
+		GL33.glEnable(GL33.GL_CULL_FACE);
+		GL33.glEnable(GL33.GL_DEPTH_TEST);
 		
 		// enable transparent rendering
-		GL15.glBlendFunc(GL15.GL_SRC_ALPHA, GL15.GL_ONE_MINUS_SRC_ALPHA);
-		GL15.glEnable(GL15.GL_BLEND);
+		GL33.glBlendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA);
+		GL33.glEnable(GL33.GL_BLEND);
 		
-		// get MC's shader program
+		/*---------Bind required objects--------*/
+		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
+		// also binds LightmapTexture, VAO, and ShaderProgram
+		if (!isSetupComplete) {
+			setup();
+		} else {
+			shaderProgram.bind();
+		}
+		GL33.glActiveTexture(GL33.GL_TEXTURE0);
+		LightmapTexture lightmapTexture = new LightmapTexture();
 		
+		/*---------Get required data--------*/
 		// Get the matrixs for rendering
 		Mat4f modelViewMatrix = translateModelViewMatrix(mcModelViewMatrix, partialTicks);
 		int vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
@@ -258,28 +256,17 @@ public class LodRenderer
 			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
-		
 		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
 		LodFogConfig fogSettings = new LodFogConfig(CONFIG, REFLECTION_HANDLER, farPlaneBlockDistance, vanillaBlockRenderedDistance);
 
-		//==============//
-		// shader setup //
-		//==============//
-		
-		// Bind and update the lightmap data
-		GL20.glActiveTexture(GL20.GL_TEXTURE0);
-		
-		shaderProgram.bind();
-		// Fill the uniform data. Note: GL_TEXTURE_2D == texture bindpoint 0
+		/*---------Fill uniform data--------*/
+		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
 		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(),
 				getFogColor(), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
-
-		lightmapTexture = new LightmapTexture();
-		lightmapTexture.bind();
-		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
-
 		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
 		shaderProgram.fillUniformDataForFog(fogSettings);
+		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
+		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
 
 		//===========//
 		// rendering //
@@ -288,7 +275,7 @@ public class LodRenderer
 		profiler.popPush("LOD draw");
 		
 		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
-		boolean renderBufferStorage = CONFIG.client().advanced().buffers().getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE && glProxy.bufferStorageSupported;
+		boolean usingBufferStorage = glProxy.getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE;
 		
 		// where the center of the buffers is (needed when culling regions)
 		// render each of the buffers
@@ -308,16 +295,12 @@ public class LodRenderer
 					int bufferId = 0;
 					for (int i = 0; i < vbos[x][z].length; i++)
 					{
-						bufferId = (storageBufferIds != null && renderBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
+						bufferId = (storageBufferIds != null && usingBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
 						if (bufferId==0) continue;
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferId);
-						shaderProgram.bind();
+						GL33.glBindBuffer(GL33.GL_ARRAY_BUFFER, bufferId);
 						shaderProgram.bindVertexBuffer(bufferId);
-						GL30.glDrawArrays(GL30.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
-						//shaderProgram.unbindVertexBuffer();
-						
+						GL33.glDrawArrays(GL33.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
 					}
-					
 				}
 			}
 		}
@@ -325,24 +308,23 @@ public class LodRenderer
 		//================//
 		// render cleanup //
 		//================//
-		
-		// if this cleanup isn't done MC will crash
-		// when trying to render its own terrain
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-
-		lightmapTexture.unbind();
-		shaderProgram.unbind();
-		lightmapTexture.free();
 
 		profiler.popPush("LOD cleanup");
 		
-		GL15.glPolygonMode(GL15.GL_FRONT_AND_BACK, GL15.GL_FILL);
-		GL15.glDisable(GL15.GL_BLEND); // TODO: what should this be reset to?
+		// if this cleanup isn't done MC will crash
+		// when trying to render its own terrain
+		GL33.glBindBuffer(GL33.GL_ARRAY_BUFFER, 0);
+
+		shaderProgram.unbind();
+		lightmapTexture.free();
+
+		GL33.glPolygonMode(GL33.GL_FRONT_AND_BACK, GL33.GL_FILL);
+		GL33.glDisable(GL33.GL_BLEND); // TODO: what should this be reset to?
 		
-		GL20.glUseProgram(currentProgram);
+		GL33.glUseProgram(currentProgram);
 		
 		// clear the depth buffer so everything is drawn over the LODs
-		GL15.glClear(GL15.GL_DEPTH_BUFFER_BIT);
+		GL33.glClear(GL33.GL_DEPTH_BUFFER_BIT);
 		
 		// end of internal LOD profiling
 		profiler.pop();
@@ -365,7 +347,6 @@ public class LodRenderer
 		
 		isSetupComplete = true;
 		shaderProgram = new LodRenderProgram();
-		//lightmapTexture = new LightmapTexture();
 	}
 	
 	/** Create all buffers that will be used. */
@@ -461,11 +442,7 @@ public class LodRenderer
 		}
 		isSetupComplete = false;
 		ClientApi.LOGGER.info("Renderer Cleanup Started");
-		//GLProxy.getInstance().setGlContext(GLProxyContext.LOD_BUILDER);
-		
 		shaderProgram.free();
-		//lightmapTexture.free();
-		//GLProxy.getInstance().setGlContext(GLProxyContext.NONE);
 		ClientApi.LOGGER.info("Renderer Cleanup Complete");
 	}
 
@@ -554,45 +531,9 @@ public class LodRenderer
 			prevPlayerPosTime = newTime;
 		}
 		
-		
-		/*
-		// determine how far the lighting has to 
-		// change in order to rebuild the buffers
-		
-		// the max brightness is 1 and the minimum is 0.2
-		float skyBrightness = lodDim.dimension.hasSkyLight() ? MC.getSkyDarken(partialTicks) : 0.2f;
-		float minLightingDifference;
-		switch (CONFIG.client().advanced().buffers().getRebuildTimes())
-		{
-		case FREQUENT:
-			minLightingDifference = 0.025f;
-			break;
-		case NORMAL:
-			minLightingDifference = 0.05f;
-			break;
-		default:
-		case RARE:
-			minLightingDifference = 0.1f;
-			break;
-		}
-		
-		// check if the lighting changed
-		if (Math.abs(skyBrightness - prevSkyBrightness) > minLightingDifference
-					// make sure the lighting gets to the max/minimum value
-					// (just in case the minLightingDifference is too large to notice the change)
-					|| (skyBrightness == 1.0f && prevSkyBrightness != 1.0f) // noon
-					|| (skyBrightness == 0.2f && prevSkyBrightness != 0.2f) // midnight
-					|| MC_RENDER.getGamma() != prevBrightness)
-		{
-			fullRegen = true;
-			prevBrightness = MC_RENDER.getGamma();
-			prevSkyBrightness = skyBrightness;
-		}*/
-		
 		//================//
 		// partial regens //
 		//================//
-		
 		
 		// check if the vanilla rendered chunks changed
 		if (newTime - prevVanillaChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().renderedChunkTimeout)
@@ -605,7 +546,6 @@ public class LodRenderer
 			prevVanillaChunkTime = newTime;
 		}
 		
-		
 		// check if there is any newly generated terrain to show
 		if (newTime - prevChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().chunkChangeTimeout)
 		{
@@ -616,8 +556,6 @@ public class LodRenderer
 			}
 			prevChunkTime = newTime;
 		}
-		
-		
 		
 		//==============//
 		// LOD skipping //
@@ -660,5 +598,5 @@ public class LodRenderer
 		
 		vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 	}
-	
+
 }
