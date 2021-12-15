@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.seibel.lod.core.dataFormat.VerticalDataFormat;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.objects.VertexOptimizer;
 
@@ -41,13 +42,189 @@ public class ThreadMapUtil
 	public static final ConcurrentMap<String, long[]> threadSingleUpdateMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[][]> threadBuilderArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[][]> threadBuilderVerticalArrayMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, long[]> threadVerticalAddDataMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, byte[][]> saveContainer = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, short[]> projectionArrayMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, short[]> heightAndDepthMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, long[]> singleDataToMergeMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[][]> verticalUpdate = new ConcurrentHashMap<>();
 	
+	//___________________//
+	// used in the Merge //
+	//___________________//
+	public static final ConcurrentMap<String, short[]> heightAndDepthMap = new ConcurrentHashMap<>();
+	
+	/** returns the array NOT cleared every time */
+	public static short[] getHeightAndDepth(int arrayLength)
+	{
+		if (!heightAndDepthMap.containsKey(Thread.currentThread().getName()) || (heightAndDepthMap.get(Thread.currentThread().getName()) == null))
+		{
+			heightAndDepthMap.put(Thread.currentThread().getName(), new short[arrayLength]);
+		}
+		return heightAndDepthMap.get(Thread.currentThread().getName());
+	}
+	//_________________________//
+	// used in the lodBuilder  //
+	//_________________________//
+	
+	public static final ConcurrentMap<String, short[][]> positionDataBuildingArrayMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> verticalDataBuildingArrayMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> colorDataBuildingArrayMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, byte[][]> lightDataBuildingArrayMap = new ConcurrentHashMap<>();
+	
+	
+	public static short[] getPositionDataBuilding(int detail)
+	{
+		if (!positionDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (positionDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			int count = LodUtil.DETAIL_OPTIONS - 1;
+			short[][] tempArray = new short[count][];
+			for(int tempDetail = 0; tempDetail < count; tempDetail++)
+			{
+				tempArray[tempDetail] = new short[(1 << tempDetail)];
+			}
+			positionDataBuildingArrayMap.put(Thread.currentThread().getName(), tempArray);
+		}
+		
+		short[] tempArray = positionDataBuildingArrayMap.get(Thread.currentThread().getName())[detail];
+		Arrays.fill(tempArray, (short) 0);
+		return tempArray;
+	}
+	
+	public static int[] getVerticalDataBuilding(byte detail)
+	{
+		if (!verticalDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (verticalDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			int verticalSize = VerticalDataFormat.WORLD_HEIGHT / 2 + 1;
+			int count = LodUtil.DETAIL_OPTIONS - 1;
+			int[][] tempArray = new int[count][];
+			for(int tempDetail = 0; tempDetail < count; tempDetail++)
+			{
+				tempArray[tempDetail] = new int[(1 << tempDetail) * verticalSize];
+			}
+			verticalDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
+		}
+		
+		int[] tempArray = verticalDataUpdateArrayMap.get(Thread.currentThread().getName())[detail];
+		Arrays.fill(tempArray, 0);
+		return tempArray;
+	}
+	
+	public static int[] getColorDataBuilding(byte detail)
+	{
+		if (!colorDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (colorDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			int verticalSize = VerticalDataFormat.WORLD_HEIGHT / 2 + 1;
+			int count = LodUtil.DETAIL_OPTIONS - 1;
+			int[][] tempArray = new int[count][];
+			for(int tempDetail = 0; tempDetail < count; tempDetail++)
+			{
+				tempArray[tempDetail] = new int[(1 << tempDetail) * verticalSize];
+			}
+			colorDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
+		}
+		
+		int[] tempArray = colorDataUpdateArrayMap.get(Thread.currentThread().getName())[detail];
+		Arrays.fill(tempArray, 0);
+		return tempArray;
+	}
+	
+	public static byte[] getLightDataBuilding(byte detail)
+	{
+		if (!lightDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (lightDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			int verticalSize = VerticalDataFormat.WORLD_HEIGHT / 2 + 1;
+			int count = LodUtil.DETAIL_OPTIONS - 1;
+			byte[][] tempArray = new byte[count][];
+			for(int tempDetail = 0; tempDetail < count; tempDetail++)
+			{
+				tempArray[tempDetail] = new byte[(1 << tempDetail) * verticalSize];
+			}
+			lightDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
+		}
+		
+		byte[] tempArray = lightDataUpdateArrayMap.get(Thread.currentThread().getName())[detail];
+		Arrays.fill(tempArray, (byte) 0);
+		return tempArray;
+	}
+	
+	//_____________________//
+	// used in the update  //
+	//_____________________//
+	
+	public static final ConcurrentMap<String, short[]> positionDataUpdateArrayMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> verticalDataUpdateArrayMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, int[][]> colorDataUpdateArrayMap = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<String, byte[][]> lightDataUpdateArrayMap = new ConcurrentHashMap<>();
+	
+	
+	public static short[] getPositionDataArray()
+	{
+		if (!positionDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (positionDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			positionDataUpdateArrayMap.put(Thread.currentThread().getName(), new short[4]);
+		}
+		Arrays.fill(positionDataUpdateArrayMap.get(Thread.currentThread().getName()), (short) 0);
+		return positionDataUpdateArrayMap.get(Thread.currentThread().getName());
+	}
+	
+	public static int[] getVerticalDataArray(byte detail)
+	{
+		if (!verticalDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (verticalDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			int count = LodUtil.DETAIL_OPTIONS - 1;
+			int[][] tempArray = new int[count][];
+			for(int tempDetail = 0; tempDetail < count; tempDetail++)
+			{
+				tempArray[tempDetail] = new int[4 * DetailDistanceUtil.getMaxVerticalData(detail)];
+			}
+			verticalDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
+		}
+		
+		int[] tempArray = verticalDataUpdateArrayMap.get(Thread.currentThread().getName())[detail];
+		Arrays.fill(tempArray, 0);
+		return tempArray;
+	}
+	
+	public static int[] getColorDataArray(byte detail)
+	{
+		if (!colorDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (colorDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			int count = LodUtil.DETAIL_OPTIONS - 1;
+			int[][] tempArray = new int[count][];
+			for(int tempDetail = 0; tempDetail < count; tempDetail++)
+			{
+				tempArray[tempDetail] = new int[4 * DetailDistanceUtil.getMaxVerticalData(detail)];
+			}
+			colorDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
+		}
+		
+		int[] tempArray = colorDataUpdateArrayMap.get(Thread.currentThread().getName())[detail];
+		Arrays.fill(tempArray, 0);
+		return tempArray;
+	}
+	
+	public static byte[] getLightDataArray(byte detail)
+	{
+		if (!lightDataUpdateArrayMap.containsKey(Thread.currentThread().getName())
+					|| (lightDataUpdateArrayMap.get(Thread.currentThread().getName()) == null))
+		{
+			int count = LodUtil.DETAIL_OPTIONS - 1;
+			byte[][] tempArray = new byte[count][];
+			for(int tempDetail = 0; tempDetail < count; tempDetail++)
+			{
+				tempArray[tempDetail] = new byte[4 * DetailDistanceUtil.getMaxVerticalData(detail)];
+			}
+			lightDataUpdateArrayMap.put(Thread.currentThread().getName(), tempArray);
+		}
+		
+		byte[] tempArray = lightDataUpdateArrayMap.get(Thread.currentThread().getName())[detail];
+		Arrays.fill(tempArray, (byte) 0);
+		return tempArray;
+	}
 	
 	//________________________//
 	// used in BufferBuilder  //
@@ -82,16 +259,6 @@ public class ThreadMapUtil
 		return boxMap.get(Thread.currentThread().getName());
 	}
 	
-	//________________________//
-	// used in DataPointUtil  //
-	// mergeVerticalData      //
-	//________________________//
-	
-	
-	//________________________//
-	// used in DataPointUtil  //
-	// mergeSingleData        //
-	//________________________//
 	
 	
 	
@@ -105,7 +272,7 @@ public class ThreadMapUtil
 			for (int i = 0; i < 5; i++)
 			{
 				size = 1 << i;
-				array[i] = new long[size * size * (DataPointUtil.WORLD_HEIGHT / 2 + 1)];
+				array[i] = new long[size * size * (VerticalDataFormat.WORLD_HEIGHT / 2 + 1)];
 			}
 			threadBuilderVerticalArrayMap.put(Thread.currentThread().getName(), array);
 		}
@@ -130,34 +297,6 @@ public class ThreadMapUtil
 		//Arrays.fill(threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel], 0);
 		return saveContainer.get(Thread.currentThread().getName())[detailLevel];
 	}
-	
-	
-	/** returns the array filled with 0's */
-	public static long[] getVerticalDataArray(int arrayLength)
-	{
-		if (!threadVerticalAddDataMap.containsKey(Thread.currentThread().getName()) || (threadVerticalAddDataMap.get(Thread.currentThread().getName()) == null))
-		{
-			threadVerticalAddDataMap.put(Thread.currentThread().getName(), new long[arrayLength]);
-		}
-		else
-		{
-			Arrays.fill(threadVerticalAddDataMap.get(Thread.currentThread().getName()), 0);
-		}
-		return threadVerticalAddDataMap.get(Thread.currentThread().getName());
-	}
-	
-	
-	
-	/** returns the array NOT cleared every time */
-	public static short[] getHeightAndDepth(int arrayLength)
-	{
-		if (!heightAndDepthMap.containsKey(Thread.currentThread().getName()) || (heightAndDepthMap.get(Thread.currentThread().getName()) == null))
-		{
-			heightAndDepthMap.put(Thread.currentThread().getName(), new short[arrayLength]);
-		}
-		return heightAndDepthMap.get(Thread.currentThread().getName());
-	}
-	
 	
 	/** returns the array filled with 0's */
 	public static long[] getVerticalUpdateArray(int detailLevel)
@@ -185,11 +324,8 @@ public class ThreadMapUtil
 		threadSingleUpdateMap.clear();
 		threadBuilderArrayMap.clear();
 		threadBuilderVerticalArrayMap.clear();
-		threadVerticalAddDataMap.clear();
 		saveContainer.clear();
-		projectionArrayMap.clear();
 		heightAndDepthMap.clear();
-		singleDataToMergeMap.clear();
 		verticalUpdate.clear();
 	}
 }

@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.api;
 
+import com.seibel.lod.core.dataFormat.VerticalDataFormat;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
@@ -26,7 +27,6 @@ import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
@@ -104,7 +104,7 @@ public class EventApi
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)
 	{
-		DataPointUtil.WORLD_HEIGHT = world.getHeight();
+		VerticalDataFormat.WORLD_HEIGHT = world.getHeight();
 		//LodNodeGenWorker.restartExecutorService();
 		//ThreadMapUtil.clearMaps();
 		

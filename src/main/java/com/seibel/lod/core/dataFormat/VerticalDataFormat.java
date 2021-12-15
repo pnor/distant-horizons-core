@@ -2,6 +2,9 @@ package com.seibel.lod.core.dataFormat;
 
 public class VerticalDataFormat
 {
+	public static final short VERTICAL_OFFSET = -64;
+	public static int WORLD_HEIGHT = 1024;
+	
 	public final static short MIN_WORLD_HEIGHT = -2048;
 	public final static short MAX_WORLD_HEIGHT = 2047;
 	

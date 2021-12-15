@@ -26,7 +26,6 @@ public interface LevelContainer extends DataContainer
 {
 	
 	void addData(int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize);
-	void addData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize);
 	
 	/**
 	 * This return a level container with detail level lower than the current level.

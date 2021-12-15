@@ -32,7 +32,6 @@ import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.PosToRenderContainer;
-import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
@@ -44,7 +43,6 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
-import javafx.geometry.Pos;
 
 
 
@@ -703,7 +701,7 @@ public class LodDimension
 		
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		if (region == null)
-			return DataPointUtil.EMPTY_DATA;
+			return 0;
 		
 		return region.getColorData(detailLevel, posX, posZ, verticalIndex);
 	}
@@ -716,7 +714,7 @@ public class LodDimension
 		
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		if (region == null)
-			return DataPointUtil.EMPTY_DATA;
+			return 0;
 		
 		return region.getLightData(detailLevel, posX, posZ, verticalIndex);
 	}

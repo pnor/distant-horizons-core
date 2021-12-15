@@ -48,7 +48,6 @@ import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;

@@ -31,14 +31,7 @@ import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.LodWorld;
-import com.seibel.lod.core.util.ColorUtil;
-import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
-import com.seibel.lod.core.util.LodThreadFactory;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
@@ -215,12 +208,12 @@ public class LodBuilder
 		// equivalent to 2^detailLevel
 		int size = 1 << detail.detailLevel;
 		
-		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
+		int verticalData = VerticalDataFormat.WORLD_HEIGHT / 2 + 1;
 		
-		short[] positionDataToMerge = new short[size*size];
-		int[] verticalDataToMerge = new int[size*size*verticalData];
-		int[] colorDataToMerge = new int[size*size*verticalData];
-		byte[] lightDataToMerge = new byte[size*size*verticalData];
+		short[] positionDataToMerge = ThreadMapUtil.getPositionDataBuilding(detail.detailLevel);
+		int[] verticalDataToMerge = ThreadMapUtil.getVerticalDataBuilding(detail.detailLevel);
+		int[] colorDataToMerge = ThreadMapUtil.getColorDataBuilding(detail.detailLevel);
+		byte[] lightDataToMerge = ThreadMapUtil.getLightDataBuilding(detail.detailLevel);
 		
 		int height;
 		int depth;

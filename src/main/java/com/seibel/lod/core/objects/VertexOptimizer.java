@@ -399,7 +399,7 @@ public class VertexOptimizer
 			int[] verticalDataArray = adjVerticalData.get(lodDirection);
 			byte[] lightDataArray = adjLightData.get(lodDirection);
 			
-			if (verticalDataArray == null || DataPointUtil.doesItExist(verticalDataArray[0]))
+			if (verticalDataArray == null || VerticalDataFormat.doesItExist(verticalDataArray[0]))
 			{
 				adjHeight.get(lodDirection)[0] = maxY;
 				adjDepth.get(lodDirection)[0] = minY;

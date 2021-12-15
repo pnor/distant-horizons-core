@@ -19,8 +19,6 @@
 
 package com.seibel.lod.core.builders.bufferBuilding;
 
-import java.util.Map;
-
 import com.seibel.lod.core.dataFormat.ColorFormat;
 import com.seibel.lod.core.dataFormat.LightFormat;
 import com.seibel.lod.core.dataFormat.VerticalDataFormat;
@@ -29,7 +27,6 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
-import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 
 /**

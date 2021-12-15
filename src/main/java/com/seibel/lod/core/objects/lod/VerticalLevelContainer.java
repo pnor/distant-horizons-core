@@ -273,17 +273,10 @@ public class VerticalLevelContainer implements LevelContainer
 	 * This method merge column of multiple data together
 	 * @return one column of correctly parsed data
 	 */
-	public void addData(int posX, int posZ, short[] inputPositionDataToMerge, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
+	public void addData(int posX, int posZ, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{
-		addData(0, inputPositionDataToMerge.length -1 , posX, posZ, inputPositionDataToMerge, inputVerticalData, inputColorData, inputLightData, inputDetailLevel, inputVerticalSize);
-	}
-	
-	/**
-	 * This method merge column of multiple data together
-	 * @return one column of correctly parsed data
-	 */
-	public void addData(int sliceStart, int sliceEnd, int posX, int posZ, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
-	{
+		int sliceStart = 0;
+		int sliceEnd = inputPositionData.length;
 		//STEP 1//
 		//We initially reset this position of the data container
 		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
@@ -495,7 +488,7 @@ public class VerticalLevelContainer implements LevelContainer
 		int j = 0;
 		while (count > verticalSize)
 		{
-			ii = DataPointUtil.WORLD_HEIGHT - DataPointUtil.VERTICAL_OFFSET;
+			ii = VerticalDataFormat.WORLD_HEIGHT - VerticalDataFormat.VERTICAL_OFFSET;
 			for (i = 0; i < count - 1; i++)
 			{
 				if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)
@@ -622,10 +615,11 @@ public class VerticalLevelContainer implements LevelContainer
 	{
 		//We reset the array
 		int lowerVerticalSize = lowerLevelContainer.getVerticalSize();
-		short[] positionDataToMerge = new short[4];
-		int[] verticalDataToMerge = new int[4 * lowerVerticalSize];
-		int[] colorDataToMerge = new int[4 * lowerVerticalSize];
-		byte[] ligthDataToMerge = new byte[4 * lowerVerticalSize];
+		byte lowerDetailLevel = lowerLevelContainer.getDetailLevel();
+		short[] positionDataToMerge = ThreadMapUtil.getPositionDataArray();
+		int[] verticalDataToMerge = ThreadMapUtil.getVerticalDataArray(lowerDetailLevel);
+		int[] colorDataToMerge = ThreadMapUtil.getColorDataArray(lowerDetailLevel);
+		byte[] ligthDataToMerge = ThreadMapUtil.getLightDataArray(lowerDetailLevel);
 		
 		int childPosX;
 		int childPosZ;
@@ -650,7 +644,7 @@ public class VerticalLevelContainer implements LevelContainer
 			}
 		}
 		
-		addData(posX, posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, ligthDataToMerge, lowerLevelContainer.getDetailLevel(), lowerVerticalSize);
+		addData(posX, posZ, positionDataToMerge, verticalDataToMerge, colorDataToMerge, ligthDataToMerge, lowerDetailLevel, lowerVerticalSize);
 	}
 	
 	@Override
