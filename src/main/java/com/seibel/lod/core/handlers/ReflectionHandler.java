@@ -20,19 +20,12 @@
 package com.seibel.lod.core.handlers;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
-import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
-
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSet;
 
 /**
  * A singleton used to get variables from methods
@@ -41,13 +34,11 @@ import it.unimi.dsi.fastutil.longs.LongSet;
  * presence/absence of Vivecraft.
  * 
  * @author James Seibel
- * @version 12-12-2021
+ * @version 12-14-2021
  */
 public class ReflectionHandler implements IReflectionHandler
 {
 	private static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME + "-" + ReflectionHandler.class.getSimpleName());
-	
-	private final IWrapperFactory wrapperFactory;
 	
 	public static ReflectionHandler instance;
 	
@@ -55,22 +46,15 @@ public class ReflectionHandler implements IReflectionHandler
 	private final Object mcOptionsObject;
 	
 	private Boolean sodiumPresent = null;
-	private Field sodiumLoadedChunkPositionsField = null;
-	private Object sodiumWorldRendererInstance = null;
 	
 	
 	
 	
 	private ReflectionHandler(Field[] optionFields, Object newMcOptionsObject)
 	{
-		wrapperFactory = SingletonHandler.get(IWrapperFactory.class);
-		
 		mcOptionsObject = newMcOptionsObject;
 		
 		setupFogField(optionFields);
-		
-		if (sodiumPresent())
-			setupSodiumInteraction();
 	}
 	
 	/**
@@ -177,47 +161,6 @@ public class ReflectionHandler implements IReflectionHandler
 	
 	
 	
-
-	private void setupSodiumInteraction()
-	{
-		String errorMessagePrfix = ReflectionHandler.class.getSimpleName() + ": was unable to setup Sodium interaction. Error: ";
-		
-		try
-		{
-			// try getting the SodiumWorldRender class
-			Class<?> sodiumWorldRendererClass = Class.forName("me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer");
-			
-			Field sodiumWorldRendererInstanceField = sodiumWorldRendererClass.getDeclaredField("instance");
-			sodiumWorldRendererInstanceField.setAccessible(true); // the field is private by default
-			
-			try
-			{
-				// try getting the singleton from the static field
-				sodiumWorldRendererInstance = sodiumWorldRendererInstanceField.get(null);
-				
-				try
-				{
-					// try getting the loadedChunkPosition field
-					Field loadedPosField = sodiumWorldRendererInstance.getClass().getDeclaredField("loadedChunkPositions");
-					loadedPosField.setAccessible(true);
-					
-					sodiumLoadedChunkPositionsField = loadedPosField;
-				}
-				catch (IllegalArgumentException e)
-				{
-					LOGGER.info(errorMessagePrfix + " no loadedChunkPositions field.", e);
-				}
-			}
-			catch (IllegalArgumentException | IllegalAccessException e)
-			{
-				LOGGER.info(errorMessagePrfix + " no sodiumWorldRenderer instance.", e);
-			}
-		}
-		catch (NoSuchFieldException | SecurityException | ClassNotFoundException e)
-		{
-			LOGGER.info(errorMessagePrfix + " no sodiumWorldRenderer class.", e);
-		}
-	}
 	
 	@Override
 	public boolean sodiumPresent()
@@ -241,53 +184,4 @@ public class ReflectionHandler implements IReflectionHandler
 		return sodiumPresent;
 	}
 	
-	/** 
-	 * TODO: this returns chunks that aren't actually rendered. 
-	 * Specifically as of 1.16.5 (12-12-2021) it also returns one layer
-	 * of chunks further than what is currently rendered.
-	 */
-	@Override
-	public HashSet<AbstractChunkPosWrapper> getSodiumRenderedChunks()
-	{
-		if (!sodiumPresent())
-		{
-			throw new IllegalStateException("[getSodiumRenderedChunks] can only be called if Sodium is installed.");
-		}
-		
-		if (sodiumLoadedChunkPositionsField == null || sodiumWorldRendererInstance == null)
-		{
-			throw new IllegalStateException("[getSodiumRenderedChunks] was called either before the sodium setup was done, or the sodium setup failed.");
-		}
-		
-		
-		
-		
-		HashSet<AbstractChunkPosWrapper> loadedPos = new HashSet<>();
-		
-		try
-		{
-			LongSet loadedChunkPositions = (LongSet) sodiumLoadedChunkPositionsField.get(sodiumWorldRendererInstance);
-			
-			LongIterator iterator = loadedChunkPositions.iterator();
-			while (iterator.hasNext())
-			{
-				loadedPos.add(wrapperFactory.createChunkPos(iterator.nextLong()));
-			}
-		}
-		catch (IllegalArgumentException | IllegalAccessException e)
-		{
-			LOGGER.error("Unable to get sodium's rendered chunks" + e.getMessage(), e);
-		}
-		
-		
-//		// can be uncommented for debugging
-//		StringBuilder builder = new StringBuilder(loadedPos.size() * 4);
-//		for(AbstractChunkPosWrapper pos : loadedPos)
-//		{
-//			builder.append("(" + pos.getX() + "," + pos.getZ() + ") ");
-//		}
-//		ClientApi.LOGGER.info(builder.toString());
-		
-		return loadedPos;
-	}
 }

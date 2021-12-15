@@ -19,10 +19,7 @@
 
 package com.seibel.lod.core.handlers;
 
-import java.util.HashSet;
-
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 
 /**
  * A singleton used to get variables from methods
@@ -37,7 +34,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
  * different MC versions.
  * 
  * @author James Seibel
- * @version 12-12-2021
+ * @version 12-14-2021
  */
 public interface IReflectionHandler
 {
@@ -49,7 +46,4 @@ public interface IReflectionHandler
 	
 	/** @returns if Sodium (or a sodium like) mod is present. Attempts to find the "SodiumWorldRenderer" class. */
 	boolean sodiumPresent();
-	
-	/** @returns a HashSet containing every chunk that is currently being rendered by Sodium. */
-	HashSet<AbstractChunkPosWrapper> getSodiumRenderedChunks();
 }

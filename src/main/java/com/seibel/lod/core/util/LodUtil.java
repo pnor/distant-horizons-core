@@ -26,6 +26,7 @@ import java.util.HashSet;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
+import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
@@ -44,7 +45,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * This class holds methods and constants that may be used in multiple places.
  * 
  * @author James Seibel
- * @version 12-8-2021
+ * @version 12-14-2021
  */
 public class LodUtil
 {
@@ -52,6 +53,7 @@ public class LodUtil
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
+	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
 	
 	/**
 	 * Vanilla render distances less than or equal to this will not allow partial
@@ -342,18 +344,17 @@ public class LodUtil
 			return new HashSet<>();
 		
 		case DYNAMIC:
-			
 			if (chunkRenderDist > MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW 
 				&& chunkRenderDist <= MINIMUM_RENDER_DISTANCE_FOR_FAR_OVERDRAW)
 			{
-				// This is a small render distance (but greater than the minimum partial
-				// distance), skip positions that are greater than 2/3 the render distance
+				// This is a small render distance (but greater than the minimum partial distance)
+				// skip positions that are greater than 2/3 the render distance
 				skipRadius = (int) Math.ceil(chunkRenderDist * (2.0/3.0));
 			}
 			else
 			{
-				// This is a large render distance. Skip positions that are greater than
-				// 4/5ths the render distance
+				// This is a large render distance. 
+				// Skip positions that are greater than 4/5ths the render distance
 				skipRadius = (int) Math.ceil(chunkRenderDist * (4.0 / 5.0));
 			}
 			break;
@@ -369,7 +370,7 @@ public class LodUtil
 		
 		
 		// get the chunks that are going to be rendered by Minecraft
-		HashSet<AbstractChunkPosWrapper> posToSkip = MC_RENDER.getRenderedChunks();
+		HashSet<AbstractChunkPosWrapper> posToSkip = REFLECTION_HANDLER.sodiumPresent() ? MC_RENDER.getSodiumRenderedChunks() : MC_RENDER.getVanillaRenderedChunks();
 		
 		
 		// remove everything outside the skipRadius,
@@ -382,7 +383,9 @@ public class LodUtil
 				{
 					if (x <= centerChunk.getX() - skipRadius || x >= centerChunk.getX() + skipRadius
 							|| z <= centerChunk.getZ() - skipRadius || z >= centerChunk.getZ() + skipRadius)
+					{
 						posToSkip.remove(FACTORY.createChunkPos(x, z));
+					}
 				}
 			}
 		}
