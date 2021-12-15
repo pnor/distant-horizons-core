@@ -750,7 +750,6 @@ public class VerticalLevelContainer implements LevelContainer
 		}*/
 		
 		int index = 0;
-		int x = size * size;
 		int tempIndex;
 		int tempVerticalData;
 		int tempColorData;
@@ -766,6 +765,7 @@ public class VerticalLevelContainer implements LevelContainer
 		tempData[index] = (byte) ((minWorldHeight >> 8) & 0xFF);
 		index++;
 		
+		int x = size * size;
 		int j;
 		for (int i = 0; i < x; i++)
 		{
@@ -782,9 +782,9 @@ public class VerticalLevelContainer implements LevelContainer
 				tempData[index] = lightDataContainer[i * verticalSize + j];
 				index++;
 			}
-			tempData[index] = (byte) (positionDataContainer[i * verticalSize] & 0xFF);
+			tempData[index] = (byte) (positionDataContainer[i] & 0xFF);
 			index++;
-			tempData[index] = (byte) ((positionDataContainer[i * verticalSize] >> 8) & 0xFF);
+			tempData[index] = (byte) ((positionDataContainer[i] >> 8) & 0xFF);
 			index++;
 			if (!VerticalDataFormat.doesItExist(verticalDataContainer[i]))
 				allGenerated = false;

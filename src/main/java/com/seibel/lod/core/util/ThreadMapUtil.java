@@ -257,7 +257,7 @@ public class ThreadMapUtil
 			{
 				posSize = size * size;
 				fullSize = size * size * DetailDistanceUtil.getMaxVerticalData(i);
-				array[i] = new byte[4 + 2 * posSize + (4 + 4 + 1) * fullSize];
+				array[i] = new byte[4 + 2 * posSize + 9 * fullSize];
 				size = size << 1;
 			}
 			saveContainer.put(Thread.currentThread().getName(), array);
