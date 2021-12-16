@@ -31,7 +31,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  */
 public class VerticalLevelContainer implements LevelContainer
 {
-	private final short minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
+	private final short minHeight;
 	public final byte detailLevel;
 	public final int size;
 	public final int verticalSize;
@@ -59,6 +59,7 @@ public class VerticalLevelContainer implements LevelContainer
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
 		dataContainer = new long[size * size * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
 	}
 	
 	@Override
@@ -166,6 +167,7 @@ public class VerticalLevelContainer implements LevelContainer
 	
 	public VerticalLevelContainer(byte[] inputData, int version)
 	{
+		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
 		int tempMaxVerticalData;
 		int tempIndex;
 		int index = 0;
