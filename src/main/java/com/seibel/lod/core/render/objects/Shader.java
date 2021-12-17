@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ClientApi;
 
@@ -52,15 +52,15 @@ public class Shader
 	{
 		ClientApi.LOGGER.info("Loading shader at "+path);
 		// Create an empty shader object
-		id = GL20.glCreateShader(type);
+		id = GL32.glCreateShader(type);
 		StringBuilder source = loadFile(path, absoluteFilePath);
-		GL20.glShaderSource(id, source);
+		GL32.glShaderSource(id, source);
 
-		GL20.glCompileShader(id);
+		GL32.glCompileShader(id);
 		// check if the shader compiled
-		int status = GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS);
-		if (status != GL20.GL_TRUE) {
-			String message = "Shader compiler error. Details: "+GL20.glGetShaderInfoLog(id);
+		int status = GL32.glGetShaderi(id, GL32.GL_COMPILE_STATUS);
+		if (status != GL32.GL_TRUE) {
+			String message = "Shader compiler error. Details: "+GL32.glGetShaderInfoLog(id);
 			free(); // important!
 			throw new RuntimeException(message);
 		}
@@ -69,7 +69,7 @@ public class Shader
 
 	// REMEMBER to always free the resource!
 	public void free() {
-		GL20.glDeleteShader(id);
+		GL32.glDeleteShader(id);
 	}
 	
 	private StringBuilder loadFile(String path, boolean absoluteFilePath) {

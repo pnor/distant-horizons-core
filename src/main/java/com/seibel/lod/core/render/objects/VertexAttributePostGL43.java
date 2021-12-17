@@ -1,8 +1,5 @@
 package com.seibel.lod.core.render.objects;
 
-import java.util.ArrayList;
-
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL43;
 
 import com.seibel.lod.core.api.ClientApi;

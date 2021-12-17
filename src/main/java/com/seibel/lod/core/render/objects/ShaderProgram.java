@@ -22,7 +22,7 @@ package com.seibel.lod.core.render.objects;
 import java.awt.Color;
 import java.nio.FloatBuffer;
 
-import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -49,42 +49,42 @@ public class ShaderProgram
 	  * This will bind ShaderProgram */
 	public ShaderProgram(String vert, String frag, String fragDataOutputName)
 	{
-		Shader vertShader = new Shader(GL20.GL_VERTEX_SHADER, vert, false);
-		Shader fragShader = new Shader(GL20.GL_FRAGMENT_SHADER, frag, false);
+		Shader vertShader = new Shader(GL32.GL_VERTEX_SHADER, vert, false);
+		Shader fragShader = new Shader(GL32.GL_FRAGMENT_SHADER, frag, false);
 		
-		id = GL20.glCreateProgram();
+		id = GL32.glCreateProgram();
 		
-		GL20.glAttachShader(this.id, vertShader.id);
-		GL20.glAttachShader(this.id, fragShader.id);
-	    //GL30.glBindFragDataLocation(id, 0, fragDataOutputName);
-		GL20.glLinkProgram(this.id);
+		GL32.glAttachShader(this.id, vertShader.id);
+		GL32.glAttachShader(this.id, fragShader.id);
+	    //GL32.glBindFragDataLocation(id, 0, fragDataOutputName);
+		GL32.glLinkProgram(this.id);
 		
 		vertShader.free(); // important!
 		fragShader.free(); // important!
 		
-		int status = GL20.glGetProgrami(this.id, GL20.GL_LINK_STATUS);
-		if (status != GL20.GL_TRUE) {
-			String message = "Shader Link Error. Details: "+GL20.glGetProgramInfoLog(this.id);
+		int status = GL32.glGetProgrami(this.id, GL32.GL_LINK_STATUS);
+		if (status != GL32.GL_TRUE) {
+			String message = "Shader Link Error. Details: "+GL32.glGetProgramInfoLog(this.id);
 			free(); // important!
 			throw new RuntimeException(message);
 		}
-		GL20.glUseProgram(id); // This HAVE to be a direct call to prevent calling the overloaded version
+		GL32.glUseProgram(id); // This HAVE to be a direct call to prevent calling the overloaded version
 	}
 	
 	/** This will bind ShaderProgram */
 	public void bind()
 	{
-		GL20.glUseProgram(id);
+		GL32.glUseProgram(id);
 	}
 	/** This will unbind ShaderProgram */
 	public void unbind() {
-		GL20.glUseProgram(0);
+		GL32.glUseProgram(0);
 	}
 	
 	// REMEMBER to always free the resource!
 	public void free()
 	{
-		GL20.glDeleteProgram(id);
+		GL32.glDeleteProgram(id);
 	}
 	
 	/** WARNING: Slow native call! Cache it if possible!
@@ -97,7 +97,7 @@ public class ShaderProgram
 	 */
 	public int getAttributeLocation(CharSequence name)
 	{
-		int i = GL20.glGetAttribLocation(id, name);
+		int i = GL32.glGetAttribLocation(id, name);
 		if (i==-1) throw new RuntimeException("Attribute name not found: "+name);
 		return i;
 	}
@@ -112,7 +112,7 @@ public class ShaderProgram
 	 */
 	public int getUniformLocation(CharSequence name)
 	{
-		int i = GL20.glGetUniformLocation(id, name);
+		int i = GL32.glGetUniformLocation(id, name);
 		if (i==-1) throw new RuntimeException("Uniform name not found: "+name);
 		return i;
 	}
@@ -121,31 +121,31 @@ public class ShaderProgram
 	public void setUniform(int location, boolean value)
 	{
 		// This use -1 for false as that equals all one set
-		GL20.glUniform1i(location, value ? 1 : 0);
+		GL32.glUniform1i(location, value ? 1 : 0);
 	}
 
 	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, int value)
 	{
-		GL20.glUniform1i(location, value);
+		GL32.glUniform1i(location, value);
 	}
 
 	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, float value)
 	{
-		GL20.glUniform1f(location, value);
+		GL32.glUniform1f(location, value);
 	}
 
 	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, Vec3f value)
 	{
-		GL20.glUniform3f(location, value.x, value.y, value.z);
+		GL32.glUniform3f(location, value.x, value.y, value.z);
 	}
 
 	/** Requires ShaderProgram binded. */
 	public void setUniform(int location, Vec3d value)
 	{
-		GL20.glUniform3f(location, (float) value.x, (float) value.y, (float) value.z);
+		GL32.glUniform3f(location, (float) value.x, (float) value.y, (float) value.z);
 	}
 
 	/** Requires ShaderProgram binded. */
@@ -155,7 +155,7 @@ public class ShaderProgram
 		{
 			FloatBuffer buffer = stack.mallocFloat(4 * 4);
 			value.store(buffer);
-			GL20.glUniformMatrix4fv(location, false, buffer);
+			GL32.glUniformMatrix4fv(location, false, buffer);
 		}
 	}
 	
@@ -163,7 +163,7 @@ public class ShaderProgram
 	  * Requires ShaderProgram binded. */
 	public void setUniform(int location, Color value)
 	{
-		GL20.glUniform4f(location, value.getRed() / 256.0f, value.getGreen() / 256.0f, value.getBlue() / 256.0f, value.getAlpha() / 256.0f);
+		GL32.glUniform4f(location, value.getRed() / 256.0f, value.getGreen() / 256.0f, value.getBlue() / 256.0f, value.getAlpha() / 256.0f);
 	}
 	
 }

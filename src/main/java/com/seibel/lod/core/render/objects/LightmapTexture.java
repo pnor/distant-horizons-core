@@ -1,33 +1,32 @@
 package com.seibel.lod.core.render.objects;
 
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL32;
 
 public class LightmapTexture {
 	public int id;
 	
 	public LightmapTexture() {
-		id = GL30.glGenTextures();
+		id = GL32.glGenTextures();
 		bind();
 	}
 	
 	public void bind() {
-		GL20.glBindTexture(GL20.GL_TEXTURE_2D, id);
+		GL32.glBindTexture(GL32.GL_TEXTURE_2D, id);
 	}
 	public void unbind() {
-		GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
+		GL32.glBindTexture(GL32.GL_TEXTURE_2D, 0);
 	}
 
 	public void free() {
-		GL20.glDeleteTextures(id);
+		GL32.glDeleteTextures(id);
 	}
 
 	// private int[] testArray;
 	
 	public void fillData(int lightMapWidth, int lightMapHeight, int[] pixels) {
-		GL20.glDeleteTextures(id);
-		id = GL30.glGenTextures();
-		GL20.glBindTexture(GL20.GL_TEXTURE_2D, id);
+		GL32.glDeleteTextures(id);
+		id = GL32.glGenTextures();
+		GL32.glBindTexture(GL32.GL_TEXTURE_2D, id);
 		if (pixels.length != lightMapWidth*lightMapHeight)
 			throw new RuntimeException("Lightmap Width*Height not equal to pixels provided!");
 		
@@ -49,12 +48,12 @@ public class LightmapTexture {
 			MC.sendChatMessage(same + " " + badIndex);
 		*/
 		// comment this line out to prevent uploading the new lightmap
-		GL20.glTexImage2D(GL20.GL_TEXTURE_2D, 0, GL20.GL_RGBA, lightMapWidth,
-				lightMapHeight, 0, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixels);
-		GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_S, GL20.GL_CLAMP_TO_BORDER);
-		GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_WRAP_T, GL20.GL_CLAMP_TO_BORDER);
-		GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MIN_FILTER, GL20.GL_NEAREST);
-		GL20.glTexParameteri(GL20.GL_TEXTURE_2D, GL20.GL_TEXTURE_MAG_FILTER, GL20.GL_NEAREST);
+		GL32.glTexImage2D(GL32.GL_TEXTURE_2D, 0, GL32.GL_RGBA, lightMapWidth,
+				lightMapHeight, 0, GL32.GL_RGBA, GL32.GL_UNSIGNED_BYTE, pixels);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_WRAP_S, GL32.GL_CLAMP_TO_BORDER);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_WRAP_T, GL32.GL_CLAMP_TO_BORDER);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_NEAREST);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_NEAREST);
 	}
 	
 }

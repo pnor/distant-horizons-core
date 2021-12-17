@@ -21,10 +21,6 @@ package com.seibel.lod.core.render;
 
 import java.awt.Color;
 
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL42;
-import org.lwjgl.opengl.GL43;
-
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.math.Mat4f;

@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ClientApi;
 
@@ -34,12 +34,12 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	// Requires VertexAttribute binded, VertexBuffer binded
 	public void bindBufferToAllBindingPoint(int buffer) {
 		for (int i=0; i<pointers.length; i++)
-			GL20.glEnableVertexAttribArray(i);
+			GL32.glEnableVertexAttribArray(i);
 		
 		for (int i=0; i< pointers.length; i++) {
 			VertexPointer pointer = pointers[i];
 			if (pointer==null) continue;
-			GL20.glVertexAttribPointer(i, pointer.elementCount, pointer.glType,
+			GL32.glVertexAttribPointer(i, pointer.elementCount, pointer.glType,
 					pointer.normalized, strideSize, pointersOffset[i]);
 		}
 	}
@@ -50,12 +50,12 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 		int[] toBind = bindingPointsToIndex[bindingPoint];
 		
 		for (int i=0; i<toBind.length; i++)
-			GL20.glEnableVertexAttribArray(toBind[i]);
+			GL32.glEnableVertexAttribArray(toBind[i]);
 		
 		for (int i=0; i< toBind.length; i++) {
 			VertexPointer pointer = pointers[toBind[i]];
 			if (pointer==null) continue;
-			GL20.glVertexAttribPointer(toBind[i], pointer.elementCount, pointer.glType,
+			GL32.glVertexAttribPointer(toBind[i], pointer.elementCount, pointer.glType,
 					pointer.normalized, strideSize, pointersOffset[toBind[i]]);
 		}
 
@@ -64,7 +64,7 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	// Requires VertexAttribute binded
 	public void unbindBuffersFromAllBindingPoint() {
 		for (int i=0; i<pointers.length; i++)
-			GL20.glDisableVertexAttribArray(i);
+			GL32.glDisableVertexAttribArray(i);
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 		int[] toBind = bindingPointsToIndex[bindingPoint];
 		
 		for (int i=0; i<toBind.length; i++)
-			GL20.glDisableVertexAttribArray(toBind[i]);
+			GL32.glDisableVertexAttribArray(toBind[i]);
 	}
 
 	@Override

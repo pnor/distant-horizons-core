@@ -22,7 +22,7 @@ package com.seibel.lod.core.render;
 import java.awt.Color;
 import java.util.HashSet;
 
-import org.lwjgl.opengl.GL33;
+import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
@@ -160,7 +160,7 @@ public class LodRenderer
 		}
 
 		// get MC's shader program
-		int currentProgram = GL33.glGetInteger(GL33.GL_CURRENT_PROGRAM);
+		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
 		
 		GLProxy glProxy = GLProxy.getInstance();
 		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
@@ -224,16 +224,16 @@ public class LodRenderer
 		/*---------Set GL State--------*/
 		// set the required open GL settings
 		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME)
-			GL33.glPolygonMode(GL33.GL_FRONT_AND_BACK, GL33.GL_LINE);
+			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
 		else
-			GL33.glPolygonMode(GL33.GL_FRONT_AND_BACK, GL33.GL_FILL);
+			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
 
-		GL33.glEnable(GL33.GL_CULL_FACE);
-		GL33.glEnable(GL33.GL_DEPTH_TEST);
+		GL32.glEnable(GL32.GL_CULL_FACE);
+		GL32.glEnable(GL32.GL_DEPTH_TEST);
 		
 		// enable transparent rendering
-		GL33.glBlendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA);
-		GL33.glEnable(GL33.GL_BLEND);
+		GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
+		GL32.glEnable(GL32.GL_BLEND);
 		
 		/*---------Bind required objects--------*/
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
@@ -243,7 +243,7 @@ public class LodRenderer
 		} else {
 			shaderProgram.bind();
 		}
-		GL33.glActiveTexture(GL33.GL_TEXTURE0);
+		GL32.glActiveTexture(GL32.GL_TEXTURE0);
 		LightmapTexture lightmapTexture = new LightmapTexture();
 		
 		/*---------Get required data--------*/
@@ -297,9 +297,9 @@ public class LodRenderer
 					{
 						bufferId = (storageBufferIds != null && usingBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
 						if (bufferId==0) continue;
-						GL33.glBindBuffer(GL33.GL_ARRAY_BUFFER, bufferId);
+						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, bufferId);
 						shaderProgram.bindVertexBuffer(bufferId);
-						GL33.glDrawArrays(GL33.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
+						GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
 					}
 				}
 			}
@@ -313,18 +313,18 @@ public class LodRenderer
 		
 		// if this cleanup isn't done MC will crash
 		// when trying to render its own terrain
-		GL33.glBindBuffer(GL33.GL_ARRAY_BUFFER, 0);
+		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 
 		shaderProgram.unbind();
 		lightmapTexture.free();
 
-		GL33.glPolygonMode(GL33.GL_FRONT_AND_BACK, GL33.GL_FILL);
-		GL33.glDisable(GL33.GL_BLEND); // TODO: what should this be reset to?
+		GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
+		GL32.glDisable(GL32.GL_BLEND); // TODO: what should this be reset to?
 		
-		GL33.glUseProgram(currentProgram);
+		GL32.glUseProgram(currentProgram);
 		
 		// clear the depth buffer so everything is drawn over the LODs
-		GL33.glClear(GL33.GL_DEPTH_BUFFER_BIT);
+		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
 		
 		// end of internal LOD profiling
 		profiler.pop();

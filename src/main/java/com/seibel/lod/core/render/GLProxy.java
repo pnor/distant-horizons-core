@@ -107,6 +107,8 @@ public class GLProxy
         // this must be created on minecraft's render context to work correctly
 		
 		ClientApi.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
+
+		ClientApi.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
 		
 		// getting Minecraft's context has to be done on the render thread,
 		// where the GL context is
@@ -121,11 +123,11 @@ public class GLProxy
 		minecraftGlContext = GLFW.glfwGetCurrentContext();
 		minecraftGlCapabilities = GL.getCapabilities();
 
-		// crash the game if the GPU doesn't support OpenGL 3.3
-		if (!minecraftGlCapabilities.OpenGL33)
+		// crash the game if the GPU doesn't support OpenGL 3.2
+		if (!minecraftGlCapabilities.OpenGL32)
 		{
 			// Note: as of MC 1.17 this shouldn't happen since MC
-			// requires OpenGL 3.3, but for older MC version this will warn the player.
+			// requires OpenGL 3.2, but for older MC version this will warn the player.
 			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GLProxy.class.getSimpleName() + " and discovered this GPU doesn't support OpenGL 3.3 or greater.";
 			MC.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 3.3 or greater."));
 		}
@@ -162,7 +164,6 @@ public class GLProxy
 		
 		setGlContext(GLProxyContext.LOD_BUILDER);
 		
-		ClientApi.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
 		
 		
 		// get specific capabilities

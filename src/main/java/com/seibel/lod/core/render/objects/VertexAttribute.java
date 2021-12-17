@@ -19,9 +19,7 @@
 
 package com.seibel.lod.core.render.objects;
 
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL32;
 
 public abstract class VertexAttribute {
 	
@@ -37,34 +35,34 @@ public abstract class VertexAttribute {
 			this.byteSize = byteSize;
 		}
 		public static VertexPointer addFloatPointer(boolean normalized) {
-			return new VertexPointer(1, GL15.GL_FLOAT, normalized, 4);
+			return new VertexPointer(1, GL32.GL_FLOAT, normalized, 4);
 		}
 		public static VertexPointer addVec2Pointer(boolean normalized) {
-			return new VertexPointer(2, GL15.GL_FLOAT, normalized, 8);
+			return new VertexPointer(2, GL32.GL_FLOAT, normalized, 8);
 		}
 		public static VertexPointer addVec3Pointer(boolean normalized) {
-			return new VertexPointer(3, GL15.GL_FLOAT, normalized, 12);
+			return new VertexPointer(3, GL32.GL_FLOAT, normalized, 12);
 		}
 		public static VertexPointer addVec4Pointer(boolean normalized) {
-			return new VertexPointer(1, GL15.GL_FLOAT, normalized, 16);
+			return new VertexPointer(1, GL32.GL_FLOAT, normalized, 16);
 		}
 		public static VertexPointer addUnsignedBytePointer(boolean normalized) {
-			return new VertexPointer(1, GL15.GL_UNSIGNED_BYTE, normalized, 1);
+			return new VertexPointer(1, GL32.GL_UNSIGNED_BYTE, normalized, 1);
 		}
 		public static VertexPointer addUnsignedBytesPointer(int elementCount, boolean normalized) {
-			return new VertexPointer(elementCount, GL15.GL_UNSIGNED_BYTE, normalized, elementCount);
+			return new VertexPointer(elementCount, GL32.GL_UNSIGNED_BYTE, normalized, elementCount);
 		}
 		public static VertexPointer addIntPointer(boolean normalized) {
-			return new VertexPointer(1, GL15.GL_INT, normalized, 4);
+			return new VertexPointer(1, GL32.GL_INT, normalized, 4);
 		}
 		public static VertexPointer addIvec2Pointer(boolean normalized) {
-			return new VertexPointer(2, GL15.GL_INT, normalized, 8);
+			return new VertexPointer(2, GL32.GL_INT, normalized, 8);
 		}
 		public static VertexPointer addIvec3Pointer(boolean normalized) {
-			return new VertexPointer(3, GL15.GL_INT, normalized, 12);
+			return new VertexPointer(3, GL32.GL_INT, normalized, 12);
 		}
 		public static VertexPointer addIvec4Pointer(boolean normalized) {
-			return new VertexPointer(4, GL15.GL_INT, normalized, 16);
+			return new VertexPointer(4, GL32.GL_INT, normalized, 16);
 		}
 	}
 	
@@ -74,23 +72,23 @@ public abstract class VertexAttribute {
 	
 	// This will bind VertexAttribute
 	protected VertexAttribute() {
-		id = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(id);
+		id = GL32.glGenVertexArrays();
+		GL32.glBindVertexArray(id);
 	}
 
 	// This will bind VertexAttribute
 	public void bind() {
-		GL30.glBindVertexArray(id);
+		GL32.glBindVertexArray(id);
 	}
 	
 	// This will unbind VertexAttribute
 	public void unbind() {
-		GL30.glBindVertexArray(0);
+		GL32.glBindVertexArray(0);
 	}
 	
 	// REMEMBER to always free the resource!
 	public void free() {
-		GL30.glDeleteVertexArrays(id);
+		GL32.glDeleteVertexArrays(id);
 	}
 	
 	// Requires VertexAttribute binded, VertexBuffer binded
