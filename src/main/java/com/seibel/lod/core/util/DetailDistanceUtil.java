@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.util;
 
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -134,10 +133,14 @@ public class DetailDistanceUtil
 		return baseInverseFunction((int) (distance * treeGenMultiplier), minGenDetail, true);
 	}
 	
+
+	// NOTE: The recent LodWorldGenerator changes assumes that this value doesn't change with 'detail'.
+	// If this is changed, LodWorldGenerator needs to be fixed!
+	/*
 	public static DistanceGenerationMode getDistanceGenerationMode(int detail)
 	{
 		return CONFIG.client().worldGenerator().getDistanceGenerationMode();
-	}
+	}*/
 	
 	public static byte getLodDrawDetail(byte detail)
 	{

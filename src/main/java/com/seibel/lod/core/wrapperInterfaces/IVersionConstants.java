@@ -21,4 +21,12 @@ public interface IVersionConstants
 	 * 			False if the generation must be run on Minecraft's server thread.
 	 */
 	boolean isWorldGeneratorSingleThreaded(DistanceGenerationMode distanceGenerationMode);
+
+	/** 
+	 * @Returns the number of generations call per thread.
+	 */
+	default int getWorldGenerationCountPerThread() {
+		return 8;
+	}
+	
 }

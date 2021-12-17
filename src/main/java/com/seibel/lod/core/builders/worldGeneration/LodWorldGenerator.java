@@ -30,7 +30,6 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
@@ -66,14 +65,6 @@ public class LodWorldGenerator
 	/** we only want to queue up one generator thread at a time */
 	private boolean generatorThreadRunning = false;
 	
-	/**
-	 * How many chunks to generate outside the player's view distance at one
-	 * time. (or more specifically how many requests to make at one time). I
-	 * multiply by 8 to make sure there is always a buffer of chunk requests, to
-	 * make sure the CPU is always busy, and we can generate LODs as quickly as
-	 * possible.
-	 */
-	public int maxChunkGenRequests;
 	
 	/**
 	 * This keeps track of how many chunk generation requests are on going. This is
@@ -98,15 +89,30 @@ public class LodWorldGenerator
 	 */
 	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder)
 	{
-		if (CONFIG.client().worldGenerator().getDistanceGenerationMode() != DistanceGenerationMode.NONE
+		// TODO: This currently doesn't use the DetailDistanceUtil.getDistanceGenerationMode(int detail) to get the mode.
+		// This is fine currently since DistanceGenerationMode doesn't care about the detail level for now.
+		// However, If that was to be changed, This will need to be fixed.
+		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
+		
+		if (mode != DistanceGenerationMode.NONE
 				&& !generatorThreadRunning
 				&& MC.hasSinglePlayerServer())
 		{
 			// the thread is now running, don't queue up another thread
 			generatorThreadRunning = true;
-			
-			// just in case the config changed
-			maxChunkGenRequests = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads() * 8;
+		
+			/**
+			 * How many chunks to generate outside the player's view distance at one
+			 * time. (or more specifically how many requests to make at one time). I
+			 * multiply by 8 to make sure there is always a buffer of chunk requests, to
+			 * make sure the CPU is always busy, and we can generate LODs as quickly as
+			 * possible.
+			 */
+			int genRequestPerThread = VERSION_CONSTANTS.getWorldGenerationCountPerThread();
+			int maxChunkGenRequests;
+			if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(mode))
+				maxChunkGenRequests = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads() * genRequestPerThread;
+			else maxChunkGenRequests = genRequestPerThread;
 			
 			Runnable generatorFunc = (() ->
 			{
@@ -127,7 +133,6 @@ public class LodWorldGenerator
 							maxChunkGenRequests,
 							playerPosX,
 							playerPosZ);
-					
 					
 					byte detailLevel;
 					int posX;
@@ -160,7 +165,7 @@ public class LodWorldGenerator
 							
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
-							queueWork(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
+							queueWork(chunkPos, mode, lodBuilder, lodDim, serverWorld);
 						}
 						
 						
@@ -185,12 +190,12 @@ public class LodWorldGenerator
 							
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
-							queueWork(chunkPos, DetailDistanceUtil.getDistanceGenerationMode(detailLevel), lodBuilder, lodDim, serverWorld);
+							queueWork(chunkPos, mode, lodBuilder, lodDim, serverWorld);
 						}
 					}
 					
 				}
-				catch (Exception e)
+				catch (RuntimeException e)
 				{
 					// this shouldn't ever happen, but just in case
 					e.printStackTrace();
@@ -201,7 +206,7 @@ public class LodWorldGenerator
 				}
 			});
 			
-			if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(CONFIG.client().worldGenerator().getDistanceGenerationMode()))
+			if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(mode))
 			{
 				generatorFunc.run();
 			}
