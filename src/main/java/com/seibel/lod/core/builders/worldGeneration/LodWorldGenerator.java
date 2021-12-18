@@ -40,6 +40,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractExperimentalWorldGeneratorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGeneratorWrapper;
 
 /**
@@ -65,7 +66,6 @@ public class LodWorldGenerator
 	/** we only want to queue up one generator thread at a time */
 	private boolean generatorThreadRunning = false;
 	
-	
 	/**
 	 * This keeps track of how many chunk generation requests are on going. This is
 	 * to limit how many chunks are queued at once. To prevent chunks from being
@@ -79,6 +79,7 @@ public class LodWorldGenerator
 	 * Singleton copy of this object
 	 */
 	public static final LodWorldGenerator INSTANCE = new LodWorldGenerator();
+	public AbstractExperimentalWorldGeneratorWrapper experimentalWorldGenerator;
 	
 	private LodWorldGenerator() {}
 	
@@ -89,6 +90,27 @@ public class LodWorldGenerator
 	 */
 	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder)
 	{
+		
+		IWorldWrapper world = LodUtil.getServerWorldFromDimension(lodDim.dimension);
+		
+		// TODO: Rename the config option
+		if (CONFIG.client().worldGenerator().getAllowUnstableFeatureGeneration()) {
+			if (experimentalWorldGenerator == null) {
+				experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
+				if (experimentalWorldGenerator == null) CONFIG.client().worldGenerator().setAllowUnstableFeatureGeneration(false);
+			}
+		} else {
+			if (experimentalWorldGenerator != null) {
+				experimentalWorldGenerator.stop();
+				experimentalWorldGenerator = null;
+			}
+		}
+		
+		if (experimentalWorldGenerator != null) {
+			experimentalWorldGenerator.queueGenerationRequests(lodDim, lodBuilder);
+			return;
+		}
+		
 		// TODO: This currently doesn't use the DetailDistanceUtil.getDistanceGenerationMode(int detail) to get the mode.
 		// This is fine currently since DistanceGenerationMode doesn't care about the detail level for now.
 		// However, If that was to be changed, This will need to be fixed.
@@ -335,6 +357,11 @@ public class LodWorldGenerator
 	 */
 	public void restartExecutorService()
 	{
+		if (experimentalWorldGenerator != null) {
+			experimentalWorldGenerator.stop();
+			experimentalWorldGenerator = null;
+		}
+		
 		if (genSubThreads != null && !genSubThreads.isShutdown())
 		{
 			genSubThreads.shutdownNow();

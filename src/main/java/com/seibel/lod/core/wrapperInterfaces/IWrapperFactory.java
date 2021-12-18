@@ -24,6 +24,7 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractExperimentalWorldGeneratorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGeneratorWrapper;
 
 /**
@@ -52,4 +53,8 @@ public interface IWrapperFactory
 	
 	
 	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper);
+	// Return null to signal that there is no AbstractWorldGenerator
+	public default AbstractExperimentalWorldGeneratorWrapper createExperimentalWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper) {
+		return null;
+	}
 }
