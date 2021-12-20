@@ -52,6 +52,10 @@ public class LodRegion
 	 * This holds all data for this region
 	 */
 	private final LevelContainer[] dataContainer;
+	/**
+	 * This holds all data for this region
+	 */
+	private final RenderData[] renderData;
 	
 	/** This chunk Pos has been generated */
 	//private final boolean[] preGeneratedChunkPos;
@@ -74,12 +78,14 @@ public class LodRegion
 		this.verticalQuality = verticalQuality;
 		this.generationMode = generationMode;
 		dataContainer = new LevelContainer[POSSIBLE_LOD];
+		renderData = new RenderData[POSSIBLE_LOD];
 		
 		
 		// Initialize all the different matrices
 		for (byte lod = minDetailLevel; lod <= LodUtil.REGION_DETAIL_LEVEL; lod++)
 		{
 			dataContainer[lod] = new VerticalLevelContainer(lod);
+			renderData[lod] = new RenderData(lod);
 		}
 		
 		boolean fileFound = false;
@@ -439,6 +445,125 @@ public class LodRegion
 			}
 	}
 	
+	public RenderData getRenderData(byte detailLevel)
+	{
+		return renderData[detailLevel];
+	}
+	
+	public void clearRenderingFlags()
+	{
+		for (byte lod = minDetailLevel; lod <= LodUtil.REGION_DETAIL_LEVEL; lod++)
+		{
+			renderData[lod].clear();
+		}
+	}
+	
+	public void setRenderingFlags(int playerPosX, int playerPosZ, boolean requireCorrectDetailLevel)
+	{
+		setRenderingFlags(LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerPosX, playerPosZ, requireCorrectDetailLevel);
+	}
+	
+	/**
+	 * @effect fills the RenderData with correct rendering flags.
+	 * @param detailLevel
+	 * @param posX
+	 * @param posZ
+	 * @param playerPosX
+	 * @param playerPosZ
+	 * @param requireCorrectDetailLevel
+	 * @return true only if a child has been setted as toBeRendered
+	 */
+	private boolean setRenderingFlags(byte detailLevel, int posX, int posZ,
+			int playerPosX, int playerPosZ, boolean requireCorrectDetailLevel)
+	{
+		// equivalent to 2^(...)
+		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+		
+		byte desiredLevel;
+		int maxDistance;
+		int minDistance;
+		int childLevel;
+		boolean childToBeRendered = false;
+		boolean toRender = false;
+		
+		// calculate the LevelPos that are in range
+		maxDistance = LevelPosUtil.maxDistance(detailLevel, posX, posZ, playerPosX, playerPosZ, regionPosX, regionPosZ);
+		desiredLevel = DetailDistanceUtil.getLodDrawDetail(DetailDistanceUtil.getDrawDetailFromDistance(maxDistance));
+		minDistance = LevelPosUtil.minDistance(detailLevel, posX, posZ, playerPosX, playerPosZ, regionPosX, regionPosZ);
+		childLevel = DetailDistanceUtil.getLodDrawDetail(DetailDistanceUtil.getDrawDetailFromDistance(minDistance));
+		
+		if (detailLevel == childLevel - 1)
+		{
+			toRender = !getRenderData(detailLevel).isRendered(posX,posZ);
+			getRenderData(detailLevel).setToBeRendered(posX, posZ, toRender);
+			return toRender;
+		}
+		else
+		{
+			if (desiredLevel == detailLevel)
+			{
+				toRender = !getRenderData(detailLevel).isRendered(posX, posZ);
+				getRenderData(detailLevel).setToBeRendered(posX, posZ, toRender);
+				return toRender;
+			}
+			else //case where (detailLevel > desiredLevel)
+			{
+				int childPosX = posX * 2;
+				int childPosZ = posZ * 2;
+				byte childDetailLevel = (byte) (detailLevel - 1);
+				int childrenCount = 0;
+				
+				for (int x = 0; x <= 1; x++)
+				{
+					for (int z = 0; z <= 1; z++)
+					{
+						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z))
+						{
+							if (!requireCorrectDetailLevel)
+							{
+								childrenCount++;
+							}
+							else
+							{
+								childToBeRendered = setRenderingFlags(childDetailLevel, childPosX + x, childPosZ + z, playerPosX, playerPosZ, requireCorrectDetailLevel);
+								getRenderData(detailLevel).setChildToRendered(posX, posZ, childToBeRendered);
+								return childToBeRendered;
+							}
+						}
+					}
+				}
+				
+				
+				if (!requireCorrectDetailLevel)
+				{
+					// If all the four children exist go deeper
+					if (childrenCount == 4)
+					{
+						for (int x = 0; x <= 1; x++)
+						{
+							for (int z = 0; z <= 1; z++)
+							{
+								childToBeRendered = setRenderingFlags(childDetailLevel, childPosX + x, childPosZ + z, playerPosX, playerPosZ, requireCorrectDetailLevel);
+								getRenderData(detailLevel).setChildToRendered(posX, posZ, childToBeRendered);
+								return childToBeRendered;
+							}
+						}
+					}
+					else
+					{
+						toRender = !getRenderData(detailLevel).isRendered(posX, posZ);
+						getRenderData(detailLevel).setToBeRendered(posX, posZ, toRender);
+						return toRender;
+					}
+				}
+			}
+		}
+		return childToBeRendered || toRender;
+	}
+	
+	
+	
+	
 	
 	/**
 	 * Updates all children.
@@ -569,8 +694,11 @@ public class LodRegion
 	{
 		if (detailLevel > minDetailLevel)
 		{
-			for (byte detailLevelIndex = 0; detailLevelIndex < detailLevel; detailLevelIndex++)
-				dataContainer[detailLevelIndex] = null;
+			for (byte lod = 0; lod < detailLevel; lod++)
+			{
+				dataContainer[lod] = null;
+				renderData[lod] = null;
+			}
 			
 			minDetailLevel = detailLevel;
 		}
@@ -584,12 +712,13 @@ public class LodRegion
 	{
 		if (detailLevel < minDetailLevel)
 		{
-			for (byte detailLevelIndex = (byte) (minDetailLevel - 1); detailLevelIndex >= detailLevel; detailLevelIndex--)
+			for (byte lod = (byte) (minDetailLevel - 1); lod >= detailLevel; lod--)
 			{
-				if (dataContainer[detailLevelIndex + 1] == null)
-					dataContainer[detailLevelIndex + 1] = new VerticalLevelContainer((byte) (detailLevelIndex + 1));
+				if (dataContainer[lod + 1] == null)
+					dataContainer[lod + 1] = new VerticalLevelContainer((byte) (lod + 1));
 				
-				dataContainer[detailLevelIndex] = dataContainer[detailLevelIndex + 1].expand();
+				dataContainer[lod] = dataContainer[lod + 1].expand();
+				renderData[lod] = new RenderData(lod);
 			}
 			minDetailLevel = detailLevel;
 		}

@@ -2,6 +2,8 @@ package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.util.LodUtil;
 
+import java.util.Arrays;
+
 public class RenderData implements RenderDataContainer
 {
 	public final byte detailLevel;
@@ -16,6 +18,24 @@ public class RenderData implements RenderDataContainer
 	{
 		this.detailLevel = detailLevel;
 		this.size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+		hasChildToRendered = new boolean[size*size];
+		hasRenderedChild = new boolean[size*size];
+		if(detailLevel > 0)
+		{
+			toBeRendered = new boolean[size*size];
+			rendered = new boolean[size*size];
+		}
+	}
+	
+	public void clear()
+	{
+		Arrays.fill(hasChildToRendered,false);
+		Arrays.fill(hasRenderedChild,false);
+		if(detailLevel > 0)
+		{
+			Arrays.fill(toBeRendered, false);
+			Arrays.fill(rendered, false);
+		}
 	}
 	
 	public void setChildToRendered(int posX, int posZ, boolean newValue){
