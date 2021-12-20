@@ -29,11 +29,8 @@ import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.objects.math.Vec3i;
 import com.seibel.lod.core.util.*;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
-import javafx.scene.effect.Light;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 
 /**
  * This class handles all the vertex optimization that's needed for a column of lods. W
@@ -164,26 +161,6 @@ public class VertexOptimizer
 		put(LodDirection.NORTH, LodDirection.NORTH.getNormal());
 	}};
 	
-	/** We use this index for all array that are going to */
-	@SuppressWarnings("serial")
-	public static final Map<LodDirection, Integer> DIRECTION_INDEX = new HashMap<LodDirection, Integer>()
-	{{
-		put(LodDirection.UP, 0);
-		put(LodDirection.DOWN, 1);
-		put(LodDirection.EAST, 2);
-		put(LodDirection.WEST, 3);
-		put(LodDirection.SOUTH, 4);
-		put(LodDirection.NORTH, 5);
-	}};
-	
-	@SuppressWarnings("serial")
-	public static final Map<LodDirection, Integer> ADJ_DIRECTION_INDEX = new HashMap<LodDirection, Integer>()
-	{{
-		put(LodDirection.EAST, 0);
-		put(LodDirection.WEST, 1);
-		put(LodDirection.SOUTH, 2);
-		put(LodDirection.NORTH, 3);
-	}};
 	/** holds the box's x, y, z offset */
 	public final int[] boxOffset;
 	/** holds the box's x, y, z width */
@@ -309,10 +286,10 @@ public class VertexOptimizer
 		this.color = color;
 		for (LodDirection lodDirection : DIRECTIONS)
 		{
-			if (!adjShadeDisabled[DIRECTION_INDEX.get(lodDirection)])
-				colorMap[DIRECTION_INDEX.get(lodDirection)] = ColorUtil.applyShade(color, MC.getShade(lodDirection));
+			if (!adjShadeDisabled[lodDirection.getIndex()])
+				colorMap[lodDirection.getIndex()] = ColorUtil.applyShade(color, MC.getShade(lodDirection));
 			else
-				colorMap[DIRECTION_INDEX.get(lodDirection)] = color;
+				colorMap[lodDirection.getIndex()] = color;
 		}
 	}
 	
@@ -323,7 +300,7 @@ public class VertexOptimizer
 	public int getColor(LodDirection lodDirection)
 	{
 		if (CONFIG.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_DETAIL)
-			return colorMap[DIRECTION_INDEX.get(lodDirection)];
+			return colorMap[lodDirection.getIndex()];
 		else
 			return ColorUtil.applyShade(color, MC.getShade(lodDirection));
 	}

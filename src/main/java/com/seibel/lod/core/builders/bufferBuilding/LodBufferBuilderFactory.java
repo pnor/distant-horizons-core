@@ -373,7 +373,7 @@ public class LodBufferBuilderFactory
 									{
 										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
 										{
-											vertexOptimizer.adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = false;
+											vertexOptimizer.adjShadeDisabled[lodDirection.getIndex()] = false;
 											adjLightArray[verticalIndex] = (byte) lodDim.getLightData(detailLevel, xAdj, zAdj, verticalIndex);
 											adjColorArray[verticalIndex] = lodDim.getVerticalData(detailLevel, xAdj, zAdj, verticalIndex);
 											adjVerticalArray[verticalIndex] = lodDim.getColorData(detailLevel, xAdj, zAdj, verticalIndex);
@@ -390,7 +390,7 @@ public class LodBufferBuilderFactory
 										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
 													&& !PositionDataFormat.isVoid(adjPositionData))
 										{
-											vertexOptimizer.adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = ColorFormat.getAlpha(adjColorData) < 255;
+											vertexOptimizer.adjShadeDisabled[lodDirection.getIndex()] = ColorFormat.getAlpha(adjColorData) < 255;
 										}
 									}
 								}
