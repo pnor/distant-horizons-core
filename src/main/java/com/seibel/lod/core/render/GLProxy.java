@@ -187,7 +187,7 @@ public class GLProxy
 					"Additional info:\n"+supportedVersionInfo;
 			MC.crashMinecraft(errorMessage, new UnsupportedOperationException("This GPU doesn't support OpenGL 3.2."));
 		}
-		ClientApi.LOGGER.info(getVersionInfo(minecraftGlCapabilities));
+		ClientApi.LOGGER.info("minecraftGlCapabilities:\n"+getVersionInfo(minecraftGlCapabilities));
 		
 		// context creation setup
 		GLFW.glfwDefaultWindowHints();
@@ -202,12 +202,14 @@ public class GLProxy
 		lodBuilderGlContext = GLFW.glfwCreateWindow(64, 48, "LOD Builder Window", 0L, minecraftGlContext);
 		GLFW.glfwMakeContextCurrent(lodBuilderGlContext);
 		lodBuilderGlCapabilities = GL.createCapabilities();
+		ClientApi.LOGGER.info("lodBuilderGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
 		
 		
 		// create the proxyWorker's context
 		proxyWorkerGlContext = GLFW.glfwCreateWindow(64, 48, "LOD proxy worker Window", 0L, minecraftGlContext);
 		GLFW.glfwMakeContextCurrent(proxyWorkerGlContext);
 		proxyWorkerGlCapabilities = GL.createCapabilities();
+		ClientApi.LOGGER.info("proxyWorkerGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
 
 		// Check if we can use the make-over version of Vertex Attribute, which is available in GL4.3 or after
 		VertexAttributeBufferBindingSupported = minecraftGlCapabilities.glBindVertexBuffer != 0L; // Nullptr
@@ -227,8 +229,8 @@ public class GLProxy
 		
 		// get specific capabilities
 		// Check if we can use the Buffer Storage, which is available in GL4.4 or after
-		bufferStorageSupported = lodBuilderGlCapabilities.glBufferStorage != 0L; // Nullptr
-		
+		bufferStorageSupported = minecraftGlCapabilities.glBufferStorage != 0L && lodBuilderGlCapabilities.glBufferStorage != 0L; // Nullptr
+		//bufferStorageSupported = true;
 		// display the capabilities
 		if (!bufferStorageSupported)
 		{

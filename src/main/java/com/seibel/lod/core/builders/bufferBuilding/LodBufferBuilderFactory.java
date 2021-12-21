@@ -30,10 +30,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL45;
+import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL44;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.api.ClientApi;
@@ -57,7 +55,6 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -72,7 +69,6 @@ public class LodBufferBuilderFactory
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** The thread used to generate new LODs off the main thread. */
 	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main"));
@@ -142,8 +138,6 @@ public class LodBufferBuilderFactory
 	
 	private volatile VertexOptimizer[][] vertexOptimizerCache;
 	private volatile PosToRenderContainer[][] setsToRender;
-	private volatile int centerRegionX = 0;
-	private volatile int centerRegionZ = 0;
 	
 	/**
 	 * This is the ChunkPosWrapper the player was at the last time the buffers were built.
@@ -612,27 +606,27 @@ public class LodBufferBuilderFactory
 						
 						
 						// create the initial mapped buffers (system memory)
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buildableVbos[x][z][i].id);
-						GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, buildableVbos[x][z][i].id);
+						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, regionMemoryRequired, GL32.GL_STATIC_DRAW);
+						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 						
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, drawableVbos[x][z][i].id);
-						GL15.glBufferData(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, GL15.GL_STATIC_DRAW);
-						GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, drawableVbos[x][z][i].id);
+						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, regionMemoryRequired, GL32.GL_STATIC_DRAW);
+						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 						
 						
 						if (glProxy.bufferStorageSupported)
 						{
 							// create the buffer storage (GPU memory)
-							buildableStorageBufferIds[x][z][i] = GL15.glGenBuffers();
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buildableStorageBufferIds[x][z][i]);
-							GL45.glBufferStorage(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, 0); // the 0 flag means to create the storage in the GPUs memory
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+							buildableStorageBufferIds[x][z][i] = GL44.glGenBuffers();
+							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, buildableStorageBufferIds[x][z][i]);
+							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, 0); // the 0 flag means to create the storage in the GPUs memory
+							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, 0);
 							
-							drawableStorageBufferIds[x][z][i] = GL15.glGenBuffers();
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, drawableStorageBufferIds[x][z][i]);
-							GL45.glBufferStorage(GL15.GL_ARRAY_BUFFER, regionMemoryRequired, 0);
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);	
+							drawableStorageBufferIds[x][z][i] = GL44.glGenBuffers();
+							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, drawableStorageBufferIds[x][z][i]);
+							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, 0);
+							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, 0);	
 						}
 					}
 				}
@@ -652,106 +646,73 @@ public class LodBufferBuilderFactory
 	}
 	
 	
-	
 	/**
 	 * Sets the buffers and Vbos to null, forcing them to be recreated <br>
-	 * and destroys any bound OpenGL objects. <br><br>
+	 * and destroys any bound OpenGL objects. <br>
+	 * <br>
 	 * <p>
 	 * May have to wait for the bufferLock to open.
 	 */
-	public void destroyBuffers()
-	{
-		try
-		{
-			bufferLock.lock();
-			
-			
-			// destroy the buffer storages if they aren't already
-			if (buildableStorageBufferIds != null)
-			{
-				for (int x = 0; x < buildableStorageBufferIds.length; x++)
-				{
-					for (int z = 0; z < buildableStorageBufferIds.length; z++)
-					{
-						for (int i = 0; i < buildableStorageBufferIds[x][z].length; i++)
-						{
-							int buildableId = buildableStorageBufferIds[x][z][i];
-							int drawableId = drawableStorageBufferIds[x][z][i];
-							
-							// make sure the buffers are deleted in a openGL context
-							GLProxy.getInstance().recordOpenGlCall(() ->
-							{
-								GL15.glDeleteBuffers(buildableId);
-								GL15.glDeleteBuffers(drawableId);
-							});
-						}
-					}
-				}
-			}
-			
+	public void destroyBuffers() {
+		int[][][] toBeDeletedBuildableStorageBufferIds;
+		int[][][] toBeDeletedDrawableStorageBufferIds;
+		LodVertexBuffer[][][] toBeDeletedBuildableVbos;
+		LodVertexBuffer[][][] toBeDeletedDrawableVbos;
+		bufferLock.lock();
+		try {
+			toBeDeletedBuildableStorageBufferIds = buildableStorageBufferIds;
+			toBeDeletedDrawableStorageBufferIds = drawableStorageBufferIds;
+			toBeDeletedBuildableVbos = buildableVbos;
+			toBeDeletedDrawableVbos = drawableVbos;
 			buildableStorageBufferIds = null;
 			drawableStorageBufferIds = null;
-			
-			
-			
-			
-			// destroy the VBOs if they aren't already
-			if (buildableVbos != null)
-			{
-				for (int i = 0; i < buildableVbos.length; i++)
-				{
-					for (int j = 0; j < buildableVbos.length; j++)
-					{
-						for (int k = 0; k < buildableVbos[i][j].length; k++)
-						{
-							int buildableId;
-							int drawableId;
-							
-							// variables passed into a lambda expression
-							// need to be effectively final, so we have
-							// to use an else statement here
-							if (buildableVbos[i][j][k] != null)
-								buildableId = buildableVbos[i][j][k].id;
-							else
-								buildableId = 0;
-							
-							if (drawableVbos[i][j][k] != null)
-								drawableId = drawableVbos[i][j][k].id;
-							else
-								drawableId = 0;
-							
-							
-							GLProxy.getInstance().recordOpenGlCall(() ->
-							{
-								if (buildableId != 0)
-									GL15.glDeleteBuffers(buildableId);
-								if (drawableId != 0)
-									GL15.glDeleteBuffers(drawableId);
-							});
-						}
-					}
-				}
-			}
-			
 			buildableVbos = null;
 			drawableVbos = null;
-			
-			
 			// these don't contain any OpenGL objects, so
 			// they don't require any special clean-up
 			buildableBuffers = null;
-		}
-		catch (Exception e)
-		{
-			ClientApi.LOGGER.info("destroyBuffers ran into trouble: " + e.getMessage(), e);
-		}
-		finally
-		{
-			// this shouldn't normally happen, but just in case it sill prevent deadlock
+		} finally {
 			bufferLock.unlock();
 		}
+
+		// make sure the buffers are deleted in a openGL context
+		GLProxy.getInstance().recordOpenGlCall(() -> {
+
+			// destroy the buffer storages if they aren't already
+			if (toBeDeletedBuildableStorageBufferIds != null) {
+				for (int x = 0; x < toBeDeletedBuildableStorageBufferIds.length; x++) {
+					for (int z = 0; z < toBeDeletedBuildableStorageBufferIds.length; z++) {
+						for (int i = 0; i < toBeDeletedBuildableStorageBufferIds[x][z].length; i++) {
+							int buildableId = toBeDeletedBuildableStorageBufferIds[x][z][i];
+							int drawableId = toBeDeletedDrawableStorageBufferIds[x][z][i];
+
+							GL32.glDeleteBuffers(buildableId);
+							GL32.glDeleteBuffers(drawableId);
+
+						}
+					}
+				}
+			}
+			// destroy the VBOs if they aren't already
+			if (toBeDeletedBuildableVbos != null) {
+				for (int i = 0; i < toBeDeletedBuildableVbos.length; i++) {
+					for (int j = 0; j < toBeDeletedBuildableVbos.length; j++) {
+						for (int k = 0; k < toBeDeletedBuildableVbos[i][j].length; k++) {
+							if (toBeDeletedBuildableVbos[i][j][k] != null) {
+								int buildableId = toBeDeletedBuildableVbos[i][j][k].id;
+								GL32.glDeleteBuffers(buildableId);
+							}
+							if (toBeDeletedDrawableVbos[i][j][k] != null) {
+								int drawableId = toBeDeletedDrawableVbos[i][j][k].id;
+								GL32.glDeleteBuffers(drawableId);
+							}
+						}
+					}
+				}
+			}
+		});
 	}
-	
+
 	/** Calls begin on each of the buildable BufferBuilders. */
 	private void startBuffers(boolean fullRegen, LodDimension lodDim)
 	{
@@ -763,12 +724,12 @@ public class LodBufferBuilderFactory
 				{
 					for (int i = 0; i < buildableBuffers[x][z].length; i++)
 					{
-						// for some reason BufferBuilder.vertexCounts
+						// FIXME: for some reason BufferBuilder.vertexCounts
 						// isn't reset unless this is called, which can cause
 						// a false indexOutOfBoundsException
 						buildableBuffers[x][z][i].discard();
 						
-						buildableBuffers[x][z][i].begin(GL11.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
+						buildableBuffers[x][z][i].begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
 					}
 				}
 			}
@@ -790,8 +751,6 @@ public class LodBufferBuilderFactory
 	private void uploadBuffers(boolean fullRegen, LodDimension lodDim)
 	{
 		GLProxy glProxy = GLProxy.getInstance();
-		long fence = 0;
-		
 		try
 		{
 			// make sure we are uploading to the builder context,
@@ -804,14 +763,6 @@ public class LodBufferBuilderFactory
 			// determine the upload timeout
 			int uploadTimeoutInMS = CONFIG.client().advanced().buffers().getGpuUploadTimeoutInMilliseconds();
 			
-			// James has no idea if this does anything helpful,
-			// but in theory it should prevent OpenGL from drawing and
-			// writing to a buffer at the same time.
-			GL45.glMemoryBarrier(GL45.GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
-			fence = GL45.glFenceSync(GL45.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-			
-			
-			
 			// actually upload the buffers
 			for (int x = 0; x < buildableVbos.length; x++)
 			{
@@ -822,45 +773,37 @@ public class LodBufferBuilderFactory
 						for (int i = 0; i < buildableBuffers[x][z].length; i++)
 						{
 							ByteBuffer uploadBuffer = buildableBuffers[x][z][i].getCleanedByteBuffer();
-							vboUpload(x,z,i, uploadBuffer, true, uploadMethod);
+							vboUpload(x,z,i, uploadBuffer, uploadMethod);
 							lodDim.setRegenRegionBufferByArrayIndex(x, z, false);
-							
 							
 							// upload buffers over an extended period of time
 							// to hopefully prevent stuttering.
 							if (uploadTimeoutInMS != 0)
 								Thread.sleep(uploadTimeoutInMS);
-							GL15.glFinish();
+							GL32.glFinish();
 						}
 					}
 				}
 			}
-			
-			// make sure all of the uploads finish before continuing
-			GL45.glClientWaitSync(fence, GL45.GL_SYNC_FLUSH_COMMANDS_BIT, 5L * 1000000000); // wait up to 5 seconds
 		}
 		catch (Exception e)
 		{
+			GL32.glFinish();
 			// this doesn't appear to be necessary anymore, but just in case.
 			ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
 			e.printStackTrace();
-		}
-		finally
-		{
-			GL15.glFinish();
-			if (fence != 0)
-				GL45.glDeleteSync(fence);
-
-			// close the context so it can be re-used later.
-			// I'm guessing we can't just leave it because the executor service
-			// does something that invalidates the OpenGL context.
+		} finally {
+			// newSingleThreadExecutor doesn't mean that all jobs will be on a single, same
+			// thread. It just means that it can at most use one thread. If there are no
+			// jobs for a certain amount of time, or something happened when a job is
+			// executing, it could decide to delete the thread, and create a new one for the
+			// next job. So we will need to release the gl context.
 			glProxy.setGlContext(GLProxyContext.NONE);
 		}
 	}
 	
 	/** Uploads the uploadBuffer so the GPU can use it. */
-	private void vboUpload(int xIndex, int zIndex, int iIndex, ByteBuffer uploadBuffer,
-			boolean allowBufferExpansion, GpuUploadMethod uploadMethod)
+	private void vboUpload(int xIndex, int zIndex, int iIndex, ByteBuffer uploadBuffer, GpuUploadMethod uploadMethod)
 	{
 		// get the vbos, buffers, ids, etc.
 		int storageBufferId = 0;
@@ -869,115 +812,62 @@ public class LodBufferBuilderFactory
 		
 		LodVertexBuffer vbo = buildableVbos[xIndex][zIndex][iIndex];
 		
-		
-		
-		
 		// this shouldn't happen, but just to be safe
 		if (vbo.id != -1 && GLProxy.getInstance().getGlContext() == GLProxyContext.LOD_BUILDER)
 		{
 			// this is how many points will be rendered
 			vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
 			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo.id);
+			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 			try
 			{
 				// if possible use the faster buffer storage route
 				if (uploadMethod == GpuUploadMethod.BUFFER_STORAGE && storageBufferId != 0)
 				{
-					// get a pointer to the buffer in system memory
-					ByteBuffer vboBuffer = GL30.glMapBufferRange(GL15.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(), GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT);
-					if (vboBuffer == null)
-					{
-						int previousCapacity = uploadBuffer.capacity();
-						
-						// only expand the buffers if the uploadBuffer actually
-						// has something in it and expansion is allowed
-						if (previousCapacity != 0 && allowBufferExpansion)
-						{
-							// the buffer(s) aren't big enough, expand them.
-							// This does cause lag/stuttering, so it should be avoided!
-							
-							// expand the buffer in system memory
-							GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL15.GL_DYNAMIC_DRAW);
-							GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, uploadBuffer);
-							
-							// un-bind the system memory buffer 
-							GL15.glUnmapBuffer(GL15.GL_ARRAY_BUFFER);
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-							
-							// expand the buffer storage
-							GL15.glDeleteBuffers(storageBufferId);
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, storageBufferId);
-							GL45.glBufferStorage(GL15.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), 0);
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-							
-							
-							// recursively try to upload into the newly created buffer storage
-							// but don't recurse again if that fails
-							// (we don't want an infinitely expanding buffer!)
-							vboUpload(xIndex,zIndex,iIndex, uploadBuffer, false, uploadMethod);
-						}
-					}
-					else
-					{
-						// upload the buffer into system memory...
-						vboBuffer.put(uploadBuffer);
-						GL15.glUnmapBuffer(GL15.GL_ARRAY_BUFFER);
-						
-						// ...then upload into GPU memory
-						// (uploading into GPU memory directly can only be done 
-						// through the glCopyBufferSubData/glCopyNamed... methods)
-						GL45.glCopyNamedBufferSubData(vbo.id, storageBufferId, 0, 0, uploadBuffer.capacity());
-					}
+					GL32.glDeleteBuffers(storageBufferId);
+					buildableStorageBufferIds[xIndex][zIndex][iIndex] = GL32.glGenBuffers();
+					storageBufferId = buildableStorageBufferIds[xIndex][zIndex][iIndex];
+					GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, storageBufferId);
+					GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, uploadBuffer, 0);
 				}
 				else if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
 				{
+					// TODO: Check this half reasonable comment!
 					// no stuttering but high GPU usage
 					// stores everything in system memory instead of GPU memory
 					// making rendering much slower.
 					// Unless the user is running integrated graphics,
 					// in that case this will actually work better than SUB_DATA.
-					
-					
+					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
+					if (size < uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER)
+					{
+						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL32.GL_STATIC_DRAW);
+					}
 					ByteBuffer vboBuffer;
-					
-					// map buffer range is better since it can be explicitly unsynchronized 
-					if (GLProxy.getInstance().mapBufferRangeSupported)
-						vboBuffer = GL30.glMapBufferRange(GL30.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(), GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT | GL30.GL_MAP_INVALIDATE_BUFFER_BIT);
-					else
-						vboBuffer = GL15.glMapBuffer(GL30.GL_ARRAY_BUFFER, uploadBuffer.capacity());
-					
-					
-					if (vboBuffer == null)
-					{
-						GL15.glBufferData(GL45.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL15.GL_STATIC_DRAW);
-						GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, uploadBuffer);
-					}
-					else
-					{
-						vboBuffer.put(uploadBuffer);
-					}
+					// map buffer range is better since it can be explicitly unsynchronized
+					vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(),
+							GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
+					vboBuffer.put(uploadBuffer);
 				}
 				else if (uploadMethod == GpuUploadMethod.DATA)
 				{
+					// TODO: Check this nonsense comment!
 					// hybrid bufferData //
 					// high stutter, low GPU usage
 					// But simplest/most compatible
-					
-					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uploadBuffer.capacity(), GL15.GL_STATIC_DRAW);
-					GL15.glBufferData(GL15.GL_ARRAY_BUFFER, uploadBuffer, GL15.GL_STATIC_DRAW);
+					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, uploadBuffer, GL32.GL_STATIC_DRAW);
 				}
 				else
 				{
+					// TODO: Check this nonsense comment!
 					// hybrid subData/bufferData //
 					// less stutter, low GPU usage
-					
-					long size = GL15.glGetBufferParameteri(GL15.GL_ARRAY_BUFFER, GL15.GL_BUFFER_SIZE);
+					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
 					if (size < uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER)
 					{
-						GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL15.GL_STATIC_DRAW);
+						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL32.GL_STATIC_DRAW);
 					}
-					GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, uploadBuffer);
+					GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
 				}
 			}
 			catch (Exception e)
@@ -988,9 +878,9 @@ public class LodBufferBuilderFactory
 			finally
 			{
 				if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
-					GL15.glUnmapBuffer(GL15.GL_ARRAY_BUFFER);
+					GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
 				
-				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 			}
 			
 		}//if vbo exists and in correct GL context
@@ -1001,6 +891,7 @@ public class LodBufferBuilderFactory
 	{
 		// don't wait for the lock to open,
 		// since this is called on the main render thread
+		// TODO: Use atomic swap instead of locks!
 		if (bufferLock.tryLock())
 		{
 			try

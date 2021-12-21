@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.objects.opengl;
 
-import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.render.GLProxy;
@@ -41,7 +41,7 @@ public class LodVertexBuffer implements AutoCloseable
 		if (GLProxy.getInstance().getGlContext() == GLProxyContext.NONE)
 			throw new IllegalStateException("Thread [" +Thread.currentThread().getName() + "] tried to create a [" + LodVertexBuffer.class.getSimpleName() + "] outside a OpenGL contex.");
 		
-		this.id = GL15.glGenBuffers();
+		this.id = GL32.glGenBuffers();
 	}
 	
 	
@@ -50,7 +50,7 @@ public class LodVertexBuffer implements AutoCloseable
 	{
 		if (this.id >= 0)
 		{
-			GLProxy.getInstance().recordOpenGlCall(() -> GL15.glDeleteBuffers(this.id));
+			GLProxy.getInstance().recordOpenGlCall(() -> GL32.glDeleteBuffers(this.id));
 			this.id = -1;
 		}
 	}
