@@ -817,6 +817,8 @@ public class LodBufferBuilderFactory
 		{
 			// this is how many points will be rendered
 			vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
+			// If size is zero, just ignore it.
+			if (uploadBuffer.capacity()==0) return;
 			
 			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 			try
@@ -839,9 +841,10 @@ public class LodBufferBuilderFactory
 					// Unless the user is running integrated graphics,
 					// in that case this will actually work better than SUB_DATA.
 					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
-					if (size < uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER)
+					if (size < uploadBuffer.capacity())
 					{
-						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL32.GL_STATIC_DRAW);
+						int newSize = (int) (uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
 					}
 					ByteBuffer vboBuffer;
 					// map buffer range is better since it can be explicitly unsynchronized
@@ -865,7 +868,8 @@ public class LodBufferBuilderFactory
 					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
 					if (size < uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER)
 					{
-						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, (int) (uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER), GL32.GL_STATIC_DRAW);
+						int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
 					}
 					GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
 				}

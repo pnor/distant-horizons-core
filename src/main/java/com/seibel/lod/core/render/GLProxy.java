@@ -28,6 +28,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengl.GLUtil;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.ModInfo;
@@ -204,7 +205,6 @@ public class GLProxy
 		lodBuilderGlCapabilities = GL.createCapabilities();
 		ClientApi.LOGGER.info("lodBuilderGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
 		
-		
 		// create the proxyWorker's context
 		proxyWorkerGlContext = GLFW.glfwCreateWindow(64, 48, "LOD proxy worker Window", 0L, minecraftGlContext);
 		GLFW.glfwMakeContextCurrent(proxyWorkerGlContext);
@@ -224,8 +224,8 @@ public class GLProxy
 		//==================================//
 		
 		setGlContext(GLProxyContext.LOD_BUILDER);
-		
-		
+		// TODO: Enable this but disable INFO logging
+		//GLUtil.setupDebugMessageCallback();
 		
 		// get specific capabilities
 		// Check if we can use the Buffer Storage, which is available in GL4.4 or after
@@ -250,6 +250,10 @@ public class GLProxy
 		}
 		
 		ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
+
+		setGlContext(GLProxyContext.PROXY_WORKER);
+		// TODO: Enable this but disable INFO logging
+		//GLUtil.setupDebugMessageCallback();
 		
 		//==========//
 		// clean up //
