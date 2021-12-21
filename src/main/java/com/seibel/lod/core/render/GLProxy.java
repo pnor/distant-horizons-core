@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GLCapabilities;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -57,6 +57,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  */
 public class GLProxy
 {
+	
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	private static final ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
@@ -96,6 +97,34 @@ public class GLProxy
 	private final GpuUploadMethod preferredUploadMethod;
 	
 	
+	private String getVersionInfo(GLCapabilities c) {
+		StringBuilder str = new StringBuilder("Your supported OpenGL version:\n");
+		
+		str.append("1.1: "+c.OpenGL11+"\n");
+		str.append("1.2: "+c.OpenGL12+"\n");
+		str.append("1.3: "+c.OpenGL13+"\n");
+		str.append("1.4: "+c.OpenGL14+"\n");
+		str.append("1.5: "+c.OpenGL15+"\n");
+		str.append("2.0: "+c.OpenGL20+"\n");
+		str.append("2.1: "+c.OpenGL21+"\n");
+		str.append("3.0: "+c.OpenGL30+"\n");
+		str.append("3.1: "+c.OpenGL31+"\n");
+		str.append("3.2: "+c.OpenGL32+" <- REQUIRED\n");
+		str.append("3.3: "+c.OpenGL33+"\n");
+		str.append("4.0: "+c.OpenGL40+"\n");
+		str.append("4.1: "+c.OpenGL41+"\n");
+		str.append("4.2: "+c.OpenGL42+"\n");
+		str.append("4.3: "+c.OpenGL43+" <- optional improvement\n");
+		str.append("4.4: "+c.OpenGL44+" <- optional improvement\n");
+		str.append("4.5: "+c.OpenGL45+"\n");
+		str.append("4.6: "+c.OpenGL46+"\n");
+		
+		str.append("If you noticed that your computer supports higher OpenGL versions"
+				+ " but not the required version, try running the game in compatibility mode."
+				+ " (How you turn that on, I have no clue~)");
+		return str.toString();
+	}
+	
 	
 	/** 
 	 * @throws IllegalStateException 
@@ -126,10 +155,14 @@ public class GLProxy
 		// crash the game if the GPU doesn't support OpenGL 3.2
 		if (!minecraftGlCapabilities.OpenGL32)
 		{
+			String supportedVersionInfo = getVersionInfo(minecraftGlCapabilities);
+			
 			// Note: as of MC 1.17 this shouldn't happen since MC
 			// requires OpenGL 3.2, but for older MC version this will warn the player.
-			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GLProxy.class.getSimpleName() + " and discovered this GPU doesn't support OpenGL 3.3 or greater.";
-			MC.crashMinecraft(errorMessage + " Sorry I couldn't tell you sooner :(", new UnsupportedOperationException("This GPU doesn't support OpenGL 3.3 or greater."));
+			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GLProxy.class.getSimpleName()
+					+ " and discovered this GPU doesn't support OpenGL 3.2." + " Sorry I couldn't tell you sooner :(\n"+
+					"Additional info:\n"+supportedVersionInfo;
+			MC.crashMinecraft(errorMessage, new UnsupportedOperationException("This GPU doesn't support OpenGL 3.2."));
 		}
 		
 		// context creation setup
@@ -155,8 +188,10 @@ public class GLProxy
 		// Check if we can use the make-over version of Vertex Attribute, which is available in GL4.3 or after
 		VertexAttributeBufferBindingSupported = minecraftGlCapabilities.glBindVertexBuffer != 0L; // Nullptr
 
+		// UNUSED currently
 		// Check if we can use the named version of all calls, which is available in GL4.5 or after
 		namedObjectSupported = minecraftGlCapabilities.glNamedBufferData != 0L; //Nullptr
+		
 		
 		//==================================//
 		// get any GPU related capabilities //
@@ -176,7 +211,7 @@ public class GLProxy
 			ClientApi.LOGGER.warn("This GPU doesn't support Buffer Storage (OpenGL 4.4), falling back to using other methods.");			
 		}
 		
-		String vendor = GL15.glGetString(GL15.GL_VENDOR).toUpperCase(); // example return: "NVIDIA CORPORATION"
+		String vendor = GL32.glGetString(GL32.GL_VENDOR).toUpperCase(); // example return: "NVIDIA CORPORATION"
 		if (vendor.contains("NVIDIA") || vendor.contains("GEFORCE"))
 		{
 			// NVIDIA card
