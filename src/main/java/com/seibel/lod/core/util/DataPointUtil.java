@@ -212,7 +212,8 @@ public class DataPointUtil
 	
 	public static int getColor(long dataPoint)
 	{
-		return (int) (((dataPoint >>> COLOR_SHIFT) & COLOR_MASK) | (/*((dataPoint >>> (ALPHA_SHIFT - ALPHA_DOWNSIZE_SHIFT)) | 0b1111)*/255 << 24));
+		// TODO re-add transparency by replacing the color 255 with what is in comment
+		return (int) (((dataPoint >>> COLOR_SHIFT) & COLOR_MASK) | /*((((dataPoint >>> ALPHA_SHIFT) & ALPHA_MASK) << ALPHA_DOWNSIZE_SHIFT) | 0b1111)*/ 255 << 24);
 	}
 	
 	/** This is used to convert a dataPoint to string (useful for the print function) */
