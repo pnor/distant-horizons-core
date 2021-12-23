@@ -295,9 +295,19 @@ public class LodBuilder
 	{
 		short depth = 0;
 		
+		IBlockColorWrapper blockColorWrapper = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs);
+		int colorOfBlock = blockColorWrapper.getColor();
+		
 		for (int y = yAbs; y >= 0; y--)
 		{
+			
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs))
+			{
+				depth = (short) (y + 1);
+				break;
+			}
+			blockColorWrapper = chunk.getBlockColorWrapper(xAbs, y, zAbs);
+			if (colorOfBlock != blockColorWrapper.getColor())
 			{
 				depth = (short) (y + 1);
 				break;
@@ -354,7 +364,9 @@ public class LodBuilder
 			// snow, flowers, etc. Get the above block so we can still get the color
 			// of the snow, flower, etc. that may be above this block
 			int aboveColorInt = 0;
-			if (config.client().worldGenerator().getBlocksToAvoid().nonFull || config.client().worldGenerator().getBlocksToAvoid().noCollision)
+			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(x, y, z);
+			if ((config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
+					|| (config.client().worldGenerator().getBlocksToAvoid().noCollision && block.hasNoCollision()))
 				aboveColorInt = getColorForBlock(chunk, x, y + 1, z);
 			
 			//if (colorInt == 0 && yAbs > 0)

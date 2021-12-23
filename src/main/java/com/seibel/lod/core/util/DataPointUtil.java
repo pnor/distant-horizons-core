@@ -269,13 +269,13 @@ public class DataPointUtil
 		int size = dataToMerge.length / inputVerticalData;
 		
 		// We initialize the arrays that are going to be used
-		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT / 2 + 1) * 2);
+		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT + 1) * 2);
 		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
-		
 		
 		int genMode = DistanceGenerationMode.FULL.complexity;
 		boolean allEmpty = true;
 		boolean allVoid = true;
+		boolean limited = false;
 		boolean allDefault;
 		long singleData;
 		
@@ -289,116 +289,139 @@ public class DataPointUtil
 		//We collect the indexes of the data, ordered by the depth
 		for (int index = 0; index < size; index++)
 		{
-			for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
+			if (index == 0)
 			{
-				singleData = dataToMerge[index * inputVerticalData + dataIndex];
-				if (doesItExist(singleData))
+				for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
 				{
-					genMode = Math.min(genMode, getGenerationMode(singleData));
-					allEmpty = false;
-					if (!isVoid(singleData))
+					singleData = dataToMerge[dataIndex];
+					if (doesItExist(singleData))
 					{
-						allVoid = false;
-						depth = getDepth(singleData);
-						height = getHeight(singleData);
-						
-						int botPos = -1;
-						int topPos = -1;
-						//values fall in between and possibly require extension of array
-						boolean botExtend = false;
-						boolean topExtend = false;
-						for (i = 0; i < count; i++)
+						genMode = Math.min(genMode, getGenerationMode(singleData));
+						allEmpty = false;
+						if (!isVoid(singleData))
 						{
-							if (depth <= heightAndDepth[i * 2] && depth >= heightAndDepth[i * 2 + 1])
-							{
-								botPos = i;
-								break;
-							}
-							else if (depth < heightAndDepth[i * 2 + 1] && ((i + 1 < count && depth > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
-							{
-								botPos = i;
-								botExtend = true;
-								break;
-							}
+							allVoid = false;
+							count++;
+							heightAndDepth[dataIndex * 2] = getHeight(singleData);
+							heightAndDepth[dataIndex * 2 +1] = getDepth(singleData);
 						}
-						for (i = 0; i < count; i++)
+					}
+					else
+						break;
+				}
+			}
+			else
+			{
+				for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
+				{
+					singleData = dataToMerge[index * inputVerticalData + dataIndex];
+					if (doesItExist(singleData))
+					{
+						genMode = Math.min(genMode, getGenerationMode(singleData));
+						allEmpty = false;
+						if (!isVoid(singleData))
 						{
-							if (height <= heightAndDepth[i * 2] && height >= heightAndDepth[i * 2 + 1])
+							allVoid = false;
+							depth = getDepth(singleData);
+							height = getHeight(singleData);
+							
+							int botPos = -1;
+							int topPos = -1;
+							//values fall in between and possibly require extension of array
+							boolean botExtend = false;
+							boolean topExtend = false;
+							for (i = 0; i < count; i++)
 							{
-								topPos = i;
-								break;
+								if (depth < heightAndDepth[i * 2] && depth >= heightAndDepth[i * 2 + 1])
+								{
+									botPos = i;
+									break;
+								}
+								else if (depth < heightAndDepth[i * 2 + 1] && ((i + 1 < count && depth >= heightAndDepth[(i + 1) * 2]) || i + 1 == count))
+								{
+									botPos = i;
+									botExtend = true;
+									break;
+								}
 							}
-							else if (height < heightAndDepth[i * 2 + 1] && ((i + 1 < count && height > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
+							for (i = 0; i < count; i++)
 							{
-								topPos = i;
-								topExtend = true;
-								break;
+								if (height <= heightAndDepth[i * 2] && height > heightAndDepth[i * 2 + 1])
+								{
+									topPos = i;
+									break;
+								}
+								else if (height <= heightAndDepth[i * 2 + 1] && ((i + 1 < count && height > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
+								{
+									topPos = i;
+									topExtend = true;
+									break;
+								}
 							}
-						}
-						if (topPos == -1)
-						{
-							if (botPos == -1)
+							if (topPos == -1)
 							{
-								//whole block falls above
-								extendArray(heightAndDepth, 2, 0, 1, count);
-								heightAndDepth[0] = height;
-								heightAndDepth[1] = depth;
-								count++;
+								if (botPos == -1)
+								{
+									//whole block falls above
+									extendArray(heightAndDepth, 2, 0, 1, count);
+									heightAndDepth[0] = height;
+									heightAndDepth[1] = depth;
+									count++;
+								}
+								else if (!botExtend)
+								{
+									//only top falls above extending it there, while bottom is inside existing
+									shrinkArray(heightAndDepth, 2, 0, botPos, count);
+									heightAndDepth[0] = height;
+									count -= botPos;
+								}
+								else
+								{
+									//top falls between some blocks, extending those as well
+									shrinkArray(heightAndDepth, 2, 0, botPos, count);
+									heightAndDepth[0] = height;
+									heightAndDepth[1] = depth;
+									count -= botPos;
+								}
 							}
-							else if (!botExtend)
+							else if (!topExtend)
 							{
-								//only top falls above extending it there, while bottom is inside existing
-								shrinkArray(heightAndDepth, 2, 0, botPos, count);
-								heightAndDepth[0] = height;
-								count -= botPos;
-							}
-							else
-							{
-								//top falls between some blocks, extending those as well
-								shrinkArray(heightAndDepth, 2, 0, botPos, count);
-								heightAndDepth[0] = height;
-								heightAndDepth[1] = depth;
-								count -= botPos;
-							}
-						}
-						else if (!topExtend)
-						{
-							if (!botExtend)
-								//both top and bottom are within some exiting blocks, possibly merging them
-								heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
-							else
-								//top falls between some blocks, extending it there
-								heightAndDepth[topPos * 2 + 1] = depth;
-							shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-							count -= botPos - topPos;
-						}
-						else
-						{
-							if (!botExtend)
-							{
-								//ClientApi.LOGGER.info("datapoint bug: " + Arrays.toString(heightAndDepth));
-								//only top is within some exiting block, extending it
-								topPos++; //to make it easier
-								heightAndDepth[topPos * 2] = height;
-								heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+								if (!botExtend)
+									//both top and bottom are within some exiting blocks, possibly merging them
+									heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+								else
+									//top falls between some blocks, extending it there
+									heightAndDepth[topPos * 2 + 1] = depth;
 								shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
 								count -= botPos - topPos;
 							}
 							else
 							{
-								//both top and bottom are outside existing blocks
-								shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-								count -= botPos - topPos;
-								extendArray(heightAndDepth, 2, topPos + 1, 1, count);
-								count++;
-								heightAndDepth[topPos * 2 + 2] = height;
-								heightAndDepth[topPos * 2 + 3] = depth;
+								if (!botExtend)
+								{
+									//only top is within some exiting block, extending it
+									topPos++; //to make it easier
+									heightAndDepth[topPos * 2] = height;
+									heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+									shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+									count -= botPos - topPos;
+								}
+								else
+								{
+									//both top and bottom are outside existing blocks
+									shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+									count -= botPos - topPos;
+									extendArray(heightAndDepth, 2, topPos + 1, 1, count);
+									count++;
+									heightAndDepth[topPos * 2 + 2] = height;
+									heightAndDepth[topPos * 2 + 3] = depth;
+								}
 							}
 						}
 					}
+					else
+						break;
 				}
-				else
-					break;
 			}
 		}
 		
@@ -415,6 +438,7 @@ public class DataPointUtil
 		int j = 0;
 		while (count > maxVerticalData)
 		{
+			limited = true;
 			ii = WORLD_HEIGHT;
 			for (i = 0; i < count - 1; i++)
 			{
@@ -434,88 +458,104 @@ public class DataPointUtil
 			count--;
 		}
 		//As standard the vertical lods are ordered from top to bottom
-		for (j = count - 1; j >= 0; j--)
+		if (!limited && size == 1)
 		{
-			height = heightAndDepth[j * 2];
-			depth = heightAndDepth[j * 2 + 1];
-			
-			if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
-				break;
-			
-			int numberOfChildren = 0;
-			int tempAlpha = 0;
-			int tempRed = 0;
-			int tempGreen = 0;
-			int tempBlue = 0;
-			int tempLightBlock = 0;
-			int tempLightSky = 0;
-			byte tempGenMode = DistanceGenerationMode.FULL.complexity;
-			allEmpty = true;
-			allVoid = true;
-			allDefault = true;
-			long data = 0;
-			
-			for (int index = 0; index < size; index++)
+			for (j = 0; j < count; j++)
+				dataPoint[j] = dataToMerge[j];
+		}
+		else
+		{
+			for (j = 0; j < count; j++)
 			{
-				for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
+				height = heightAndDepth[j * 2];
+				depth = heightAndDepth[j * 2 + 1];
+				
+				if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
+					break;
+				
+				int numberOfChildren = 0;
+				int tempAlpha = 0;
+				int tempRed = 0;
+				int tempGreen = 0;
+				int tempBlue = 0;
+				int tempLightBlock = 0;
+				int tempLightSky = 0;
+				byte tempGenMode = DistanceGenerationMode.FULL.complexity;
+				allEmpty = true;
+				allVoid = true;
+				allDefault = true;
+				long data = 0;
+				
+				for (int index = 0; index < size; index++)
 				{
-					singleData = dataToMerge[index * inputVerticalData + dataIndex];
-					if (doesItExist(singleData) && !isVoid(singleData))
+					for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
 					{
-						
-						if ((depth <= getDepth(singleData) && getDepth(singleData) <= height)
-								|| (depth <= getHeight(singleData) && getHeight(singleData) <= height))
+						singleData = dataToMerge[index * inputVerticalData + dataIndex];
+						if (doesItExist(singleData) && !isVoid(singleData))
 						{
-							if (getHeight(singleData) > getHeight(data))
+							if ((depth <= getDepth(singleData) && getDepth(singleData) < height)
+									|| (depth < getHeight(singleData) && getHeight(singleData) <= height))
+							{
 								data = singleData;
+								break;
+							}
 						}
+						else
+							break;
+					}
+					if (!doesItExist(data))
+					{
+						singleData = dataToMerge[index * inputVerticalData];
+						data = createVoidDataPoint(getGenerationMode(singleData));
+					}
+					
+					if (doesItExist(data))
+					{
+						allEmpty = false;
+						if (!isVoid(data))
+						{
+							numberOfChildren++;
+							allVoid = false;
+							tempAlpha += getAlpha(data);
+							tempRed += getRed(data);
+							tempGreen += getGreen(data);
+							tempBlue += getBlue(data);
+							tempLightBlock += getLightBlock(data);
+							tempLightSky += getLightSky(data);
+							if (!getFlag(data))
+								allDefault = false;
+						}
+						tempGenMode = (byte) Math.min(tempGenMode, getGenerationMode(data));
 					}
 					else
-						break;
-				}
-				if (!doesItExist(data))
-				{
-					singleData = dataToMerge[index * inputVerticalData];
-					data = createVoidDataPoint(getGenerationMode(singleData));
+						tempGenMode = (byte) Math.min(tempGenMode, DistanceGenerationMode.NONE.complexity);
 				}
 				
-				if (doesItExist(data))
-				{
-					allEmpty = false;
-					if (!isVoid(data))
-					{
-						numberOfChildren++;
-						allVoid = false;
-						tempAlpha += getAlpha(data);
-						tempRed += getRed(data);
-						tempGreen += getGreen(data);
-						tempBlue += getBlue(data);
-						tempLightBlock += getLightBlock(data);
-						tempLightSky += getLightSky(data);
-						if (!getFlag(data)) allDefault = false;
-					}
-					tempGenMode = (byte) Math.min(tempGenMode, getGenerationMode(data));
-				}
+				if (allEmpty)
+					//no child has been initialized
+					dataPoint[j] = EMPTY_DATA;
+				else if (allVoid)
+					//all the children are void
+					dataPoint[j] = createVoidDataPoint(tempGenMode);
 				else
-					tempGenMode = (byte) Math.min(tempGenMode, DistanceGenerationMode.NONE.complexity);
-			}
-			
-			if (allEmpty)
-				//no child has been initialized
-				dataPoint[j] = EMPTY_DATA;
-			else if (allVoid)
-				//all the children are void
-				dataPoint[j] = createVoidDataPoint(tempGenMode);
-			else
-			{
-				//we have at least 1 child
-				tempAlpha = tempAlpha / numberOfChildren;
-				tempRed = tempRed / numberOfChildren;
-				tempGreen = tempGreen / numberOfChildren;
-				tempBlue = tempBlue / numberOfChildren;
-				tempLightBlock = tempLightBlock / numberOfChildren;
-				tempLightSky = tempLightSky / numberOfChildren;
-				dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+				{
+					//we have at least 1 child
+					if (size != 1)
+					{
+						tempAlpha = tempAlpha / numberOfChildren;
+						tempRed = tempRed / numberOfChildren;
+						tempGreen = tempGreen / numberOfChildren;
+						tempBlue = tempBlue / numberOfChildren;
+						tempLightBlock = tempLightBlock / numberOfChildren;
+						tempLightSky = tempLightSky / numberOfChildren;
+					}
+					//data = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+					//if (j > 0 && getColor(data) == getColor(dataPoint[j]))
+					//{
+					//	add simplification at the end due to color
+					//}
+					dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+				}
 			}
 		}
 		return dataPoint;
