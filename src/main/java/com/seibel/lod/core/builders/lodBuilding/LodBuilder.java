@@ -80,6 +80,7 @@ public class LodBuilder
 	
 	//public static final boolean useExperimentalLighting = true;
 	
+	private static int timesToEdgeDetect = 1;
 	
 	
 	
@@ -262,7 +263,7 @@ public class LodBuilder
 				
 				yAbs = height - 1;
 				// We search light on above air block
-				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs);
+				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < timesToEdgeDetect);
 				if (hasCeiling && topBlock)
 				{
 					yAbs = depth;
@@ -291,12 +292,17 @@ public class LodBuilder
 	 * Find the lowest valid point from the bottom.
 	 * Used when creating a vertical LOD.
 	 */
-	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
+	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, boolean strictEdge)
 	{
 		short depth = 0;
 		
-		IBlockColorWrapper blockColorWrapper = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs);
-		int colorOfBlock = blockColorWrapper.getColor();
+		IBlockColorWrapper blockColorWrapper;
+		int colorOfBlock = 0;
+		if (strictEdge)
+		{
+			blockColorWrapper = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs);
+			colorOfBlock = blockColorWrapper.getColor();
+		}
 		
 		for (int y = yAbs; y >= 0; y--)
 		{
@@ -306,11 +312,14 @@ public class LodBuilder
 				depth = (short) (y + 1);
 				break;
 			}
-			blockColorWrapper = chunk.getBlockColorWrapper(xAbs, y, zAbs);
-			if (colorOfBlock != blockColorWrapper.getColor())
+			if (strictEdge)
 			{
-				depth = (short) (y + 1);
-				break;
+				blockColorWrapper = chunk.getBlockColorWrapper(xAbs, y, zAbs);
+				if (colorOfBlock != blockColorWrapper.getColor())
+				{
+					depth = (short) (y + 1);
+					break;
+				}
 			}
 		}
 		return depth;
