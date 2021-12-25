@@ -200,6 +200,9 @@ public class VertexOptimizer
 	public final Map<LodDirection, byte[]> skyLights;
 	public byte blockLight;
 	
+	boolean skipTop;
+	boolean skipBot;
+	
 	
 	
 	/** creates an empty box */
@@ -317,15 +320,18 @@ public class VertexOptimizer
 		int maxY = getMaxY();
 		long singleAdjDataPoint;
 		
-		/* TODO implement attached vertical face culling
-		//Up direction case
-		if(DataPointUtil.doesItExist(adjData.get(Direction.UP)))
+		if (maxY > 8)
 		{
-			height = DataPointUtil.getHeight(singleAdjDataPoint);
-			depth = DataPointUtil.getDepth(singleAdjDataPoint);
-		}*/
+			int test = 0;
+		}
+		
+		// TODO transparency uncomment final condition to see ocean floor
+		//Up direction case
+		singleAdjDataPoint = adjData.get(LodDirection.UP)[0];
+		skipTop = DataPointUtil.doesItExist(singleAdjDataPoint) && DataPointUtil.getDepth(singleAdjDataPoint) == maxY;// && DataPointUtil.getAlpha(singleAdjDataPoint) == 255;
 		//Down direction case
 		singleAdjDataPoint = adjData.get(LodDirection.DOWN)[0];
+		skipBot = DataPointUtil.doesItExist(singleAdjDataPoint) && DataPointUtil.getHeight(singleAdjDataPoint) == minY;// && DataPointUtil.getAlpha(singleAdjDataPoint) == 255;
 		if(DataPointUtil.doesItExist(singleAdjDataPoint))
 			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 		else
@@ -488,13 +494,14 @@ public class VertexOptimizer
 		boxOffset[Z] = zOffset;
 	}
 	
-	/**
-	 * returns true if the given direction should be rendered.
-	 */
+	/** returns true if the given direction should be rendered. */
 	public boolean shouldRenderFace(LodDirection lodDirection, int adjIndex)
 	{
-		if (lodDirection == LodDirection.UP || lodDirection == LodDirection.DOWN)
-			return adjIndex == 0;
+		if (lodDirection == LodDirection.UP)
+			return adjIndex == 0 && !skipTop;
+		if (lodDirection == LodDirection.DOWN)
+			return adjIndex == 0 && !skipBot;
+		
 		return !(adjHeight.get(lodDirection)[adjIndex] == VOID_FACE && adjDepth.get(lodDirection)[adjIndex] == VOID_FACE);
 	}
 	
