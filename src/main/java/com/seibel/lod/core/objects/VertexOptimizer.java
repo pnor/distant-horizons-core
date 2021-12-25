@@ -362,7 +362,7 @@ public class VertexOptimizer
 				height = DataPointUtil.getHeight(singleAdjDataPoint);
 				depth = DataPointUtil.getDepth(singleAdjDataPoint);
 				
-				if (depth <= maxY)
+				if (depth < maxY)
 				{
 					allAbove = false;
 					if (height < minY)
@@ -416,7 +416,7 @@ public class VertexOptimizer
 						}
 						break;
 					}
-					else if (height >= maxY)//depth > minY &&
+					else if (height >= maxY)// && depth > minY
 					{
 						// the adj data intersects the higher part of the current data
 						// we start the creation of a new face
