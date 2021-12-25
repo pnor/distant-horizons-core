@@ -320,11 +320,6 @@ public class VertexOptimizer
 		int maxY = getMaxY();
 		long singleAdjDataPoint;
 		
-		if (maxY > 8)
-		{
-			int test = 0;
-		}
-		
 		// TODO transparency uncomment final condition to see ocean floor
 		//Up direction case
 		singleAdjDataPoint = adjData.get(LodDirection.UP)[0];
