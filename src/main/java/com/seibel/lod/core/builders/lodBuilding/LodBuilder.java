@@ -296,15 +296,21 @@ public class LodBuilder
 	{
 		short depth = 0;
 		
-		IBlockColorWrapper blockColorWrapper;
 		int colorOfBlock = 0;
 		if (strictEdge)
 		{
-			blockColorWrapper = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs);
-			colorOfBlock = blockColorWrapper.getColor();
+			colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs).getColor();
+			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(xAbs, yAbs + 1, zAbs);
+			if (block != null && ((this.config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
+					|| (this.config.client().worldGenerator().getBlocksToAvoid().noCollision && block.hasNoCollision())))
+			{
+				int aboveColorInt = chunk.getBlockColorWrapper(xAbs, yAbs + 1, zAbs).getColor();
+				if (aboveColorInt != 0)
+					colorOfBlock = aboveColorInt;
+			}
 		}
 		
-		for (int y = yAbs; y >= 0; y--)
+		for (int y = yAbs - 1; y >= 0; y--)
 		{
 			
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs))
@@ -314,8 +320,7 @@ public class LodBuilder
 			}
 			if (strictEdge)
 			{
-				blockColorWrapper = chunk.getBlockColorWrapper(xAbs, y, zAbs);
-				if (colorOfBlock != blockColorWrapper.getColor())
+				if (colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor())
 				{
 					depth = (short) (y + 1);
 					break;

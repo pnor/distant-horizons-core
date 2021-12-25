@@ -352,12 +352,17 @@ public class VertexOptimizer
 			boolean toFinish = false;
 			int toFinishIndex = 0;
 			boolean allAbove = true;
+			// TODO transparency ocean floor fix
+			//boolean isOpaque = ((colorMap[0] >> 24) & 0xFF) == 255;
 			for (i = 0; i < dataPoint.length; i++)
 			{
 				singleAdjDataPoint = dataPoint[i];
-				
 				if (DataPointUtil.isVoid(singleAdjDataPoint) || !DataPointUtil.doesItExist(singleAdjDataPoint))
 					break;
+				
+				// TODO transparency ocean floor fix
+				//if (isOpaque && DataPointUtil.getAlpha(singleAdjDataPoint) != 255)
+				//	continue;
 				
 				height = DataPointUtil.getHeight(singleAdjDataPoint);
 				depth = DataPointUtil.getDepth(singleAdjDataPoint);
