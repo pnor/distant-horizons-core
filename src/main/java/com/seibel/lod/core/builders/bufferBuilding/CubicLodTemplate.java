@@ -31,6 +31,8 @@ import com.seibel.lod.core.util.LodUtil;
 
 import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIGHT;
 
+
+
 /**
  * Builds LODs as rectangular prisms.
  * @author James Seibel
@@ -38,7 +40,10 @@ import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIG
  */
 public class CubicLodTemplate
 {
-	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerY, int playerZ, long data, Map<LodDirection, long[]> adjData,
+	//TODO make it a config
+	static int cullingRange = 128;
+	
+	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerZ, long data, Map<LodDirection, long[]> adjData,
 			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
 	{
 		if (vertexOptimizer == null)
@@ -61,7 +66,6 @@ public class CubicLodTemplate
 				blockWidth,
 				posX * blockWidth, 0, posZ * blockWidth, // x, y, z offset
 				playerX,
-				playerY,
 				playerZ,
 				adjData,
 				color,
@@ -89,7 +93,7 @@ public class CubicLodTemplate
 	private static void generateBoundingBox(VertexOptimizer vertexOptimizer,
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
-			int playerX, int playerY, int playerZ,
+			int playerX, int playerZ,
 			Map<LodDirection, long[]> adjData,
 			int color, byte skyLight, byte blockLight,
 			boolean[] adjShadeDisabled)
@@ -121,10 +125,18 @@ public class CubicLodTemplate
 		int color;
 		byte skyLight;
 		byte blockLight;
+		
 		for (LodDirection lodDirection : VertexOptimizer.DIRECTIONS)
 		{
 			//if(vertexOptimizer.isCulled(lodDirection))
 			//	continue;
+			// culling
+			if (lodDirection == LodDirection.NORTH && vertexOptimizer.getZ(lodDirection, 0) < -cullingRange
+				|| lodDirection == LodDirection.EAST && vertexOptimizer.getX(lodDirection, 0) > cullingRange
+				|| lodDirection == LodDirection.SOUTH && vertexOptimizer.getZ(lodDirection, 0) > cullingRange
+				|| lodDirection == LodDirection.WEST && vertexOptimizer.getX(lodDirection, 0) < -cullingRange)
+				continue;
+			
 			
 			int verticalFaceIndex = 0;
 			while (vertexOptimizer.shouldRenderFace(lodDirection, verticalFaceIndex))

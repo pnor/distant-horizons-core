@@ -416,7 +416,7 @@ public class LodBufferBuilderFactory
 										break;
 									
 									//We send the call to create the vertices
-									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerY, playerZ, data, adjData,
+									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerZ, data, adjData,
 											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
 								}
 								
