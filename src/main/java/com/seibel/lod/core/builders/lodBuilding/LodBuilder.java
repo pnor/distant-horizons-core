@@ -249,17 +249,15 @@ public class LodBuilder
 			yAbs = chunk.getMaxY(xRel,zRel) - MIN_WORLD_HEIGHT;
 			int count = 0;
 			boolean topBlock = true;
+			if (yAbs <= 0);
+				dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
 			while (yAbs > 0)
 			{
 				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
 				
 				// If the lod is at the default height, it must be void data
 				if (height == 0)
-				{
-					if (topBlock)
-						dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
 					break;
-				}
 				
 				yAbs = height - 1;
 				// We search light on above air block
