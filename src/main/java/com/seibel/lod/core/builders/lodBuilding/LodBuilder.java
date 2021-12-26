@@ -263,7 +263,7 @@ public class LodBuilder
 				
 				yAbs = height - 1;
 				// We search light on above air block
-				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < timesToEdgeDetect);
+				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < timesToEdgeDetect && !hasCeiling);
 				if (hasCeiling && topBlock)
 				{
 					yAbs = depth;
