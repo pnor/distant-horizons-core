@@ -34,6 +34,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -157,6 +158,9 @@ public class GLProxy
 	 */
 	private GLProxy()
 	{
+		
+		boolean enableDebugLogging = CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL;
+		
         // this must be created on minecraft's render context to work correctly
 		
 		ClientApi.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
@@ -225,7 +229,8 @@ public class GLProxy
 		
 		setGlContext(GLProxyContext.LOD_BUILDER);
 		// TODO: Enable this but disable INFO logging
-		//GLUtil.setupDebugMessageCallback();
+		if (enableDebugLogging)
+			GLUtil.setupDebugMessageCallback();
 		
 		// get specific capabilities
 		// Check if we can use the Buffer Storage, which is available in GL4.4 or after
@@ -252,8 +257,8 @@ public class GLProxy
 		ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
 
 		setGlContext(GLProxyContext.PROXY_WORKER);
-		// TODO: Enable this but disable INFO logging
-		//GLUtil.setupDebugMessageCallback();
+		if (enableDebugLogging)
+			GLUtil.setupDebugMessageCallback();
 		
 		//==========//
 		// clean up //
