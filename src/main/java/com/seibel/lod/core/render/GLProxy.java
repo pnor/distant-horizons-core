@@ -19,7 +19,10 @@
 
 package com.seibel.lod.core.render;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -229,8 +232,21 @@ public class GLProxy
 		
 		setGlContext(GLProxyContext.LOD_BUILDER);
 		// TODO: Enable this but disable INFO logging
-		if (enableDebugLogging)
-			GLUtil.setupDebugMessageCallback();
+
+	    File proxyLog = new File("OpenGL-Lod-ProxyContext.log");
+	    try {
+			proxyLog.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    if (enableDebugLogging)
+			try {
+				GLUtil.setupDebugMessageCallback(new PrintStream(proxyLog));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 		// get specific capabilities
 		// Check if we can use the Buffer Storage, which is available in GL4.4 or after
@@ -257,8 +273,20 @@ public class GLProxy
 		ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
 
 		setGlContext(GLProxyContext.PROXY_WORKER);
-		if (enableDebugLogging)
-			GLUtil.setupDebugMessageCallback();
+	    File workerLog = new File("OpenGL-Lod-WorkerContext.log");
+	    try {
+			workerLog.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    if (enableDebugLogging)
+			try {
+				GLUtil.setupDebugMessageCallback(new PrintStream(workerLog));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 		//==========//
 		// clean up //
