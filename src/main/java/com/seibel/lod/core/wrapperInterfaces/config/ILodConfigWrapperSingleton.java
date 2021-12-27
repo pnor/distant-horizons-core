@@ -475,7 +475,7 @@ public interface ILodConfigWrapperSingleton
 						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly the best option for integrated GPUs. \n"
 						+ "                Default option for AMD/Intel. \n"
 						+ "                May end up storing buffers in System memory. \n"
-						+ "                Fast rending if in GPU memory, slow if in system memory, \n"
+						+ "                Fast rendering if in GPU memory, slow if in system memory, \n"
 						+ "                but won't stutter when uploading.  \n"
 						+ " " + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
 						+ "       Backup option for AMD/Intel. \n"
@@ -486,20 +486,19 @@ public interface ILodConfigWrapperSingleton
 				GpuUploadMethod getGpuUploadMethod();
 				void setGpuUploadMethod(GpuUploadMethod newGpuUploadMethod);
 				
-				MinDefaultMax<Integer> GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 0, 5000);
-				String GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DESC = ""
-						+ " How long should we wait before uploading a buffer to the GPU? \n"
+				MinDefaultMax<Integer> GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 10, 5000);
+				String GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DESC = ""
+						+ " How long should a buffer wait per Megabyte of data uploaded?\n"
 						+ " Helpful resource for frame times: https://fpstoms.com \n"
 						+ "\n"
 						+ " Longer times may reduce stuttering but will make fake chunks \n"
-						+ " transition and load slower. \n"
+						+ " transition and load slower. Change this to [0] for no timeout.\n"
 						+ "\n"
 						+ " NOTE:\n"
-						+ " This should be a last resort option."
-						+ " Only change this from [0], after you have tried all of the \n"
-						+ " \"GPU Upload methods\" and determined even the best stutters with yoru hardware.";
-				int getGpuUploadTimeoutInMilliseconds();
-				void setGpuUploadTimeoutInMilliseconds(int newTimeoutInMilliseconds);
+						+ " Before changing this config, try changing \"GPU Upload methods\"\n"
+						+ "  and determined the best method for your hardware first. \n";
+				int getGpuUploadPerMegabyteInMilliseconds();
+				void setGpuUploadPerMegabyteInMilliseconds(int newMilliseconds);
 				
 				String REBUILD_TIMES_DESC = ""
 						+ " How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU? \n"

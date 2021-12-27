@@ -20,6 +20,7 @@
 package com.seibel.lod.core.builders.bufferBuilding;
 
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.lwjgl.opengl.GL32;
@@ -67,6 +69,21 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  */
 public class LodBufferBuilderFactory
 {
+	public static class LagSpikeCatcher {
+
+		long timer = System.nanoTime();
+		public LagSpikeCatcher() {}
+		public void end(String source) {
+			timer = System.nanoTime() - timer;
+			if (timer> 16000000) { //16 ms
+				System.out.println("WARNING! "+source+" took "+Duration.ofNanos(timer)+"!");
+			}
+			
+		}
+	}
+	
+	
+	
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
@@ -75,13 +92,13 @@ public class LodBufferBuilderFactory
 	/** The threads used to generate buffers. */
 	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
 	
-	
+	public static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 	
 	/**
 	 * When uploading to a buffer that is too small,
 	 * recreate it this many times bigger than the upload payload
 	 */
-	public static final double BUFFER_EXPANSION_MULTIPLIER = 1.5;
+	public static final double BUFFER_EXPANSION_MULTIPLIER = 1.3;
 	
 	/**
 	 * When buffers are first created they are allocated to this size (in Bytes).
@@ -620,12 +637,12 @@ public class LodBufferBuilderFactory
 							// create the buffer storage (GPU memory)
 							buildableStorageBufferIds[x][z][i] = GL44.glGenBuffers();
 							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, buildableStorageBufferIds[x][z][i]);
-							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, 0); // the 0 flag means to create the storage in the GPUs memory
+							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, GL44.GL_DYNAMIC_STORAGE_BIT);
 							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, 0);
 							
 							drawableStorageBufferIds[x][z][i] = GL44.glGenBuffers();
 							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, drawableStorageBufferIds[x][z][i]);
-							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, 0);
+							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, GL44.GL_DYNAMIC_STORAGE_BIT);
 							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, 0);	
 						}
 					}
@@ -761,7 +778,9 @@ public class LodBufferBuilderFactory
 			GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod(); 
 			
 			// determine the upload timeout
-			int uploadTimeoutInMS = CONFIG.client().advanced().buffers().getGpuUploadTimeoutInMilliseconds();
+			int MBPerMS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
+			long BPerNS = MBPerMS; // MB -> B = 1/1,000,000. MS -> NS = 1,000,000. So, MBPerMS = BPerNS.
+			long remainingNS = 0; // We don't want to pause for like 0.1 ms... so we store those tiny MS.
 			
 			// actually upload the buffers
 			for (int x = 0; x < buildableVbos.length; x++)
@@ -772,15 +791,33 @@ public class LodBufferBuilderFactory
 					{
 						for (int i = 0; i < buildableBuffers[x][z].length; i++)
 						{
-							ByteBuffer uploadBuffer = buildableBuffers[x][z][i].getCleanedByteBuffer();
+							ByteBuffer uploadBuffer = null;
+							//FIXME: The sonme Buffers aren't closed/end() and causing errors!
+							try {
+								LagSpikeCatcher b = new LagSpikeCatcher();
+								uploadBuffer = buildableBuffers[x][z][i].getCleanedByteBuffer();
+								b.end("getCleanedByteBuffer");
+							} catch (IndexOutOfBoundsException e) {
+								// NOTE: Temp try/catch for above FIXME.
+								// e.printStackTrace();
+							}
+							if (uploadBuffer == null) continue;
+							if (uploadBuffer.capacity() == 0) continue;
+							LagSpikeCatcher vboU = new LagSpikeCatcher();
 							vboUpload(x,z,i, uploadBuffer, uploadMethod);
+							vboU.end("vboUpload");
+							LagSpikeCatcher setR = new LagSpikeCatcher();
 							lodDim.setRegenRegionBufferByArrayIndex(x, z, false);
-							
+							setR.end("setRegenRegionBufferByArrayIndex");
+
 							// upload buffers over an extended period of time
 							// to hopefully prevent stuttering.
-							if (uploadTimeoutInMS != 0)
-								Thread.sleep(uploadTimeoutInMS);
-							GL32.glFinish();
+							remainingNS += uploadBuffer.capacity()*BPerNS;
+							if (remainingNS >= TimeUnit.NANOSECONDS.convert(1000/60, TimeUnit.MILLISECONDS)) {
+								if (remainingNS > MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS) remainingNS = MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS;
+								Thread.sleep(remainingNS/1000000, (int) (remainingNS%1000000));
+								remainingNS = 0;
+							}
 						}
 					}
 				}
@@ -788,7 +825,6 @@ public class LodBufferBuilderFactory
 		}
 		catch (Exception e)
 		{
-			GL32.glFinish();
 			// this doesn't appear to be necessary anymore, but just in case.
 			ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
 			e.printStackTrace();
@@ -798,7 +834,9 @@ public class LodBufferBuilderFactory
 			// jobs for a certain amount of time, or something happened when a job is
 			// executing, it could decide to delete the thread, and create a new one for the
 			// next job. So we will need to release the gl context.
+			LagSpikeCatcher end = new LagSpikeCatcher();
 			glProxy.setGlContext(GLProxyContext.NONE);
+			end.end("GLSwitchContext");
 		}
 	}
 	
@@ -819,18 +857,37 @@ public class LodBufferBuilderFactory
 			vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
 			// If size is zero, just ignore it.
 			if (uploadBuffer.capacity()==0) return;
-			
+
+			LagSpikeCatcher bindBuff = new LagSpikeCatcher();
 			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
+			bindBuff.end("glBindBuffer vbo.id");
+			
 			try
 			{
 				// if possible use the faster buffer storage route
 				if (uploadMethod == GpuUploadMethod.BUFFER_STORAGE && storageBufferId != 0)
 				{
-					GL32.glDeleteBuffers(storageBufferId);
-					buildableStorageBufferIds[xIndex][zIndex][iIndex] = GL32.glGenBuffers();
-					storageBufferId = buildableStorageBufferIds[xIndex][zIndex][iIndex];
 					GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, storageBufferId);
-					GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, uploadBuffer, 0);
+					
+					LagSpikeCatcher getParm = new LagSpikeCatcher();
+					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
+					getParm.end("glGetBufferParameteri BuffStorage");
+					if (size < uploadBuffer.capacity())
+					{
+						int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+						LagSpikeCatcher buffResizeRegen = new LagSpikeCatcher();
+						GL32.glDeleteBuffers(storageBufferId);
+						buildableStorageBufferIds[xIndex][zIndex][iIndex] = GL32.glGenBuffers();
+						buffResizeRegen.end("glDeleteBuffers BuffStorage resize");
+						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, storageBufferId);
+						storageBufferId = buildableStorageBufferIds[xIndex][zIndex][iIndex];
+						LagSpikeCatcher buffResize = new LagSpikeCatcher();
+						GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, newSize, GL44.GL_DYNAMIC_STORAGE_BIT);
+						buffResize.end("glBufferStorage BuffStorage resize");
+					}
+					LagSpikeCatcher buffSubData = new LagSpikeCatcher();
+					GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
+					buffSubData.end("glBufferSubData BuffStorage");
 				}
 				else if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
 				{
@@ -840,17 +897,25 @@ public class LodBufferBuilderFactory
 					// making rendering much slower.
 					// Unless the user is running integrated graphics,
 					// in that case this will actually work better than SUB_DATA.
+					LagSpikeCatcher getParm = new LagSpikeCatcher();
 					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
+					getParm.end("glGetBufferParameteri BuffMapping");
 					if (size < uploadBuffer.capacity())
 					{
 						int newSize = (int) (uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+						LagSpikeCatcher buffResize = new LagSpikeCatcher();
 						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
+						buffResize.end("glBufferData BuffMapping resize");
 					}
 					ByteBuffer vboBuffer;
 					// map buffer range is better since it can be explicitly unsynchronized
+					LagSpikeCatcher buffMap = new LagSpikeCatcher();
 					vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(),
 							GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
+					buffMap.end("glMapBufferRange BuffMapping");
+					LagSpikeCatcher buffWrite = new LagSpikeCatcher();
 					vboBuffer.put(uploadBuffer);
+					buffWrite.end("WriteData BuffMapping");
 				}
 				else if (uploadMethod == GpuUploadMethod.DATA)
 				{
@@ -858,20 +923,28 @@ public class LodBufferBuilderFactory
 					// hybrid bufferData //
 					// high stutter, low GPU usage
 					// But simplest/most compatible
+					LagSpikeCatcher buffData = new LagSpikeCatcher();
 					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, uploadBuffer, GL32.GL_STATIC_DRAW);
+					buffData.end("glBufferData Data");
 				}
 				else
 				{
 					// TODO: Check this nonsense comment!
 					// hybrid subData/bufferData //
 					// less stutter, low GPU usage
+					LagSpikeCatcher getParm = new LagSpikeCatcher();
 					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
-					if (size < uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER)
+					getParm.end("glGetBufferParameteri SubData");
+					if (size < uploadBuffer.capacity())
 					{
 						int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+						LagSpikeCatcher buffResize = new LagSpikeCatcher();
 						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
+						buffResize.end("glBufferData SubData resize");
 					}
+					LagSpikeCatcher buffSubData = new LagSpikeCatcher();
 					GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
+					buffSubData.end("glBufferSubData SubData");
 				}
 			}
 			catch (Exception e)
@@ -881,10 +954,14 @@ public class LodBufferBuilderFactory
 			}
 			finally
 			{
+				LagSpikeCatcher buffUnmap = new LagSpikeCatcher();
 				if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
 					GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
-				
+				buffUnmap.end("glUnmapBuffer");
+
+				LagSpikeCatcher buffUnbind = new LagSpikeCatcher();
 				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
+				buffUnbind.end("glBindBuffer 0");
 			}
 			
 		}//if vbo exists and in correct GL context

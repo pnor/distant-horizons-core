@@ -458,7 +458,7 @@ public class LodBufferBuilder
 		}
 		
 		ByteBuffer bytebuffer = this.buffer.slice();
-		bytebuffer.order(this.buffer.order()); // FORGE: Fix incorrect byte order
+		//bytebuffer.order(this.buffer.order()); // FORGE: Fix incorrect byte order
 		this.buffer.clear();
 		return bytebuffer; // the original method also returned bufferbuilder$drawstate
 	}
