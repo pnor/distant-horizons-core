@@ -76,7 +76,7 @@ public class LodBufferBuilderFactory
 		public void end(String source) {
 			timer = System.nanoTime() - timer;
 			if (timer> 16000000) { //16 ms
-				System.out.println("WARNING! "+source+" took "+Duration.ofNanos(timer)+"!");
+				ClientApi.LOGGER.debug("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 			
 		}
