@@ -310,6 +310,32 @@ public class LodDimension
 		
 		regions[xIndex][zIndex] = newRegion;
 	}
+	public interface PosComsumer {
+		void run(int x, int z);
+	}
+	
+	public void iterateWithSpiral(PosComsumer r) {
+		int ox,oy,dx,dy;
+	    ox = oy = dx = 0;
+	    dy = -1;
+	    int len = regions.length;
+	    int maxI = len*len;
+	    int halfLen = len/2;
+	    for(int i =0; i < maxI; i++){
+	        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
+	        	int x = ox+halfLen;
+	        	int z = oy+halfLen;
+	        	r.run(x, z);
+	        }
+	        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
+	            int temp = dx;
+	            dx = -dy;
+	            dy = temp;
+	        }
+	        ox += dx;
+	        oy += dy;
+	    }
+	}
 	
 	
 	/**
@@ -325,129 +351,99 @@ public class LodDimension
 		
 		// don't run the tree cutter multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastCutChunk.getX() || newPlayerChunk.getZ() != lastCutChunk.getZ())
-		{
+		if (newPlayerChunk.getX() != lastCutChunk.getX() || newPlayerChunk.getZ() != lastCutChunk.getZ()) {
 			lastCutChunk = newPlayerChunk;
-			
-			Thread thread = new Thread(() ->
-			{
-				int regionX;
-				int regionZ;
-				int minDistance;
-				byte detail;
-				byte minAllowedDetailLevel;
-				
+
+			Runnable thread = () -> {
+
 				// go over every region in the dimension
-				for (int x = 0; x < regions.length; x++)
-				{
-					for (int z = 0; z < regions.length; z++)
-					{
-						regionX = (x + center.x) - halfWidth;
-						regionZ = (z + center.z) - halfWidth;
-						
-						if (regions[x][z] != null)
-						{
-							// check what detail level this region should be
-							// and cut it if it is higher then that
-							minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX, playerPosZ);
-							detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
-							minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
-							
-							if (regions[x][z].getMinDetailLevel() > minAllowedDetailLevel)
-							{
-								regions[x][z].cutTree(minAllowedDetailLevel);
-								recreateRegionBuffer[x][z] = true;
-							}
+				iterateWithSpiral((int x, int z) -> {
+					int regionX;
+					int regionZ;
+					int minDistance;
+					byte detail;
+					byte minAllowedDetailLevel;
+					regionX = (x + center.x) - halfWidth;
+					regionZ = (z + center.z) - halfWidth;
+
+					if (regions[x][z] != null) {
+						// check what detail level this region should be
+						// and cut it if it is higher then that
+						minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
+								playerPosX, playerPosZ);
+						detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
+						minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
+
+						if (regions[x][z].getMinDetailLevel() > minAllowedDetailLevel) {
+							regions[x][z].cutTree(minAllowedDetailLevel);
+							recreateRegionBuffer[x][z] = true;
 						}
-					}// region z
-				}// region z
-			});
-			
+					}
+				});
+			};
 			cutAndExpandThread.execute(thread);
 		}
 	}
 	
 	/** Either expands or loads all regions in the rendered LOD area */
-	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ)
-	{
+	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ) {
 		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
-		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
+		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX),
+				LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
-		
-		
+
 		if (lastExpandedChunk == null)
 			lastExpandedChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
-		
+
 		// don't run the expander multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastExpandedChunk.getX() || newPlayerChunk.getZ() != lastExpandedChunk.getZ())
-		{
+		if (newPlayerChunk.getX() != lastExpandedChunk.getX() || newPlayerChunk.getZ() != lastExpandedChunk.getZ()) {
 			lastExpandedChunk = newPlayerChunk;
-			
-			Thread thread = new Thread(() ->
-			{
-				int regionX;
-				int regionZ;
-				LodRegion region;
-				int minDistance;
-				byte detail;
-				byte levelToGen;
-				
-				int ox,oy,dx,dy;
-			    ox = oy = dx = 0;
-			    dy = -1;
-			    int len = regions.length;
-			    int maxI = len*len;
-			    int halfLen = len/2;
-			    for(int i =0; i < maxI; i++){
-			        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
-			        	int x = ox+halfLen;
-			        	int z = oy+halfLen;
-						regionX = (x + center.x) - halfWidth;
-						regionZ = (z + center.z) - halfWidth;
-						final RegionPos regionPos = new RegionPos(regionX, regionZ);
-						region = regions[x][z];
-						
-						minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX, playerPosZ);
-						detail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
-						levelToGen = DetailDistanceUtil.getLodGenDetail(detail).detailLevel;
-						
-						// check that the region isn't null and at least this detail level
-						if (region == null || region.getGenerationMode() != generationMode)
-						{
-							// First case, region has to be created
-							
-							// try to get the region from file
-							regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-							
-							// if there is no region file create an empty region
-							if (regions[x][z] == null)
-								regions[x][z] = new LodRegion(levelToGen, regionPos, generationMode, verticalQuality);
-							
-							regenRegionBuffer[x][z] = true;
-							regenDimensionBuffers = true;
-							recreateRegionBuffer[x][z] = true;
-						}
-						else if (region.getMinDetailLevel() > levelToGen)
-						{
-							// Second case, the region exists at a higher detail level.
-							
-							// Expand the region by introducing the missing layer
-							region.growTree(levelToGen);
-							regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-							recreateRegionBuffer[x][z] = true;
-						}
-			        }
-			        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
-			            int temp = dx;
-			            dx = -dy;
-			            dy = temp;
-			        }
-			        ox += dx;
-			        oy += dy;
-			    }
-			});
-			
+
+			Runnable thread = () -> {
+
+				iterateWithSpiral((int x, int z) -> {
+					int regionX;
+					int regionZ;
+					LodRegion region;
+					int minDistance;
+					byte detail;
+					byte levelToGen;
+					regionX = (x + center.x) - halfWidth;
+					regionZ = (z + center.z) - halfWidth;
+					final RegionPos regionPos = new RegionPos(regionX, regionZ);
+					region = regions[x][z];
+
+					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
+							playerPosZ);
+					detail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
+					levelToGen = DetailDistanceUtil.getLodGenDetail(detail).detailLevel;
+
+					// check that the region isn't null and at least this detail level
+					if (region == null || region.getGenerationMode() != generationMode) {
+						// First case, region has to be created
+
+						// try to get the region from file
+						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
+
+						// if there is no region file create an empty region
+						if (regions[x][z] == null)
+							regions[x][z] = new LodRegion(levelToGen, regionPos, generationMode, verticalQuality);
+
+						regenRegionBuffer[x][z] = true;
+						regenDimensionBuffers = true;
+						recreateRegionBuffer[x][z] = true;
+					} else if (region.getMinDetailLevel() > levelToGen) {
+						// Second case, the region exists at a higher detail level.
+
+						// Expand the region by introducing the missing layer
+						region.growTree(levelToGen);
+						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
+						recreateRegionBuffer[x][z] = true;
+					}
+				});
+			};
+
 			cutAndExpandThread.execute(thread);
 		}
 	}
