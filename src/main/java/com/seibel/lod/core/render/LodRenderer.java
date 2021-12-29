@@ -160,7 +160,12 @@ public class LodRenderer
 		}
 
 		// get MC's shader program
+		// Save all MC render state
 		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
+		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
+		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
+		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
+		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
 		
 		GLProxy glProxy = GLProxy.getInstance();
 		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
@@ -222,6 +227,9 @@ public class LodRenderer
 		profiler.push("LOD draw setup");
 
 		/*---------Set GL State--------*/
+		// Make sure to unbind current VBO so we don't mess up vanilla settings
+		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
+		
 		// set the required open GL settings
 		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME)
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
@@ -232,8 +240,8 @@ public class LodRenderer
 		GL32.glEnable(GL32.GL_DEPTH_TEST);
 		
 		// enable transparent rendering
-		GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
-		GL32.glEnable(GL32.GL_BLEND);
+		// GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
+		// GL32.glEnable(GL32.GL_BLEND);
 		
 		/*---------Bind required objects--------*/
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
@@ -311,17 +319,24 @@ public class LodRenderer
 
 		profiler.popPush("LOD cleanup");
 		
-		// if this cleanup isn't done MC will crash
-		// when trying to render its own terrain
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 
 		shaderProgram.unbind();
 		lightmapTexture.free();
 
 		GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
-		GL32.glDisable(GL32.GL_BLEND); // TODO: what should this be reset to?
-		
+		if (currentBlend)
+			GL32.glEnable(GL32.GL_BLEND);
+		else 
+			GL32.glDisable(GL32.GL_BLEND);
+
+		// if this cleanup isn't done MC will crash
+		// when trying to render its own terrain
+		// And may causes mod compat issue
 		GL32.glUseProgram(currentProgram);
+		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, currentVBO);
+		GL32.glBindVertexArray(currentVAO);
+		GL32.glActiveTexture(currentActiveText);
 		
 		// clear the depth buffer so everything is drawn over the LODs
 		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
