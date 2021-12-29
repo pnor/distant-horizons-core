@@ -105,13 +105,11 @@ public interface LevelContainer
 	void updateData(LevelContainer lowerLevelContainer, int posX, int posZ);
 
 	/**
-	 * This will write the raw data without metadata to the output stream
+	 * This will write the raw data with metadata to the output stream
 	 * @return isAllGenerated whether the data is all generated
 	 * @throws IOException 
 	 */
-	default boolean writeData(DataOutputStream output) throws IOException {
-		throw new UnsupportedOperationException();
-	}
+	boolean writeData(DataOutputStream output) throws IOException;
 	
 	/**
 	 * This will give the data to save in the file
