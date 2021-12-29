@@ -192,8 +192,8 @@ public class LodDimensionFileHandler
 									+ " version found: " + fileVersion
 									+ ", version requested: " + LOD_SAVE_FILE_VERSION
 									+ ". File was been deleted.");
-							
-							break;
+							// This should not break, but be continue to see whether other versions can be loaded or updated
+							continue;
 						}
 						else if (fileVersion > LOD_SAVE_FILE_VERSION)
 						{
@@ -205,26 +205,21 @@ public class LodDimensionFileHandler
 									+ " version found: " + fileVersion
 									+ ", version requested: " + LOD_SAVE_FILE_VERSION
 									+ " this region will not be written to in order to protect the newer file.");
-							
-							break;
+							// This should not break, but be continue to see whether other versions can be loaded or updated
+							continue;
 						}
 						else if (fileVersion < LOD_SAVE_FILE_VERSION)
 						{
-							//this is old, but readable version
-							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
-							inputStream.read(data);
+							// this is old, but readable version
+							// read and add the data to our region
+							region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), fileVersion));
 							inputStream.close();
-							// add the data to our region
-							region.addLevelContainer(new VerticalLevelContainer(data, fileVersion));
 						} else
 						{
 							// this file is a readable version,
-							// read the file
-							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
-							inputStream.read(data);
+							// read and add the data to our region
+							region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), LOD_SAVE_FILE_VERSION));
 							inputStream.close();
-							// add the data to our region
-							region.addLevelContainer(new VerticalLevelContainer(data, LOD_SAVE_FILE_VERSION));
 						}
 					}
 					catch (IOException ioEx)
@@ -305,10 +300,11 @@ public class LodDimensionFileHandler
 			}
 			File oldFile = new File(fileName);
 			//ClientProxy.LOGGER.info("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] to file.");
-			byte[] temp = region.getLevel(detailLevel).toDataString();
+			//byte[] temp = region.getLevel(detailLevel).toDataString();
 			
 			try
 			{
+				boolean isFileFullyGened = false;
 				// make sure the file and folder exists
 				if (!oldFile.exists())
 				{
@@ -325,12 +321,11 @@ public class LodDimensionFileHandler
 					// (to make sure we don't overwrite a newer
 					// version file if it exists)
 					int fileVersion = LOD_SAVE_FILE_VERSION;
-					int isFull = 0;
 					try (XZCompressorInputStream inputStream = new XZCompressorInputStream(new FileInputStream(oldFile)))
 					{
 						fileVersion = inputStream.read();
 						inputStream.skip(1);
-						isFull = inputStream.read() & 0b10000000;
+						isFileFullyGened = (inputStream.read() & 0b10000000) != 0;
 						inputStream.close();
 					}
 					catch (IOException ex)
@@ -344,15 +339,7 @@ public class LodDimensionFileHandler
 						// the file we are reading is a newer version,
 						// don't write anything, we don't want to accidentally
 						// delete anything the user may want.
-						return;
-					}
-					if ((temp[1] & 0b10000000) != 0b10000000 && isFull == 0b10000000)
-					{
-						// existing file is complete while new one is only partially generate
-						// this can happen is for some reason loading failed
-						// this doesn't fix the bug, but at least protects old data
-						ClientApi.LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + fileName + "]");
-						return;
+						continue;
 					}
 					// if we got this far then we are good
 					// to overwrite the old file
@@ -365,8 +352,22 @@ public class LodDimensionFileHandler
 					outputStream.write(LOD_SAVE_FILE_VERSION);
 					
 					// add each LodChunk to the file
-					outputStream.write(temp);
+					boolean isLocalFullyGened = region.getLevel(detailLevel).writeData(new DataOutputStream(outputStream));
 					outputStream.close();
+					
+					if (!isLocalFullyGened && isFileFullyGened)
+					{
+						// existing file is complete while new one is only partially generate
+						// this can happen is for some reason loading failed
+						// this doesn't fix the bug, but at least protects old data
+						ClientApi.LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + fileName + "]");
+						try {
+						newFile.delete();
+						} catch (SecurityException e) {
+							// Failed to delete temp file... just continue.
+						}
+						continue;
+					}
 					
 					// overwrite the old file with the new one
 					Files.move(newFile.toPath(), oldFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
@@ -384,72 +385,9 @@ public class LodDimensionFileHandler
 		}
 	}
 	
-	
-	public void saveRegionFile (byte[] regionFile, RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
-	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
-		
-		if (fileName != null)
-		{
-			File oldFile = new File(fileName);
-			File newFile = new File(fileName + TMP_FILE_EXTENSION);
-			try (OutputStream os = new FileOutputStream(newFile))
-			{
-				os.write(regionFile);
-				Files.move(newFile.toPath(), oldFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-				os.close();
-			}
-			catch (IOException ioEx)
-			{
-				ClientApi.LOGGER.error("LOD file write error. Unable to write to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
-				ioEx.printStackTrace();
-			}
-		}
-	}
-	
-	public byte[] getRegionFile (RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
-	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
-		if (fileName != null)
-		{
-			File file = new File(fileName);
-			try (InputStream is = new FileInputStream(file))
-			{
-				byte[] data = ThreadMapUtil.getSaveContainer(detailLevel);
-				is.read(data);
-				is.close();
-				return Arrays.copyOf(data, (int) file.length());
-			}
-			catch (IOException ioEx)
-			{
-				ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
-				ioEx.printStackTrace();
-			}
-		}
-		return new byte[0];
-	}
-	
-	
 	//================//
 	// helper methods //
 	//================//
-	
-	public int getHashFromFile(RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
-	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
-		if (fileName == null)
-			return 0;
-		
-		File file = new File(fileName);
-		return file.hashCode();
-	}
-	
 	
 	/**
 	 * Return the name of the file that should contain the
@@ -476,7 +414,8 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException | SecurityException e)
 		{
-			ClientApi.LOGGER.warn("Unable to get the filename for the region [" + regionX + ", " + regionZ + "], error: [" + e.getMessage() + "], stacktrace: ");
+			ClientApi.LOGGER.warn("Unable to get the filename for the region [" + regionX + ", " + regionZ + "], error: [" + e.getMessage() + "].\n"
+					+ "One possible cause is that the process failed to read the current path location due to security config. Stacktrace: ");
 			e.printStackTrace();
 			return null;
 		}

@@ -42,7 +42,6 @@ public class ThreadMapUtil
 	public static final ConcurrentMap<String, long[][]> threadBuilderArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[][]> threadBuilderVerticalArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[]> threadVerticalAddDataMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, byte[][]> saveContainer = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, short[]> projectionArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, short[]> heightAndDepthMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[]> singleDataToMergeMap = new ConcurrentHashMap<>();
@@ -136,25 +135,6 @@ public class ThreadMapUtil
 		return threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel];
 	}
 	
-	/** returns the array NOT cleared every time */
-	public static byte[] getSaveContainer(int detailLevel)
-	{
-		if (!saveContainer.containsKey(Thread.currentThread().getName()) || (saveContainer.get(Thread.currentThread().getName()) == null))
-		{
-			byte[][] array = new byte[LodUtil.DETAIL_OPTIONS][];
-			int size = 1;
-			for (int i = LodUtil.DETAIL_OPTIONS - 1; i >= 0; i--)
-			{
-				array[i] = new byte[4 + 8 * size * size * DetailDistanceUtil.getMaxVerticalData(i)];
-				size = size << 1;
-			}
-			saveContainer.put(Thread.currentThread().getName(), array);
-		}
-		//Arrays.fill(threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel], 0);
-		return saveContainer.get(Thread.currentThread().getName())[detailLevel];
-	}
-	
-	
 	/** returns the array filled with 0's */
 	public static long[] getVerticalDataArray(int arrayLength)
 	{
@@ -209,7 +189,6 @@ public class ThreadMapUtil
 		threadBuilderArrayMap.clear();
 		threadBuilderVerticalArrayMap.clear();
 		threadVerticalAddDataMap.clear();
-		saveContainer.clear();
 		projectionArrayMap.clear();
 		heightAndDepthMap.clear();
 		singleDataToMergeMap.clear();

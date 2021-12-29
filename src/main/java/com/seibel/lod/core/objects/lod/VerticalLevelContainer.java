@@ -19,6 +19,12 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
@@ -165,6 +171,122 @@ public class VerticalLevelContainer implements LevelContainer
 		return DataPointUtil.doesItExist(getSingleData(posX, posZ));
 	}
 	
+	private long[] readDataVersion6(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+		int x = size * size * tempMaxVerticalData;
+		long[] tempDataContainer = new long[x];
+		for (int i = 0; i < tempDataContainer.length; i++)
+		{
+			long newData = Long.reverseBytes(inputData.readLong());
+			newData = DataPointUtil.createDataPoint(
+					DataPointUtil.getAlpha(newData),
+					DataPointUtil.getRed(newData),
+					DataPointUtil.getGreen(newData),
+					DataPointUtil.getBlue(newData),
+					DataPointUtil.getHeight(newData) - minHeight,
+					DataPointUtil.getDepth(newData) - minHeight,
+					DataPointUtil.getLightSky(newData),
+					DataPointUtil.getLightBlock(newData),
+					DataPointUtil.getGenerationMode(newData),
+					DataPointUtil.getFlag(newData));
+			
+			tempDataContainer[i] = newData;
+		}
+		return tempDataContainer;
+	}
+	private long[] readDataVersion7(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+		int x = size * size * tempMaxVerticalData;
+		long[] tempDataContainer = new long[x];
+		for (int i = 0; i < tempDataContainer.length; i++)
+		{
+			long newData = Long.reverseBytes(inputData.readLong());
+			newData = DataPointUtil.createDataPoint(
+					DataPointUtil.getAlpha(newData),
+					DataPointUtil.getRed(newData),
+					DataPointUtil.getGreen(newData),
+					DataPointUtil.getBlue(newData),
+					DataPointUtil.getHeight(newData) - 64 - minHeight,
+					DataPointUtil.getDepth(newData) - 64 - minHeight,
+					DataPointUtil.getLightSky(newData),
+					DataPointUtil.getLightBlock(newData),
+					DataPointUtil.getGenerationMode(newData),
+					DataPointUtil.getFlag(newData));
+			tempDataContainer[i] = newData;
+		}
+		return tempDataContainer;
+	}
+
+	private long[] readDataVersion8(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+		int x = size * size * tempMaxVerticalData;
+		long[] tempDataContainer = new long[x];
+		short tempMinHeight = Short.reverseBytes(inputData.readShort());
+		if (tempMinHeight != minHeight) {
+			for (int i = 0; i < tempDataContainer.length; i++) {
+				long newData = Long.reverseBytes(inputData.readLong());
+				newData = DataPointUtil.createDataPoint(
+						DataPointUtil.getAlpha(newData),
+						DataPointUtil.getRed(newData),
+						DataPointUtil.getGreen(newData),
+						DataPointUtil.getBlue(newData),
+						DataPointUtil.getHeight(newData) + tempMinHeight - minHeight,
+						DataPointUtil.getDepth(newData) + tempMinHeight - minHeight,
+						DataPointUtil.getLightSky(newData),
+						DataPointUtil.getLightBlock(newData),
+						DataPointUtil.getGenerationMode(newData),
+						DataPointUtil.getFlag(newData));
+				tempDataContainer[i] = newData;
+			}
+		} else {
+			for (int i = 0; i < tempDataContainer.length; i++) {
+				tempDataContainer[i] = Long.reverseBytes(inputData.readLong());
+			}
+		}
+		return tempDataContainer;
+	}
+	
+	public VerticalLevelContainer(DataInputStream inputData, int version) throws IOException {
+		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
+		detailLevel = inputData.readByte();
+		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+		int fileMaxVerticalData = inputData.readByte() & 0b01111111;
+		long[] tempDataContainer = null;
+		
+		switch (version) {
+		case 6:
+			tempDataContainer = readDataVersion6(inputData, fileMaxVerticalData);
+			break;
+		case 7:
+			tempDataContainer = readDataVersion7(inputData, fileMaxVerticalData);
+			break;
+		case 8:
+			tempDataContainer = readDataVersion8(inputData, fileMaxVerticalData);
+			break;
+		default:
+			assert false;
+		}
+		
+		int targetMaxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
+		if (fileMaxVerticalData > targetMaxVerticalData)
+		{
+			long[] dataToMerge = new long[fileMaxVerticalData];
+			long[] tempDataContainer2 = new long[size * size * targetMaxVerticalData];
+			for (int i = 0; i < size * size; i++)
+			{
+				System.arraycopy(tempDataContainer, i * fileMaxVerticalData, dataToMerge, 0, fileMaxVerticalData);
+				dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, fileMaxVerticalData, targetMaxVerticalData);
+				System.arraycopy(dataToMerge, 0, tempDataContainer2, i * targetMaxVerticalData, targetMaxVerticalData);
+			}
+			verticalSize = targetMaxVerticalData;
+			this.dataContainer = tempDataContainer2;
+		}
+		else
+		{
+			verticalSize = fileMaxVerticalData;
+			this.dataContainer = tempDataContainer;
+		}
+	}
+	
+	// Deprecated. Please use the DataInputStream version.
+	@Deprecated
 	public VerticalLevelContainer(byte[] inputData, int version)
 	{
 		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
@@ -1062,40 +1184,24 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public byte[] toDataString()
-	{
-		int index = 0;
-		int x = size * size;
-		int tempIndex;
-		long current;
+	public boolean writeData(DataOutputStream output) throws IOException {
+		output.writeByte(detailLevel);
+		output.writeByte((byte) verticalSize);
+		output.writeByte((byte) (minHeight & 0xFF));
+		output.writeByte((byte) ((minHeight >> 8) & 0xFF));
 		boolean allGenerated = true;
-		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
-		
-		tempData[index] = detailLevel;
-		index++;
-		tempData[index] = (byte) verticalSize;
-		index++;
-		tempData[index] = (byte) (minHeight & 0xFF);
-		index++;
-		tempData[index] = (byte) ((minHeight >> 8) & 0xFF);
-		index++;
-		
-		int j;
+		int x = size * size;
 		for (int i = 0; i < x; i++)
 		{
-			for (j = 0; j < verticalSize; j++)
+			for (int j = 0; j < verticalSize; j++)
 			{
-				current = dataContainer[i * verticalSize + j];
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					tempData[index + tempIndex] = (byte) (current >>> (8 * tempIndex));
-				index += 8;
+				long current = dataContainer[i * verticalSize + j];
+				output.writeLong(Long.reverseBytes(current));
 			}
 			if (!DataPointUtil.doesItExist(dataContainer[i]))
 				allGenerated = false;
 		}
-		if (allGenerated)
-			tempData[1] |= 0b10000000;
-		return tempData;
+		return allGenerated;
 	}
 	
 	@Override
