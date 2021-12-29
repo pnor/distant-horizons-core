@@ -393,10 +393,16 @@ public class LodDimension
 				byte detail;
 				byte levelToGen;
 				
-				for (int x = 0; x < regions.length; x++)
-				{
-					for (int z = 0; z < regions.length; z++)
-					{
+				int ox,oy,dx,dy;
+			    ox = oy = dx = 0;
+			    dy = -1;
+			    int len = regions.length;
+			    int maxI = len*len;
+			    int halfLen = len/2;
+			    for(int i =0; i < maxI; i++){
+			        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
+			        	int x = ox+halfLen;
+			        	int z = oy+halfLen;
 						regionX = (x + center.x) - halfWidth;
 						regionZ = (z + center.z) - halfWidth;
 						final RegionPos regionPos = new RegionPos(regionX, regionZ);
@@ -431,8 +437,15 @@ public class LodDimension
 							regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
 							recreateRegionBuffer[x][z] = true;
 						}
-					}
-				}
+			        }
+			        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
+			            int temp = dx;
+			            dx = -dy;
+			            dy = temp;
+			        }
+			        ox += dx;
+			        oy += dy;
+			    }
 			});
 			
 			cutAndExpandThread.execute(thread);
