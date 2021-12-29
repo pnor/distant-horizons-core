@@ -24,6 +24,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.LongBuffer;
 
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -173,74 +176,56 @@ public class VerticalLevelContainer implements LevelContainer
 	
 	private long[] readDataVersion6(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
 		int x = size * size * tempMaxVerticalData;
-		long[] tempDataContainer = new long[x];
-		for (int i = 0; i < tempDataContainer.length; i++)
-		{
-			long newData = Long.reverseBytes(inputData.readLong());
-			newData = DataPointUtil.createDataPoint(
-					DataPointUtil.getAlpha(newData),
-					DataPointUtil.getRed(newData),
-					DataPointUtil.getGreen(newData),
-					DataPointUtil.getBlue(newData),
-					DataPointUtil.getHeight(newData) - minHeight,
-					DataPointUtil.getDepth(newData) - minHeight,
-					DataPointUtil.getLightSky(newData),
-					DataPointUtil.getLightBlock(newData),
-					DataPointUtil.getGenerationMode(newData),
-					DataPointUtil.getFlag(newData));
-			
-			tempDataContainer[i] = newData;
-		}
-		return tempDataContainer;
+		byte[] data = new byte[x * Long.BYTES];
+		ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+		inputData.readFully(data);
+		long[] result = new long[x];
+		bb.asLongBuffer().get(result);
+		patchHeightAndDepth(result,-minHeight);
+		return result;
 	}
 	private long[] readDataVersion7(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
 		int x = size * size * tempMaxVerticalData;
-		long[] tempDataContainer = new long[x];
-		for (int i = 0; i < tempDataContainer.length; i++)
-		{
-			long newData = Long.reverseBytes(inputData.readLong());
-			newData = DataPointUtil.createDataPoint(
-					DataPointUtil.getAlpha(newData),
-					DataPointUtil.getRed(newData),
-					DataPointUtil.getGreen(newData),
-					DataPointUtil.getBlue(newData),
-					DataPointUtil.getHeight(newData) - 64 - minHeight,
-					DataPointUtil.getDepth(newData) - 64 - minHeight,
-					DataPointUtil.getLightSky(newData),
-					DataPointUtil.getLightBlock(newData),
-					DataPointUtil.getGenerationMode(newData),
-					DataPointUtil.getFlag(newData));
-			tempDataContainer[i] = newData;
-		}
-		return tempDataContainer;
+		byte[] data = new byte[x * Long.BYTES];
+		ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+		inputData.readFully(data);
+		long[] result = new long[x];
+		bb.asLongBuffer().get(result);
+		patchHeightAndDepth(result, 64 - minHeight);
+		return result;
 	}
 
 	private long[] readDataVersion8(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
 		int x = size * size * tempMaxVerticalData;
-		long[] tempDataContainer = new long[x];
+		byte[] data = new byte[x * Long.BYTES];
 		short tempMinHeight = Short.reverseBytes(inputData.readShort());
+		ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+		inputData.readFully(data);
+		long[] result = new long[x];
+		bb.asLongBuffer().get(result);
 		if (tempMinHeight != minHeight) {
-			for (int i = 0; i < tempDataContainer.length; i++) {
-				long newData = Long.reverseBytes(inputData.readLong());
-				newData = DataPointUtil.createDataPoint(
-						DataPointUtil.getAlpha(newData),
-						DataPointUtil.getRed(newData),
-						DataPointUtil.getGreen(newData),
-						DataPointUtil.getBlue(newData),
-						DataPointUtil.getHeight(newData) + tempMinHeight - minHeight,
-						DataPointUtil.getDepth(newData) + tempMinHeight - minHeight,
-						DataPointUtil.getLightSky(newData),
-						DataPointUtil.getLightBlock(newData),
-						DataPointUtil.getGenerationMode(newData),
-						DataPointUtil.getFlag(newData));
-				tempDataContainer[i] = newData;
-			}
-		} else {
-			for (int i = 0; i < tempDataContainer.length; i++) {
-				tempDataContainer[i] = Long.reverseBytes(inputData.readLong());
-			}
+			patchHeightAndDepth(result,tempMinHeight - minHeight);
 		}
-		return tempDataContainer;
+		return result;
+	}
+	
+	private static long[] downgradeVerticalSize(int oldVertSize, int newVertSize, long[] data) {
+		long[] dataToMerge = new long[oldVertSize];
+		int size = data.length/oldVertSize;
+		long[] newData = new long[size * newVertSize];
+		for (int i = 0; i < size; i++)
+		{
+			System.arraycopy(oldVertSize, i * oldVertSize, dataToMerge, 0, oldVertSize);
+			dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, oldVertSize, newVertSize);
+			System.arraycopy(dataToMerge, 0, newData, i * newVertSize, newVertSize);
+		}
+		return newData;
+	}
+	
+	private static void patchHeightAndDepth(long[] data, int offset) {
+		for (int i=0; i<data.length; i++) {
+			data[i] = DataPointUtil.shiftHeightAndDepth(data[i], (short)offset);
+		}
 	}
 	
 	public VerticalLevelContainer(DataInputStream inputData, int version) throws IOException {
@@ -267,16 +252,8 @@ public class VerticalLevelContainer implements LevelContainer
 		int targetMaxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
 		if (fileMaxVerticalData > targetMaxVerticalData)
 		{
-			long[] dataToMerge = new long[fileMaxVerticalData];
-			long[] tempDataContainer2 = new long[size * size * targetMaxVerticalData];
-			for (int i = 0; i < size * size; i++)
-			{
-				System.arraycopy(tempDataContainer, i * fileMaxVerticalData, dataToMerge, 0, fileMaxVerticalData);
-				dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, fileMaxVerticalData, targetMaxVerticalData);
-				System.arraycopy(dataToMerge, 0, tempDataContainer2, i * targetMaxVerticalData, targetMaxVerticalData);
-			}
 			verticalSize = targetMaxVerticalData;
-			this.dataContainer = tempDataContainer2;
+			this.dataContainer = downgradeVerticalSize(fileMaxVerticalData, targetMaxVerticalData, tempDataContainer);
 		}
 		else
 		{
