@@ -263,6 +263,9 @@ public class LodBufferBuilderFactory
 			int cullingRangeX = Math.max((int)(1.5 * Math.abs(lastX - playerX)), minCullingRange);
 			int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)), minCullingRange);
 			
+			lastX = playerX;
+			lastZ = playerZ;
+			
 			for (int xRegion = 0; xRegion < lodDim.getWidth(); xRegion++)
 			{
 				for (int zRegion = 0; zRegion < lodDim.getWidth(); zRegion++)
@@ -452,10 +455,6 @@ public class LodBufferBuilderFactory
 					}
 				} // region z
 			} // region z
-			
-			lastX = playerX;
-			lastZ = playerZ;
-			
 			
 			//long executeStart = System.currentTimeMillis();
 			// wait for all threads to finish
