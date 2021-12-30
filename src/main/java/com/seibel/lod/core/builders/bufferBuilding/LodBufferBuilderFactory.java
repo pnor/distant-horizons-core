@@ -165,6 +165,10 @@ public class LodBufferBuilderFactory
 	private volatile int buildableCenterBlockPosX = 0;
 	private volatile int buildableCenterBlockPosZ = 0;
 	
+	private volatile int minCullingRange = SingletonHandler.get(ILodConfigWrapperSingleton.class).client().graphics().advancedGraphics().getBacksideCullingRange();
+	private volatile int lastX = 0;
+	private volatile int lastZ = 0;
+	
 	
 	
 	
@@ -256,6 +260,9 @@ public class LodBufferBuilderFactory
 			
 			skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerX, playerY, playerZ);
 			
+			int cullingRangeX = Math.max((int)(1.5 * Math.abs(lastX - playerX)), minCullingRange);
+			int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)), minCullingRange);
+			
 			for (int xRegion = 0; xRegion < lodDim.getWidth(); xRegion++)
 			{
 				for (int zRegion = 0; zRegion < lodDim.getWidth(); zRegion++)
@@ -331,8 +338,6 @@ public class LodBufferBuilderFactory
 							// idea to fix this!
 							boolean[][] vanillaRenderedChunks = renderer.vanillaRenderedChunks;
 							short gameChunkRenderDistance = (short) (vanillaRenderedChunks.length / 2 - 1);
-							
-							
 							
 							for (int index = 0; index < posToRender.getNumberOfPos(); index++)
 							{
@@ -434,7 +439,7 @@ public class LodBufferBuilderFactory
 									
 									//We send the call to create the vertices
 									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerZ, data, adjData,
-											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
+											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled, cullingRangeX, cullingRangeZ);
 								}
 								
 							} // for pos to in list to render
@@ -447,6 +452,9 @@ public class LodBufferBuilderFactory
 					}
 				} // region z
 			} // region z
+			
+			lastX = playerX;
+			lastZ = playerZ;
 			
 			
 			//long executeStart = System.currentTimeMillis();

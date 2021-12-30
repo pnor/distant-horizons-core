@@ -224,6 +224,14 @@ public interface ILodConfigWrapperSingleton
 				VanillaOverdraw getVanillaOverdraw();
 				void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
 				
+				MinDefaultMax<Integer> VANILLA_CULLING_RANGE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0, 32, 512);
+				String HORIZONTAL_SCALE_DESC = ""
+						+ " This indicates the minimum range where back sides of blocks start get get culled. \n"
+						+ " Higher settings will make terrain look good when looking backwards \n"
+						+ " when changing speeds quickly, but will increase upload times and GPU usage.";
+				int getBacksideCullingRange();
+				void setBacksideCullingRange(int backsideCullingRange);
+				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
 						+ " Will prevent some overdraw issues, but may cause nearby fake chunks to render incorrectly \n"

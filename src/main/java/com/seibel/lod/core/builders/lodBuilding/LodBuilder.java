@@ -80,7 +80,6 @@ public class LodBuilder
 	
 	//public static final boolean useExperimentalLighting = true;
 	
-	private static int timesToEdgeDetect = 1;
 	
 	
 	

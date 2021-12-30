@@ -28,6 +28,8 @@ import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIGHT;
 
@@ -40,11 +42,9 @@ import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIG
  */
 public class CubicLodTemplate
 {
-	//TODO make it a config
-	static int cullingRange = 128;
 	
 	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerZ, long data, Map<LodDirection, long[]> adjData,
-			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
+			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled, int cullingRangeX, int cullingRangeZ)
 	{
 		if (vertexOptimizer == null)
 			return;
@@ -73,7 +73,7 @@ public class CubicLodTemplate
 				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
-		addBoundingBoxToBuffer(buffer, vertexOptimizer);
+		addBoundingBoxToBuffer(buffer, vertexOptimizer, cullingRangeX, cullingRangeZ);
 	}
 	
 	/** add the given position and color to the buffer */
@@ -120,7 +120,7 @@ public class CubicLodTemplate
 		vertexOptimizer.setAdjData(adjData);
 	}
 	
-	private static void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer)
+	private static void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer, int cullingRangeX, int cullingRangeZ)
 	{
 		int color;
 		byte skyLight;
@@ -131,10 +131,11 @@ public class CubicLodTemplate
 			//if(vertexOptimizer.isCulled(lodDirection))
 			//	continue;
 			// culling
-			if (lodDirection == LodDirection.NORTH && vertexOptimizer.getZ(lodDirection, 0) < -cullingRange
-				|| lodDirection == LodDirection.EAST && vertexOptimizer.getX(lodDirection, 0) > cullingRange
-				|| lodDirection == LodDirection.SOUTH && vertexOptimizer.getZ(lodDirection, 0) > cullingRange
-				|| lodDirection == LodDirection.WEST && vertexOptimizer.getX(lodDirection, 0) < -cullingRange)
+			
+			if (lodDirection == LodDirection.NORTH && vertexOptimizer.getZ(lodDirection, 0) < -cullingRangeZ
+				|| lodDirection == LodDirection.EAST && vertexOptimizer.getX(lodDirection, 0) > cullingRangeX
+				|| lodDirection == LodDirection.SOUTH && vertexOptimizer.getZ(lodDirection, 0) > cullingRangeZ
+				|| lodDirection == LodDirection.WEST && vertexOptimizer.getX(lodDirection, 0) < -cullingRangeX)
 				continue;
 			
 			
