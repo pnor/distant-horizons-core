@@ -31,53 +31,27 @@ import org.jetbrains.annotations.Nullable;
 public enum VerticalQuality
 {
 	LOW(
-			new int[] { 2,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1 }
+			new int[] { 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1 },
+			0
 	),
 	
 	MEDIUM(
-			new int[] { 4,
-					4,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1 }
+			new int[] { 4, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1 },
+			1
 	),
 	
 	HIGH(
-			new int[] {
-					8,
-					8,
-					4,
-					4,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1 }
+			new int[] { 8, 8, 4, 4, 2, 2, 2, 1, 1, 1, 1 },
+			2
 	);
 	
 	public final int[] maxVerticalData;
+	public final int maxConnectedLods;
 	
-	VerticalQuality(int[] maxVerticalData)
+	VerticalQuality(int[] maxVerticalData, int maxConnectedLods)
 	{
 		this.maxVerticalData = maxVerticalData;
+		this.maxConnectedLods = maxConnectedLods;
 	}
 	
 	// Note: return null if out of range

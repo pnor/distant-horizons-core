@@ -249,7 +249,7 @@ public class LodBuilder
 			yAbs = chunk.getMaxY(xRel,zRel) - MIN_WORLD_HEIGHT;
 			int count = 0;
 			boolean topBlock = true;
-			if (yAbs <= 0);
+			if (yAbs <= 0)
 				dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
 			while (yAbs > 0)
 			{
@@ -261,18 +261,11 @@ public class LodBuilder
 				
 				yAbs = height - 1;
 				// We search light on above air block
-				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < timesToEdgeDetect && !hasCeiling);
+				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < this.config.client().graphics().quality().getVerticalQuality().maxConnectedLods && !hasCeiling);
 				if (hasCeiling && topBlock)
-				{
 					yAbs = depth;
-					light = getLightValue(chunk, xAbs,yAbs + MIN_WORLD_HEIGHT, zAbs, true, hasSkyLight, true);
-					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
-				}
-				else
-				{
-					light = getLightValue(chunk, xAbs, yAbs + MIN_WORLD_HEIGHT, zAbs, hasCeiling, hasSkyLight, topBlock);
-					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
-				}
+				light = getLightValue(chunk, xAbs,yAbs + MIN_WORLD_HEIGHT, zAbs, hasCeiling, hasSkyLight, topBlock);
+				color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
 				lightBlock = light & 0b1111;
 				lightSky = (light >> 4) & 0b1111;
 				isDefault = ((light >> 8)) == 1;
