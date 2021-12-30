@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.enums.config;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * heightmap <br>
  * multi_lod <br>
@@ -76,5 +78,35 @@ public enum VerticalQuality
 	VerticalQuality(int[] maxVerticalData)
 	{
 		this.maxVerticalData = maxVerticalData;
+	}
+	
+	// Note: return null if out of range
+	@Nullable
+	public static VerticalQuality previous(VerticalQuality mode) {
+		switch (mode) {
+		case HIGH:
+			return VerticalQuality.MEDIUM;
+		case MEDIUM:
+			return VerticalQuality.LOW;
+		case LOW:
+			return null;
+		default:
+			return null;
+		}
+	}
+
+	// Note: return null if out of range
+	@Nullable
+	public static VerticalQuality next(VerticalQuality mode) {
+		switch (mode) {
+		case HIGH:
+			return null;
+		case MEDIUM:
+			return VerticalQuality.HIGH;
+		case LOW:
+			return VerticalQuality.MEDIUM;
+		default:
+			return null;
+		}
 	}
 }

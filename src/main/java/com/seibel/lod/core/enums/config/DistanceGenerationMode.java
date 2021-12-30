@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.enums.config;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * NONE <br>
  * BIOME_ONLY <br>
@@ -91,5 +93,47 @@ public enum DistanceGenerationMode
 	DistanceGenerationMode(byte complexity)
 	{
 		this.complexity = complexity;
+	}
+	
+	// Note: return null if out of range
+	@Nullable
+	public static DistanceGenerationMode previous(DistanceGenerationMode mode) {
+		switch (mode) {
+		case FULL:
+			return DistanceGenerationMode.FEATURES;
+		case FEATURES:
+			return DistanceGenerationMode.SURFACE;
+		case SURFACE:
+			return DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
+		case BIOME_ONLY_SIMULATE_HEIGHT:
+			return DistanceGenerationMode.BIOME_ONLY;
+		case BIOME_ONLY:
+			return DistanceGenerationMode.NONE;
+		case NONE:
+			return null;
+		default:
+			return null;
+		}
+	}
+	
+	// Note: return null if out of range
+	@Nullable
+	public static DistanceGenerationMode next(DistanceGenerationMode mode) {
+		switch (mode) {
+		case FULL:
+			return null;
+		case FEATURES:
+			return DistanceGenerationMode.FULL;
+		case SURFACE:
+			return DistanceGenerationMode.FEATURES;
+		case BIOME_ONLY_SIMULATE_HEIGHT:
+			return DistanceGenerationMode.SURFACE;
+		case BIOME_ONLY:
+			return DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
+		case NONE:
+			return DistanceGenerationMode.BIOME_ONLY;
+		default:
+			return null;
+		}
 	}
 }
