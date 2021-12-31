@@ -65,6 +65,7 @@ public interface ILodConfigWrapperSingleton
 			
 			IQuality quality();
 			IFogQuality fogQuality();
+			ICloudQuality cloudQuality();
 			IAdvancedGraphics advancedGraphics();
 			
 			
@@ -178,7 +179,42 @@ public interface ILodConfigWrapperSingleton
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
-			
+
+			interface ICloudQuality
+			{
+				String DESC = "These settings control the clouds.";
+
+				boolean CUSTOM_CLOUDS_DEFAULT = false;
+				String CUSTOM_CLOUDS_DESC = ""
+						+ " Should we use our own method for rendering clouds \n"
+						+ "\n"
+						+ " If you disable this then the rest of the cloud configs wont work. \n";
+				boolean getCustomClouds();
+				void setCustomClouds(boolean newCustomClouds);
+
+				boolean FABULOUS_CLOUDS_DEFAULT = false;
+				String FABULOUS_CLOUDS_DESC = ""
+						+ " A complete rework on how clouds work \n"
+						+ " Rather than getting from a texure and rendering that \n"
+						+ " It gets the terrain height and decides how much cloud to put \n"
+						+ " This idea came from this 11 year old reddit post https://www.reddit.com/r/Minecraft/comments/e7xol/this_is_how_clouds_should_work_gif_simulation/ \n";
+				boolean getFabulousClouds();
+				void setFabulousClouds(boolean newFabulousClouds);
+
+				boolean EXTEND_CLOUDS_DEFAULT = false;
+				String EXTEND_CLOUDS_DESC = ""
+						+ " Extends how far the clouds render \n"
+						+ " to the lod render distance \n";
+				boolean getExtendClouds();
+				void setExtendClouds(boolean newExtendClouds);
+
+				double CLOUD_HEIGHT_DEFAULT = 0;
+				String CLOUD_HEIGHT_DESC = ""
+						+ " What y level to render the clouds at \n";
+				double getCloudHeight();
+				void setCloudHeight(double newCloudHeight);
+			}
+
 			interface IAdvancedGraphics
 			{
 				String DESC = "Graphics options that are a bit more technical.";
