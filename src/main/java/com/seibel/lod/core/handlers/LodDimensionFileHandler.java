@@ -130,8 +130,9 @@ public class LodDimensionFileHandler
 				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 				continue; // file is empty. Let's not try parsing empty files
 			}
-			try (XZCompressorInputStream inputStream = new XZCompressorInputStream(new FileInputStream(file)))
+			try (FileInputStream fileInStream = new FileInputStream(file))
 			{
+				XZCompressorInputStream inputStream = new XZCompressorInputStream(fileInStream);
 				int fileVersion;
 				fileVersion = inputStream.read();
 				
@@ -265,8 +266,9 @@ public class LodDimensionFileHandler
 				// (to make sure we don't overwrite a newer
 				// version file if it exists)
 				int fileVersion = LOD_SAVE_FILE_VERSION;
-				try (XZCompressorInputStream inputStream = new XZCompressorInputStream(new FileInputStream(oldFile)))
+				try (FileInputStream fileInStream = new FileInputStream(oldFile))
 				{
+					XZCompressorInputStream inputStream = new XZCompressorInputStream(fileInStream);
 					fileVersion = inputStream.read();
 					inputStream.skip(1);
 					isFileFullyGened = (inputStream.read() & 0b10000000) != 0;
@@ -292,8 +294,9 @@ public class LodDimensionFileHandler
 			
 			// Now create a new temporary save file
 			File tempFile = new File(oldFile.getPath() + TMP_FILE_EXTENSION);
-			try (XZCompressorOutputStream outputStream = new XZCompressorOutputStream(new FileOutputStream(tempFile), 3))
+			try (FileOutputStream fileOutStream = new FileOutputStream(tempFile))
 			{
+				XZCompressorOutputStream outputStream = new XZCompressorOutputStream(fileOutStream, 3);
 				// add the version of this file
 				outputStream.write(LOD_SAVE_FILE_VERSION);
 				// add each LodChunk to the file
