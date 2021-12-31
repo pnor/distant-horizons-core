@@ -285,15 +285,7 @@ public class LodDimensionFileHandler
 			}
 			
 			// Now create a new temporary save file
-			File tempFile;
-			try {
-				tempFile = File.createTempFile(oldFile.getName(), TMP_FILE_EXTENSION);
-			} catch (IOException e) {
-				ClientApi.LOGGER.error("LOD file write error. Unable to create temp file for [" + oldFile + "] error [" + e.getMessage() + "]: ");
-				e.printStackTrace();
-				continue;
-			}
-			tempFile.deleteOnExit(); // Mark it to be deleted on exit if any unexcepted terminations happen
+			File tempFile = new File(oldFile.getPath() + TMP_FILE_EXTENSION);
 			try (XZCompressorOutputStream outputStream = new XZCompressorOutputStream(new FileOutputStream(tempFile), 3))
 			{
 				// add the version of this file
