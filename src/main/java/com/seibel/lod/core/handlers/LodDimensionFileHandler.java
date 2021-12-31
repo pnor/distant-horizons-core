@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
-import org.jetbrains.annotations.Nullable;
 
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -366,7 +365,6 @@ public class LodDimensionFileHandler
 	}
 	
 	// Return null if no file found
-	@Nullable
 	private File getBestMatchingRegionFile(byte detailLevel, int regionX, int regionZ, DistanceGenerationMode targetGenMode, VerticalQuality targetVertQuality) {
 		DistanceGenerationMode genMode = targetGenMode;
 		// Search from least GenMode to max GenMode, than least vertQuality to max vertQuality

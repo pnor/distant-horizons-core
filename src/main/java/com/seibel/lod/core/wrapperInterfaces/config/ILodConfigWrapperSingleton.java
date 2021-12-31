@@ -208,7 +208,7 @@ public interface ILodConfigWrapperSingleton
 				boolean getExtendClouds();
 				void setExtendClouds(boolean newExtendClouds);
 
-				double CLOUD_HEIGHT_DEFAULT = 0; // make it get minecraft cloud height
+				MinDefaultMax<Double> CLOUD_HEIGHT_MIN_DEFAULT_MAX = new MinDefaultMax<Double>(Double.MIN_VALUE, 0., Double.MAX_VALUE); // make it get minecraft cloud height
 				String CLOUD_HEIGHT_DESC = ""
 						+ " What y level to render the clouds at \n";
 				double getCloudHeight();

@@ -19,8 +19,6 @@
 
 package com.seibel.lod.core.enums.config;
 
-import org.jetbrains.annotations.Nullable;
-
 /**
  * heightmap <br>
  * multi_lod <br>
@@ -55,7 +53,6 @@ public enum VerticalQuality
 	}
 	
 	// Note: return null if out of range
-	@Nullable
 	public static VerticalQuality previous(VerticalQuality mode) {
 		switch (mode) {
 		case HIGH:
@@ -70,7 +67,6 @@ public enum VerticalQuality
 	}
 
 	// Note: return null if out of range
-	@Nullable
 	public static VerticalQuality next(VerticalQuality mode) {
 		switch (mode) {
 		case HIGH:

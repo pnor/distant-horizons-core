@@ -19,8 +19,6 @@
 
 package com.seibel.lod.core.enums.config;
 
-import org.jetbrains.annotations.Nullable;
-
 /**
  * NONE <br>
  * BIOME_ONLY <br>
@@ -96,7 +94,6 @@ public enum DistanceGenerationMode
 	}
 	
 	// Note: return null if out of range
-	@Nullable
 	public static DistanceGenerationMode previous(DistanceGenerationMode mode) {
 		switch (mode) {
 		case FULL:
@@ -117,7 +114,6 @@ public enum DistanceGenerationMode
 	}
 	
 	// Note: return null if out of range
-	@Nullable
 	public static DistanceGenerationMode next(DistanceGenerationMode mode) {
 		switch (mode) {
 		case FULL:
