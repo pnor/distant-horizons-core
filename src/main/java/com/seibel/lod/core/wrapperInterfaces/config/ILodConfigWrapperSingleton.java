@@ -184,7 +184,7 @@ public interface ILodConfigWrapperSingleton
 			{
 				String DESC = "These settings control the clouds.";
 
-				boolean CUSTOM_CLOUDS_DEFAULT = false;
+				boolean CUSTOM_CLOUDS_DEFAULT = true;
 				String CUSTOM_CLOUDS_DESC = ""
 						+ " Should we use our own method for rendering clouds \n"
 						+ "\n"
@@ -197,18 +197,18 @@ public interface ILodConfigWrapperSingleton
 						+ " A complete rework on how clouds work \n"
 						+ " Rather than getting from a texure and rendering that \n"
 						+ " It gets the terrain height and decides how much cloud to put \n"
-						+ " This idea came from this 11 year old reddit post https://www.reddit.com/r/Minecraft/comments/e7xol/this_is_how_clouds_should_work_gif_simulation/ \n";
+						+ " This idea came from this 11 year old(as of when this is being written) reddit post https://www.reddit.com/r/Minecraft/comments/e7xol/this_is_how_clouds_should_work_gif_simulation/ \n";
 				boolean getFabulousClouds();
 				void setFabulousClouds(boolean newFabulousClouds);
 
-				boolean EXTEND_CLOUDS_DEFAULT = false;
+				boolean EXTEND_CLOUDS_DEFAULT = true;
 				String EXTEND_CLOUDS_DESC = ""
 						+ " Extends how far the clouds render \n"
 						+ " to the lod render distance \n";
 				boolean getExtendClouds();
 				void setExtendClouds(boolean newExtendClouds);
 
-				double CLOUD_HEIGHT_DEFAULT = 0;
+				double CLOUD_HEIGHT_DEFAULT = 0; // make it get minecraft cloud height
 				String CLOUD_HEIGHT_DESC = ""
 						+ " What y level to render the clouds at \n";
 				double getCloudHeight();
