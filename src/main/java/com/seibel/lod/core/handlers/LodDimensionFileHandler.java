@@ -120,10 +120,16 @@ public class LodDimensionFileHandler
 		for (byte tempDetailLevel = LodUtil.REGION_DETAIL_LEVEL; tempDetailLevel >= detailLevel; tempDetailLevel--)
 		{
 			File file = getBestMatchingRegionFile(tempDetailLevel, regionX, regionZ, generationMode, verticalQuality);
-			if (file == null) continue; // Failed to find the file for this detail level. continue and try next one
+			if (file == null) {
+				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+				continue; // Failed to find the file for this detail level. continue and try next one
+			}
 			
 			long fileSize = file.length();
-			if (fileSize == 0) continue; // file is empty. Let's not try parsing empty files
+			if (fileSize == 0) {
+				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+				continue; // file is empty. Let's not try parsing empty files
+			}
 			try (XZCompressorInputStream inputStream = new XZCompressorInputStream(new FileInputStream(file)))
 			{
 				int fileVersion;
@@ -141,6 +147,7 @@ public class LodDimensionFileHandler
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File has been deleted.");
 					// This should not break, but be continue to see whether other detail levels can be loaded or updated
+					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 					continue;
 				}
 				else if (fileVersion > LOD_SAVE_FILE_VERSION)
@@ -154,6 +161,7 @@ public class LodDimensionFileHandler
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ " this region will not be written to in order to protect the newer file.");
 					// This should not break, but be continue to see whether other detail levels can be loaded or updated
+					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 					continue;
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
@@ -164,13 +172,13 @@ public class LodDimensionFileHandler
 							+ ". File will be loaded and updated to new format in next save.");
 					// this is old, but readable version
 					// read and add the data to our region
-					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), fileVersion));
+					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), fileVersion, tempDetailLevel));
 					inputStream.close();
 				} else
 				{
 					// this file is a readable version,
 					// read and add the data to our region
-					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), LOD_SAVE_FILE_VERSION));
+					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), LOD_SAVE_FILE_VERSION, tempDetailLevel));
 					inputStream.close();
 				}
 			}
@@ -178,11 +186,9 @@ public class LodDimensionFileHandler
 			{
 				ClientApi.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "] error [" + ioEx.getMessage() + "]: ");
 				ioEx.printStackTrace();
+				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 			}
 		}// for each detail level
-		
-		if (region.getMinDetailLevel() >= detailLevel)
-			region.growTree(detailLevel);
 		
 		return region;
 	}

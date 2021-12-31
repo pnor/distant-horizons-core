@@ -228,9 +228,13 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 	}
 	
-	public VerticalLevelContainer(DataInputStream inputData, int version) throws IOException {
+	public VerticalLevelContainer(DataInputStream inputData, int version, byte expectedDetailLevel) throws IOException {
 		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
 		detailLevel = inputData.readByte();
+		if (detailLevel != expectedDetailLevel)
+			throw new IOException("Invalid Data: The expected detail level should be "+expectedDetailLevel+
+					" but the data header say it's "+detailLevel);
+		
 		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		int fileMaxVerticalData = inputData.readByte() & 0b01111111;
 		long[] tempDataContainer = null;
