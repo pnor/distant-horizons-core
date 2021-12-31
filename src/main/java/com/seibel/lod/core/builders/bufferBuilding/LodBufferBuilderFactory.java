@@ -809,7 +809,6 @@ public class LodBufferBuilderFactory
 								// e.printStackTrace();
 							}
 							if (uploadBuffer == null) continue;
-							if (uploadBuffer.capacity() == 0) continue;
 							LagSpikeCatcher vboU = new LagSpikeCatcher();
 							vboUpload(x,z,i, uploadBuffer, uploadMethod);
 							vboU.end("vboUpload");
@@ -850,21 +849,24 @@ public class LodBufferBuilderFactory
 	/** Uploads the uploadBuffer so the GPU can use it. */
 	private void vboUpload(int xIndex, int zIndex, int iIndex, ByteBuffer uploadBuffer, GpuUploadMethod uploadMethod)
 	{
+
+		
+		
 		// get the vbos, buffers, ids, etc.
 		int storageBufferId = 0;
 		if (buildableStorageBufferIds != null)
 			storageBufferId = buildableStorageBufferIds[xIndex][zIndex][iIndex];
 		
 		LodVertexBuffer vbo = buildableVbos[xIndex][zIndex][iIndex];
+
+		// this is how many points will be rendered
+		vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
+		// If size is zero, just ignore it.
+		if (uploadBuffer.capacity()==0) return;
 		
 		// this shouldn't happen, but just to be safe
 		if (vbo.id != -1 && GLProxy.getInstance().getGlContext() == GLProxyContext.LOD_BUILDER)
 		{
-			// this is how many points will be rendered
-			vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
-			// If size is zero, just ignore it.
-			if (uploadBuffer.capacity()==0) return;
-
 			LagSpikeCatcher bindBuff = new LagSpikeCatcher();
 			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 			bindBuff.end("glBindBuffer vbo.id");
