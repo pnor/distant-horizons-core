@@ -168,10 +168,11 @@ public class ThreadMapUtil
 	/** returns the array filled with 0's */
 	public static long[] getVerticalUpdateArray(int detailLevel)
 	{
+		detailLevel--; //we are asking for a place to fit lower level detail, so this will never get called with value of 0
 		long[][] arrays = verticalUpdate.get(Thread.currentThread().getName());
 		if (arrays == null)
 		{
-			arrays = new long[LodUtil.DETAIL_OPTIONS][];
+			arrays = new long[LodUtil.DETAIL_OPTIONS - 1][];
 			verticalUpdate.put(Thread.currentThread().getName(), arrays);
 		}
 		long[] array = arrays[detailLevel];
