@@ -40,8 +40,7 @@ public class LodRenderProgram extends ShaderProgram {
 	// Attributes
 	public final int posAttrib;
 	public final int colAttrib;
-	public final int blockSkyLightAttrib;
-	public final int blockLightAttrib;
+	public final int lightAttrib; //Sky light then block light
 	// Uniforms
 	public final int mvmUniform;
 	public final int projUniform;
@@ -64,8 +63,7 @@ public class LodRenderProgram extends ShaderProgram {
 		
         posAttrib = getAttributeLocation("vPosition");
         colAttrib = getAttributeLocation("color");
-        blockSkyLightAttrib = getAttributeLocation("blockSkyLight");
-        blockLightAttrib = getAttributeLocation("blockLight");
+        lightAttrib = getAttributeLocation("light");
         
         mvmUniform = getUniformLocation("modelViewMatrix");
 		projUniform = getUniformLocation("projectionMatrix");
@@ -92,11 +90,15 @@ public class LodRenderProgram extends ShaderProgram {
 		else
 			vao = new VertexAttributePreGL43(); // also binds VertexAttribute
 		//vao.bind();
-		vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false));
-		vao.setVertexAttribute(0, colAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true));
-		vao.setVertexAttribute(0, blockSkyLightAttrib, VertexAttribute.VertexPointer.addUnsignedBytePointer(false));
-		vao.setVertexAttribute(0, blockLightAttrib, VertexAttribute.VertexPointer.addUnsignedBytePointer(false));
+		vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false)); // 4+4+4
+		vao.setVertexAttribute(0, colAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true)); // +4
+		vao.setVertexAttribute(0, lightAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(2, false)); // +4 due to how it aligns
+		try {
 		vao.completeAndCheck(vertexByteCount);
+		} catch (RuntimeException e) {
+			System.out.println(LodUtil.LOD_VERTEX_FORMAT);
+			throw e;
+		}
 	}
 	
 	// Override ShaderProgram.bind()

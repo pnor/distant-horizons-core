@@ -39,13 +39,19 @@ public class LodVertexFormatElement
 	private final int index;
 	private final int count;
 	private final int byteSize;
+	private final boolean isPadding;
 	
-	public LodVertexFormatElement(int newIndex, LodVertexFormatElement.DataType newType, int newCount)
+	public LodVertexFormatElement(int newIndex, LodVertexFormatElement.DataType newType, int newCount, boolean isPadding)
 	{
 		this.dataType = newType;
 		this.index = newIndex;
 		this.count = newCount;
 		this.byteSize = newType.getSize() * this.count;
+		this.isPadding = isPadding;
+	}
+	
+	public final boolean getIsPadding() {
+		return isPadding;
 	}
 	
 	public final LodVertexFormatElement.DataType getType()

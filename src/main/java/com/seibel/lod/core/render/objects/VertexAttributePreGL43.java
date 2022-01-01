@@ -19,7 +19,6 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	VertexPointer[] pointers;
 	int[] pointersOffset;
 	
-	
 	TreeMap<Integer, TreeSet<Integer>> bindingPointsToIndexBuilder;
 	ArrayList<VertexPointer> pointersBuilder;
 
@@ -124,9 +123,11 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 			pointersOffset[i] = currentOffset;
 			currentOffset += pointer.byteSize;
 		}
-		if (currentOffset != expectedStrideSize)
+		if (currentOffset != expectedStrideSize) {
 			ClientApi.LOGGER.error("Vertex Attribute calculated stride size " + currentOffset +
 					" does not match the provided expected stride size " + expectedStrideSize + "!");
+			throw new IllegalArgumentException("Vertex Attribute Incorrect Format");
+		}
 		strideSize = currentOffset;
 		ClientApi.LOGGER.info("Vertex Attribute (pre GL43) completed.");
 		

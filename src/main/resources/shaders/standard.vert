@@ -2,8 +2,7 @@
 
 in vec3 vPosition;
 in vec4 color;
-in float blockSkyLight;
-in float blockLight;
+in vec2 light;
 
 out vec4 vertexColor;
 out vec4 vertexWorldPos;
@@ -25,6 +24,8 @@ uniform sampler2D lightMap;
  */
 void main()
 {
+	float blockSkyLight = light[0];
+	float blockLight = light[1];
 
 	// just skylight
 	// good for sanity checks; but will cause OpenGL errors since we are binding unused data
