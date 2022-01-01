@@ -215,6 +215,8 @@ public class LodBufferBuilderFactory
 	// this was pulled out as a separate method so that it could be
 	// more easily edited by hot swapping. Because, As far as James is aware
 	// you can't hot swap lambda expressions.
+	private static final boolean enableLogging = false;
+	
 	private void generateLodBuffersThread(LodRenderer renderer, LodDimension lodDim,
 			int playerX, int playerY, int playerZ, boolean fullRegen)
 	{
@@ -229,7 +231,7 @@ public class LodBufferBuilderFactory
 			//int playerRegionZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.REGION_DETAIL_LEVEL);
 			
 			
-			//long startTime = System.currentTimeMillis();
+			long startTime = System.currentTimeMillis();
 			
 			ArrayList<Callable<Boolean>> nodeToRenderThreads = new ArrayList<>(lodDim.getWidth() * lodDim.getWidth());
 			
@@ -456,7 +458,7 @@ public class LodBufferBuilderFactory
 				} // region z
 			} // region z
 			
-			//long executeStart = System.currentTimeMillis();
+			long executeStart = System.currentTimeMillis();
 			// wait for all threads to finish
 			List<Future<Boolean>> futuresBuffer = bufferBuilderThreads.invokeAll(nodeToRenderThreads);
 			for (Future<Boolean> future : futuresBuffer)
@@ -468,15 +470,15 @@ public class LodBufferBuilderFactory
 					break;
 				}
 			}
-			//long executeEnd = System.currentTimeMillis();
+			long executeEnd = System.currentTimeMillis();
 			
 			
-			//long endTime = System.currentTimeMillis();
-			//long buildTime = endTime - startTime;
-			//long executeTime = executeEnd - executeStart;
-
-//			ClientProxy.LOGGER.info("Thread Build time: " + buildTime + " ms" + '\n' +
-//					                        "thread execute time: " + executeTime + " ms");
+			long endTime = System.currentTimeMillis();
+			long buildTime = endTime - startTime;
+			long executeTime = executeEnd - executeStart;
+			if (enableLogging)
+				ClientApi.LOGGER.info("Thread Build("+nodeToRenderThreads.size()+") time: " + buildTime + " ms" + '\n' +
+					                        "thread execute time: " + executeTime + " ms");
 			
 			// mark that the buildable buffers as ready to swap
 			switchVbos = true;
@@ -490,12 +492,16 @@ public class LodBufferBuilderFactory
 		{
 			try
 			{
+				long startUploadTime = System.currentTimeMillis();
 				// clean up any potentially open resources
 				if (buildableBuffers != null)
 					closeBuffers(fullRegen, lodDim);
 				
 				// upload the new buffers
 				uploadBuffers(fullRegen, lodDim);
+				long uploadTime = System.currentTimeMillis() - startUploadTime;
+				if (enableLogging)
+					ClientApi.LOGGER.info("Thread Upload time: " + uploadTime + " ms");
 			}
 			catch (Exception e)
 			{
