@@ -151,7 +151,8 @@ public interface ILodConfigWrapperSingleton
 				String FOG_DRAW_MODE_DESC = ""
 						+ " When should fog be drawn? \n"
 						+ "\n"
-						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using. If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
+						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
+						+ " If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
 						+ " " + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
 						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
 						+ "\n"
@@ -175,7 +176,8 @@ public interface ILodConfigWrapperSingleton
 						+ " If true disable Minecraft's fog. \n"
 						+ "\n"
 						+ " Experimental! Will cause issues with Sodium and \n"
-						+ " may not play nice with other mods that edit fog. \n";
+						+ " may not play nice with other mods that edit fog. \n"
+						+ " Intended for those who do not use Sodium or Optifine.";
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
@@ -197,7 +199,8 @@ public interface ILodConfigWrapperSingleton
 						+ " A complete rework on how clouds work \n"
 						+ " Rather than getting from a texure and rendering that \n"
 						+ " It gets the terrain height and decides how much cloud to put \n"
-						+ " This idea came from this 11 year old(as of when this is being written) reddit post https://www.reddit.com/r/Minecraft/comments/e7xol/this_is_how_clouds_should_work_gif_simulation/ \n";
+						+ " This idea came from this 11 year old(as of when this is being written) \n"
+						+ "reddit post https://www.reddit.com/r/Minecraft/comments/e7xol/this_is_how_clouds_should_work_gif_simulation/ \n";
 				boolean getFabulousClouds();
 				void setFabulousClouds(boolean newFabulousClouds);
 
@@ -246,15 +249,20 @@ public interface ILodConfigWrapperSingleton
 				VanillaOverdraw VANILLA_OVERDRAW_DEFAULT = VanillaOverdraw.DYNAMIC;
 				String VANILLA_OVERDRAW_DESC = ""
 						+ " How often should LODs be drawn on top of regular chunks? \n"
-						+ " HALF and ALWAYS will prevent holes in the world, but may look odd for transparent blocks or in caves. \n"
+						+ " HALF and ALWAYS will prevent holes in the world, \n"
+						+ " but may look odd for transparent blocks or in caves. \n"
 						+ "\n"
-						+ " " + VanillaOverdraw.NEVER + ": LODs won't render on top of vanilla chunks. \n"
-						+ " " + VanillaOverdraw.BORDER + ": LODs will render only on the border of vanilla chunks, preventing some holes in the world. \n"
-						+ " " + VanillaOverdraw.DYNAMIC + ": LODs will render on top of distant vanilla chunks to hide delayed loading. \n"
-						+ " " + "     More effective on higher render distances. \n"
-						+ " " + "     For vanilla render distances less than or equal to " + LodUtil.MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW + " \n"
-						+ " " + "     " + VanillaOverdraw.NEVER + " or " + VanillaOverdraw.ALWAYS + " will be used depending on the dimension. \n"
-						+ " " + VanillaOverdraw.ALWAYS + ": LODs will render on all vanilla chunks preventing all holes in the world. \n"
+						+ " " + VanillaOverdraw.NEVER + ": \n"
+						+ "     LODs won't render on top of vanilla chunks. \n"
+						+ " " + VanillaOverdraw.BORDER + ": \n"
+						+ "     LODs will render only on the border of vanilla chunks, preventing some holes in the world. \n"
+						+ " " + VanillaOverdraw.DYNAMIC + ": \n"
+						+ "     LODs will render on top of distant vanilla chunks to hide delayed loading. \n"
+						+ "     More effective on higher render distances. \n"
+						+ "     For vanilla render distances less than or equal to " + LodUtil.MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW + " \n"
+						+ "     " + VanillaOverdraw.NEVER + " or " + VanillaOverdraw.ALWAYS + " will be used depending on the dimension. \n"
+						+ " " + VanillaOverdraw.ALWAYS + ": \n"
+						+ "     LODs will render on all vanilla chunks preventing all holes in the world. \n"
 						+ "\n"
 						+ " This setting shouldn't affect performance. \n";
 				VanillaOverdraw getVanillaOverdraw();
