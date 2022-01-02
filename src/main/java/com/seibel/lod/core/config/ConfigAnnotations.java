@@ -37,15 +37,6 @@ public class ConfigAnnotations {
     }
 
 
-    /** Used when sorting the configs in the menu */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
-    public @interface Category
-    {
-        String value();
-    }
-
-
     /** Makes text (looks like @Entry but dosnt save and has no button */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
