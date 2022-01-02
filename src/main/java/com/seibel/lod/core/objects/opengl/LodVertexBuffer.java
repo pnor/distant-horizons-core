@@ -35,13 +35,15 @@ public class LodVertexBuffer implements AutoCloseable
 {
 	public int id;
 	public int vertexCount;
+	public final boolean isBufferStorage;
+	public long size = 0;
 	
-	public LodVertexBuffer()
+	public LodVertexBuffer(boolean isBufferStorage)
 	{
 		if (GLProxy.getInstance().getGlContext() == GLProxyContext.NONE)
 			throw new IllegalStateException("Thread [" +Thread.currentThread().getName() + "] tried to create a [" + LodVertexBuffer.class.getSimpleName() + "] outside a OpenGL contex.");
-		
 		this.id = GL32.glGenBuffers();
+		this.isBufferStorage = isBufferStorage;
 	}
 	
 	

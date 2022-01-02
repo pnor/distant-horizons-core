@@ -20,15 +20,14 @@
 package com.seibel.lod.core.render;
 
 import java.awt.Color;
-import java.util.HashSet;
+import java.time.Duration;
+import java.util.Set;
 
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
-import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.VertexBuffersAndOffset;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
@@ -40,9 +39,11 @@ import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
 import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
+import com.seibel.lod.core.util.GridList;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
@@ -58,11 +59,40 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  */
 public class LodRenderer
 {
+	public static class VanillaRenderedChunksList extends GridList<Boolean> {
+		private static final long serialVersionUID = -5448501880911391315L;
+		
+		public final int centerX;
+		public final int centerZ;
+		
+		public VanillaRenderedChunksList(int range, int centerX, int centerZ) {
+			super(range);
+			this.centerX = centerX;
+			this.centerZ = centerZ;
+			for (int i=0; i<gridSize*gridSize; i++) {
+				add(i, false);
+			}
+		}
+	}
+	public static class LagSpikeCatcher {
+
+		long timer = System.nanoTime();
+		public LagSpikeCatcher() {}
+		public void end(String source) {
+			timer = System.nanoTime() - timer;
+			if (timer> 16000000) { //16 ms
+				ClientApi.LOGGER.info("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
+			}
+			
+		}
+	}
+	
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
-	
+
+	public static final int VANILLA_REFRESH_TIMEOUT = 60;
 	/**
 	 * If true the LODs colors will be replaced with
 	 * a checkerboard, this can be used for debugging.
@@ -75,23 +105,11 @@ public class LodRenderer
 	/** This is used to generate the buildable buffers */
 	private final LodBufferBuilderFactory lodBufferBuilderFactory;
 	
-	/** Each VertexBuffer represents 1 region */
-	private LodVertexBuffer[][][] vbos;
-	/**
-	 * the OpenGL IDs for the vbos of the same indices.
-	 * These have to be separate because we can't override the
-	 * buffers in the VBOs (and we don't want to)
-	 */
-	private int[][][] storageBufferIds = null;
-	
 	// The shader program
 	LodRenderProgram shaderProgram = null;
 	
-	private int vbosCenterX = 0;
-	private int vbosCenterZ = 0;
-	
 	/** This is used to determine if the LODs should be regenerated */
-	private int[] previousPos = new int[] { 0, 0, 0 };
+	private AbstractBlockPosWrapper previousPos = null;
 	
 	// these variables are used to determine if the buffers should be rebuilt
 	private int prevRenderDistance = 0;
@@ -115,9 +133,10 @@ public class LodRenderer
 	 * This HashSet contains every chunk that Vanilla Minecraft
 	 * is going to render
 	 */
-	public boolean[][] vanillaRenderedChunks;
-	public boolean vanillaRenderedChunksChanged;
-	public boolean vanillaRenderedChunksEmptySkip = false;
+	public VanillaRenderedChunksList vanillaRenderedChunks;
+	public int vanillaRenderedChunksCenterX;
+	public int vanillaRenderedChunksCenterZ;
+	public int vanillaRenderedChunksRefreshTimer;
 	
 	private boolean canVanillaFogBeDisabled = true;
 
@@ -149,8 +168,6 @@ public class LodRenderer
 			return;
 		}
 		
-		
-		
 		if (MC_RENDER.playerHasBlindnessEffect())
 		{
 			// if the player is blind, don't render LODs,
@@ -175,8 +192,17 @@ public class LodRenderer
 		
 		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// starting here...
-		determineIfLodsShouldRegenerate(lodDim, partialTicks);
+		LagSpikeCatcher updateStatue = new LagSpikeCatcher();
+		updateRegenStatus(lodDim, partialTicks);
+		updateStatue.end("LodDrawSetup:UpdateStatus");
+		
 
+		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
+		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
+		if (markToCleanup) {
+			markToCleanup = false;
+			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
+		}
 		
 		//=================//
 		// create the LODs //
@@ -187,37 +213,24 @@ public class LodRenderer
 		// 2. we aren't already regenerating the LODs
 		// 3. we aren't waiting for the build and draw buffers to swap
 		//		(this is to prevent thread conflicts)
-		if ((partialRegen || fullRegen) && !lodBufferBuilderFactory.generatingBuffers && !lodBufferBuilderFactory.newBuffersAvailable())
-		{
-			// generate the LODs on a separate thread to prevent stuttering or freezing
-			lodBufferBuilderFactory.generateLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), fullRegen);
-			
+		if (lodBufferBuilderFactory.updateAndSwapLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(),
+				MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), partialRegen, fullRegen)) {
 			// the regen process has been started,
-			// it will be done when lodBufferBuilder.newBuffersAvailable()
-			// is true
+			// it will be done when lodBufferBuilder.newBuffersAvailable() is true
 			fullRegen = false;
 			partialRegen = false;
 		}
 		
-		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
-		// ...ending here
+		// Get the front buffers to draw
+		MovableGridList<LodVertexBuffer[]> vbos = lodBufferBuilderFactory.getFrontBuffers();
+		int vbosCenterX = lodBufferBuilderFactory.getFrontBuffersCenterX();
+		int vbosCenterZ = lodBufferBuilderFactory.getFrontBuffersCenterZ();
 		
-		if (lodBufferBuilderFactory.newBuffersAvailable())
-		{
-			swapBuffers();
-		}
-		
+		// @Unused
 		if (vbos == null) {
 			// There is still no vbos, which means nothing needs to be drawn. So no rendering needed
 			// (Vbos should be setup by now)
 			return;
-		}
-
-		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
-		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
-		if (markToCleanup) {
-			markToCleanup = false;
-			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
 		}
 		
 		//===================//
@@ -225,6 +238,7 @@ public class LodRenderer
 		//===================//
 		
 		profiler.push("LOD draw setup");
+		LagSpikeCatcher drawSetup = new LagSpikeCatcher();
 
 		/*---------Set GL State--------*/
 		// Make sure to unbind current VBO so we don't mess up vanilla settings
@@ -256,7 +270,7 @@ public class LodRenderer
 		
 		/*---------Get required data--------*/
 		// Get the matrixs for rendering
-		Mat4f modelViewMatrix = translateModelViewMatrix(mcModelViewMatrix, partialTicks);
+		Mat4f modelViewMatrix = translateModelViewMatrix(mcModelViewMatrix, partialTicks, vbosCenterX, vbosCenterZ);
 		int vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		int farPlaneBlockDistance;
 		// required for setupFog and setupProjectionMatrix
@@ -269,7 +283,7 @@ public class LodRenderer
 
 		/*---------Fill uniform data--------*/
 		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
-		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(),
+		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(vbosCenterX, vbosCenterZ),
 				MC_RENDER.isFogStateInUnderWater() ? getUnderWaterFogColor(partialTicks) : getFogColor(partialTicks), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
 		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
 		shaderProgram.fillUniformDataForFog(fogSettings, MC_RENDER.isFogStateInUnderWater());
@@ -279,45 +293,44 @@ public class LodRenderer
 		//===========//
 		// rendering //
 		//===========//
-		
+		drawSetup.end("LodDrawSetup");
 		profiler.popPush("LOD draw");
+		LagSpikeCatcher draw = new LagSpikeCatcher();
 		
 		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
-		boolean usingBufferStorage = glProxy.getGpuUploadMethod() == GpuUploadMethod.BUFFER_STORAGE;
 		
 		// where the center of the buffers is (needed when culling regions)
 		// render each of the buffers
-		for (int x = 0; x < vbos.length; x++)
-		{
-			for (int z = 0; z < vbos.length; z++)
-			{
-				//int tempX = LodUtil.convertLevelPos(x + vbosCenterX - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL);
-				//int tempY = LodUtil.convertLevelPos(z + vbosCenterZ - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL, LodUtil.BLOCK_DETAIL_LEVEL);
+		int lowRegionX = vbos.getCenterX() - vbos.gridCentreToEdge;
+		int lowRegionZ = vbos.getCenterY() - vbos.gridCentreToEdge;
+		int drawCall = 0;
+		for (int regionX=lowRegionX; regionX<vbos.gridSize; regionX++) {
+			for (int regionZ=lowRegionZ; regionZ<vbos.gridSize; regionZ++) {
+				if (vbos.get(regionX, regionZ) == null) continue;
 				if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
-						MC_RENDER.getLookAtVector(),
-						vbosCenterX + LodUtil.convertLevelPos(x - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL),
-						vbosCenterZ + LodUtil.convertLevelPos(z - (lodDim.getWidth() / 2), LodUtil.REGION_DETAIL_LEVEL , LodUtil.BLOCK_DETAIL_LEVEL)))
-				{
-					
-					// actual rendering
-					int bufferId = 0;
-					for (int i = 0; i < vbos[x][z].length; i++)
-					{
-						bufferId = (storageBufferIds != null && usingBufferStorage) ? storageBufferIds[x][z][i] : vbos[x][z][i].id;
-						if (bufferId==0) continue;
-						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, bufferId);
-						shaderProgram.bindVertexBuffer(bufferId);
-						GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbos[x][z][i].vertexCount);
+						MC_RENDER.getLookAtVector(), regionX, regionZ)) {
+					for (LodVertexBuffer vbo : vbos.get(regionX, regionZ)) {
+						if (vbo == null) continue;
+						if (vbo.vertexCount == 0) continue;
+						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
+						shaderProgram.bindVertexBuffer(vbo.id);
+						drawCall++;
+						GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbo.vertexCount);
 					}
+					
 				}
 			}
+			
 		}
+		//if (drawCall!=0)
+		//	ClientApi.LOGGER.info("DrawCall Count: "+drawCall);
 		
 		//================//
 		// render cleanup //
 		//================//
-
+		draw.end("LodDraw");
 		profiler.popPush("LOD cleanup");
+		LagSpikeCatcher drawCleanup = new LagSpikeCatcher();
 		
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 
@@ -340,7 +353,7 @@ public class LodRenderer
 		
 		// clear the depth buffer so everything is drawn over the LODs
 		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
-		
+		drawCleanup.end("LodDrawCleanup");
 		// end of internal LOD profiling
 		profiler.pop();
 	}
@@ -367,7 +380,7 @@ public class LodRenderer
 	/** Create all buffers that will be used. */
 	public void setupBuffers(LodDimension lodDim)
 	{
-		lodBufferBuilderFactory.setupBuffers(lodDim);
+		lodBufferBuilderFactory.allBuffersRequireReset = true;
 	}
 
 	private Color getFogColor(float partialTicks)
@@ -393,7 +406,7 @@ public class LodRenderer
 	 * (since AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
 	 * accuracy vs the model view matrix, which only uses floats)
 	 */
-	private Mat4f translateModelViewMatrix(Mat4f mcModelViewMatrix, float partialTicks)
+	private Mat4f translateModelViewMatrix(Mat4f mcModelViewMatrix, float partialTicks, int vbosCenterX, int vbosCenterZ)
 	{
 		// get all relevant camera info
 		Vec3d projectedView = MC_RENDER.getCameraExactPosition();
@@ -416,7 +429,7 @@ public class LodRenderer
 	 * Similar to translateModelViewMatrix (above),
 	 * but for the camera position
 	 */
-	private Vec3f getTranslatedCameraPos()
+	private Vec3f getTranslatedCameraPos(int vbosCenterX, int vbosCenterZ)
 	{
 		//int worldCenterX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
 		//int worldCenterZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
@@ -484,138 +497,127 @@ public class LodRenderer
 		fullRegen = true;
 	}
 	
-	/**
-	 * Replace the current Vertex Buffers with the newly
-	 * created buffers from the lodBufferBuilder. <br><br>
-	 * <p>
-	 * For some reason this has to be called after the frame has been rendered,
-	 * otherwise visual stuttering/rubber banding may happen. I'm not sure why...
-	 */
-	private void swapBuffers()
-	{
-		// replace the drawable buffers with
-		// the newly created buffers from the lodBufferBuilder
-		VertexBuffersAndOffset result = lodBufferBuilderFactory.getVertexBuffers();
-		vbos = result.vbos;
-		storageBufferIds = result.storageBufferIds;
-		vbosCenterX = result.drawableCenterBlockPosX;
-		vbosCenterZ = result.drawableCenterBlockPosZ;
+	// returns whether anything changed
+	private boolean updateVanillaRenderedChunks(LodDimension lodDim, boolean recreateChunks) {
+		short chunkRenderDistance = (short) MC_RENDER.getRenderDistance();
+		int chunkX = Math.floorDiv(previousPos.getX(), 16);
+		int chunkZ = Math.floorDiv(previousPos.getZ(), 16);
+		// if the player is high enough, draw all LODs
+		if (previousPos.getY() > 256) {
+			vanillaRenderedChunks = new VanillaRenderedChunksList(
+					chunkRenderDistance, chunkX, chunkZ);
+			return true;
+		}
+		VanillaRenderedChunksList chunkList;
+		
+		if (recreateChunks) {
+			vanillaRenderedChunks = new VanillaRenderedChunksList(chunkRenderDistance, chunkX, chunkZ);
+			return true;
+		} else {
+			chunkList = vanillaRenderedChunks;
+			chunkX = chunkList.centerX;
+			chunkZ = chunkList.centerZ;
+			chunkRenderDistance = (short) vanillaRenderedChunks.gridCentreToEdge;
+		}
+
+		boolean anyChanged = false;
+		LagSpikeCatcher getChunks = new LagSpikeCatcher();
+		Set<AbstractChunkPosWrapper> chunkPosToSkip = LodUtil.getNearbyLodChunkPosToSkip(lodDim, previousPos);
+		getChunks.end("LodDrawSetup:UpdateStatus:UpdateVanillaChunks:getChunks");
+		for (AbstractChunkPosWrapper pos : chunkPosToSkip)
+		{
+			int xIndex = (pos.getX() - chunkX) + (chunkRenderDistance + 1);
+			int zIndex = (pos.getZ() - chunkZ) + (chunkRenderDistance + 1);
+			
+			// sometimes we are given chunks that are outside the render distance,
+			// This prevents index out of bounds exceptions
+			if (xIndex >= 0 && zIndex >= 0
+						&& xIndex < vanillaRenderedChunks.gridSize
+						&& zIndex < vanillaRenderedChunks.gridSize)
+			{
+				if (!chunkList.get(chunkList.calculateOffset(xIndex, zIndex)))
+				{
+					chunkList.set(chunkList.calculateOffset(xIndex, zIndex), true);
+					anyChanged = true;
+					lodDim.markRegionBufferToRegen(pos.getRegionX(), pos.getRegionZ());
+				}
+			}
+		}
+		vanillaRenderedChunks = chunkList;
+		return anyChanged;
 	}
 	
-	/** Determines if the LODs should have a fullRegen or partialRegen */
-	private void determineIfLodsShouldRegenerate(LodDimension lodDim, float partialTicks)
-	{
+	private void updateRegenStatus(LodDimension lodDim, float partialTicks) {
 		short chunkRenderDistance = (short) MC_RENDER.getRenderDistance();
-		int vanillaRenderedChunksWidth = chunkRenderDistance * 2 + 2;
-		
-		//=============//
-		// full regens //
-		//=============//
-		
-		// check if the view distance changed
+		long newTime = System.currentTimeMillis();
+		AbstractBlockPosWrapper newPos = MC.getPlayerBlockPos();
+		boolean shouldUpdateChunks = false;
+		boolean posUpdated = false;
+		boolean tryPartialGen = false;
+		boolean tryFullGen = false;
+
+		// check if the view distance or config changed
 		if (ApiShared.previousLodRenderDistance != CONFIG.client().graphics().quality().getLodChunkRenderDistance()
 					|| chunkRenderDistance != prevRenderDistance
 					|| prevFogDistance != CONFIG.client().graphics().fogQuality().getFogDistance())
 		{
-			
-			vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
-			DetailDistanceUtil.updateSettings();
-			fullRegen = true;
-			previousPos = LevelPosUtil.createLevelPos((byte) 4, MC.getPlayerChunkPos().getZ(), MC.getPlayerChunkPos().getZ());
+			DetailDistanceUtil.updateSettings(); // FIXME: This should NOT be here!
 			prevFogDistance = CONFIG.client().graphics().fogQuality().getFogDistance();
 			prevRenderDistance = chunkRenderDistance;
-		}
-		
-		// did the user change the debug setting?
-		if (CONFIG.client().advanced().debugging().getDebugMode() != previousDebugMode)
-		{
+			tryFullGen = true;
+		} else if (CONFIG.client().advanced().debugging().getDebugMode() != previousDebugMode)
+		{ // did the user change the debug setting?
 			previousDebugMode = CONFIG.client().advanced().debugging().getDebugMode();
-			fullRegen = true;
+			tryFullGen = true;
 		}
-		
-		
-		long newTime = System.currentTimeMillis();
 		
 		// check if the player has moved
-		if (newTime - prevPlayerPosTime > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveTimeout)
-		{
-			if (LevelPosUtil.getDetailLevel(previousPos) == 0
-						|| Math.abs(MC.getPlayerChunkPos().getX() - LevelPosUtil.getPosX(previousPos)) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance
-						|| Math.abs(MC.getPlayerChunkPos().getZ() - LevelPosUtil.getPosZ(previousPos)) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance)
+		if (newTime - prevPlayerPosTime > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveTimeout) { 
+			if (previousPos == null
+				|| Math.abs(newPos.getX() - previousPos.getX()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16
+				|| Math.abs(newPos.getZ() - previousPos.getZ()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16)
 			{
-				vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
-				fullRegen = true;
-				previousPos = LevelPosUtil.createLevelPos((byte) 4, MC.getPlayerChunkPos().getX(), MC.getPlayerChunkPos().getZ());
+				tryPartialGen = true;
+				previousPos = newPos;
+				posUpdated = true;
 			}
 			prevPlayerPosTime = newTime;
 		}
-		
-		//================//
-		// partial regens //
-		//================//
-		
+
 		// check if the vanilla rendered chunks changed
 		if (newTime - prevVanillaChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().renderedChunkTimeout)
 		{
-			if (vanillaRenderedChunksChanged)
-			{
-				partialRegen = true;
-				vanillaRenderedChunksChanged = false;
-			}
+			shouldUpdateChunks = true;
 			prevVanillaChunkTime = newTime;
 		}
-		
+
 		// check if there is any newly generated terrain to show
 		if (newTime - prevChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().chunkChangeTimeout)
 		{
+			tryPartialGen = true;
+			prevChunkTime = newTime;
+		}
+		
+		
+		if (tryFullGen && !posUpdated) {
+			previousPos = newPos;
+			posUpdated = true;
+		}
+		shouldUpdateChunks |= posUpdated;
+		if (shouldUpdateChunks) {
+			tryPartialGen |= updateVanillaRenderedChunks(lodDim, posUpdated);
+		}
+		
+		if (tryFullGen) {
+			fullRegen = true;
+			lodDim.regenDimensionBuffers = false;
+		} else if (tryPartialGen) {
 			if (lodDim.regenDimensionBuffers)
 			{
 				partialRegen = true;
 				lodDim.regenDimensionBuffers = false;
 			}
-			prevChunkTime = newTime;
 		}
-		
-		//==============//
-		// LOD skipping //
-		//==============//
-		
-		// determine which LODs should not be rendered close to the player
-		HashSet<AbstractChunkPosWrapper> chunkPosToSkip = LodUtil.getNearbyLodChunkPosToSkip(lodDim, MC.getPlayerBlockPos());
-		int xIndex;
-		int zIndex;
-		for (AbstractChunkPosWrapper pos : chunkPosToSkip)
-		{
-			vanillaRenderedChunksEmptySkip = false;
-			
-			xIndex = (pos.getX() - MC.getPlayerChunkPos().getX()) + (chunkRenderDistance + 1);
-			zIndex = (pos.getZ() - MC.getPlayerChunkPos().getZ()) + (chunkRenderDistance + 1);
-			
-			// sometimes we are given chunks that are outside the render distance,
-			// This prevents index out of bounds exceptions
-			if (xIndex >= 0 && zIndex >= 0
-						&& xIndex < vanillaRenderedChunks.length
-						&& zIndex < vanillaRenderedChunks.length)
-			{
-				if (!vanillaRenderedChunks[xIndex][zIndex])
-				{
-					vanillaRenderedChunks[xIndex][zIndex] = true;
-					vanillaRenderedChunksChanged = true;
-					lodDim.markRegionBufferToRegen(pos.getRegionX(), pos.getRegionZ());
-				}
-			}
-		}
-		
-		
-		// if the player is high enough, draw all LODs
-		if (chunkPosToSkip.isEmpty() && MC.getPlayerBlockPos().getY() > 256 && !vanillaRenderedChunksEmptySkip)
-		{
-			vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
-			vanillaRenderedChunksChanged = true;
-			vanillaRenderedChunksEmptySkip = true;
-		}
-		
-		vanillaRenderedChunks = new boolean[vanillaRenderedChunksWidth][vanillaRenderedChunksWidth];
 	}
 
 }

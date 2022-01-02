@@ -131,13 +131,14 @@ public class CubicLodTemplate
 			//if(vertexOptimizer.isCulled(lodDirection))
 			//	continue;
 			// culling
-			
+			// FIXME: Reimpl backface culling
+			/*
 			if (lodDirection == LodDirection.NORTH && vertexOptimizer.getZ(lodDirection, 0) < -cullingRangeZ
 				|| lodDirection == LodDirection.EAST && vertexOptimizer.getX(lodDirection, 0) > cullingRangeX
 				|| lodDirection == LodDirection.SOUTH && vertexOptimizer.getZ(lodDirection, 0) > cullingRangeZ
 				|| lodDirection == LodDirection.WEST && vertexOptimizer.getX(lodDirection, 0) < -cullingRangeX)
 				continue;
-			
+			*/
 			
 			int verticalFaceIndex = 0;
 			while (vertexOptimizer.shouldRenderFace(lodDirection, verticalFaceIndex))

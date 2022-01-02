@@ -78,9 +78,9 @@ public class LodDimension
 	/** stores if the region at the given x and z index needs to be saved to disk */
 	private volatile boolean[][] isRegionDirty;
 	/** stores if the region at the given x and z index needs to be regenerated */
-	private volatile boolean[][] regenRegionBuffer;
-	/** stores if the buffer size at the given x and z index needs to be changed */
-	private volatile boolean[][] recreateRegionBuffer;
+	// Use int because I need Tri state:
+	// 0: both buffer good. 1: the displaying buffer good. 2: both buffer bad.
+	private volatile int[][] regenRegionBuffer;
 	
 	/**
 	 * if true that means there are regions in this dimension
@@ -143,13 +143,14 @@ public class LodDimension
 		
 		regions = new LodRegion[width][width];
 		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new boolean[width][width];
-		recreateRegionBuffer = new boolean[width][width];
+		regenRegionBuffer = new int[width][width];
 		
 		center = new RegionPos(0, 0);
 	}
 	
 	
+	
+	//FIXME: Race condition on this move and other reading regions!
 	/**
 	 * Move the center of this LodDimension and move all owned
 	 * regions over by the given x and z offset. <br><br>
@@ -167,9 +168,10 @@ public class LodDimension
 		if (Math.abs(xOffset) >= width || Math.abs(zOffset) >= width)
 		{
 			for (int x = 0; x < width; x++)
-				for (int z = 0; z < width; z++)
+				for (int z = 0; z < width; z++) {
 					regions[x][z] = null;
-			
+					regenRegionBuffer[x][z] = 0;
+				}
 			// update the new center
 			center.x += xOffset;
 			center.z += zOffset;
@@ -186,10 +188,14 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset < width)
+					if (x + xOffset < width) {
 						regions[x][z] = regions[x + xOffset][z];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
+					}
+					else {
 						regions[x][z] = null;
+						regenRegionBuffer[x][z] = 0;
+					}
 				}
 			}
 		}
@@ -200,11 +206,14 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset >= 0)
+					if (x + xOffset >= 0) {
 						regions[x][z] = regions[x + xOffset][z];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
+					}
+					else {
 						regions[x][z] = null;
-				}
+						regenRegionBuffer[x][z] = 0;
+					}
 			}
 		}
 		
@@ -217,10 +226,14 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (z + zOffset < width)
+					if (z + zOffset < width) {
 						regions[x][z] = regions[x][z + zOffset];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
+					}
+					else {
 						regions[x][z] = null;
+						regenRegionBuffer[x][z] = 0;
+					}
 				}
 			}
 		}
@@ -231,10 +244,15 @@ public class LodDimension
 			{
 				for (int z = width - 1; z >= 0; z--)
 				{
-					if (z + zOffset >= 0)
+					if (z + zOffset >= 0) {
 						regions[x][z] = regions[x][z + zOffset];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
+					}
+					else {
 						regions[x][z] = null;
+						regenRegionBuffer[x][z] = 0;
+					}
+				}
 				}
 			}
 		}
@@ -376,7 +394,8 @@ public class LodDimension
 
 						if (regions[x][z].getMinDetailLevel() > minAllowedDetailLevel) {
 							regions[x][z].cutTree(minAllowedDetailLevel);
-							recreateRegionBuffer[x][z] = true;
+							regenRegionBuffer[x][z] = 2;
+							regenDimensionBuffers = true;
 						}
 					}
 				});
@@ -430,16 +449,16 @@ public class LodDimension
 						if (regions[x][z] == null)
 							regions[x][z] = new LodRegion(levelToGen, regionPos, generationMode, verticalQuality);
 
-						regenRegionBuffer[x][z] = true;
+						regenRegionBuffer[x][z] = 2;
 						regenDimensionBuffers = true;
-						recreateRegionBuffer[x][z] = true;
 					} else if (region.getMinDetailLevel() > levelToGen) {
 						// Second case, the region exists at a higher detail level.
 
 						// Expand the region by introducing the missing layer
 						region.growTree(levelToGen);
 						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-						recreateRegionBuffer[x][z] = true;
+						regenRegionBuffer[x][z] = 2;
+						regenDimensionBuffers = true;
 					}
 				});
 			};
@@ -476,7 +495,7 @@ public class LodDimension
 				int zIndex = (regionPosZ - center.z) + halfWidth;
 				
 				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = true;
+				regenRegionBuffer[xIndex][zIndex] = 2;
 				regenDimensionBuffers = true;
 			}
 			catch (ArrayIndexOutOfBoundsException e)
@@ -518,7 +537,7 @@ public class LodDimension
 				int zIndex = (regionPosZ - center.z) + halfWidth;
 				
 				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = true;
+				regenRegionBuffer[xIndex][zIndex] = 2;
 				regenDimensionBuffers = true;
 			}
 			catch (ArrayIndexOutOfBoundsException e)
@@ -538,7 +557,7 @@ public class LodDimension
 	{
 		int xIndex = (xRegion - center.x) + halfWidth;
 		int zIndex = (zRegion - center.z) + halfWidth;
-		regenRegionBuffer[xIndex][zIndex] = true;
+		regenRegionBuffer[xIndex][zIndex] = 2;
 	}
 	
 	/**
@@ -760,31 +779,35 @@ public class LodDimension
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
-		
-		LodRegion region = getRegion(detailLevel, posX, posZ);
+
+		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
+		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
+		LodRegion region = getRegion(xRegion, zRegion);
 		if (region == null)
 			return;
-		
+		markRegionBufferToRegen(xRegion, zRegion);
 		region.clear(detailLevel, posX, posZ);
 	}
 	
 	/**
 	 * Returns if the buffer at the given array index needs
-	 * to have its buffer regenerated.
+	 * to have its buffer regenerated. Also decrease the state by 1
 	 */
-	public boolean doesRegionNeedBufferRegen(int xIndex, int zIndex)
+	public boolean getAndClearRegionNeedBufferRegen(int regionX, int regionZ)
 	{
-		return regenRegionBuffer[xIndex][zIndex] || recreateRegionBuffer[xIndex][zIndex];
-	}
-	
-	
-	/**
-	 * Sets if the buffer at the given array index needs
-	 * to have its buffer regenerated.
-	 */
-	public void setRegenRegionBufferByArrayIndex(int xIndex, int zIndex, boolean newRegen)
-	{
-		regenRegionBuffer[xIndex][zIndex] = newRegen;
+		//FIXME: Use actual atomics on regenRegionBuffer
+		//FIXME: Race condition on lodDim move/resize!
+		int xIndex = (regionX - center.x) + halfWidth;
+		int zIndex = (regionZ - center.z) + halfWidth;
+		
+		if (xIndex < 0 || xIndex >= width || zIndex < 0 || zIndex >= width)
+			return false;
+		int i = regenRegionBuffer[xIndex][zIndex];
+		if (i > 0) {
+			regenRegionBuffer[xIndex][zIndex]--;
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -798,10 +821,13 @@ public class LodDimension
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
-		
-		LodRegion region = getRegion(detailLevel, posX, posZ);
+
+		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
+		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
+		LodRegion region = getRegion(xRegion, zRegion);
 		if (region == null)
 			return;
+		markRegionBufferToRegen(xRegion, zRegion);
 		
 		region.updateArea(detailLevel, posX, posZ);
 	}
@@ -882,8 +908,7 @@ public class LodDimension
 		
 		regions = new LodRegion[width][width];
 		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new boolean[width][width];
-		recreateRegionBuffer = new boolean[width][width];
+		regenRegionBuffer = new int[width][width];
 		
 		// populate isRegionDirty
 		for (int i = 0; i < width; i++)
