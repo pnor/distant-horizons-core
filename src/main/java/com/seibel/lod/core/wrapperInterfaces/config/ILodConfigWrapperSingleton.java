@@ -186,7 +186,7 @@ public interface ILodConfigWrapperSingleton
 			{
 				String DESC = "These settings control the clouds.";
 
-				boolean CUSTOM_CLOUDS_DEFAULT = true;
+				boolean CUSTOM_CLOUDS_DEFAULT = false;
 				String CUSTOM_CLOUDS_DESC = ""
 						+ " Should we use our own method for rendering clouds \n"
 						+ "\n"
