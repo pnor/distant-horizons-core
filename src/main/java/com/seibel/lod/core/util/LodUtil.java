@@ -104,6 +104,7 @@ public class LodUtil
 	/**
 	 * measured in Blocks <br>
 	 * detail level max - 1
+	 * 512 blocks
 	 */
 	public static final short REGION_WIDTH = 1 << REGION_DETAIL_LEVEL;
 	/**
