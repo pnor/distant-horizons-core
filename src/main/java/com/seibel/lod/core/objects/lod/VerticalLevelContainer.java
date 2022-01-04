@@ -19,6 +19,15 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.LongBuffer;
+
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
@@ -165,6 +174,100 @@ public class VerticalLevelContainer implements LevelContainer
 		return DataPointUtil.doesItExist(getSingleData(posX, posZ));
 	}
 	
+	private long[] readDataVersion6(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+		int x = size * size * tempMaxVerticalData;
+		byte[] data = new byte[x * Long.BYTES];
+		ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+		inputData.readFully(data);
+		long[] result = new long[x];
+		bb.asLongBuffer().get(result);
+		patchHeightAndDepth(result,-minHeight);
+		return result;
+	}
+	private long[] readDataVersion7(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+		int x = size * size * tempMaxVerticalData;
+		byte[] data = new byte[x * Long.BYTES];
+		ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+		inputData.readFully(data);
+		long[] result = new long[x];
+		bb.asLongBuffer().get(result);
+		patchHeightAndDepth(result, 64 - minHeight);
+		return result;
+	}
+
+	private long[] readDataVersion8(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+		int x = size * size * tempMaxVerticalData;
+		byte[] data = new byte[x * Long.BYTES];
+		short tempMinHeight = Short.reverseBytes(inputData.readShort());
+		ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+		inputData.readFully(data);
+		long[] result = new long[x];
+		bb.asLongBuffer().get(result);
+		if (tempMinHeight != minHeight) {
+			patchHeightAndDepth(result,tempMinHeight - minHeight);
+		}
+		return result;
+	}
+	
+	private static long[] downgradeVerticalSize(int oldVertSize, int newVertSize, long[] data) {
+		long[] dataToMerge = new long[oldVertSize];
+		int size = data.length/oldVertSize;
+		long[] newData = new long[size * newVertSize];
+		for (int i = 0; i < size; i++)
+		{
+			System.arraycopy(oldVertSize, i * oldVertSize, dataToMerge, 0, oldVertSize);
+			dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, oldVertSize, newVertSize);
+			System.arraycopy(dataToMerge, 0, newData, i * newVertSize, newVertSize);
+		}
+		return newData;
+	}
+	
+	private static void patchHeightAndDepth(long[] data, int offset) {
+		for (int i=0; i<data.length; i++) {
+			data[i] = DataPointUtil.shiftHeightAndDepth(data[i], (short)offset);
+		}
+	}
+	
+	public VerticalLevelContainer(DataInputStream inputData, int version, byte expectedDetailLevel) throws IOException {
+		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
+		detailLevel = inputData.readByte();
+		if (detailLevel != expectedDetailLevel)
+			throw new IOException("Invalid Data: The expected detail level should be "+expectedDetailLevel+
+					" but the data header say it's "+detailLevel);
+		
+		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+		int fileMaxVerticalData = inputData.readByte() & 0b01111111;
+		long[] tempDataContainer = null;
+		
+		switch (version) {
+		case 6:
+			tempDataContainer = readDataVersion6(inputData, fileMaxVerticalData);
+			break;
+		case 7:
+			tempDataContainer = readDataVersion7(inputData, fileMaxVerticalData);
+			break;
+		case 8:
+			tempDataContainer = readDataVersion8(inputData, fileMaxVerticalData);
+			break;
+		default:
+			assert false;
+		}
+		
+		int targetMaxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
+		if (fileMaxVerticalData > targetMaxVerticalData)
+		{
+			verticalSize = targetMaxVerticalData;
+			this.dataContainer = downgradeVerticalSize(fileMaxVerticalData, targetMaxVerticalData, tempDataContainer);
+		}
+		else
+		{
+			verticalSize = fileMaxVerticalData;
+			this.dataContainer = tempDataContainer;
+		}
+	}
+	
+	// Deprecated. Please use the DataInputStream version.
+	@Deprecated
 	public VerticalLevelContainer(byte[] inputData, int version)
 	{
 		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
@@ -1062,40 +1165,24 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public byte[] toDataString()
-	{
-		int index = 0;
-		int x = size * size;
-		int tempIndex;
-		long current;
+	public boolean writeData(DataOutputStream output) throws IOException {
+		output.writeByte(detailLevel);
+		output.writeByte((byte) verticalSize);
+		output.writeByte((byte) (minHeight & 0xFF));
+		output.writeByte((byte) ((minHeight >> 8) & 0xFF));
 		boolean allGenerated = true;
-		byte[] tempData = ThreadMapUtil.getSaveContainer(detailLevel);
-		
-		tempData[index] = detailLevel;
-		index++;
-		tempData[index] = (byte) verticalSize;
-		index++;
-		tempData[index] = (byte) (minHeight & 0xFF);
-		index++;
-		tempData[index] = (byte) ((minHeight >> 8) & 0xFF);
-		index++;
-		
-		int j;
+		int x = size * size;
 		for (int i = 0; i < x; i++)
 		{
-			for (j = 0; j < verticalSize; j++)
+			for (int j = 0; j < verticalSize; j++)
 			{
-				current = dataContainer[i * verticalSize + j];
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					tempData[index + tempIndex] = (byte) (current >>> (8 * tempIndex));
-				index += 8;
+				long current = dataContainer[i * verticalSize + j];
+				output.writeLong(Long.reverseBytes(current));
 			}
 			if (!DataPointUtil.doesItExist(dataContainer[i]))
 				allGenerated = false;
 		}
-		if (allGenerated)
-			tempData[1] |= 0b10000000;
-		return tempData;
+		return allGenerated;
 	}
 	
 	@Override

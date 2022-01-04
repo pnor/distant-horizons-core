@@ -78,9 +78,9 @@ public class LodDimension
 	/** stores if the region at the given x and z index needs to be saved to disk */
 	private volatile boolean[][] isRegionDirty;
 	/** stores if the region at the given x and z index needs to be regenerated */
-	private volatile boolean[][] regenRegionBuffer;
-	/** stores if the buffer size at the given x and z index needs to be changed */
-	private volatile boolean[][] recreateRegionBuffer;
+	// Use int because I need Tri state:
+	// 0: both buffer good. 1: the displaying buffer good. 2: both buffer bad.
+	private volatile int[][] regenRegionBuffer;
 	
 	/**
 	 * if true that means there are regions in this dimension
@@ -143,13 +143,14 @@ public class LodDimension
 		
 		regions = new LodRegion[width][width];
 		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new boolean[width][width];
-		recreateRegionBuffer = new boolean[width][width];
+		regenRegionBuffer = new int[width][width];
 		
 		center = new RegionPos(0, 0);
 	}
 	
 	
+	
+	//FIXME: Race condition on this move and other reading regions!
 	/**
 	 * Move the center of this LodDimension and move all owned
 	 * regions over by the given x and z offset. <br><br>
@@ -167,9 +168,10 @@ public class LodDimension
 		if (Math.abs(xOffset) >= width || Math.abs(zOffset) >= width)
 		{
 			for (int x = 0; x < width; x++)
-				for (int z = 0; z < width; z++)
+				for (int z = 0; z < width; z++) {
 					regions[x][z] = null;
-			
+					regenRegionBuffer[x][z] = 0;
+				}
 			// update the new center
 			center.x += xOffset;
 			center.z += zOffset;
@@ -186,10 +188,14 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset < width)
+					if (x + xOffset < width) {
 						regions[x][z] = regions[x + xOffset][z];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
+					}
+					else {
 						regions[x][z] = null;
+						regenRegionBuffer[x][z] = 0;
+					}
 				}
 			}
 		}
@@ -200,11 +206,14 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset >= 0)
+					if (x + xOffset >= 0) {
 						regions[x][z] = regions[x + xOffset][z];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
+					}
+					else {
 						regions[x][z] = null;
-				}
+						regenRegionBuffer[x][z] = 0;
+					}
 			}
 		}
 		
@@ -217,10 +226,14 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (z + zOffset < width)
+					if (z + zOffset < width) {
 						regions[x][z] = regions[x][z + zOffset];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
+					}
+					else {
 						regions[x][z] = null;
+						regenRegionBuffer[x][z] = 0;
+					}
 				}
 			}
 		}
@@ -231,10 +244,15 @@ public class LodDimension
 			{
 				for (int z = width - 1; z >= 0; z--)
 				{
-					if (z + zOffset >= 0)
+					if (z + zOffset >= 0) {
 						regions[x][z] = regions[x][z + zOffset];
-					else
+						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
+					}
+					else {
 						regions[x][z] = null;
+						regenRegionBuffer[x][z] = 0;
+					}
+				}
 				}
 			}
 		}
@@ -310,6 +328,32 @@ public class LodDimension
 		
 		regions[xIndex][zIndex] = newRegion;
 	}
+	public interface PosComsumer {
+		void run(int x, int z);
+	}
+	
+	public void iterateWithSpiral(PosComsumer r) {
+		int ox,oy,dx,dy;
+	    ox = oy = dx = 0;
+	    dy = -1;
+	    int len = regions.length;
+	    int maxI = len*len;
+	    int halfLen = len/2;
+	    for(int i =0; i < maxI; i++){
+	        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
+	        	int x = ox+halfLen;
+	        	int z = oy+halfLen;
+	        	r.run(x, z);
+	        }
+	        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
+	            int temp = dx;
+	            dx = -dy;
+	            dy = temp;
+	        }
+	        ox += dx;
+	        oy += dy;
+	    }
+	}
 	
 	
 	/**
@@ -325,116 +369,100 @@ public class LodDimension
 		
 		// don't run the tree cutter multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastCutChunk.getX() || newPlayerChunk.getZ() != lastCutChunk.getZ())
-		{
+		if (newPlayerChunk.getX() != lastCutChunk.getX() || newPlayerChunk.getZ() != lastCutChunk.getZ()) {
 			lastCutChunk = newPlayerChunk;
-			
-			Thread thread = new Thread(() ->
-			{
-				int regionX;
-				int regionZ;
-				int minDistance;
-				byte detail;
-				byte minAllowedDetailLevel;
-				
+
+			Runnable thread = () -> {
+
 				// go over every region in the dimension
-				for (int x = 0; x < regions.length; x++)
-				{
-					for (int z = 0; z < regions.length; z++)
-					{
-						regionX = (x + center.x) - halfWidth;
-						regionZ = (z + center.z) - halfWidth;
-						
-						if (regions[x][z] != null)
-						{
-							// check what detail level this region should be
-							// and cut it if it is higher then that
-							minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX, playerPosZ);
-							detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
-							minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
-							
-							if (regions[x][z].getMinDetailLevel() > minAllowedDetailLevel)
-							{
-								regions[x][z].cutTree(minAllowedDetailLevel);
-								recreateRegionBuffer[x][z] = true;
-							}
+				iterateWithSpiral((int x, int z) -> {
+					int regionX;
+					int regionZ;
+					int minDistance;
+					byte detail;
+					byte minAllowedDetailLevel;
+					regionX = (x + center.x) - halfWidth;
+					regionZ = (z + center.z) - halfWidth;
+
+					if (regions[x][z] != null) {
+						// check what detail level this region should be
+						// and cut it if it is higher then that
+						minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
+								playerPosX, playerPosZ);
+						detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
+						minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
+
+						if (regions[x][z].getMinDetailLevel() > minAllowedDetailLevel) {
+							regions[x][z].cutTree(minAllowedDetailLevel);
+							regenRegionBuffer[x][z] = 2;
+							regenDimensionBuffers = true;
 						}
-					}// region z
-				}// region z
-			});
-			
+					}
+				});
+			};
 			cutAndExpandThread.execute(thread);
 		}
 	}
 	
 	/** Either expands or loads all regions in the rendered LOD area */
-	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ)
-	{
+	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ) {
 		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
-		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
+		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX),
+				LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
-		
-		
+
 		if (lastExpandedChunk == null)
 			lastExpandedChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
-		
+
 		// don't run the expander multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastExpandedChunk.getX() || newPlayerChunk.getZ() != lastExpandedChunk.getZ())
-		{
+		if (newPlayerChunk.getX() != lastExpandedChunk.getX() || newPlayerChunk.getZ() != lastExpandedChunk.getZ()) {
 			lastExpandedChunk = newPlayerChunk;
-			
-			Thread thread = new Thread(() ->
-			{
-				int regionX;
-				int regionZ;
-				LodRegion region;
-				int minDistance;
-				byte detail;
-				byte levelToGen;
-				
-				for (int x = 0; x < regions.length; x++)
-				{
-					for (int z = 0; z < regions.length; z++)
-					{
-						regionX = (x + center.x) - halfWidth;
-						regionZ = (z + center.z) - halfWidth;
-						final RegionPos regionPos = new RegionPos(regionX, regionZ);
-						region = regions[x][z];
-						
-						minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX, playerPosZ);
-						detail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
-						levelToGen = DetailDistanceUtil.getLodGenDetail(detail).detailLevel;
-						
-						// check that the region isn't null and at least this detail level
-						if (region == null || region.getGenerationMode() != generationMode)
-						{
-							// First case, region has to be created
-							
-							// try to get the region from file
-							regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-							
-							// if there is no region file create an empty region
-							if (regions[x][z] == null)
-								regions[x][z] = new LodRegion(levelToGen, regionPos, generationMode, verticalQuality);
-							
-							regenRegionBuffer[x][z] = true;
-							regenDimensionBuffers = true;
-							recreateRegionBuffer[x][z] = true;
-						}
-						else if (region.getMinDetailLevel() > levelToGen)
-						{
-							// Second case, the region exists at a higher detail level.
-							
-							// Expand the region by introducing the missing layer
-							region.growTree(levelToGen);
-							regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-							recreateRegionBuffer[x][z] = true;
-						}
+
+			Runnable thread = () -> {
+
+				iterateWithSpiral((int x, int z) -> {
+					int regionX;
+					int regionZ;
+					LodRegion region;
+					int minDistance;
+					byte detail;
+					byte levelToGen;
+					regionX = (x + center.x) - halfWidth;
+					regionZ = (z + center.z) - halfWidth;
+					final RegionPos regionPos = new RegionPos(regionX, regionZ);
+					region = regions[x][z];
+
+					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
+							playerPosZ);
+					detail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
+					levelToGen = DetailDistanceUtil.getLodGenDetail(detail).detailLevel;
+
+					// check that the region isn't null and at least this detail level
+					if (region == null || region.getGenerationMode() != generationMode) {
+						// First case, region has to be created
+
+						// try to get the region from file
+						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
+
+						// if there is no region file create an empty region
+						if (regions[x][z] == null)
+							regions[x][z] = new LodRegion(levelToGen, regionPos, generationMode, verticalQuality);
+
+						regenRegionBuffer[x][z] = 2;
+						regenDimensionBuffers = true;
+					} else if (region.getMinDetailLevel() > levelToGen) {
+						// Second case, the region exists at a higher detail level.
+
+						// Expand the region by introducing the missing layer
+						region.growTree(levelToGen);
+						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
+						regenRegionBuffer[x][z] = 2;
+						regenDimensionBuffers = true;
 					}
-				}
-			});
-			
+				});
+			};
+
 			cutAndExpandThread.execute(thread);
 		}
 	}
@@ -467,7 +495,7 @@ public class LodDimension
 				int zIndex = (regionPosZ - center.z) + halfWidth;
 				
 				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = true;
+				regenRegionBuffer[xIndex][zIndex] = 2;
 				regenDimensionBuffers = true;
 			}
 			catch (ArrayIndexOutOfBoundsException e)
@@ -509,7 +537,7 @@ public class LodDimension
 				int zIndex = (regionPosZ - center.z) + halfWidth;
 				
 				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = true;
+				regenRegionBuffer[xIndex][zIndex] = 2;
 				regenDimensionBuffers = true;
 			}
 			catch (ArrayIndexOutOfBoundsException e)
@@ -529,7 +557,7 @@ public class LodDimension
 	{
 		int xIndex = (xRegion - center.x) + halfWidth;
 		int zIndex = (zRegion - center.z) + halfWidth;
-		regenRegionBuffer[xIndex][zIndex] = true;
+		regenRegionBuffer[xIndex][zIndex] = 2;
 	}
 	
 	/**
@@ -751,31 +779,35 @@ public class LodDimension
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
-		
-		LodRegion region = getRegion(detailLevel, posX, posZ);
+
+		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
+		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
+		LodRegion region = getRegion(xRegion, zRegion);
 		if (region == null)
 			return;
-		
+		markRegionBufferToRegen(xRegion, zRegion);
 		region.clear(detailLevel, posX, posZ);
 	}
 	
 	/**
 	 * Returns if the buffer at the given array index needs
-	 * to have its buffer regenerated.
+	 * to have its buffer regenerated. Also decrease the state by 1
 	 */
-	public boolean doesRegionNeedBufferRegen(int xIndex, int zIndex)
+	public boolean getAndClearRegionNeedBufferRegen(int regionX, int regionZ)
 	{
-		return regenRegionBuffer[xIndex][zIndex] || recreateRegionBuffer[xIndex][zIndex];
-	}
-	
-	
-	/**
-	 * Sets if the buffer at the given array index needs
-	 * to have its buffer regenerated.
-	 */
-	public void setRegenRegionBufferByArrayIndex(int xIndex, int zIndex, boolean newRegen)
-	{
-		regenRegionBuffer[xIndex][zIndex] = newRegen;
+		//FIXME: Use actual atomics on regenRegionBuffer
+		//FIXME: Race condition on lodDim move/resize!
+		int xIndex = (regionX - center.x) + halfWidth;
+		int zIndex = (regionZ - center.z) + halfWidth;
+		
+		if (xIndex < 0 || xIndex >= width || zIndex < 0 || zIndex >= width)
+			return false;
+		int i = regenRegionBuffer[xIndex][zIndex];
+		if (i > 0) {
+			regenRegionBuffer[xIndex][zIndex]--;
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -789,10 +821,13 @@ public class LodDimension
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
-		
-		LodRegion region = getRegion(detailLevel, posX, posZ);
+
+		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
+		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
+		LodRegion region = getRegion(xRegion, zRegion);
 		if (region == null)
 			return;
+		markRegionBufferToRegen(xRegion, zRegion);
 		
 		region.updateArea(detailLevel, posX, posZ);
 	}
@@ -873,8 +908,7 @@ public class LodDimension
 		
 		regions = new LodRegion[width][width];
 		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new boolean[width][width];
-		recreateRegionBuffer = new boolean[width][width];
+		regenRegionBuffer = new int[width][width];
 		
 		// populate isRegionDirty
 		for (int i = 0; i < width; i++)

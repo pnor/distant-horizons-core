@@ -19,6 +19,10 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * A level container is a quad tree level
  */
@@ -99,13 +103,13 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level to update
 	 */
 	void updateData(LevelContainer lowerLevelContainer, int posX, int posZ);
-	
+
 	/**
-	 * This will give the data to save in the file
-	 * @return data as a String
+	 * This will write the raw data with metadata to the output stream
+	 * @return isAllGenerated whether the data is all generated
+	 * @throws IOException 
 	 */
-	byte[] toDataString();
-	
+	boolean writeData(DataOutputStream output) throws IOException;
 	
 	/**
 	 * This will give the data to save in the file

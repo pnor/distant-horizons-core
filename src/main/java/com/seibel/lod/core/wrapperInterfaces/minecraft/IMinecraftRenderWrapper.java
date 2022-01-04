@@ -51,8 +51,14 @@ public interface IMinecraftRenderWrapper
 	
 	double getGamma();
 	
-	Color getFogColor();
+	Color getFogColor(float partialTicks);
+	
+	public default Color getUnderWaterFogColor(float partialTicks) {return getFogColor(partialTicks);}
 
+	public default boolean isFogStateInUnderWater() {
+		return false;
+	}
+	
 	Color getSkyColor();
 	
 	double getFov(float partialTicks);
@@ -131,4 +137,5 @@ public interface IMinecraftRenderWrapper
 	public default boolean tryDisableVanillaFog() {
 		return false;
 	}
+	
 }

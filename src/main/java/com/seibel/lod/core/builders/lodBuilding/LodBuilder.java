@@ -80,7 +80,6 @@ public class LodBuilder
 	
 	//public static final boolean useExperimentalLighting = true;
 	
-	private static int timesToEdgeDetect = 1;
 	
 	
 	
@@ -249,32 +248,23 @@ public class LodBuilder
 			yAbs = chunk.getMaxY(xRel,zRel) - MIN_WORLD_HEIGHT;
 			int count = 0;
 			boolean topBlock = true;
+			if (yAbs <= 0)
+				dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
 			while (yAbs > 0)
 			{
 				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
 				
 				// If the lod is at the default height, it must be void data
 				if (height == 0)
-				{
-					if (topBlock)
-						dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
 					break;
-				}
 				
 				yAbs = height - 1;
 				// We search light on above air block
-				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < timesToEdgeDetect);
+				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < this.config.client().graphics().quality().getVerticalQuality().maxConnectedLods && !hasCeiling);
 				if (hasCeiling && topBlock)
-				{
 					yAbs = depth;
-					light = getLightValue(chunk, xAbs,yAbs,zAbs, true, hasSkyLight, true);
-					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
-				}
-				else
-				{
-					light = getLightValue(chunk, xAbs, yAbs, zAbs, hasCeiling, hasSkyLight, topBlock);
-					color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
-				}
+				light = getLightValue(chunk, xAbs,yAbs + MIN_WORLD_HEIGHT, zAbs, hasCeiling, hasSkyLight, topBlock);
+				color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
 				lightBlock = light & 0b1111;
 				lightSky = (light >> 4) & 0b1111;
 				isDefault = ((light >> 8)) == 1;
@@ -296,15 +286,21 @@ public class LodBuilder
 	{
 		short depth = 0;
 		
-		IBlockColorWrapper blockColorWrapper;
 		int colorOfBlock = 0;
 		if (strictEdge)
 		{
-			blockColorWrapper = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs);
-			colorOfBlock = blockColorWrapper.getColor();
+			colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs).getColor();
+			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(xAbs, yAbs + 1, zAbs);
+			if (block != null && ((this.config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
+					|| (this.config.client().worldGenerator().getBlocksToAvoid().noCollision && block.hasNoCollision())))
+			{
+				int aboveColorInt = chunk.getBlockColorWrapper(xAbs, yAbs + 1, zAbs).getColor();
+				if (aboveColorInt != 0)
+					colorOfBlock = aboveColorInt;
+			}
 		}
 		
-		for (int y = yAbs; y >= 0; y--)
+		for (int y = yAbs - 1; y >= 0; y--)
 		{
 			
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs))
@@ -314,8 +310,7 @@ public class LodBuilder
 			}
 			if (strictEdge)
 			{
-				blockColorWrapper = chunk.getBlockColorWrapper(xAbs, y, zAbs);
-				if (colorOfBlock != blockColorWrapper.getColor())
+				if (colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor())
 				{
 					depth = (short) (y + 1);
 					break;

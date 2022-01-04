@@ -200,6 +200,9 @@ public class VertexOptimizer
 	public final Map<LodDirection, byte[]> skyLights;
 	public byte blockLight;
 	
+	boolean skipTop;
+	boolean skipBot;
+	
 	
 	
 	/** creates an empty box */
@@ -317,15 +320,13 @@ public class VertexOptimizer
 		int maxY = getMaxY();
 		long singleAdjDataPoint;
 		
-		/* TODO implement attached vertical face culling
+		// TODO transparency uncomment final condition to see ocean floor
 		//Up direction case
-		if(DataPointUtil.doesItExist(adjData.get(Direction.UP)))
-		{
-			height = DataPointUtil.getHeight(singleAdjDataPoint);
-			depth = DataPointUtil.getDepth(singleAdjDataPoint);
-		}*/
+		singleAdjDataPoint = adjData.get(LodDirection.UP)[0];
+		skipTop = DataPointUtil.doesItExist(singleAdjDataPoint) && DataPointUtil.getDepth(singleAdjDataPoint) == maxY;// && DataPointUtil.getAlpha(singleAdjDataPoint) == 255;
 		//Down direction case
 		singleAdjDataPoint = adjData.get(LodDirection.DOWN)[0];
+		skipBot = DataPointUtil.doesItExist(singleAdjDataPoint) && DataPointUtil.getHeight(singleAdjDataPoint) == minY;// && DataPointUtil.getAlpha(singleAdjDataPoint) == 255;
 		if(DataPointUtil.doesItExist(singleAdjDataPoint))
 			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
 		else
@@ -351,17 +352,22 @@ public class VertexOptimizer
 			boolean toFinish = false;
 			int toFinishIndex = 0;
 			boolean allAbove = true;
+			// TODO transparency ocean floor fix
+			//boolean isOpaque = ((colorMap[0] >> 24) & 0xFF) == 255;
 			for (i = 0; i < dataPoint.length; i++)
 			{
 				singleAdjDataPoint = dataPoint[i];
-				
 				if (DataPointUtil.isVoid(singleAdjDataPoint) || !DataPointUtil.doesItExist(singleAdjDataPoint))
 					break;
+				
+				// TODO transparency ocean floor fix
+				//if (isOpaque && DataPointUtil.getAlpha(singleAdjDataPoint) != 255)
+				//	continue;
 				
 				height = DataPointUtil.getHeight(singleAdjDataPoint);
 				depth = DataPointUtil.getDepth(singleAdjDataPoint);
 				
-				if (depth <= maxY)
+				if (depth < maxY)
 				{
 					allAbove = false;
 					if (height < minY)
@@ -415,7 +421,7 @@ public class VertexOptimizer
 						}
 						break;
 					}
-					else if (height >= maxY)//depth > minY &&
+					else if (height >= maxY)// && depth > minY
 					{
 						// the adj data intersects the higher part of the current data
 						// we start the creation of a new face
@@ -488,13 +494,14 @@ public class VertexOptimizer
 		boxOffset[Z] = zOffset;
 	}
 	
-	/**
-	 * returns true if the given direction should be rendered.
-	 */
+	/** returns true if the given direction should be rendered. */
 	public boolean shouldRenderFace(LodDirection lodDirection, int adjIndex)
 	{
-		if (lodDirection == LodDirection.UP || lodDirection == LodDirection.DOWN)
-			return adjIndex == 0;
+		if (lodDirection == LodDirection.UP)
+			return adjIndex == 0 && !skipTop;
+		if (lodDirection == LodDirection.DOWN)
+			return adjIndex == 0 && !skipBot;
+		
 		return !(adjHeight.get(lodDirection)[adjIndex] == VOID_FACE && adjDepth.get(lodDirection)[adjIndex] == VOID_FACE);
 	}
 	

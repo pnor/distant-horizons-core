@@ -100,6 +100,8 @@ public class LodDimensionFileHandler
 	
 	
 	
+	
+	
 	//================//
 	// read from file //
 	//================//
@@ -116,135 +118,77 @@ public class LodDimensionFileHandler
 		
 		for (byte tempDetailLevel = LodUtil.REGION_DETAIL_LEVEL; tempDetailLevel >= detailLevel; tempDetailLevel--)
 		{
-			String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, tempDetailLevel, verticalQuality);
+			File file = getBestMatchingRegionFile(tempDetailLevel, regionX, regionZ, generationMode, verticalQuality);
+			if (file == null) {
+				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+				continue; // Failed to find the file for this detail level. continue and try next one
+			}
 			
-			try
+			long fileSize = file.length();
+			if (fileSize == 0) {
+				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+				continue; // file is empty. Let's not try parsing empty files
+			}
+			try (FileInputStream fileInStream = new FileInputStream(file))
 			{
-				// if the fileName was null that means the folder is inaccessible
-				// for some reason
-				if (fileName == null)
-					throw new IllegalArgumentException("Unable to read region [" + regionX + ", " + regionZ + "] file, no fileName.");
+				XZCompressorInputStream inputStream = new XZCompressorInputStream(fileInStream);
+				int fileVersion;
+				fileVersion = inputStream.read();
 				
-				File file = new File(fileName);
-				if (!file.exists())
+				// check if this file can be read by this file handler
+				if (fileVersion < 6)
 				{
-					//there is no file for current gen mode
-					//search others above current from the most to the least detailed
-					VerticalQuality tempVerticalQuality = VerticalQuality.HIGH;
-					do {
-						DistanceGenerationMode tempGenMode = DistanceGenerationMode.FULL;
-						do {
-							fileName = getFileNameAndPathForRegion(regionX, regionZ, tempGenMode, tempDetailLevel, verticalQuality);
-							if (fileName != null)
-							{
-								file = new File(fileName);
-								if (file.exists())
-									break;
-							}
-							//decrease gen mode
-							if (tempGenMode == DistanceGenerationMode.FULL)
-								tempGenMode = DistanceGenerationMode.FEATURES;
-							else if (tempGenMode == DistanceGenerationMode.FEATURES)
-								tempGenMode = DistanceGenerationMode.SURFACE;
-							else if (tempGenMode == DistanceGenerationMode.SURFACE)
-								tempGenMode = DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
-							else if (tempGenMode == DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT)
-								tempGenMode = DistanceGenerationMode.BIOME_ONLY;
-							else if (tempGenMode == DistanceGenerationMode.BIOME_ONLY)
-								tempGenMode = DistanceGenerationMode.NONE;
-						} while (tempGenMode != generationMode);
-						if (fileName != null)
-						{
-							file = new File(fileName);
-							if (file.exists())
-								break;
-						}
-						if (tempVerticalQuality == VerticalQuality.HIGH)
-							tempVerticalQuality = VerticalQuality.MEDIUM;
-						else if (tempVerticalQuality == VerticalQuality.MEDIUM)
-							tempVerticalQuality = VerticalQuality.LOW;
-					} while (tempVerticalQuality != verticalQuality);
-					if (!file.exists())
-						//there wasn't a file, don't return anything
-						continue;
+					// the file we are reading is an older version,
+					// close the reader and delete the file.
+					inputStream.close();
+					file.delete();
+					ClientApi.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
+							+ " version found: " + fileVersion
+							+ ", version requested: " + LOD_SAVE_FILE_VERSION
+							+ ". File has been deleted.");
+					// This should not break, but be continue to see whether other detail levels can be loaded or updated
+					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+					continue;
 				}
-				
-				
-				
-				// don't try parsing empty files
-				long dataSize = file.length();
-				dataSize -= 1;
-				if (dataSize > 0)
+				else if (fileVersion > LOD_SAVE_FILE_VERSION)
 				{
-					try (XZCompressorInputStream inputStream = new XZCompressorInputStream(new FileInputStream(file)))
-					{
-						int fileVersion;
-						fileVersion = inputStream.read();
-						
-						// check if this file can be read by this file handler
-						if (fileVersion < 6)
-						{
-							// the file we are reading is an older version,
-							// close the reader and delete the file.
-							inputStream.close();
-							file.delete();
-							ClientApi.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
-									+ " version found: " + fileVersion
-									+ ", version requested: " + LOD_SAVE_FILE_VERSION
-									+ ". File was been deleted.");
-							
-							break;
-						}
-						else if (fileVersion > LOD_SAVE_FILE_VERSION)
-						{
-							// the file we are reading is a newer version,
-							// close the reader and ignore the file, we don't
-							// want to accidentally delete anything the user may want.
-							inputStream.close();
-							ClientApi.LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
-									+ " version found: " + fileVersion
-									+ ", version requested: " + LOD_SAVE_FILE_VERSION
-									+ " this region will not be written to in order to protect the newer file.");
-							
-							break;
-						}
-						else if (fileVersion < LOD_SAVE_FILE_VERSION)
-						{
-							//this is old, but readable version
-							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
-							inputStream.read(data);
-							inputStream.close();
-							// add the data to our region
-							region.addLevelContainer(new VerticalLevelContainer(data, fileVersion));
-						} else
-						{
-							// this file is a readable version,
-							// read the file
-							byte[] data = ThreadMapUtil.getSaveContainer(tempDetailLevel);
-							inputStream.read(data);
-							inputStream.close();
-							// add the data to our region
-							region.addLevelContainer(new VerticalLevelContainer(data, LOD_SAVE_FILE_VERSION));
-						}
-					}
-					catch (IOException ioEx)
-					{
-						ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
-						ioEx.printStackTrace();
-					}
+					// the file we are reading is a newer version,
+					// close the reader and ignore the file, we don't
+					// want to accidentally delete anything the user may want.
+					inputStream.close();
+					ClientApi.LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
+							+ " version found: " + fileVersion
+							+ ", version requested: " + LOD_SAVE_FILE_VERSION
+							+ " this region will not be written to in order to protect the newer file.");
+					// This should not break, but be continue to see whether other detail levels can be loaded or updated
+					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+					continue;
+				}
+				else if (fileVersion < LOD_SAVE_FILE_VERSION)
+				{
+					ClientApi.LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
+							+ " version found: " + fileVersion
+							+ ", version requested: " + LOD_SAVE_FILE_VERSION
+							+ ". File will be loaded and updated to new format in next save.");
+					// this is old, but readable version
+					// read and add the data to our region
+					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), fileVersion, tempDetailLevel));
+					inputStream.close();
+				} else
+				{
+					// this file is a readable version,
+					// read and add the data to our region
+					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), LOD_SAVE_FILE_VERSION, tempDetailLevel));
+					inputStream.close();
 				}
 			}
-			catch (Exception e)
+			catch (IOException ioEx)
 			{
-				// the buffered reader encountered a
-				// problem reading the file
-				ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + e.getMessage() + "]: ");
-				e.printStackTrace();
+				ClientApi.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "] error [" + ioEx.getMessage() + "]: ");
+				ioEx.printStackTrace();
+				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 			}
 		}// for each detail level
-		
-		if (region.getMinDetailLevel() >= detailLevel)
-			region.growTree(detailLevel);
 		
 		return region;
 	}
@@ -294,162 +238,104 @@ public class LodDimensionFileHandler
 	{
 		for (byte detailLevel = region.getMinDetailLevel(); detailLevel <= LodUtil.REGION_DETAIL_LEVEL; detailLevel++)
 		{
-			String fileName = getFileNameAndPathForRegion(region.regionPosX, region.regionPosZ, region.getGenerationMode(), detailLevel, region.getVerticalQuality());
+			// Get the old file
+			File oldFile = getRegionFile(region.regionPosX, region.regionPosZ, region.getGenerationMode(), detailLevel, region.getVerticalQuality());
+			ClientApi.LOGGER.debug("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] to file.");
 			
-			// if the fileName was null that means the folder is inaccessible
-			// for some reason
-			if (fileName == null)
+			boolean isFileFullyGened = false;
+			// make sure the file and folder exists
+			if (!oldFile.exists())
 			{
-				ClientApi.LOGGER.warn("Unable to save region [" + region.regionPosX + ", " + region.regionPosZ + "] to file, file is inaccessible.");
-				return;
-			}
-			File oldFile = new File(fileName);
-			//ClientProxy.LOGGER.info("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] to file.");
-			byte[] temp = region.getLevel(detailLevel).toDataString();
-			
-			try
-			{
-				// make sure the file and folder exists
-				if (!oldFile.exists())
-				{
-					// the file doesn't exist,
-					// create it and the folder if need be
-					if (!oldFile.getParentFile().exists())
-						oldFile.getParentFile().mkdirs();
+				// the file doesn't exist,
+				// create it and the folder if need be
+				if (!oldFile.getParentFile().exists())
+					oldFile.getParentFile().mkdirs();
+				try {
 					oldFile.createNewFile();
-				}
-				else
-				{
-					// the file exists, make sure it
-					// is the correct version.
-					// (to make sure we don't overwrite a newer
-					// version file if it exists)
-					int fileVersion = LOD_SAVE_FILE_VERSION;
-					int isFull = 0;
-					try (XZCompressorInputStream inputStream = new XZCompressorInputStream(new FileInputStream(oldFile)))
-					{
-						fileVersion = inputStream.read();
-						inputStream.skip(1);
-						isFull = inputStream.read() & 0b10000000;
-						inputStream.close();
-					}
-					catch (IOException ex)
-					{
-						ex.printStackTrace();
-					}
-					
-					// check if this file can be written to by the file handler
-					if (fileVersion > LOD_SAVE_FILE_VERSION)
-					{
-						// the file we are reading is a newer version,
-						// don't write anything, we don't want to accidentally
-						// delete anything the user may want.
-						return;
-					}
-					if ((temp[1] & 0b10000000) != 0b10000000 && isFull == 0b10000000)
-					{
-						// existing file is complete while new one is only partially generate
-						// this can happen is for some reason loading failed
-						// this doesn't fix the bug, but at least protects old data
-						ClientApi.LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + fileName + "]");
-						return;
-					}
-					// if we got this far then we are good
-					// to overwrite the old file
-				}
-				// the old file is good, now create a new temporary save file
-				File newFile = new File(fileName + TMP_FILE_EXTENSION);
-				try (XZCompressorOutputStream outputStream = new XZCompressorOutputStream(new FileOutputStream(newFile), 3))
-				{
-					// add the version of this file
-					outputStream.write(LOD_SAVE_FILE_VERSION);
-					
-					// add each LodChunk to the file
-					outputStream.write(temp);
-					outputStream.close();
-					
-					// overwrite the old file with the new one
-					Files.move(newFile.toPath(), oldFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-				}
-				catch (IOException ex)
-				{
-					ex.printStackTrace();
+				} catch (IOException e) {
+					ClientApi.LOGGER.error("LOD file write error. Unable to create parent directory for [" + oldFile + "] error [" + e.getMessage() + "]: ");
+					e.printStackTrace();
+					continue;
 				}
 			}
-			catch (Exception e)
+			else
 			{
-				ClientApi.LOGGER.error("LOD file write error. Unable to write to [" + fileName + "] error [" + e.getMessage() + "]: ");
+				// the file exists, make sure it
+				// is the correct version.
+				// (to make sure we don't overwrite a newer
+				// version file if it exists)
+				int fileVersion = LOD_SAVE_FILE_VERSION;
+				try (FileInputStream fileInStream = new FileInputStream(oldFile))
+				{
+					XZCompressorInputStream inputStream = new XZCompressorInputStream(fileInStream);
+					fileVersion = inputStream.read();
+					inputStream.skip(1);
+					isFileFullyGened = (inputStream.read() & 0b10000000) != 0;
+					inputStream.close();
+				}
+				catch (IOException e)
+				{
+					ClientApi.LOGGER.warn("LOD file write warning. Unable to read existing file [" + oldFile + "] version. Treating it as latest version. [" + e.getMessage() + "]: ");
+					e.printStackTrace();
+				}
+				
+				// check if this file can be written to by the file handler
+				if (fileVersion > LOD_SAVE_FILE_VERSION)
+				{
+					// the file we are reading is a newer version,
+					// don't write anything, we don't want to accidentally
+					// delete anything the user may want.
+					continue;
+				}
+				// if we got this far then we are good
+				// to overwrite the old file
+			}
+			
+			// Now create a new temporary save file
+			File tempFile = new File(oldFile.getPath() + TMP_FILE_EXTENSION);
+			try (FileOutputStream fileOutStream = new FileOutputStream(tempFile))
+			{
+				XZCompressorOutputStream outputStream = new XZCompressorOutputStream(fileOutStream, 3);
+				// add the version of this file
+				outputStream.write(LOD_SAVE_FILE_VERSION);
+				// add each LodChunk to the file
+				boolean isNewDataFullyGened = region.getLevel(detailLevel).writeData(new DataOutputStream(outputStream));
+				outputStream.close();
+				
+				if (!isNewDataFullyGened && isFileFullyGened)
+				{
+					// existing file is complete while new one is only partially generate
+					// this can happen is for some reason loading failed
+					// this doesn't fix the bug, but at least protects old data
+					ClientApi.LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + oldFile + "]");
+					try {
+						tempFile.delete();
+					} catch (SecurityException e) {
+						// Failed to delete temp file... just continue.
+					}
+					continue;
+				}
+			}
+			catch (IOException e)
+			{
+				ClientApi.LOGGER.error("LOD file write error. Unable to write to temp file [" + tempFile + "] error [" + e.getMessage() + "]: ");
+				e.printStackTrace();
+				continue;
+			}
+			
+			// overwrite the old file with the new one
+			try {
+				Files.move(tempFile.toPath(), oldFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				ClientApi.LOGGER.error("LOD file write error. Unable to update file [" + oldFile + "] error [" + e.getMessage() + "]: ");
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	
-	public void saveRegionFile (byte[] regionFile, RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
-	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
-		
-		if (fileName != null)
-		{
-			File oldFile = new File(fileName);
-			File newFile = new File(fileName + TMP_FILE_EXTENSION);
-			try (OutputStream os = new FileOutputStream(newFile))
-			{
-				os.write(regionFile);
-				Files.move(newFile.toPath(), oldFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-				os.close();
-			}
-			catch (IOException ioEx)
-			{
-				ClientApi.LOGGER.error("LOD file write error. Unable to write to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
-				ioEx.printStackTrace();
-			}
-		}
-	}
-	
-	public byte[] getRegionFile (RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
-	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
-		if (fileName != null)
-		{
-			File file = new File(fileName);
-			try (InputStream is = new FileInputStream(file))
-			{
-				byte[] data = ThreadMapUtil.getSaveContainer(detailLevel);
-				is.read(data);
-				is.close();
-				return Arrays.copyOf(data, (int) file.length());
-			}
-			catch (IOException ioEx)
-			{
-				ClientApi.LOGGER.error("LOD file read error. Unable to read to [" + fileName + "] error [" + ioEx.getMessage() + "]: ");
-				ioEx.printStackTrace();
-			}
-		}
-		return new byte[0];
-	}
-	
-	
 	//================//
 	// helper methods //
 	//================//
-	
-	public int getHashFromFile(RegionPos regionPos, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
-	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		String fileName = getFileNameAndPathForRegion(regionX, regionZ, generationMode, detailLevel, verticalQuality);
-		if (fileName == null)
-			return 0;
-		
-		File file = new File(fileName);
-		return file.hashCode();
-	}
-	
 	
 	/**
 	 * Return the name of the file that should contain the
@@ -460,26 +346,39 @@ public class LodDimensionFileHandler
 	 * <p>
 	 * Returns null if there is an IO or security Exception.
 	 */
-	private String getFileNameAndPathForRegion(int regionX, int regionZ, DistanceGenerationMode generationMode, byte detailLevel, VerticalQuality verticalQuality)
-	{
-		try
-		{
-			// saveFolder is something like
-			// ".\Super Flat\DIM-1\data\"
-			// or
-			// ".\Super Flat\data\"
-			return dimensionDataSaveFolder.getCanonicalPath() + File.separatorChar +
-					verticalQuality + File.separatorChar +
-					generationMode.toString() + File.separatorChar +
-					DETAIL_FOLDER_NAME_PREFIX + detailLevel + File.separatorChar +
-					FILE_NAME_PREFIX + "." + regionX + "." + regionZ + FILE_EXTENSION;
-		}
-		catch (IOException | SecurityException e)
-		{
-			ClientApi.LOGGER.warn("Unable to get the filename for the region [" + regionX + ", " + regionZ + "], error: [" + e.getMessage() + "], stacktrace: ");
-			e.printStackTrace();
-			return null;
+	
+	private String getFileBasePath() {
+		try {
+			return dimensionDataSaveFolder.getCanonicalPath() + File.separatorChar;
+		} catch (IOException e) {
+			ClientApi.LOGGER.warn("Unable to get the base save file path. One possible cause is that"
+					+ " the process failed to read the current path location due to security configs.");
+			throw new RuntimeException("DistantHorizons Get Save File Path Failure");
 		}
 	}
+	
+	private File getRegionFile(int regionX, int regionZ, DistanceGenerationMode genMode, byte detail, VerticalQuality vertQuality) {
+		return new File(getFileBasePath() + vertQuality + File.separatorChar +
+				genMode + File.separatorChar +
+				DETAIL_FOLDER_NAME_PREFIX + detail + File.separatorChar +
+				FILE_NAME_PREFIX + "." + regionX + "." + regionZ + FILE_EXTENSION);
+	}
+	
+	// Return null if no file found
+	private File getBestMatchingRegionFile(byte detailLevel, int regionX, int regionZ, DistanceGenerationMode targetGenMode, VerticalQuality targetVertQuality) {
+		DistanceGenerationMode genMode = targetGenMode;
+		// Search from least GenMode to max GenMode, than least vertQuality to max vertQuality
+		do {
+			File file = getRegionFile(regionX, regionZ, genMode, detailLevel, targetVertQuality);
+			if (file.exists()) return file; // Found target file.
+			targetGenMode = DistanceGenerationMode.next(targetGenMode);
+			if (targetGenMode == null) { // Failed to find any files for this vertQuality. Try next one up.
+				targetGenMode = genMode;
+				targetVertQuality = VerticalQuality.next(targetVertQuality);
+			}
+		} while (targetVertQuality != null);
+		return null;
+	}
+	
 	
 }

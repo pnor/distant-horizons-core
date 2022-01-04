@@ -65,6 +65,7 @@ public interface ILodConfigWrapperSingleton
 			
 			IQuality quality();
 			IFogQuality fogQuality();
+			ICloudQuality cloudQuality();
 			IAdvancedGraphics advancedGraphics();
 			
 			
@@ -150,7 +151,8 @@ public interface ILodConfigWrapperSingleton
 				String FOG_DRAW_MODE_DESC = ""
 						+ " When should fog be drawn? \n"
 						+ "\n"
-						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using. If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
+						+ " " + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
+						+ " If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
 						+ " " + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
 						+ " " + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
 						+ "\n"
@@ -174,11 +176,48 @@ public interface ILodConfigWrapperSingleton
 						+ " If true disable Minecraft's fog. \n"
 						+ "\n"
 						+ " Experimental! Will cause issues with Sodium and \n"
-						+ " may not play nice with other mods that edit fog. \n";
+						+ " may not play nice with other mods that edit fog. \n"
+						+ " Intended for those who do not use Sodium or Optifine.";
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
-			
+
+			interface ICloudQuality
+			{
+				String DESC = "These settings control the clouds.";
+
+				boolean CUSTOM_CLOUDS_DEFAULT = false;
+				String CUSTOM_CLOUDS_DESC = ""
+						+ " Should we use our own method for rendering clouds \n"
+						+ "\n"
+						+ " If you disable this then the rest of the cloud configs wont work. \n";
+				boolean getCustomClouds();
+				void setCustomClouds(boolean newCustomClouds);
+
+				boolean FABULOUS_CLOUDS_DEFAULT = false;
+				String FABULOUS_CLOUDS_DESC = ""
+						+ " A complete rework on how clouds work \n"
+						+ " Rather than getting from a texure and rendering that \n"
+						+ " It gets the terrain height and decides how much cloud to put \n"
+						+ " This idea came from this 11 year old(as of when this is being written) \n"
+						+ "reddit post https://www.reddit.com/r/Minecraft/comments/e7xol/this_is_how_clouds_should_work_gif_simulation/ \n";
+				boolean getFabulousClouds();
+				void setFabulousClouds(boolean newFabulousClouds);
+
+				boolean EXTEND_CLOUDS_DEFAULT = true;
+				String EXTEND_CLOUDS_DESC = ""
+						+ " Extends how far the clouds render \n"
+						+ " to the lod render distance \n";
+				boolean getExtendClouds();
+				void setExtendClouds(boolean newExtendClouds);
+
+				MinDefaultMax<Double> CLOUD_HEIGHT_MIN_DEFAULT_MAX = new MinDefaultMax<Double>(Double.MIN_VALUE, 0., Double.MAX_VALUE); // make it get minecraft cloud height
+				String CLOUD_HEIGHT_DESC = ""
+						+ " What y level to render the clouds at \n";
+				double getCloudHeight();
+				void setCloudHeight(double newCloudHeight);
+			}
+
 			interface IAdvancedGraphics
 			{
 				String DESC = "Graphics options that are a bit more technical.";
@@ -210,19 +249,32 @@ public interface ILodConfigWrapperSingleton
 				VanillaOverdraw VANILLA_OVERDRAW_DEFAULT = VanillaOverdraw.DYNAMIC;
 				String VANILLA_OVERDRAW_DESC = ""
 						+ " How often should LODs be drawn on top of regular chunks? \n"
-						+ " HALF and ALWAYS will prevent holes in the world, but may look odd for transparent blocks or in caves. \n"
+						+ " HALF and ALWAYS will prevent holes in the world, \n"
+						+ " but may look odd for transparent blocks or in caves. \n"
 						+ "\n"
-						+ " " + VanillaOverdraw.NEVER + ": LODs won't render on top of vanilla chunks. \n"
-						+ " " + VanillaOverdraw.BORDER + ": LODs will render only on the border of vanilla chunks, preventing some holes in the world. \n"
-						+ " " + VanillaOverdraw.DYNAMIC + ": LODs will render on top of distant vanilla chunks to hide delayed loading. \n"
-						+ " " + "     More effective on higher render distances. \n"
-						+ " " + "     For vanilla render distances less than or equal to " + LodUtil.MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW + " \n"
-						+ " " + "     " + VanillaOverdraw.NEVER + " or " + VanillaOverdraw.ALWAYS + " will be used depending on the dimension. \n"
-						+ " " + VanillaOverdraw.ALWAYS + ": LODs will render on all vanilla chunks preventing all holes in the world. \n"
+						+ " " + VanillaOverdraw.NEVER + ": \n"
+						+ "     LODs won't render on top of vanilla chunks. \n"
+						+ " " + VanillaOverdraw.BORDER + ": \n"
+						+ "     LODs will render only on the border of vanilla chunks, preventing some holes in the world. \n"
+						+ " " + VanillaOverdraw.DYNAMIC + ": \n"
+						+ "     LODs will render on top of distant vanilla chunks to hide delayed loading. \n"
+						+ "     More effective on higher render distances. \n"
+						+ "     For vanilla render distances less than or equal to " + LodUtil.MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW + " \n"
+						+ "     " + VanillaOverdraw.NEVER + " or " + VanillaOverdraw.ALWAYS + " will be used depending on the dimension. \n"
+						+ " " + VanillaOverdraw.ALWAYS + ": \n"
+						+ "     LODs will render on all vanilla chunks preventing all holes in the world. \n"
 						+ "\n"
 						+ " This setting shouldn't affect performance. \n";
 				VanillaOverdraw getVanillaOverdraw();
 				void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
+				
+				MinDefaultMax<Integer> VANILLA_CULLING_RANGE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0, 32, 512);
+				String VANILLA_CULLING_RANGE_DESC = ""
+						+ " This indicates the minimum range where back sides of blocks start get get culled. \n"
+						+ " Higher settings will make terrain look good when looking backwards \n"
+						+ " when changing speeds quickly, but will increase upload times and GPU usage.";
+				int getBacksideCullingRange();
+				void setBacksideCullingRange(int backsideCullingRange);
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
@@ -475,7 +527,7 @@ public interface ILodConfigWrapperSingleton
 						+ " " + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly the best option for integrated GPUs. \n"
 						+ "                Default option for AMD/Intel. \n"
 						+ "                May end up storing buffers in System memory. \n"
-						+ "                Fast rending if in GPU memory, slow if in system memory, \n"
+						+ "                Fast rendering if in GPU memory, slow if in system memory, \n"
 						+ "                but won't stutter when uploading.  \n"
 						+ " " + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
 						+ "       Backup option for AMD/Intel. \n"
@@ -486,20 +538,19 @@ public interface ILodConfigWrapperSingleton
 				GpuUploadMethod getGpuUploadMethod();
 				void setGpuUploadMethod(GpuUploadMethod newGpuUploadMethod);
 				
-				MinDefaultMax<Integer> GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 0, 5000);
-				String GPU_UPLOAD_TIMEOUT_IN_MILLISECONDS_DESC = ""
-						+ " How long should we wait before uploading a buffer to the GPU? \n"
+				MinDefaultMax<Integer> GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 10, 5000);
+				String GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DESC = ""
+						+ " How long should a buffer wait per Megabyte of data uploaded?\n"
 						+ " Helpful resource for frame times: https://fpstoms.com \n"
 						+ "\n"
 						+ " Longer times may reduce stuttering but will make fake chunks \n"
-						+ " transition and load slower. \n"
+						+ " transition and load slower. Change this to [0] for no timeout.\n"
 						+ "\n"
 						+ " NOTE:\n"
-						+ " This should be a last resort option."
-						+ " Only change this from [0], after you have tried all of the \n"
-						+ " \"GPU Upload methods\" and determined even the best stutters with yoru hardware.";
-				int getGpuUploadTimeoutInMilliseconds();
-				void setGpuUploadTimeoutInMilliseconds(int newTimeoutInMilliseconds);
+						+ " Before changing this config, try changing \"GPU Upload methods\"\n"
+						+ "  and determined the best method for your hardware first. \n";
+				int getGpuUploadPerMegabyteInMilliseconds();
+				void setGpuUploadPerMegabyteInMilliseconds(int newMilliseconds);
 				
 				String REBUILD_TIMES_DESC = ""
 						+ " How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU? \n"

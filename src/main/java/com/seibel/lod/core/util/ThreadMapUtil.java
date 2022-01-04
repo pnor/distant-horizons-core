@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentMap;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.objects.VertexOptimizer;
 
+// FIXME: Nuke this whole thing and use ThreadLocal instead. And no more redundant get() please!
+
 /**
  * Holds data used by specific threads so
  * the data doesn't have to be recreated every
@@ -42,7 +44,6 @@ public class ThreadMapUtil
 	public static final ConcurrentMap<String, long[][]> threadBuilderArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[][]> threadBuilderVerticalArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[]> threadVerticalAddDataMap = new ConcurrentHashMap<>();
-	public static final ConcurrentMap<String, byte[][]> saveContainer = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, short[]> projectionArrayMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, short[]> heightAndDepthMap = new ConcurrentHashMap<>();
 	public static final ConcurrentMap<String, long[]> singleDataToMergeMap = new ConcurrentHashMap<>();
@@ -117,7 +118,8 @@ public class ThreadMapUtil
 	//________________________//
 	
 	
-	
+
+	//TODO: Maybe use actual valid total world height instead of always assuming the worse and alloc 1024 blocks.
 	/** returns the array filled with 0's */
 	public static long[] getBuilderVerticalArray(int detailLevel)
 	{
@@ -136,41 +138,22 @@ public class ThreadMapUtil
 		return threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel];
 	}
 	
-	/** returns the array NOT cleared every time */
-	public static byte[] getSaveContainer(int detailLevel)
-	{
-		if (!saveContainer.containsKey(Thread.currentThread().getName()) || (saveContainer.get(Thread.currentThread().getName()) == null))
-		{
-			byte[][] array = new byte[LodUtil.DETAIL_OPTIONS][];
-			int size = 1;
-			for (int i = LodUtil.DETAIL_OPTIONS - 1; i >= 0; i--)
-			{
-				array[i] = new byte[4 + 8 * size * size * DetailDistanceUtil.getMaxVerticalData(i)];
-				size = size << 1;
-			}
-			saveContainer.put(Thread.currentThread().getName(), array);
-		}
-		//Arrays.fill(threadBuilderVerticalArrayMap.get(Thread.currentThread().getName())[detailLevel], 0);
-		return saveContainer.get(Thread.currentThread().getName())[detailLevel];
-	}
-	
-	
 	/** returns the array filled with 0's */
 	public static long[] getVerticalDataArray(int arrayLength)
 	{
-		if (!threadVerticalAddDataMap.containsKey(Thread.currentThread().getName()) || (threadVerticalAddDataMap.get(Thread.currentThread().getName()) == null))
+		long[] array = threadVerticalAddDataMap.get(Thread.currentThread().getName());
+		if (array == null || array.length != arrayLength)
 		{
-			threadVerticalAddDataMap.put(Thread.currentThread().getName(), new long[arrayLength]);
+			array = new long[arrayLength];
+			threadVerticalAddDataMap.put(Thread.currentThread().getName(), array);
 		}
 		else
-		{
-			Arrays.fill(threadVerticalAddDataMap.get(Thread.currentThread().getName()), 0);
-		}
-		return threadVerticalAddDataMap.get(Thread.currentThread().getName());
+			Arrays.fill(array, 0);
+		return array;
 	}
 	
-	
-	
+
+	//FIXME: If the arrayLength change, this may return incorrect sized array
 	/** returns the array NOT cleared every time */
 	public static short[] getHeightAndDepth(int arrayLength)
 	{
@@ -185,18 +168,20 @@ public class ThreadMapUtil
 	/** returns the array filled with 0's */
 	public static long[] getVerticalUpdateArray(int detailLevel)
 	{
-		if (!verticalUpdate.containsKey(Thread.currentThread().getName()) || (verticalUpdate.get(Thread.currentThread().getName()) == null))
+		detailLevel--; //we are asking for a place to fit lower level detail, so this will never get called with value of 0
+		long[][] arrays = verticalUpdate.get(Thread.currentThread().getName());
+		if (arrays == null)
 		{
-			long[][] array = new long[LodUtil.DETAIL_OPTIONS][];
-			for (int i = 1; i < LodUtil.DETAIL_OPTIONS; i++)
-				array[i] = new long[DetailDistanceUtil.getMaxVerticalData(i - 1) * 4];
-			verticalUpdate.put(Thread.currentThread().getName(), array);
+			arrays = new long[LodUtil.DETAIL_OPTIONS - 1][];
+			verticalUpdate.put(Thread.currentThread().getName(), arrays);
 		}
+		long[] array = arrays[detailLevel];
+		int arrayLength = DetailDistanceUtil.getMaxVerticalData(detailLevel) * 4;
+		if (array == null || array.length != arrayLength)
+			array = new long[arrayLength];
 		else
-		{
-			Arrays.fill(verticalUpdate.get(Thread.currentThread().getName())[detailLevel], 0);
-		}
-		return verticalUpdate.get(Thread.currentThread().getName())[detailLevel];
+			Arrays.fill(array, 0);
+		return array;
 	}
 	
 	/** clears all arrays so they will have to be rebuilt */
@@ -209,7 +194,6 @@ public class ThreadMapUtil
 		threadBuilderArrayMap.clear();
 		threadBuilderVerticalArrayMap.clear();
 		threadVerticalAddDataMap.clear();
-		saveContainer.clear();
 		projectionArrayMap.clear();
 		heightAndDepthMap.clear();
 		singleDataToMergeMap.clear();

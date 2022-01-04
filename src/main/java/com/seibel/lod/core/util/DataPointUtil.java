@@ -103,6 +103,9 @@ public class DataPointUtil
 	public final static long VOID_MASK = 1;
 	public final static long EXISTENCE_MASK = 1;
 	
+	public final static long HEIGHT_SHIFTED_MASK = HEIGHT_MASK << HEIGHT_SHIFT;
+	public final static long DEPTH_SHIFTED_MASK = DEPTH_MASK << DEPTH_SHIFT;
+	
 	
 	public static long createVoidDataPoint(int generationMode)
 	{
@@ -139,6 +142,12 @@ public class DataPointUtil
 		dataPoint += EXISTENCE_MASK << EXISTENCE_SHIFT;
 		
 		return dataPoint;
+	}
+	
+	public static long shiftHeightAndDepth(long dataPoint, short offset) {
+		long height = (dataPoint + (offset << HEIGHT_SHIFT)) & HEIGHT_SHIFTED_MASK;
+		long depth =  (dataPoint + (offset << DEPTH_SHIFT)) & DEPTH_SHIFTED_MASK;
+		return dataPoint & ~(HEIGHT_SHIFTED_MASK | DEPTH_SHIFTED_MASK) | height | depth;
 	}
 	
 	public static short getHeight(long dataPoint)
@@ -213,7 +222,7 @@ public class DataPointUtil
 	public static int getColor(long dataPoint)
 	{
 		// TODO re-add transparency by replacing the color 255 with what is in comment
-		return (int) (((dataPoint >>> COLOR_SHIFT) & COLOR_MASK) | /*((((dataPoint >>> ALPHA_SHIFT) & ALPHA_MASK) << ALPHA_DOWNSIZE_SHIFT) | 0b1111)*/ 255 << 24);
+		return (int) (((dataPoint >>> COLOR_SHIFT) & COLOR_MASK) | ((((dataPoint >>> ALPHA_SHIFT) & ALPHA_MASK) << ALPHA_DOWNSIZE_SHIFT) | 0b1111) << 24);
 	}
 	
 	/** This is used to convert a dataPoint to string (useful for the print function) */

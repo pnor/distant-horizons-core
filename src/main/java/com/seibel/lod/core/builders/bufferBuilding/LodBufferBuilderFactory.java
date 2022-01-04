@@ -20,6 +20,7 @@
 package com.seibel.lod.core.builders.bufferBuilding;
 
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.lwjgl.opengl.GL32;
@@ -38,6 +40,7 @@ import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
+import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.objects.VertexOptimizer;
@@ -53,6 +56,7 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -67,6 +71,30 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  */
 public class LodBufferBuilderFactory
 {
+	public static class LagSpikeCatcher {
+
+		long timer = System.nanoTime();
+		public LagSpikeCatcher() {}
+		public void end(String source) {
+			timer = System.nanoTime() - timer;
+			if (timer> 16000000) { //16 ms
+				ClientApi.LOGGER.info("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
+			}
+			
+		}
+	}
+
+	public static class Pos {
+		public int x;
+		public int y;
+
+		public Pos(int xx, int yy) {
+			x = xx;
+			y = yy;
+		}
+	}
+	
+	
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
@@ -75,13 +103,13 @@ public class LodBufferBuilderFactory
 	/** The threads used to generate buffers. */
 	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
 	
-	
+	public static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 	
 	/**
 	 * When uploading to a buffer that is too small,
 	 * recreate it this many times bigger than the upload payload
 	 */
-	public static final double BUFFER_EXPANSION_MULTIPLIER = 1.5;
+	public static final double BUFFER_EXPANSION_MULTIPLIER = 1.3;
 	
 	/**
 	 * When buffers are first created they are allocated to this size (in Bytes).
@@ -100,26 +128,37 @@ public class LodBufferBuilderFactory
 	 * can be directly allocated, so we split the regions into smaller sections. <Br>
 	 * This keeps track of those sections.
 	 */
-	public volatile int[][] numberOfBuffersPerRegion;
+	// TODO: Check why this is unused
+	//public volatile int[][] numberOfBuffersPerRegion;
 	
 	/** Stores the vertices when building the VBOs */
-	public volatile LodBufferBuilder[][][] buildableBuffers;
-	
-	/** The OpenGL IDs of the storage buffers used by the buildableVbos */
-	public int[][][] buildableStorageBufferIds;
-	/** The OpenGL IDs of the storage buffers used by the drawableVbos */
-	public int[][][] drawableStorageBufferIds;
+	// FIXME: Use special warparound type of movable grid list in the future
+	public volatile MovableGridList<LodBufferBuilder[]> buildableBuffers;
 	
 	/** Used when building new VBOs */
-	public volatile LodVertexBuffer[][][] buildableVbos;
+	public volatile MovableGridList<LodVertexBuffer[]> buildableVbos;
+	public volatile int buildableCenterBlockX;
+	public volatile int buildableCenterBlockY;
+	public volatile int buildableCenterBlockZ;
 	/** VBOs that are sent over to the LodNodeRenderer */
-	public volatile LodVertexBuffer[][][] drawableVbos;
+	public volatile MovableGridList<LodVertexBuffer[]> drawableVbos;
+	public volatile int drawableCenterBlockX;
+	public volatile int drawableCenterBlockY;
+	public volatile int drawableCenterBlockZ;
+	/**
+	 * if this is true the LOD buffers need to be reset and
+	 * the Renderer should call the lodGenBuffers nomatter it
+	 * should have been a full or partial regen or not
+	 */
+	public volatile boolean frontBufferRequireReset = false;
+	public volatile boolean allBuffersRequireReset = false;
 	
 	/**
 	 * if this is true the LOD buffers are currently being
 	 * regenerated.
 	 */
 	public boolean generatingBuffers = false;
+
 	
 	/**
 	 * if this is true new LOD buffers have been generated
@@ -136,21 +175,13 @@ public class LodBufferBuilderFactory
 	/** this is used to prevent multiple threads creating, destroying, or using the buffers at the same time */
 	private final ReentrantLock bufferLock = new ReentrantLock();
 	
-	private volatile VertexOptimizer[][] vertexOptimizerCache;
-	private volatile PosToRenderContainer[][] setsToRender;
+	private MovableGridList<VertexOptimizer> vertexOptimizerCache;
+	private MovableGridList<PosToRenderContainer> setsToRender;
 	
-	/**
-	 * This is the ChunkPosWrapper the player was at the last time the buffers were built.
-	 * IE the center of the buffers last time they were built
-	 */
-	private volatile int drawableCenterChunkPosX = 0;
-	private volatile int drawableCenterChunkPosZ = 0;
-	private volatile int buildableCenterBlockPosX = 0;
-	private volatile int buildableCenterBlockPosZ = 0;
+	private int lastX = 0;
+	private int lastZ = 0;
 	
-	
-	
-	
+
 	
 	
 	public LodBufferBuilderFactory()
@@ -166,294 +197,214 @@ public class LodBufferBuilderFactory
 	 * <br>
 	 * After the buildable buffers have been generated they must be
 	 * swapped with the drawable buffers in the LodRenderer to be drawn.
+	 * @return whether it has started a generation task or is blocked
 	 */
-	public void generateLodBuffersAsync(LodRenderer renderer, LodDimension lodDim,
-			int playerX, int playerY, int playerZ, boolean fullRegen)
+	public boolean updateAndSwapLodBuffersAsync(LodRenderer renderer, LodDimension lodDim,
+			int playerX, int playerY, int playerZ, boolean partialRegen, boolean flushBuffers)
 	{
 		
 		// only allow one generation process to happen at a time
 		if (generatingBuffers)
-			return;
-		
-		if (buildableBuffers == null)
-			// setupBuffers hasn't been called yet
-			return;
+			return false;
 		
 		if (MC.getCurrentLightMap() == null)
 			// the lighting hasn't loaded yet
-			return;
+			return false;
+
+		allBuffersRequireReset |= flushBuffers;
+		
+		boolean fullRegen;
+		if (switchVbos) {
+			fullRegen = swapBuffers();
+		} else {
+			fullRegen = allBuffersRequireReset || frontBufferRequireReset;
+		}
+		if (!fullRegen && !partialRegen) return false;
 		
 		generatingBuffers = true;
 		
-		
-		Thread thread = new Thread(() -> generateLodBuffersThread(renderer, lodDim, playerX, playerY, playerZ, fullRegen));
+		Runnable thread = () -> generateLodBuffersThread(
+				renderer, lodDim, playerX, playerY, playerZ, fullRegen);
 		
 		mainGenThread.execute(thread);
+		return true;
 	}
 	
 	// this was pulled out as a separate method so that it could be
 	// more easily edited by hot swapping. Because, As far as James is aware
 	// you can't hot swap lambda expressions.
+	private static final boolean enableLogging = true;
+	
 	private void generateLodBuffersThread(LodRenderer renderer, LodDimension lodDim,
 			int playerX, int playerY, int playerZ, boolean fullRegen)
 	{
 		bufferLock.lock();
+		GLProxy glProxy = GLProxy.getInstance();
+		GLProxyContext oldContext = glProxy.getGlContext();
+		glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
+		
+		
+		long startTime = System.currentTimeMillis();
+		ArrayList<RegionPos> posToUpload = new ArrayList<RegionPos>(); 
+		ArrayList<Callable<Boolean>> nodeToRenderThreads = new ArrayList<Callable<Boolean>>();
 		
 		try
-		{
+		{	
 			// round the player's block position down to the nearest chunk BlockPos
-			int playerChunkX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.CHUNK_DETAIL_LEVEL);
-			int playerChunkZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.CHUNK_DETAIL_LEVEL);
-			//int playerRegionX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.REGION_DETAIL_LEVEL);
-			//int playerRegionZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.REGION_DETAIL_LEVEL);
+			int playerRegionX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.REGION_DETAIL_LEVEL);
+			int playerRegionZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.REGION_DETAIL_LEVEL);
+			int renderRange;
+			int vboX;
+			int vboY;
+			int vboZ;
 			
 			
-			//long startTime = System.currentTimeMillis();
-			
-			ArrayList<Callable<Boolean>> nodeToRenderThreads = new ArrayList<>(lodDim.getWidth() * lodDim.getWidth());
-			
-			startBuffers(fullRegen, lodDim);
-			
-			if (setsToRender == null)
-				setsToRender = new PosToRenderContainer[lodDim.getWidth()][lodDim.getWidth()];
-			
-			if (setsToRender.length != lodDim.getWidth())
-				setsToRender = new PosToRenderContainer[lodDim.getWidth()][lodDim.getWidth()];
-			
-			if (vertexOptimizerCache == null)
-				vertexOptimizerCache = new VertexOptimizer[lodDim.getWidth()][lodDim.getWidth()];
-			
-			if (vertexOptimizerCache.length != lodDim.getWidth())
-				vertexOptimizerCache = new VertexOptimizer[lodDim.getWidth()][lodDim.getWidth()];
-			
-			// this will be the center of the VBOs once they have been built
-			//buildableCenterChunkPosX = playerChunkX;
-			//buildableCenterChunkPosZ = playerChunkZ;
-			buildableCenterBlockPosX = playerX;
-			buildableCenterBlockPosZ = playerZ;
-			
+			if (fullRegen || buildableBuffers==null || buildableVbos==null
+					|| setsToRender==null || vertexOptimizerCache==null) {
+				renderRange = lodDim.getWidth()/2; //get lodDim half width
+				buildableBuffers = new MovableGridList<LodBufferBuilder[]>(renderRange, playerRegionX, playerRegionZ);
+				buildableVbos = new MovableGridList<LodVertexBuffer[]>(renderRange, playerRegionX, playerRegionZ);
+				setsToRender = new MovableGridList<PosToRenderContainer>(renderRange, playerRegionX, playerRegionZ);
+				vertexOptimizerCache = new MovableGridList<VertexOptimizer>(renderRange, playerRegionX, playerRegionZ);
+				// this will be the center of the VBOs once they have been built
+				// FIXME: Currently this will drift apart from player pos if there has not been a fullRegen for a while
+				buildableCenterBlockX = playerX;
+				buildableCenterBlockY = playerY;
+				buildableCenterBlockZ = playerZ;
+				vboX = playerX;
+				vboY = playerY;
+				vboZ = playerZ;
+			} else {
+				renderRange = buildableBuffers.gridCentreToEdge;
+				vboX = buildableCenterBlockX;
+				vboY = buildableCenterBlockY;
+				vboZ = buildableCenterBlockZ;
+				buildableBuffers.move(playerRegionX, playerRegionZ);
+				buildableVbos.move(playerRegionX, playerRegionZ);
+				setsToRender.move(playerRegionX, playerRegionZ);
+				vertexOptimizerCache.move(playerRegionX, playerRegionZ);
+			}
+			posToUpload.ensureCapacity(buildableVbos.size());
+			nodeToRenderThreads.ensureCapacity(buildableVbos.size());
 			
 			//================================//
 			// create the nodeToRenderThreads //
 			//================================//
 			
 			skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerX, playerY, playerZ);
+			int minCullingRange = SingletonHandler.get(ILodConfigWrapperSingleton.class).client().graphics().advancedGraphics().getBacksideCullingRange();
+			int cullingRangeX = Math.max((int)(1.5 * Math.abs(lastX - playerX)), minCullingRange);
+			int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)), minCullingRange);
+			lastX = playerX;
+			lastZ = playerZ;
 			
-			for (int xRegion = 0; xRegion < lodDim.getWidth(); xRegion++)
+			for (int indexX = 0; indexX < buildableVbos.gridSize; indexX++)
 			{
-				for (int zRegion = 0; zRegion < lodDim.getWidth(); zRegion++)
+				for (int indexZ = 0; indexZ < buildableVbos.gridSize; indexZ++)
 				{
-					if (lodDim.doesRegionNeedBufferRegen(xRegion, zRegion) || fullRegen)
-					{
-						RegionPos regionPos = new RegionPos(
-								xRegion + lodDim.getCenterRegionPosX() - lodDim.getWidth() / 2,
-								zRegion + lodDim.getCenterRegionPosZ() - lodDim.getWidth() / 2);
-						
-						// local position in the vbo and bufferBuilder arrays
-						LodBufferBuilder[] currentBuffers = buildableBuffers[xRegion][zRegion];
-						LodRegion region = lodDim.getRegion(regionPos.x, regionPos.z);
-						
-						if (region == null)
-							continue;
-						
-						// make sure the buffers weren't
-						// changed while we were running this method
-						if (currentBuffers == null || !currentBuffers[0].building())
-						{
-							ClientApi.LOGGER.info("Buffer building quit early");
-							return;
-						}
-						
-						byte minDetail = region.getMinDetailLevel();
-						
-						
-						final int xR = xRegion;
-						final int zR = zRegion;
-						
-						//we create the Callable to use for the buffer builder creation
-						Callable<Boolean> dataToRenderThread = () ->
-						{
-							//Variable initialization
-							byte detailLevel;
-							int posX;
-							int posZ;
-							int xAdj;
-							int zAdj;
-							int bufferIndex;
-							boolean posNotInPlayerChunk;
-							boolean adjPosInPlayerChunk;
-							VertexOptimizer vertexOptimizer = ThreadMapUtil.getBox();
-							boolean[] adjShadeDisabled = ThreadMapUtil.getAdjShadeDisabledArray();
-							
-							// determine how many LODs we can stack vertically
-							int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
-							
-							//we get or create the map that will contain the adj data
-							Map<LodDirection, long[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
-							
-							//previous setToRender cache
-							if (setsToRender[xR][zR] == null)
-								setsToRender[xR][zR] = new PosToRenderContainer(minDetail, regionPos.x, regionPos.z);
-							
-							
-							//We ask the lod dimension which block we have to render given the player position
-							PosToRenderContainer posToRender = setsToRender[xR][zR];
-							posToRender.clear(minDetail, regionPos.x, regionPos.z);
-							
-							lodDim.getPosToRender(
-									posToRender,
-									regionPos,
-									playerX,
-									playerZ);
-							
-							
-							
-							// keep a local version, so we don't have to worry about indexOutOfBounds Exceptions
-							// if it changes in the LodRenderer while we are working here
-							// FIXME: THIS IS NOT HOW IT WORKS! We also can't just loop and copy it. Think of an
-							// idea to fix this!
-							boolean[][] vanillaRenderedChunks = renderer.vanillaRenderedChunks;
-							short gameChunkRenderDistance = (short) (vanillaRenderedChunks.length / 2 - 1);
-							
-							
-							
-							for (int index = 0; index < posToRender.getNumberOfPos(); index++)
-							{
-								bufferIndex = index % currentBuffers.length;
-								detailLevel = posToRender.getNthDetailLevel(index);
-								posX = posToRender.getNthPosX(index);
-								posZ = posToRender.getNthPosZ(index);
-								
-								int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkX;
-								int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkZ;
-								
-								// FIXME: We don't need to ignore rendered chunks! Just build it and leave it for the renderer to decide!
-								//We don't want to render this fake block if
-								//The block is inside the render distance with, is not bigger than a chunk and is positioned in a chunk set as vanilla rendered
-								//
-								//The block is in the player chunk or in a chunk adjacent to the player
-								if(isThisPositionGoingToBeRendered(detailLevel, posX, posZ, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance))
-								{
-									continue;
-								}
-								
-								//we check if the block to render is not in player chunk
-								posNotInPlayerChunk = !(chunkXdist == 0 && chunkZdist == 0);
-										
-																					// We extract the adj data in the four cardinal direction
-								
-								// we first reset the adjShadeDisabled. This is used to disable the shade on the border when we have transparent block like water or glass
-								// to avoid having a "darker border" underground
-								Arrays.fill(adjShadeDisabled, false);
-								
-								//We check every adj block in each direction
-								for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
-								{
-									
-									xAdj = posX + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).x;
-									zAdj = posZ + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).z;
-									long data;
-									chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkX;
-									chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
-									adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
-									
-									//If the adj block is rendered in the same region and with same detail
-									// and is positioned in a place that is not going to be rendered by vanilla game
-									// then we can set this position as adj
-									// We avoid cases where the adjPosition is in player chunk while the position is not
-									// to always have a wall underwater
-									if(posToRender.contains(detailLevel, xAdj, zAdj)
-										&& !isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance)
-										&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
-									{
-										for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
-										{
-											data = lodDim.getData(detailLevel, xAdj, zAdj, verticalIndex);
-											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = false;
-											adjData.get(lodDirection)[verticalIndex] = data;
-										}
-									}
-									else
-									{
-										//Otherwise, we check if this position is
-										data = lodDim.getSingleData(detailLevel, xAdj, zAdj);
-										
-										adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
-										
-										if ((isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance) || (posNotInPlayerChunk && adjPosInPlayerChunk))
-													&& !DataPointUtil.isVoid(data))
-										{
-											adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
-										}
-									}
-								}
-								
-								
-								// We render every vertical lod present in this position
-								// We only stop when we find a block that is void or non-existing block
-								long data;
-								for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ); verticalIndex++)
-								{
-									
-									//we get the above block as adj UP
-									if (verticalIndex > 0)
-										adjData.get(LodDirection.UP)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex - 1);
-									else
-										adjData.get(LodDirection.UP)[0] = DataPointUtil.EMPTY_DATA;
-									
-									
-									//we get the below block as adj DOWN
-									if (verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ) - 1)
-										adjData.get(LodDirection.DOWN)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex + 1);
-									else
-										adjData.get(LodDirection.DOWN)[0] = DataPointUtil.EMPTY_DATA;
-									
-									//We extract the data to render
-									data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);
-									
-									//If the data is not renderable (Void or non-existing) we stop since there is no data left in this position
-									if (DataPointUtil.isVoid(data) || !DataPointUtil.doesItExist(data))
-										break;
-									
-									//We send the call to create the vertices
-									CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], playerX, playerY, playerZ, data, adjData,
-											detailLevel, posX, posZ, vertexOptimizer, renderer.previousDebugMode, adjShadeDisabled);
-								}
-								
-							} // for pos to in list to render
-							// the thread executed successfully
-							return true;
-						};
-						
-						nodeToRenderThreads.add(dataToRenderThread);
-						
+					final int regionX = indexX + buildableVbos.getCenterX() - buildableVbos.gridCentreToEdge;
+					final int regionZ = indexZ + buildableVbos.getCenterY() - buildableVbos.gridCentreToEdge;
+					
+					boolean needRegen = lodDim.getAndClearRegionNeedBufferRegen(regionX, regionZ);
+					needRegen |= fullRegen;
+					if (!needRegen) continue;
+					
+					LodRegion region = lodDim.getRegion(regionX, regionZ);
+					if (region == null) continue;
+
+					RegionPos regionPos = new RegionPos(regionX, regionZ);
+					posToUpload.add(regionPos);
+					LodBufferBuilder[] builder = buildableBuffers.get(regionX, regionZ);
+					LodVertexBuffer[] vbo = buildableVbos.get(regionX, regionZ);
+					if (vbo == null) {
+						setupBuffers(regionX, regionZ);
+						vbo = buildableVbos.get(regionX, regionZ);
 					}
+					if (builder == null) {
+						builder = buildableBuffers.setAndGet(regionX, regionZ, new LodBufferBuilder[vbo.length]);
+					}
+					for (int i=0; i<builder.length; i++) {
+						if (builder[i] == null)
+							builder[i] = new LodBufferBuilder(DEFAULT_MEMORY_ALLOCATION);
+						else {
+							builder[i].discard();
+						}
+						builder[i].begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
+					}
+					byte minDetail = region.getMinDetailLevel();
+					final int pX = playerX;
+					final int pZ = playerZ;
+
+					nodeToRenderThreads.add(() -> {
+						return makeLodRenderData(lodDim, regionPos, pX, pZ, vboX, vboZ, minDetail, cullingRangeX, cullingRangeZ);
+					});
 				} // region z
 			} // region z
+
+			//================================//
+			// execute the nodeToRenderThreads //
+			//================================//
 			
-			
-			//long executeStart = System.currentTimeMillis();
+			long executeStart = System.currentTimeMillis();
 			// wait for all threads to finish
 			List<Future<Boolean>> futuresBuffer = bufferBuilderThreads.invokeAll(nodeToRenderThreads);
 			for (Future<Boolean> future : futuresBuffer)
 			{
 				// the future will be false if its thread failed
+				try {
 				if (!future.get())
 				{
-					ClientApi.LOGGER.warn("LodBufferBuilder ran into trouble and had to start over.");
-					break;
+					ClientApi.LOGGER.error("LodBufferBuilder ran into trouble and had to start over.");
+					continue;
+				}
+				} catch (Exception e) {
+					ClientApi.LOGGER.error("LodBufferBuilder ran into trouble: ");
+					e.printStackTrace();
+					continue;
 				}
 			}
-			//long executeEnd = System.currentTimeMillis();
 			
+			long executeEnd = System.currentTimeMillis();
 			
-			//long endTime = System.currentTimeMillis();
-			//long buildTime = endTime - startTime;
-			//long executeTime = executeEnd - executeStart;
+			long endTime = System.currentTimeMillis();
+			long buildTime = endTime - startTime;
+			long executeTime = executeEnd - executeStart;
+			if (enableLogging)
+				ClientApi.LOGGER.info("Thread Build("+nodeToRenderThreads.size()+"/"+(lodDim.getWidth()*lodDim.getWidth())+ (fullRegen ? "FULL" : "")+") time: " + buildTime + " ms" + '\n' +
+					                        "thread execute time: " + executeTime + " ms");
 
-//			ClientProxy.LOGGER.info("Thread Build time: " + buildTime + " ms" + '\n' +
-//					                        "thread execute time: " + executeTime + " ms");
+			//================================//
+			// upload the new data            //
+			//================================//
 			
+			try
+			{
+				long startUploadTime = System.currentTimeMillis();
+				// clean up any potentially open resources
+				for (RegionPos regPos : posToUpload) {
+					LodBufferBuilder[] buffers = buildableBuffers.get(regPos.x, regPos.z);
+					if (buffers == null) continue;
+					for (LodBufferBuilder buffer : buffers) {
+						try {
+							buffer.end();
+						} catch (Exception e) {
+							ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to close buildable buffer: " + e.getMessage());
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				// upload the new buffers
+				uploadBuffers(posToUpload);
+				long uploadTime = System.currentTimeMillis() - startUploadTime;
+				if (enableLogging)
+					ClientApi.LOGGER.info("Thread Upload time: " + uploadTime + " ms");
+			}
+			catch (Exception e)
+			{
+				ClientApi.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" was unable to upload the buffers to the GPU: " + e.getMessage());
+				e.printStackTrace();
+			}
 			// mark that the buildable buffers as ready to swap
 			switchVbos = true;
 		}
@@ -464,31 +415,151 @@ public class LodBufferBuilderFactory
 		}
 		finally
 		{
-			try
-			{
-				// clean up any potentially open resources
-				if (buildableBuffers != null)
-					closeBuffers(fullRegen, lodDim);
-				
-				// upload the new buffers
-				uploadBuffers(fullRegen, lodDim);
-			}
-			catch (Exception e)
-			{
-				ClientApi.LOGGER.warn("\"LodNodeBufferBuilder.generateLodBuffersAsync\" was unable to upload the buffers to the GPU: " + e.getMessage());
-				e.printStackTrace();
-			}
-			
 			// regardless of whether we were able to successfully create
 			// the buffers, we are done generating.
 			generatingBuffers = false;
+			glProxy.setGlContext(oldContext);
 			bufferLock.unlock();
 		}
 	}
 	
+	private boolean makeLodRenderData(LodDimension lodDim, RegionPos regPos, int playerX, int playerZ,
+			int vboX, int vboZ, byte minDetail, int cullingRangeX, int cullingRangeZ) {
+
+		//Variable initialization
+		int playerChunkX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.CHUNK_DETAIL_LEVEL);
+		int playerChunkZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.CHUNK_DETAIL_LEVEL);
+		DebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
+		VertexOptimizer vertexOptimizer = ThreadMapUtil.getBox();
+		boolean[] adjShadeDisabled = ThreadMapUtil.getAdjShadeDisabledArray();
+		LodBufferBuilder[] currentBuffers = buildableBuffers.get(regPos.x, regPos.z);
+		
+		// determine how many LODs we can stack vertically
+		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
+		
+		//we get or create the map that will contain the adj data
+		Map<LodDirection, long[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
+
+		//We ask the lod dimension which block we have to render given the player position
+		PosToRenderContainer posToRender = setsToRender.get(regPos.x, regPos.z);
+		//previous setToRender cache
+		if (posToRender == null) {
+			posToRender = setsToRender.setAndGet(regPos.x, regPos.z, new PosToRenderContainer(minDetail, regPos.x, regPos.z));
+		}
+		posToRender.clear(minDetail, regPos.x, regPos.z);
+		lodDim.getPosToRender(posToRender, regPos, playerX, playerZ);
+		
+		for (int index = 0; index < posToRender.getNumberOfPos(); index++)
+		{
+			int bufferIndex = index % currentBuffers.length;
+			byte detailLevel = posToRender.getNthDetailLevel(index);
+			int posX = posToRender.getNthPosX(index);
+			int posZ = posToRender.getNthPosZ(index);
+			
+			int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkX;
+			int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkZ;
+			
+			// Currently fixing below
+			// FIXME: We don't need to ignore rendered chunks! Just build it and leave it for the renderer to decide!
+			//We don't want to render this fake block if
+			//The block is inside the render distance with, is not bigger than a chunk and is positioned in a chunk set as vanilla rendered
+			//
+			//The block is in the player chunk or in a chunk adjacent to the player
+			//if(isThisPositionGoingToBeRendered(detailLevel, posX, posZ, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance))
+			//{
+			//	continue;
+			//}
+			
+			//we check if the block to render is not in player chunk
+			boolean posNotInPlayerChunk = !(chunkXdist == 0 && chunkZdist == 0);
+					
+																// We extract the adj data in the four cardinal direction
+			
+			// we first reset the adjShadeDisabled. This is used to disable the shade on the border when we have transparent block like water or glass
+			// to avoid having a "darker border" underground
+			Arrays.fill(adjShadeDisabled, false);
+			
+			//We check every adj block in each direction
+			for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
+			{
+				int xAdj = posX + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).x;
+				int zAdj = posZ + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).z;
+				chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkX;
+				chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
+				boolean adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
+				
+				//If the adj block is rendered in the same region and with same detail
+				// and is positioned in a place that is not going to be rendered by vanilla game
+				// then we can set this position as adj
+				// We avoid cases where the adjPosition is in player chunk while the position is not
+				// to always have a wall underwater
+				if(posToRender.contains(detailLevel, xAdj, zAdj)
+					//&& !isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance)
+					&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
+				{
+					for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
+					{
+						long data = lodDim.getData(detailLevel, xAdj, zAdj, verticalIndex);
+						adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = false;
+						adjData.get(lodDirection)[verticalIndex] = data;
+					}
+				}
+				else
+				{
+					//Otherwise, we check if this position is
+					long data = lodDim.getSingleData(detailLevel, xAdj, zAdj);
+					
+					adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
+					
+					if ((//isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance) || 
+							(posNotInPlayerChunk && adjPosInPlayerChunk))
+								&& !DataPointUtil.isVoid(data))
+					{
+						adjShadeDisabled[VertexOptimizer.DIRECTION_INDEX.get(lodDirection)] = DataPointUtil.getAlpha(data) < 255;
+					}
+				}
+			}
+			
+			// We render every vertical lod present in this position
+			// We only stop when we find a block that is void or non-existing block
+			long data;
+			for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ); verticalIndex++)
+			{
+				
+				//we get the above block as adj UP
+				if (verticalIndex > 0)
+					adjData.get(LodDirection.UP)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex - 1);
+				else
+					adjData.get(LodDirection.UP)[0] = DataPointUtil.EMPTY_DATA;
+				
+				
+				//we get the below block as adj DOWN
+				if (verticalIndex < lodDim.getMaxVerticalData(detailLevel, posX, posZ) - 1)
+					adjData.get(LodDirection.DOWN)[0] = lodDim.getData(detailLevel, posX, posZ, verticalIndex + 1);
+				else
+					adjData.get(LodDirection.DOWN)[0] = DataPointUtil.EMPTY_DATA;
+				
+				//We extract the data to render
+				data = lodDim.getData(detailLevel, posX, posZ, verticalIndex);
+				
+				//If the data is not renderable (Void or non-existing) we stop since there is no data left in this position
+				if (DataPointUtil.isVoid(data) || !DataPointUtil.doesItExist(data))
+					break;
+				
+				//We send the call to create the vertices
+				CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], vboX, vboZ, data, adjData,
+						detailLevel, posX, posZ, vertexOptimizer, debugMode, adjShadeDisabled, cullingRangeX, cullingRangeZ);
+			}
+			
+		} // for pos to in list to render
+		// the thread executed successfully
+		return true;
+	}
+	
+	
+	
+	@Deprecated
 	private boolean isThisPositionGoingToBeRendered(byte detailLevel, int posX, int posZ, int chunkPosX, int chunkPosZ, boolean[][] vanillaRenderedChunks, int gameChunkRenderDistance){
-		
-		
 		// skip any chunks that Minecraft is going to render
 		int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - chunkPosX;
 		int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - chunkPosZ;
@@ -527,124 +598,26 @@ public class LodBufferBuilderFactory
 	 * <p>
 	 * May have to wait for the bufferLock to open.
 	 */
-	public void setupBuffers(LodDimension lodDimension)
-	{
-		try
-		{
-			bufferLock.lock();
-			
-			int numbRegionsWide = lodDimension.getWidth();
-			long regionMemoryRequired;
-			int numberOfBuffers;
-			
-			GLProxy glProxy = GLProxy.getInstance();
-			GLProxyContext oldContext = glProxy.getGlContext();
-			glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
-			
-			
-			previousRegionWidth = numbRegionsWide;
-			numberOfBuffersPerRegion = new int[numbRegionsWide][numbRegionsWide];
-			buildableBuffers = new LodBufferBuilder[numbRegionsWide][numbRegionsWide][];
-			
-			buildableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
-			drawableVbos = new LodVertexBuffer[numbRegionsWide][numbRegionsWide][];
-			
-			if (glProxy.bufferStorageSupported)
-			{
-				buildableStorageBufferIds = new int[numbRegionsWide][numbRegionsWide][];
-				drawableStorageBufferIds = new int[numbRegionsWide][numbRegionsWide][];
+	private void setupBuffers(int regionX, int regionZ) {
+		//TODO: Impl actual multibuffers
+		//int regionMemoryRequired = DEFAULT_MEMORY_ALLOCATION;
+		//int numberOfBuffers;
+		LodVertexBuffer[] vbos = buildableVbos.get(regionX, regionZ);
+		if (vbos != null)
+			for (LodVertexBuffer vbo : vbos) {
+				if (vbo!=null) vbo.close();
 			}
-			
-			for (int x = 0; x < numbRegionsWide; x++)
-			{
-				for (int z = 0; z < numbRegionsWide; z++)
-				{
-					regionMemoryRequired = DEFAULT_MEMORY_ALLOCATION;
-					
-					// if the memory required is greater than the max buffer 
-					// capacity, divide the memory across multiple buffers
-					if (regionMemoryRequired > LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY)
-					{
-						numberOfBuffers = (int) regionMemoryRequired / LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY + 1;
-						
-						// TODO shouldn't this be determined with regionMemoryRequired?
-						// always allocating the max memory is a bit expensive isn't it?
-						regionMemoryRequired = LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY;
-						numberOfBuffersPerRegion[x][z] = numberOfBuffers;
-						buildableBuffers[x][z] = new LodBufferBuilder[numberOfBuffers];
-						buildableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
-						drawableVbos[x][z] = new LodVertexBuffer[numberOfBuffers];
-						
-						if (glProxy.bufferStorageSupported)
-						{
-							buildableStorageBufferIds[x][z] = new int[numberOfBuffers];
-							drawableStorageBufferIds[x][z] = new int[numberOfBuffers];
-						}
-					}
-					else
-					{
-						// we only need one buffer for this region
-						numberOfBuffersPerRegion[x][z] = 1;
-						buildableBuffers[x][z] = new LodBufferBuilder[1];
-						buildableVbos[x][z] = new LodVertexBuffer[1];
-						drawableVbos[x][z] = new LodVertexBuffer[1];
-						
-						if (glProxy.bufferStorageSupported)
-						{
-							buildableStorageBufferIds[x][z] = new int[1];
-							drawableStorageBufferIds[x][z] = new int[1];
-						}
-					}
-					
-					
-					for (int i = 0; i < numberOfBuffersPerRegion[x][z]; i++)
-					{
-						buildableBuffers[x][z][i] = new LodBufferBuilder((int) regionMemoryRequired);
-						
-						buildableVbos[x][z][i] = new LodVertexBuffer();
-						drawableVbos[x][z][i] = new LodVertexBuffer();
-						
-						
-						// create the initial mapped buffers (system memory)
-						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, buildableVbos[x][z][i].id);
-						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, regionMemoryRequired, GL32.GL_STATIC_DRAW);
-						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
-						
-						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, drawableVbos[x][z][i].id);
-						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, regionMemoryRequired, GL32.GL_STATIC_DRAW);
-						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
-						
-						
-						if (glProxy.bufferStorageSupported)
-						{
-							// create the buffer storage (GPU memory)
-							buildableStorageBufferIds[x][z][i] = GL44.glGenBuffers();
-							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, buildableStorageBufferIds[x][z][i]);
-							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, 0); // the 0 flag means to create the storage in the GPUs memory
-							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, 0);
-							
-							drawableStorageBufferIds[x][z][i] = GL44.glGenBuffers();
-							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, drawableStorageBufferIds[x][z][i]);
-							GL44.glBufferStorage(GL44.GL_ARRAY_BUFFER, regionMemoryRequired, 0);
-							GL44.glBindBuffer(GL44.GL_ARRAY_BUFFER, 0);	
-						}
-					}
-				}
-			}
-			
-			glProxy.setGlContext(oldContext);
-		}
-		catch (Exception e)
+		/*
+		if (regionMemoryRequired > LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY)
 		{
-			ClientApi.LOGGER.info("setupBuffers ran into trouble: " + e.getMessage(), e);
-		}
-		finally
-		{
-			// this shouldn't normally happen, but just in case it sill prevent deadlock
-			bufferLock.unlock();
-		}
+			// TODO shouldn't this be determined with regionMemoryRequired?
+			// always allocating the max memory is a bit expensive isn't it?
+			numberOfBuffers = (int) regionMemoryRequired / LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY + 1;
+		} else {
+			numberOfBuffers = 1;
+		}*/
+		vbos = buildableVbos.setAndGet(regionX, regionZ, new LodVertexBuffer[1]);
 	}
-	
 	
 	/**
 	 * Sets the buffers and Vbos to null, forcing them to be recreated <br>
@@ -654,18 +627,12 @@ public class LodBufferBuilderFactory
 	 * May have to wait for the bufferLock to open.
 	 */
 	public void destroyBuffers() {
-		int[][][] toBeDeletedBuildableStorageBufferIds;
-		int[][][] toBeDeletedDrawableStorageBufferIds;
-		LodVertexBuffer[][][] toBeDeletedBuildableVbos;
-		LodVertexBuffer[][][] toBeDeletedDrawableVbos;
+		MovableGridList<LodVertexBuffer[]> toBeDeletedBuildableVbos;
+		MovableGridList<LodVertexBuffer[]> toBeDeletedDrawableVbos;
 		bufferLock.lock();
 		try {
-			toBeDeletedBuildableStorageBufferIds = buildableStorageBufferIds;
-			toBeDeletedDrawableStorageBufferIds = drawableStorageBufferIds;
 			toBeDeletedBuildableVbos = buildableVbos;
 			toBeDeletedDrawableVbos = drawableVbos;
-			buildableStorageBufferIds = null;
-			drawableStorageBufferIds = null;
 			buildableVbos = null;
 			drawableVbos = null;
 			// these don't contain any OpenGL objects, so
@@ -674,284 +641,255 @@ public class LodBufferBuilderFactory
 		} finally {
 			bufferLock.unlock();
 		}
-
 		// make sure the buffers are deleted in a openGL context
 		GLProxy.getInstance().recordOpenGlCall(() -> {
-
-			// destroy the buffer storages if they aren't already
-			if (toBeDeletedBuildableStorageBufferIds != null) {
-				for (int x = 0; x < toBeDeletedBuildableStorageBufferIds.length; x++) {
-					for (int z = 0; z < toBeDeletedBuildableStorageBufferIds.length; z++) {
-						for (int i = 0; i < toBeDeletedBuildableStorageBufferIds[x][z].length; i++) {
-							int buildableId = toBeDeletedBuildableStorageBufferIds[x][z][i];
-							int drawableId = toBeDeletedDrawableStorageBufferIds[x][z][i];
-
-							GL32.glDeleteBuffers(buildableId);
-							GL32.glDeleteBuffers(drawableId);
-
-						}
+			// destroy the VBOs if they aren't already
+			if (toBeDeletedBuildableVbos != null) {
+				for (LodVertexBuffer[] vbos : toBeDeletedBuildableVbos) {
+					if (vbos == null) continue;
+					for (LodVertexBuffer vbo : vbos) {
+						if (vbo == null) continue;
+						vbo.close();
 					}
 				}
 			}
-			// destroy the VBOs if they aren't already
-			if (toBeDeletedBuildableVbos != null) {
-				for (int i = 0; i < toBeDeletedBuildableVbos.length; i++) {
-					for (int j = 0; j < toBeDeletedBuildableVbos.length; j++) {
-						for (int k = 0; k < toBeDeletedBuildableVbos[i][j].length; k++) {
-							if (toBeDeletedBuildableVbos[i][j][k] != null) {
-								int buildableId = toBeDeletedBuildableVbos[i][j][k].id;
-								GL32.glDeleteBuffers(buildableId);
-							}
-							if (toBeDeletedDrawableVbos[i][j][k] != null) {
-								int drawableId = toBeDeletedDrawableVbos[i][j][k].id;
-								GL32.glDeleteBuffers(drawableId);
-							}
-						}
+			if (toBeDeletedDrawableVbos != null) {
+				for (LodVertexBuffer[] vbos : toBeDeletedDrawableVbos) {
+					if (vbos == null) continue;
+					for (LodVertexBuffer vbo : vbos) {
+						if (vbo == null) continue;
+						vbo.close();
 					}
 				}
 			}
 		});
 	}
-
-	/** Calls begin on each of the buildable BufferBuilders. */
-	private void startBuffers(boolean fullRegen, LodDimension lodDim)
+	
+	/** Upload all buildableBuffers to the GPU. We should already be in the builder context */
+	private void uploadBuffers(List<RegionPos> toBeUploaded)
 	{
-		for (int x = 0; x < buildableBuffers.length; x++)
-		{
-			for (int z = 0; z < buildableBuffers.length; z++)
+		GLProxy glProxy = GLProxy.getInstance();
+		// determine the upload method
+		GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod(); 
+		
+		// determine the upload timeout
+		int MBPerMS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
+		long BPerNS = MBPerMS; // MB -> B = 1/1,000,000. MS -> NS = 1,000,000. So, MBPerMS = BPerNS.
+		long remainingNS = 0; // We don't want to pause for like 0.1 ms... so we store those tiny MS.
+		long bytesUploaded = 0;
+		
+		// actually upload the buffers
+		for (RegionPos p : toBeUploaded) {
+			LodBufferBuilder[] buffers = buildableBuffers.get(p.x, p.z);
+			for (int i = 0; i < buffers.length; i++)
 			{
-				if (fullRegen || lodDim.doesRegionNeedBufferRegen(x, z))
-				{
-					for (int i = 0; i < buildableBuffers[x][z].length; i++)
-					{
-						// FIXME: for some reason BufferBuilder.vertexCounts
-						// isn't reset unless this is called, which can cause
-						// a false indexOutOfBoundsException
-						buildableBuffers[x][z][i].discard();
-						
-						buildableBuffers[x][z][i].begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
-					}
+				ByteBuffer uploadBuffer = null;
+				//FIXME: The sonme Buffers aren't closed/end() and causing errors!
+				try {
+					LagSpikeCatcher b = new LagSpikeCatcher();
+					uploadBuffer = buffers[i].getCleanedByteBuffer();
+					b.end("getCleanedByteBuffer");
+				} catch (IndexOutOfBoundsException e) {
+					// NOTE: Temp try/catch for above FIXME.
+					e.printStackTrace();
+				} catch (RuntimeException e) {
+					ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
+					e.printStackTrace();
+				}
+				if (uploadBuffer == null) continue;
+				LagSpikeCatcher vboU = new LagSpikeCatcher();
+				vboUpload(p, i, uploadBuffer, uploadMethod);
+				vboU.end("vboUpload");
+
+				// upload buffers over an extended period of time
+				// to hopefully prevent stuttering.
+				remainingNS += uploadBuffer.capacity()*BPerNS;
+				bytesUploaded += uploadBuffer.capacity();
+				if (remainingNS >= TimeUnit.NANOSECONDS.convert(1000/60, TimeUnit.MILLISECONDS)) {
+					if (remainingNS > MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS) remainingNS = MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS;
+					try {
+						Thread.sleep(remainingNS/1000000, (int) (remainingNS%1000000));
+					} catch (InterruptedException e) {}
+					remainingNS = 0;
 				}
 			}
 		}
+		ClientApi.LOGGER.info("UploadBuffers uploaded "+bytesUploaded+" bytes.");
 	}
 	
-	/** Calls end on each of the buildable BufferBuilders. */
-	private void closeBuffers(boolean fullRegen, LodDimension lodDim)
+	/** Uploads the uploadBuffer so the GPU can use it. */
+	private void vboUpload(RegionPos regPos, int iIndex, ByteBuffer uploadBuffer, GpuUploadMethod uploadMethod)
 	{
-		for (int x = 0; x < buildableBuffers.length; x++)
-			for (int z = 0; z < buildableBuffers.length; z++)
-				for (int i = 0; i < buildableBuffers[x][z].length; i++)
-					if (buildableBuffers[x][z][i] != null && buildableBuffers[x][z][i].building() && (fullRegen || lodDim.doesRegionNeedBufferRegen(x, z)))
-						buildableBuffers[x][z][i].end();
-	}
-	
-	
-	/** Upload all buildableBuffers to the GPU. */
-	private void uploadBuffers(boolean fullRegen, LodDimension lodDim)
-	{
-		GLProxy glProxy = GLProxy.getInstance();
-		try
-		{
-			// make sure we are uploading to the builder context,
-			// this helps prevent interference (IE stuttering) with the Minecraft context.
-			glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
-			
-			// determine the upload method
-			GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod(); 
-			
-			// determine the upload timeout
-			int uploadTimeoutInMS = CONFIG.client().advanced().buffers().getGpuUploadTimeoutInMilliseconds();
-			
-			// actually upload the buffers
-			for (int x = 0; x < buildableVbos.length; x++)
+		boolean useBuffStorage = uploadMethod == GpuUploadMethod.BUFFER_STORAGE;
+		LodVertexBuffer[] vbos = buildableVbos.get(regPos.x, regPos.z);
+		
+		if (vbos[iIndex] == null) {
+			vbos[iIndex] = new LodVertexBuffer(useBuffStorage);
+		} else if (vbos[iIndex].isBufferStorage != useBuffStorage) {
+			vbos[iIndex].close();
+			vbos[iIndex] = new LodVertexBuffer(useBuffStorage);
+		}
+
+		LodVertexBuffer vbo = vbos[iIndex];
+		// this is how many points will be rendered
+		vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
+		
+		// If size is zero, just ignore it.
+		if (uploadBuffer.capacity()==0) return;
+		LagSpikeCatcher bindBuff = new LagSpikeCatcher();
+		bindBuff.end("glBindBuffer vbo.id");
+		
+		try {
+			// if possible use the faster buffer storage route
+			if (uploadMethod == GpuUploadMethod.BUFFER_STORAGE)
 			{
-				for (int z = 0; z < buildableVbos.length; z++)
+				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
+				long size = vbo.size;
+				if (size < uploadBuffer.capacity() ||
+						size > uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
 				{
-					if (fullRegen || lodDim.doesRegionNeedBufferRegen(x, z))
-					{
-						for (int i = 0; i < buildableBuffers[x][z].length; i++)
-						{
-							ByteBuffer uploadBuffer = buildableBuffers[x][z][i].getCleanedByteBuffer();
-							vboUpload(x,z,i, uploadBuffer, uploadMethod);
-							lodDim.setRegenRegionBufferByArrayIndex(x, z, false);
-							
-							// upload buffers over an extended period of time
-							// to hopefully prevent stuttering.
-							if (uploadTimeoutInMS != 0)
-								Thread.sleep(uploadTimeoutInMS);
-							GL32.glFinish();
-						}
-					}
+					int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+					LagSpikeCatcher buffResizeRegen = new LagSpikeCatcher();
+					GL32.glDeleteBuffers(vbo.id);
+					vbo.id = GL32.glGenBuffers();
+					buffResizeRegen.end("glDeleteBuffers BuffStorage resize");
+					LagSpikeCatcher buffResize = new LagSpikeCatcher();
+					GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
+					GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, newSize, GL44.GL_DYNAMIC_STORAGE_BIT);
+					vbo.size = newSize;
+					buffResize.end("glBufferStorage BuffStorage resize");
+				} 
+				LagSpikeCatcher buffSubData = new LagSpikeCatcher();
+				GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
+				buffSubData.end("glBufferSubData BuffStorage");
+			}
+			else if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
+			{
+				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
+				// no stuttering but high GPU usage
+				// stores everything in system memory instead of GPU memory
+				// making rendering much slower.
+				// Unless the user is running integrated graphics,
+				// in that case this will actually work better than SUB_DATA.
+				long size = vbo.size;
+				if (size < uploadBuffer.capacity() ||
+						size > uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
+				{
+					int newSize = (int) (uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+					LagSpikeCatcher buffResize = new LagSpikeCatcher();
+					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
+					vbo.size = newSize;
+					buffResize.end("glBufferData BuffMapping resize");
 				}
+				ByteBuffer vboBuffer;
+				// map buffer range is better since it can be explicitly unsynchronized
+				LagSpikeCatcher buffMap = new LagSpikeCatcher();
+				vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(),
+						GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
+				buffMap.end("glMapBufferRange BuffMapping");
+				LagSpikeCatcher buffWrite = new LagSpikeCatcher();
+				vboBuffer.put(uploadBuffer);
+				LagSpikeCatcher buffUnmap = new LagSpikeCatcher();
+				GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
+				buffUnmap.end("glUnmapBuffer");
+				
+				
+				buffWrite.end("WriteData BuffMapping");
+			}
+			else if (uploadMethod == GpuUploadMethod.DATA)
+			{
+				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
+				// TODO: Check this nonsense comment!
+				// hybrid bufferData //
+				// high stutter, low GPU usage
+				// But simplest/most compatible
+				LagSpikeCatcher buffData = new LagSpikeCatcher();
+				GL32.glBufferData(GL32.GL_ARRAY_BUFFER, uploadBuffer, GL32.GL_STATIC_DRAW);
+				vbo.size = uploadBuffer.capacity();
+				buffData.end("glBufferData Data");
+			}
+			else
+			{
+				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
+				// TODO: Check this nonsense comment!
+				// hybrid subData/bufferData //
+				// less stutter, low GPU usage
+				long size = vbo.size;
+				if (size < uploadBuffer.capacity() ||
+						size > uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
+				{
+					int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+					LagSpikeCatcher buffResize = new LagSpikeCatcher();
+					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
+					vbo.size = newSize;
+					buffResize.end("glBufferData SubData resize");
+				}
+				LagSpikeCatcher buffSubData = new LagSpikeCatcher();
+				GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
+				buffSubData.end("glBufferSubData SubData");
 			}
 		}
 		catch (Exception e)
 		{
-			GL32.glFinish();
-			// this doesn't appear to be necessary anymore, but just in case.
-			ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
+			ClientApi.LOGGER.error("vboUpload failed: " + e.getClass().getSimpleName());
 			e.printStackTrace();
-		} finally {
-			// newSingleThreadExecutor doesn't mean that all jobs will be on a single, same
-			// thread. It just means that it can at most use one thread. If there are no
-			// jobs for a certain amount of time, or something happened when a job is
-			// executing, it could decide to delete the thread, and create a new one for the
-			// next job. So we will need to release the gl context.
-			glProxy.setGlContext(GLProxyContext.NONE);
 		}
-	}
-	
-	/** Uploads the uploadBuffer so the GPU can use it. */
-	private void vboUpload(int xIndex, int zIndex, int iIndex, ByteBuffer uploadBuffer, GpuUploadMethod uploadMethod)
-	{
-		// get the vbos, buffers, ids, etc.
-		int storageBufferId = 0;
-		if (buildableStorageBufferIds != null)
-			storageBufferId = buildableStorageBufferIds[xIndex][zIndex][iIndex];
-		
-		LodVertexBuffer vbo = buildableVbos[xIndex][zIndex][iIndex];
-		
-		// this shouldn't happen, but just to be safe
-		if (vbo.id != -1 && GLProxy.getInstance().getGlContext() == GLProxyContext.LOD_BUILDER)
-		{
-			// this is how many points will be rendered
-			vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
-			// If size is zero, just ignore it.
-			if (uploadBuffer.capacity()==0) return;
-			
-			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-			try
-			{
-				// if possible use the faster buffer storage route
-				if (uploadMethod == GpuUploadMethod.BUFFER_STORAGE && storageBufferId != 0)
-				{
-					GL32.glDeleteBuffers(storageBufferId);
-					buildableStorageBufferIds[xIndex][zIndex][iIndex] = GL32.glGenBuffers();
-					storageBufferId = buildableStorageBufferIds[xIndex][zIndex][iIndex];
-					GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, storageBufferId);
-					GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, uploadBuffer, 0);
-				}
-				else if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
-				{
-					// TODO: Check this half reasonable comment!
-					// no stuttering but high GPU usage
-					// stores everything in system memory instead of GPU memory
-					// making rendering much slower.
-					// Unless the user is running integrated graphics,
-					// in that case this will actually work better than SUB_DATA.
-					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
-					if (size < uploadBuffer.capacity())
-					{
-						int newSize = (int) (uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
-						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
-					}
-					ByteBuffer vboBuffer;
-					// map buffer range is better since it can be explicitly unsynchronized
-					vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(),
-							GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
-					vboBuffer.put(uploadBuffer);
-				}
-				else if (uploadMethod == GpuUploadMethod.DATA)
-				{
-					// TODO: Check this nonsense comment!
-					// hybrid bufferData //
-					// high stutter, low GPU usage
-					// But simplest/most compatible
-					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, uploadBuffer, GL32.GL_STATIC_DRAW);
-				}
-				else
-				{
-					// TODO: Check this nonsense comment!
-					// hybrid subData/bufferData //
-					// less stutter, low GPU usage
-					long size = GL32.glGetBufferParameteri(GL32.GL_ARRAY_BUFFER, GL32.GL_BUFFER_SIZE);
-					if (size < uploadBuffer.capacity() * BUFFER_EXPANSION_MULTIPLIER)
-					{
-						int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
-						GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
-					}
-					GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
-				}
-			}
-			catch (Exception e)
-			{
-				ClientApi.LOGGER.error("vboUpload failed: " + e.getClass().getSimpleName());
-				e.printStackTrace();
-			}
-			finally
-			{
-				if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING)
-					GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
-				
-				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
-			}
-			
-		}//if vbo exists and in correct GL context
 	}//vboUpload
 	
-	/** Get the newly created VBOs */
-	public VertexBuffersAndOffset getVertexBuffers()
-	{
-		// don't wait for the lock to open,
-		// since this is called on the main render thread
-		// TODO: Use atomic swap instead of locks!
-		if (bufferLock.tryLock())
+	private boolean swapBuffers() {
+		bufferLock.lock();
+		ClientApi.LOGGER.info("Lod Swap Buffers");
 		{
+			boolean shouldRegenBuff = true;
 			try
 			{
-				LodVertexBuffer[][][] tmpVbo = drawableVbos;
+				MovableGridList<LodVertexBuffer[]> tmpVbo = drawableVbos;
 				drawableVbos = buildableVbos;
 				buildableVbos = tmpVbo;
+
+				//ClientApi.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
 				
-				int[][][] tmpStorage = drawableStorageBufferIds;
-				drawableStorageBufferIds = buildableStorageBufferIds;
-				buildableStorageBufferIds = tmpStorage;
-				
-				drawableCenterChunkPosX = buildableCenterBlockPosX;
-				drawableCenterChunkPosZ = buildableCenterBlockPosZ;
-				
+				int tempX = drawableCenterBlockX;
+				int tempY = drawableCenterBlockY;
+				int tempZ = drawableCenterBlockZ;
+				drawableCenterBlockX = buildableCenterBlockX;
+				drawableCenterBlockY = buildableCenterBlockY;
+				drawableCenterBlockZ = buildableCenterBlockZ;
+				buildableCenterBlockX = tempX;
+				buildableCenterBlockY = tempY;
+				buildableCenterBlockZ = tempZ;
 				// the vbos have been swapped
 				switchVbos = false;
+
+				//FIXME: Race condition on the allBuffersRequireReset boolean
+			    shouldRegenBuff = frontBufferRequireReset || allBuffersRequireReset;
+				frontBufferRequireReset = allBuffersRequireReset;
+				allBuffersRequireReset = false;
 			}
 			catch (Exception e)
 			{
 				// this shouldn't normally happen, but just in case it sill prevent deadlock
-				ClientApi.LOGGER.info("getVertexBuffers ran into trouble: " + e.getMessage(), e);
+				ClientApi.LOGGER.error("swapBuffers ran into trouble: " + e.getMessage(), e);
 			}
 			finally
 			{
 				bufferLock.unlock();
 			}
-		}
-		
-		return new VertexBuffersAndOffset(drawableVbos, drawableStorageBufferIds, drawableCenterChunkPosX, drawableCenterChunkPosZ);
-	}
-	
-	/** A simple container to pass multiple objects back in the getVertexBuffers method. */
-	public static class VertexBuffersAndOffset
-	{
-		public final LodVertexBuffer[][][] vbos;
-		public final int[][][] storageBufferIds;
-		public int drawableCenterBlockPosX;
-		public int drawableCenterBlockPosZ;
-		
-		public VertexBuffersAndOffset(LodVertexBuffer[][][] newVbos, int[][][] newStorageBufferIds, int newDrawableCenterBlockPosX, int newDrawableCenterBlockPosZ)
-		{
-			vbos = newVbos;
-			storageBufferIds = newStorageBufferIds;
-			drawableCenterBlockPosX = newDrawableCenterBlockPosX;
-			drawableCenterBlockPosZ = newDrawableCenterBlockPosZ;
+			return shouldRegenBuff;
 		}
 	}
 	
-	/**
-	 * If this is true the buildable near and far
-	 * buffers have been generated and are ready to be
-	 * sent to the LodRenderer.
-	 */
-	public boolean newBuffersAvailable()
+	/** Get the newly created VBOs */
+	public MovableGridList<LodVertexBuffer[]> getFrontBuffers()
 	{
-		return switchVbos;
+		return drawableVbos;
+	}
+	public int getFrontBuffersCenterX()
+	{
+		return drawableCenterBlockX;
+	}
+	public int getFrontBuffersCenterZ()
+	{
+		return drawableCenterBlockZ;
 	}
 }

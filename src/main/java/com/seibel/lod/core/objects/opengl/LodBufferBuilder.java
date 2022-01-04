@@ -323,10 +323,10 @@ public class LodBufferBuilder
 		this.elementIndex = (this.elementIndex + 1) % immutablelist.size();
 		this.nextElementByte += this.currentElement.getByteSize();
 		this.currentElement = immutablelist.get(this.elementIndex);
-//		if (LodVertexFormatelement.getUsage() == LodVertexFormatElement.Usage.PADDING)
-//		{
-//			this.nextElement();
-//		}
+		if (currentElement.getIsPadding())
+		{
+			this.nextElement();
+		}
 		
 //		if (this.defaultColorSet && this.currentElement.getUsage() == LodVertexFormatElement.Usage.COLOR)
 //		{
@@ -458,7 +458,7 @@ public class LodBufferBuilder
 		}
 		
 		ByteBuffer bytebuffer = this.buffer.slice();
-		bytebuffer.order(this.buffer.order()); // FORGE: Fix incorrect byte order
+		//bytebuffer.order(this.buffer.order()); // FORGE: Fix incorrect byte order
 		this.buffer.clear();
 		return bytebuffer; // the original method also returned bufferbuilder$drawstate
 	}

@@ -85,23 +85,20 @@ public class RenderUtil
 	 * Returns true if one of the region's 4 corners is in front
 	 * of the camera.
 	 */
-	public static boolean isRegionInViewFrustum(AbstractBlockPosWrapper playerBlockPos, Vec3f cameraDir, int vboCenterPosX, int vboCenterPosZ)
+	public static boolean isRegionInViewFrustum(AbstractBlockPosWrapper playerBlockPos, Vec3f cameraDir, int vboRegionX, int vboRegionZ)
 	{
 		// convert the vbo position into a direction vector
 		// starting from the player's position
-		Vec3f vboVec = new Vec3f(vboCenterPosX, 0, vboCenterPosZ);
+		Vec3f vboVec = new Vec3f(vboRegionX * LodUtil.REGION_WIDTH, 0, vboRegionZ * LodUtil.REGION_WIDTH);
 		Vec3f playerVec = new Vec3f(playerBlockPos.getX(), playerBlockPos.getY(), playerBlockPos.getZ());
 		
 		vboVec.subtract(playerVec);
 		
-		
-		int halfRegionWidth = LodUtil.REGION_WIDTH / 2;
-		
 		// calculate the 4 corners
-		Vec3f vboSeVec = new Vec3f(vboVec.x + halfRegionWidth, vboVec.y, vboVec.z + halfRegionWidth);
-		Vec3f vboSwVec = new Vec3f(vboVec.x - halfRegionWidth, vboVec.y, vboVec.z + halfRegionWidth);
-		Vec3f vboNwVec = new Vec3f(vboVec.x - halfRegionWidth, vboVec.y, vboVec.z - halfRegionWidth);
-		Vec3f vboNeVec = new Vec3f(vboVec.x + halfRegionWidth, vboVec.y, vboVec.z - halfRegionWidth);
+		Vec3f vboSeVec = new Vec3f(vboVec.x + LodUtil.REGION_WIDTH, vboVec.y, vboVec.z + LodUtil.REGION_WIDTH);
+		Vec3f vboSwVec = new Vec3f(vboVec.x                       , vboVec.y, vboVec.z + LodUtil.REGION_WIDTH);
+		Vec3f vboNwVec = new Vec3f(vboVec.x                       , vboVec.y, vboVec.z);
+		Vec3f vboNeVec = new Vec3f(vboVec.x + LodUtil.REGION_WIDTH, vboVec.y, vboVec.z);
 		
 		// if any corner is visible, this region should be rendered
 		return isNormalizedVectorInViewFrustum(vboSeVec, cameraDir) ||

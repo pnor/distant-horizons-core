@@ -28,8 +28,12 @@ import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIGHT;
+
+
 
 /**
  * Builds LODs as rectangular prisms.
@@ -38,8 +42,9 @@ import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIG
  */
 public class CubicLodTemplate
 {
-	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerY, int playerZ, long data, Map<LodDirection, long[]> adjData,
-			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled)
+	
+	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerZ, long data, Map<LodDirection, long[]> adjData,
+			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled, int cullingRangeX, int cullingRangeZ)
 	{
 		if (vertexOptimizer == null)
 			return;
@@ -61,7 +66,6 @@ public class CubicLodTemplate
 				blockWidth,
 				posX * blockWidth, 0, posZ * blockWidth, // x, y, z offset
 				playerX,
-				playerY,
 				playerZ,
 				adjData,
 				color,
@@ -69,7 +73,7 @@ public class CubicLodTemplate
 				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
-		addBoundingBoxToBuffer(buffer, vertexOptimizer);
+		addBoundingBoxToBuffer(buffer, vertexOptimizer, cullingRangeX, cullingRangeZ);
 	}
 	
 	/** add the given position and color to the buffer */
@@ -77,7 +81,7 @@ public class CubicLodTemplate
 			float x, float y, float z,
 			int color, byte skyLightValue, byte blockLightValue)
 	{
-		// TODO re-add transparency by replacing the color 255 with "ColorUtil.getAlpha(color)"
+		// TODO transparency re-add by replacing the color 255 with "ColorUtil.getAlpha(color)"
 		buffer.position(x, y, z)
 		.color(ColorUtil.getRed(color), ColorUtil.getGreen(color), ColorUtil.getBlue(color), 255)
 		.minecraftLightValue(skyLightValue).minecraftLightValue(blockLightValue)
@@ -89,7 +93,7 @@ public class CubicLodTemplate
 	private static void generateBoundingBox(VertexOptimizer vertexOptimizer,
 			int height, int depth, int width,
 			double xOffset, double yOffset, double zOffset,
-			int playerX, int playerY, int playerZ,
+			int playerX, int playerZ,
 			Map<LodDirection, long[]> adjData,
 			int color, byte skyLight, byte blockLight,
 			boolean[] adjShadeDisabled)
@@ -116,15 +120,25 @@ public class CubicLodTemplate
 		vertexOptimizer.setAdjData(adjData);
 	}
 	
-	private static void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer)
+	private static void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer, int cullingRangeX, int cullingRangeZ)
 	{
 		int color;
 		byte skyLight;
 		byte blockLight;
+		
 		for (LodDirection lodDirection : VertexOptimizer.DIRECTIONS)
 		{
 			//if(vertexOptimizer.isCulled(lodDirection))
 			//	continue;
+			// culling
+			// FIXME: Reimpl backface culling
+			/*
+			if (lodDirection == LodDirection.NORTH && vertexOptimizer.getZ(lodDirection, 0) < -cullingRangeZ
+				|| lodDirection == LodDirection.EAST && vertexOptimizer.getX(lodDirection, 0) > cullingRangeX
+				|| lodDirection == LodDirection.SOUTH && vertexOptimizer.getZ(lodDirection, 0) > cullingRangeZ
+				|| lodDirection == LodDirection.WEST && vertexOptimizer.getX(lodDirection, 0) < -cullingRangeX)
+				continue;
+			*/
 			
 			int verticalFaceIndex = 0;
 			while (vertexOptimizer.shouldRenderFace(lodDirection, verticalFaceIndex))

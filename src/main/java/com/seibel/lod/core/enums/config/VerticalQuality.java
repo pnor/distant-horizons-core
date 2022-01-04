@@ -29,52 +29,54 @@ package com.seibel.lod.core.enums.config;
 public enum VerticalQuality
 {
 	LOW(
-			new int[] { 2,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1 }
+			new int[] { 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1 },
+			0
 	),
 	
 	MEDIUM(
-			new int[] { 4,
-					4,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1,
-					1,
-					1 }
+			new int[] { 4, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1 },
+			1
 	),
 	
 	HIGH(
-			new int[] {
-					8,
-					8,
-					4,
-					4,
-					2,
-					2,
-					2,
-					1,
-					1,
-					1,
-					1 }
+			new int[] { 8, 8, 4, 4, 2, 2, 2, 1, 1, 1, 1 },
+			2
 	);
 	
 	public final int[] maxVerticalData;
+	public final int maxConnectedLods;
 	
-	VerticalQuality(int[] maxVerticalData)
+	VerticalQuality(int[] maxVerticalData, int maxConnectedLods)
 	{
 		this.maxVerticalData = maxVerticalData;
+		this.maxConnectedLods = maxConnectedLods;
+	}
+	
+	// Note: return null if out of range
+	public static VerticalQuality previous(VerticalQuality mode) {
+		switch (mode) {
+		case HIGH:
+			return VerticalQuality.MEDIUM;
+		case MEDIUM:
+			return VerticalQuality.LOW;
+		case LOW:
+			return null;
+		default:
+			return null;
+		}
+	}
+
+	// Note: return null if out of range
+	public static VerticalQuality next(VerticalQuality mode) {
+		switch (mode) {
+		case HIGH:
+			return null;
+		case MEDIUM:
+			return VerticalQuality.HIGH;
+		case LOW:
+			return VerticalQuality.MEDIUM;
+		default:
+			return null;
+		}
 	}
 }

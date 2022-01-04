@@ -182,12 +182,6 @@ public class LodUtil
 		return new RegionPos(relativePosX, relativePosZ);
 	}
 	
-	/** Convert a 2D absolute position into a quad tree relative position. */
-	public static int convertLevelPos(int pos, int currentDetailLevel, int targetDetailLevel)
-	{
-		return pos / (1 << (targetDetailLevel - currentDetailLevel));
-	}
-	
 	
 	/**
 	 * If on single player this will return the name of the user's

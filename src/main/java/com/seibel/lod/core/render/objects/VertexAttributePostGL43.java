@@ -65,6 +65,7 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 		if (strideSize != expectedStrideSize) {
 			ClientApi.LOGGER.error("Vertex Attribute calculated stride size " + strideSize +
 					" does not match the provided expected stride size " + expectedStrideSize + "!");
+			throw new IllegalArgumentException("Vertex Attribute Incorrect Format");
 		}
 		ClientApi.LOGGER.info("Vertex Attribute (GL43+) completed. It contains "+numberOfBindingPoints
 				+" binding points and a stride size of "+strideSize);
