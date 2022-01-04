@@ -105,19 +105,35 @@ public class LodDimensionFileHandler
 	//================//
 	// read from file //
 	//================//
-	
+
 	/**
-	 * Returns the LodRegion at the given coordinates.
+	 * Returns a new LodRegion at the given coordinates.
 	 * Returns an empty region if the file doesn't exist.
 	 */
 	public LodRegion loadRegionFromFile(byte detailLevel, RegionPos regionPos, DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
 	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		LodRegion region = new LodRegion(LodUtil.REGION_DETAIL_LEVEL, regionPos, generationMode, verticalQuality);
+		LodRegion region = new LodRegion((byte) (LodUtil.REGION_DETAIL_LEVEL+1), regionPos, generationMode, verticalQuality);
+		return loadRegionFromFile(detailLevel, region, generationMode, verticalQuality);
+	}
+	
+	/**
+	 * Returns the LodRegion that is filled at the given coordinates.
+	 * Returns an empty region if the file doesn't exist.
+	 */
+	public LodRegion loadRegionFromFile(byte detailLevel, LodRegion region, DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
+	{
+		if (region.getGenerationMode().compareTo(generationMode)<0 || region.getVerticalQuality().compareTo(verticalQuality)<0) {
+			//TODO: add flush and save region for old one
+			region = new LodRegion((byte) (LodUtil.REGION_DETAIL_LEVEL+1), region.getRegionPos(), generationMode, verticalQuality);
+		}
+		int regionX = region.regionPosX;
+		int regionZ = region.regionPosZ;
 		
-		for (byte tempDetailLevel = LodUtil.REGION_DETAIL_LEVEL; tempDetailLevel >= detailLevel; tempDetailLevel--)
+		
+		
+		for (byte tempDetailLevel = (byte) (region.getMinDetailLevel()-1); tempDetailLevel >= detailLevel; tempDetailLevel--)
 		{
+			
 			File file = getBestMatchingRegionFile(tempDetailLevel, regionX, regionZ, generationMode, verticalQuality);
 			if (file == null) {
 				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
@@ -366,14 +382,14 @@ public class LodDimensionFileHandler
 	
 	// Return null if no file found
 	private File getBestMatchingRegionFile(byte detailLevel, int regionX, int regionZ, DistanceGenerationMode targetGenMode, VerticalQuality targetVertQuality) {
-		DistanceGenerationMode genMode = targetGenMode;
+		DistanceGenerationMode genMode = DistanceGenerationMode.FULL;
 		// Search from least GenMode to max GenMode, than least vertQuality to max vertQuality
 		do {
 			File file = getRegionFile(regionX, regionZ, genMode, detailLevel, targetVertQuality);
 			if (file.exists()) return file; // Found target file.
-			targetGenMode = DistanceGenerationMode.next(targetGenMode);
-			if (targetGenMode == null) { // Failed to find any files for this vertQuality. Try next one up.
-				targetGenMode = genMode;
+			genMode = DistanceGenerationMode.previous(genMode);
+			if (genMode==null || genMode==DistanceGenerationMode.previous(targetGenMode)) { // Failed to find any files for this vertQuality. Try next one up.
+				genMode = DistanceGenerationMode.FULL;
 				targetVertQuality = VerticalQuality.next(targetVertQuality);
 			}
 		} while (targetVertQuality != null);

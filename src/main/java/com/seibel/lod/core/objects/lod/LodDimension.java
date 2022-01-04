@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
@@ -92,10 +93,9 @@ public class LodDimension
 	
 	private final RegionPos center;
 	
-	/** prevents the cutAndExpandThread from expanding at the same location multiple times */
-	private volatile AbstractChunkPosWrapper lastExpandedChunk;
-	/** prevents the cutAndExpandThread from cutting at the same location multiple times */
-	private volatile AbstractChunkPosWrapper lastCutChunk;
+	private boolean isCutting = false;
+	private boolean isExpanding = false;
+	
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand"));
 	
 	/**
@@ -104,8 +104,6 @@ public class LodDimension
 	 */
 	public LodDimension(IDimensionTypeWrapper newDimension, LodWorld lodWorld, int newWidth)
 	{
-		lastCutChunk = null;
-		lastExpandedChunk = null;
 		dimension = newDimension;
 		width = newWidth;
 		halfWidth = width / 2;
@@ -159,6 +157,7 @@ public class LodDimension
 	 */
 	public synchronized void move(RegionPos regionOffset)
 	{
+		ClientApi.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
 		int xOffset = regionOffset.x;
 		int zOffset = regionOffset.z;
 		
@@ -261,6 +260,7 @@ public class LodDimension
 		// update the new center
 		center.x += xOffset;
 		center.z += zOffset;
+		ClientApi.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
 	}
 	
 	
@@ -362,109 +362,98 @@ public class LodDimension
 	 */
 	public void cutRegionNodesAsync(int playerPosX, int playerPosZ)
 	{
-		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
-		
-		if (lastCutChunk == null)
-			lastCutChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
-		
+		if (isCutting) return;
+		isCutting = true;
 		// don't run the tree cutter multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastCutChunk.getX() || newPlayerChunk.getZ() != lastCutChunk.getZ()) {
-			lastCutChunk = newPlayerChunk;
+		Runnable thread = () -> {
+			//ClientApi.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
 
-			Runnable thread = () -> {
+			// go over every region in the dimension
+			iterateWithSpiral((int x, int z) -> {
+				int regionX;
+				int regionZ;
+				int minDistance;
+				byte detail;
+				byte minAllowedDetailLevel;
+				regionX = (x + center.x) - halfWidth;
+				regionZ = (z + center.z) - halfWidth;
 
-				// go over every region in the dimension
-				iterateWithSpiral((int x, int z) -> {
-					int regionX;
-					int regionZ;
-					int minDistance;
-					byte detail;
-					byte minAllowedDetailLevel;
-					regionX = (x + center.x) - halfWidth;
-					regionZ = (z + center.z) - halfWidth;
+				if (regions[x][z] != null) {
+					// check what detail level this region should be
+					// and cut it if it is higher then that
+					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
+							playerPosX, playerPosZ);
+					detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
+					minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
 
-					if (regions[x][z] != null) {
-						// check what detail level this region should be
-						// and cut it if it is higher then that
-						minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
-								playerPosX, playerPosZ);
-						detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
-						minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
-
-						if (regions[x][z].getMinDetailLevel() > minAllowedDetailLevel) {
-							regions[x][z].cutTree(minAllowedDetailLevel);
-							regenRegionBuffer[x][z] = 2;
-							regenDimensionBuffers = true;
-						}
+					if (regions[x][z].getMinDetailLevel() < minAllowedDetailLevel) {
+						regions[x][z].cutTree(minAllowedDetailLevel);
+						regenRegionBuffer[x][z] = 2;
+						regenDimensionBuffers = true;
 					}
-				});
-			};
-			cutAndExpandThread.execute(thread);
-		}
+				}
+			});
+			//ClientApi.LOGGER.info("LodDim cut Region complete: " + playerPosX + "," + playerPosZ);
+			isCutting = false;
+		};
+		cutAndExpandThread.execute(thread);
 	}
 	
 	/** Either expands or loads all regions in the rendered LOD area */
 	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ) {
-		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
-		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX),
-				LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
-		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
 
-		if (lastExpandedChunk == null)
-			lastExpandedChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
+		if (isExpanding) return;
+		isExpanding = true;
+		
+		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
+		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
 
 		// don't run the expander multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastExpandedChunk.getX() || newPlayerChunk.getZ() != lastExpandedChunk.getZ()) {
-			lastExpandedChunk = newPlayerChunk;
+		Runnable thread = () -> {
+			//ClientApi.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 
-			Runnable thread = () -> {
+			iterateWithSpiral((int x, int z) -> {
+				int regionX;
+				int regionZ;
+				LodRegion region;
+				int minDistance;
+				int maxDistance;
+				byte minDetail;
+				byte maxDetail;
+				regionX = (x + center.x) - halfWidth;
+				regionZ = (z + center.z) - halfWidth;
+				final RegionPos regionPos = new RegionPos(regionX, regionZ);
+				region = regions[x][z];
 
-				iterateWithSpiral((int x, int z) -> {
-					int regionX;
-					int regionZ;
-					LodRegion region;
-					int minDistance;
-					byte detail;
-					byte levelToGen;
-					regionX = (x + center.x) - halfWidth;
-					regionZ = (z + center.z) - halfWidth;
-					final RegionPos regionPos = new RegionPos(regionX, regionZ);
-					region = regions[x][z];
+				minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
+						playerPosZ);
+				maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
+						playerPosZ);
+				minDetail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
+				maxDetail = DetailDistanceUtil.getTreeGenDetailFromDistance(maxDistance);
+				
+				boolean updated = false;
+				if (region == null) {
+					regions[x][z] = getRegionFromFile(regionPos, minDetail, generationMode, verticalQuality);
+					updated = true;
+				} else if (region.getGenerationMode().compareTo(generationMode) < 0 ||
+						region.getVerticalQuality() != verticalQuality ||
+						region.getMinDetailLevel() > minDetail) {
+					regions[x][z] = getRegionFromFile(regions[x][z], minDetail, generationMode, verticalQuality);
+					updated = true;
+				}
+				if (updated) {
+					regenRegionBuffer[x][z] = 2;
+					regenDimensionBuffers = true;
+				}
+			});
+			//ClientApi.LOGGER.info("LodDim expend Region complete: " + playerPosX + "," + playerPosZ);
+			isExpanding = false;
+		};
 
-					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
-							playerPosZ);
-					detail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
-					levelToGen = DetailDistanceUtil.getLodGenDetail(detail).detailLevel;
-
-					// check that the region isn't null and at least this detail level
-					if (region == null || region.getGenerationMode() != generationMode) {
-						// First case, region has to be created
-
-						// try to get the region from file
-						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-
-						// if there is no region file create an empty region
-						if (regions[x][z] == null)
-							regions[x][z] = new LodRegion(levelToGen, regionPos, generationMode, verticalQuality);
-
-						regenRegionBuffer[x][z] = 2;
-						regenDimensionBuffers = true;
-					} else if (region.getMinDetailLevel() > levelToGen) {
-						// Second case, the region exists at a higher detail level.
-
-						// Expand the region by introducing the missing layer
-						region.growTree(levelToGen);
-						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-						regenRegionBuffer[x][z] = 2;
-						regenDimensionBuffers = true;
-					}
-				});
-			};
-
-			cutAndExpandThread.execute(thread);
-		}
+		cutAndExpandThread.execute(thread);
 	}
 	
 	/**
@@ -846,7 +835,18 @@ public class LodDimension
 	public LodRegion getRegionFromFile(RegionPos regionPos, byte detailLevel,
 			DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
 	{
-		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, generationMode, verticalQuality) : null;
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, generationMode, verticalQuality) : 
+			new LodRegion(detailLevel, regionPos, generationMode, verticalQuality);
+	}
+	/**
+	 * Loads the region at the given region from file,
+	 * if a file exists for that region.
+	 */
+	public LodRegion getRegionFromFile(LodRegion existingRegion, byte detailLevel,
+			DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
+	{
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, existingRegion, generationMode, verticalQuality) : 
+			new LodRegion(detailLevel, existingRegion.getRegionPos(), generationMode, verticalQuality);
 	}
 	
 	/** Save all dirty regions in this LodDimension to file. */

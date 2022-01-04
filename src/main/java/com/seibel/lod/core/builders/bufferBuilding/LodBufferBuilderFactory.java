@@ -849,7 +849,7 @@ public class LodBufferBuilderFactory
 				drawableVbos = buildableVbos;
 				buildableVbos = tmpVbo;
 
-				ClientApi.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
+				//ClientApi.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
 				
 				int tempX = drawableCenterBlockX;
 				int tempY = drawableCenterBlockY;

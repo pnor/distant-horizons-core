@@ -425,20 +425,20 @@ public class LodRegion
 		int startX;
 		int startZ;
 		
-		// TODO what are each of these loops updating?
-		for (byte down = (byte) (minDetailLevel + 1); down <= detailLevel; down++)
+		// Update the level lower or equal to the detail level
+		for (byte down = (byte) (minDetailLevel+1); down <= detailLevel; down++)
 		{
 			startX = LevelPosUtil.convert(detailLevel, posX, down);
 			startZ = LevelPosUtil.convert(detailLevel, posZ, down);
 			width = 1 << (detailLevel - down);
 			
-			for (int x = 0; x < width; x++)
+			for (int x = 0; x < width; x++) 
 				for (int z = 0; z < width; z++)
 					update(down, startX + x, startZ + z);
 		}
-		
-		
-		for (byte up = (byte) (detailLevel + 1); up <= LodUtil.REGION_DETAIL_LEVEL; up++)
+
+		// Update the level higher than the detail level
+		for (byte up = (byte)(Math.max(detailLevel, minDetailLevel)+1); up <= LodUtil.REGION_DETAIL_LEVEL; up++)
 		{
 			update(up,
 					LevelPosUtil.convert(detailLevel, posX, up),
