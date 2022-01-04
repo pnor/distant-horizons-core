@@ -280,7 +280,9 @@ public class LodBufferBuilderFactory
 				vboY = buildableCenterBlockY;
 				vboZ = buildableCenterBlockZ;
 				buildableBuffers.move(playerRegionX, playerRegionZ);
-				buildableVbos.move(playerRegionX, playerRegionZ);
+				buildableVbos.move(playerRegionX, playerRegionZ, (bs) -> {
+					if (bs!=null) for (LodVertexBuffer b : bs) if (b!=null) b.close();
+					}); 
 				setsToRender.move(playerRegionX, playerRegionZ);
 				vertexOptimizerCache.move(playerRegionX, playerRegionZ);
 			}
@@ -847,7 +849,7 @@ public class LodBufferBuilderFactory
 				drawableVbos = buildableVbos;
 				buildableVbos = tmpVbo;
 
-				//ClientApi.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
+				ClientApi.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
 				
 				int tempX = drawableCenterBlockX;
 				int tempY = drawableCenterBlockY;

@@ -304,14 +304,18 @@ public class LodRenderer
 		int lowRegionX = vbos.getCenterX() - vbos.gridCentreToEdge;
 		int lowRegionZ = vbos.getCenterY() - vbos.gridCentreToEdge;
 		int drawCall = 0;
-		for (int regionX=lowRegionX; regionX<vbos.gridSize; regionX++) {
-			for (int regionZ=lowRegionZ; regionZ<vbos.gridSize; regionZ++) {
+		int vCount0 = 0;
+		for (int regionX=lowRegionX; regionX<lowRegionX+vbos.gridSize; regionX++) {
+			for (int regionZ=lowRegionZ; regionZ<lowRegionZ+vbos.gridSize; regionZ++) {
 				if (vbos.get(regionX, regionZ) == null) continue;
 				if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
 						MC_RENDER.getLookAtVector(), regionX, regionZ)) {
 					for (LodVertexBuffer vbo : vbos.get(regionX, regionZ)) {
 						if (vbo == null) continue;
-						if (vbo.vertexCount == 0) continue;
+						if (vbo.vertexCount == 0) {
+							vCount0++;
+							continue;
+						}
 						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 						shaderProgram.bindVertexBuffer(vbo.id);
 						drawCall++;
@@ -322,8 +326,8 @@ public class LodRenderer
 			}
 			
 		}
-		//if (drawCall!=0)
-		//	ClientApi.LOGGER.info("DrawCall Count: "+drawCall);
+		//if (drawCall==0)
+		//	ClientApi.LOGGER.info("DrawCall Count: "+drawCall+"("+vCount0+")");
 		
 		//================//
 		// render cleanup //
