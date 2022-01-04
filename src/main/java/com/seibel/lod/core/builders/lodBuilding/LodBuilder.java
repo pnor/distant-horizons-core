@@ -176,6 +176,7 @@ public class LodBuilder
 			return;
 		
 		// determine how many LODs to generate horizontally
+		
 		byte minDetailLevel = region.getMinDetailLevel();
 		HorizontalResolution detail = DetailDistanceUtil.getLodGenDetail(minDetailLevel);
 		
@@ -201,12 +202,14 @@ public class LodBuilder
 			//lodDim.clear(detailLevel, posX, posZ);
 			if (data != null && data.length != 0)
 			{
-				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, detail.detailLevel);
-				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, detail.detailLevel);
-				lodDim.addVerticalData(detailLevel, posX, posZ, data, false);
+				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, minDetailLevel);
+				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, minDetailLevel);
+				if (!lodDim.doesDataExist(minDetailLevel, posX, posZ)) {
+					lodDim.addVerticalData(minDetailLevel, posX, posZ, data, false);
+					lodDim.updateData(minDetailLevel, posX, posZ);
+				}
 			}
 		}
-		lodDim.updateData(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getChunkPosX(), chunk.getChunkPosZ());
 		//executeTime = System.currentTimeMillis() - executeTime;
 		//if (executeTime > 0) ClientApi.LOGGER.info("generateLodNodeFromChunk level: " + detailLevel + " time ms: " + executeTime);
 	}

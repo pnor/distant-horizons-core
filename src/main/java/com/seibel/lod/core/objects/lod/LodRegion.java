@@ -162,7 +162,7 @@ public class LodRegion
 		// The dataContainer could have null entries if the
 		// detailLevel changes.
 		if (this.dataContainer[detailLevel] == null)
-			this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
+			return false;//this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
 		
 		this.dataContainer[detailLevel].addData(data, posX, posZ, verticalIndex);
 		
@@ -183,7 +183,7 @@ public class LodRegion
 		// The dataContainer could have null entries if the
 		// detailLevel changes.
 		if (this.dataContainer[detailLevel] == null)
-			this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
+			return false;//this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
 		
 		return this.dataContainer[detailLevel].addVerticalData(data, posX, posZ);
 	}
@@ -248,7 +248,7 @@ public class LodRegion
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		
 		// calculate what LevelPos are in range to generate
-		int maxDistance = LevelPosUtil.maxDistance(detailLevel, childOffsetPosX, childOffsetPosZ, playerPosX, playerPosZ, regionPosX, regionPosZ);
+		int minDistance = LevelPosUtil.minDistance(detailLevel, childOffsetPosX, childOffsetPosZ, playerPosX, playerPosZ, regionPosX, regionPosZ);
 		
 		// determine this child's levelPos
 		byte childDetailLevel = (byte) (detailLevel - 1);
@@ -257,7 +257,7 @@ public class LodRegion
 		
 		int childSize = 1 << (LodUtil.REGION_DETAIL_LEVEL - childDetailLevel);
 		
-		byte targetDetailLevel = DetailDistanceUtil.getLodGenDetail(DetailDistanceUtil.getGenerationDetailFromDistance(maxDistance)).detailLevel;
+		byte targetDetailLevel = DetailDistanceUtil.getGenerationDetailFromDistance(minDistance);
 		if (targetDetailLevel <= detailLevel)
 		{
 			if (targetDetailLevel == detailLevel)
@@ -299,14 +299,10 @@ public class LodRegion
 				{
 					// The detail Level is smaller than a chunk.
 					// Only recurse down the top right child.
-					
-					if (DetailDistanceUtil.getLodGenDetail(childDetailLevel).detailLevel <= (childDetailLevel))
-					{
-						if (!doesDataExist(childDetailLevel, childPosX, childPosZ))
-							posToGenerate.addPosToGenerate(childDetailLevel, childPosX + regionPosX * childSize, childPosZ + regionPosZ * childSize);
-						else
-							getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ);
-					}
+					if (!doesDataExist(childDetailLevel, childPosX, childPosZ))
+						posToGenerate.addPosToGenerate(childDetailLevel, childPosX + regionPosX * childSize, childPosZ + regionPosZ * childSize);
+					else
+						getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ);
 				}
 			}
 		}

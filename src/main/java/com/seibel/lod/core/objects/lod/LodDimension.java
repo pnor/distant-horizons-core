@@ -565,128 +565,36 @@ public class LodDimension
 		dx = 0;
 		dz = -1;
 		
-		// We can use two type of generation scheduling
-		switch (CONFIG.client().worldGenerator().getGenerationPriority())
-		{
-		case NEAR_FIRST:
-			//in the NEAR_FIRST generation scheduling we prioritize the nearest un-generated position to the player
-			//the chunk position to generate will be stored in a posToGenerate object
-			posToGenerate = new PosToGenerateContainer((byte) 10, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
-			
-			int playerChunkX = LevelPosUtil.getChunkPos(LodUtil.BLOCK_DETAIL_LEVEL, playerBlockPosX);
-			int playerChunkZ = LevelPosUtil.getChunkPos(LodUtil.BLOCK_DETAIL_LEVEL, playerBlockPosZ);
-			
-			int complexity;
-			int xChunkToCheck;
-			int zChunkToCheck;
-			byte detailLevel;
-			int posX;
-			int posZ;
-			long data;
-			int numbChunksWide = (width) * 32;
-			int circleLimit = Integer.MAX_VALUE;
-			
-			//posToGenerate is using an insertion sort algorithm which can become really fast if the
-			//original data order is almost ordered. For this reason we explore the matrix of the position to generate
-			//with a spiral matrix visit (a square spiral is almost ordered in the "nearest to farthest" order)
-			for (int i = 0; i < numbChunksWide * numbChunksWide; i++)
-			{
-				//Firstly we check if the posToGenerate has been filled
-				if (maxDataToGenerate == 0)
-				{
-					maxDataToGenerate--;
-					//if it has been filled then we set a stop distance
-					//the stop distance will be current distance (generically x) per square root of 2
-					//this would guarantee a circular generation since (Math.abs(x) * 1.41f) is the
-					//radius of a circle that inscribe a square
-					circleLimit = (int) (Math.abs(x) * 1.41f);
-				}
-				//This second if check if we reached the circleLimit decided in the previous if
-				//if so we stop
-				else if (maxDataToGenerate < 0)
-				{
-					if (circleLimit < Math.abs(x) && circleLimit < Math.abs(z))
-						break;
-				}
-				
-				
-				xChunkToCheck = x + playerChunkX;
-				zChunkToCheck = z + playerChunkZ;
-				
-				//we get the lod region in which the chunk is present
-				lodRegion = getRegion(LodUtil.CHUNK_DETAIL_LEVEL, xChunkToCheck, zChunkToCheck);
-				if (lodRegion == null)
-					continue;
-				
-				//Now we check if the current chunk has been generated with the correct complexity
-				//if(lodRegion.isChunkPreGenerated(xChunkToCheck,zChunkToCheck))
-				//	complexity = DistanceGenerationMode.SERVER.complexity;
-				//else
-					complexity = CONFIG.client().worldGenerator().getDistanceGenerationMode().complexity;
-					
-				
-				//we create the level position info of the chunk
-				detailLevel = lodRegion.getMinDetailLevel();
-				posX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, xChunkToCheck, detailLevel);
-				posZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, zChunkToCheck, detailLevel);
-				
-				data = getSingleData(detailLevel, posX, posZ);
-				
-				//we will generate the position only if the current generation complexity is lower than the target one.
-				//an un-generated area will always have 0 generation
-				if (DataPointUtil.getGenerationMode(data) < complexity)
-				{
-					posToGenerate.addPosToGenerate(detailLevel, posX, posZ);
-					if (maxDataToGenerate >= 0)
-						maxDataToGenerate--;
-				}
-				
-				//with this code section we find the next chunk to check
-				if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z)))
-				{
-					t = dx;
-					dx = -dz;
-					dz = t;
-				}
-				x += dx;
-				z += dz;
-			}
-			break;
+		//in the FAR_FIRST generation we dedicate part of the generation process to the far region with really
+		//low detail quality.
 		
-		default:
-		case FAR_FIRST:
-			//in the FAR_FIRST generation we dedicate part of the generation process to the far region with really
-			//low detail quality.
+		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
+		
+		int xRegion;
+		int zRegion;
+		
+		for (int i = 0; i < width * width; i++)
+		{
+			xRegion = x + center.x;
+			zRegion = z + center.z;
 			
-			posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
+			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
+			lodRegion = getRegion(xRegion, zRegion);
+			if (lodRegion != null)
+				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ);
 			
-			int xRegion;
-			int zRegion;
 			
-			for (int i = 0; i < width * width; i++)
+			//with this code section we find the next chunk to check
+			if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z)))
 			{
-				xRegion = x + center.x;
-				zRegion = z + center.z;
-				
-				//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
-				lodRegion = getRegion(xRegion, zRegion);
-				if (lodRegion != null)
-					lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ);
-				
-				
-				//with this code section we find the next chunk to check
-				if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z)))
-				{
-					t = dx;
-					dx = -dz;
-					dz = t;
-				}
-				x += dx;
-				z += dz;
+				t = dx;
+				dx = -dz;
+				dz = t;
 			}
-			break;
+			x += dx;
+			z += dz;
 		}
-		return posToGenerate;
+	return posToGenerate;
 	}
 	
 	/**

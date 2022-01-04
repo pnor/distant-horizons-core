@@ -47,7 +47,7 @@ public class LodVertexBuffer implements AutoCloseable
 		this.id = GL32.glGenBuffers();
 		this.isBufferStorage = isBufferStorage;
 		count++;
-		ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
+		//ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
 	}
 	
 	
@@ -59,7 +59,7 @@ public class LodVertexBuffer implements AutoCloseable
 			GLProxy.getInstance().recordOpenGlCall(() -> GL32.glDeleteBuffers(this.id));
 			this.id = -1;
 			count--;
-			ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
+			//ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
 		}
 	}
 }
