@@ -54,7 +54,12 @@ public class CubicLodTemplate
 		
 		int color;
 		if (debugging != DebugMode.OFF)
-			color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel].getRGB();
+		{
+			if (debugging == DebugMode.SHOW_DETAIL || debugging == DebugMode.SHOW_DETAIL_WIREFRAME)
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel].getRGB();
+			else ///if (debugging == DebugMode.SHOW_GENMODE || debugging == DebugMode.SHOW_GENMODE_WIREFRAME)
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[DataPointUtil.getGenerationMode(data)].getRGB();
+		}
 		else
 			color = DataPointUtil.getColor(data);
 		
