@@ -47,6 +47,7 @@ public class LodRegion
 	
 	/** Holds the lowest (least detailed) detail level in this region */
 	private byte minDetailLevel;
+	public byte lastMaxDetailLevel = LodUtil.REGION_DETAIL_LEVEL;
 	
 	/**
 	 * This holds all data for this region
@@ -74,7 +75,6 @@ public class LodRegion
 		this.verticalQuality = verticalQuality;
 		this.generationMode = generationMode;
 		dataContainer = new LevelContainer[POSSIBLE_LOD];
-		
 		
 		// Initialize all the different matrices
 		for (byte lod = minDetailLevel; lod <= LodUtil.REGION_DETAIL_LEVEL; lod++)
@@ -248,7 +248,7 @@ public class LodRegion
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 		
 		// calculate what LevelPos are in range to generate
-		int minDistance = LevelPosUtil.minDistance(detailLevel, childOffsetPosX, childOffsetPosZ, playerPosX, playerPosZ, regionPosX, regionPosZ);
+		int minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
 		
 		// determine this child's levelPos
 		byte childDetailLevel = (byte) (detailLevel - 1);
@@ -273,36 +273,13 @@ public class LodRegion
 				
 				if (detailLevel > LodUtil.CHUNK_DETAIL_LEVEL)
 				{
-					int ungeneratedChildren = 0;
-					
-					// make sure all children are generated to this detailLevel
 					for (int x = 0; x <= 1; x++)
-					{
 						for (int z = 0; z <= 1; z++)
-						{
-							if (!doesDataExist(childDetailLevel, childPosX + x, childPosZ + z))
-							{
-								ungeneratedChildren++;
-								posToGenerate.addPosToGenerate(childDetailLevel, childPosX + x + regionPosX * childSize, childPosZ + z + regionPosZ * childSize);
-							}
-						}
-					}
-					
-					// only if all the children are correctly generated
-					// should we go deeper
-					if (ungeneratedChildren == 0)
-						for (int x = 0; x <= 1; x++)
-							for (int z = 0; z <= 1; z++)
-								getPosToGenerate(posToGenerate, childDetailLevel, childPosX + x, childPosZ + z, playerPosX, playerPosZ);
+							getPosToGenerate(posToGenerate, childDetailLevel, childPosX + x, childPosZ + z, playerPosX, playerPosZ);
 				}
 				else
 				{
-					// The detail Level is smaller than a chunk.
-					// Only recurse down the top right child.
-					if (!doesDataExist(childDetailLevel, childPosX, childPosZ))
-						posToGenerate.addPosToGenerate(childDetailLevel, childPosX + regionPosX * childSize, childPosZ + regionPosZ * childSize);
-					else
-						getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ);
+					getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ);
 				}
 			}
 		}

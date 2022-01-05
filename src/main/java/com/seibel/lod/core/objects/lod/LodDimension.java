@@ -443,7 +443,13 @@ public class LodDimension
 						region.getMinDetailLevel() > minDetail) {
 					regions[x][z] = getRegionFromFile(regions[x][z], minDetail, generationMode, verticalQuality);
 					updated = true;
+				} else if (region.lastMaxDetailLevel != maxDetail) {
+					region.lastMaxDetailLevel = maxDetail;
+					updated = true;
+				} else if (region.lastMaxDetailLevel != region.getMinDetailLevel()) {
+					updated = true;
 				}
+				
 				if (updated) {
 					regenRegionBuffer[x][z] = 2;
 					regenDimensionBuffers = true;
@@ -555,45 +561,13 @@ public class LodDimension
 	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ)
 	{
 		PosToGenerateContainer posToGenerate;
-		LodRegion lodRegion;
-		// all the following values are used for the spiral matrix visit
-		// x and z are the matrix coord
-		// dx and dz is the next move on the coordinate in the range -1 0 +1
-		int x, z, dx, dz, t;
-		x = 0;
-		z = 0;
-		dx = 0;
-		dz = -1;
-		
-		//in the FAR_FIRST generation we dedicate part of the generation process to the far region with really
-		//low detail quality.
-		
 		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
-		
-		int xRegion;
-		int zRegion;
-		
-		for (int i = 0; i < width * width; i++)
-		{
-			xRegion = x + center.x;
-			zRegion = z + center.z;
-			
+		iterateWithSpiral((int x, int z) -> {
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
-			lodRegion = getRegion(xRegion, zRegion);
+			LodRegion lodRegion = regions[x][z];
 			if (lodRegion != null)
 				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ);
-			
-			
-			//with this code section we find the next chunk to check
-			if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z)))
-			{
-				t = dx;
-				dx = -dz;
-				dz = t;
-			}
-			x += dx;
-			z += dz;
-		}
+		});
 	return posToGenerate;
 	}
 	

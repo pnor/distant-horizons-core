@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LevelPosUtil;
@@ -115,6 +116,10 @@ public class LodWorldGenerator
 		// This is fine currently since DistanceGenerationMode doesn't care about the detail level for now.
 		// However, If that was to be changed, This will need to be fixed.
 		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
+		final GenerationPriority priority;
+		if (CONFIG.client().worldGenerator().getGenerationPriority() == GenerationPriority.AUTO)
+			priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST;
+		else priority = CONFIG.client().worldGenerator().getGenerationPriority();
 		
 		if (mode != DistanceGenerationMode.NONE
 				&& !generatorThreadRunning
@@ -192,7 +197,9 @@ public class LodWorldGenerator
 						
 						
 						// add the far positions
-						if (farIndex < posToGenerate.getNumberOfFarPos() && posToGenerate.getNthDetail(farIndex, false) != 0)
+						// But if priority is NEAR_FIRST, we only do that if near pos has ran out.
+						if ((nearIndex >= posToGenerate.getNumberOfNearPos() || priority != GenerationPriority.NEAR_FIRST) &&
+								farIndex < posToGenerate.getNumberOfFarPos() && posToGenerate.getNthDetail(farIndex, false) != 0)
 						{
 							detailLevel = (byte) (posToGenerate.getNthDetail(farIndex, false) - 1);
 							posX = posToGenerate.getNthPosX(farIndex, false);
