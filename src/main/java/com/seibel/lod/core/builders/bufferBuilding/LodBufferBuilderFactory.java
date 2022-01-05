@@ -78,7 +78,7 @@ public class LodBufferBuilderFactory
 		public void end(String source) {
 			timer = System.nanoTime() - timer;
 			if (timer> 16000000) { //16 ms
-				ClientApi.LOGGER.info("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
+				ClientApi.LOGGER.debug("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 			
 		}
@@ -372,7 +372,7 @@ public class LodBufferBuilderFactory
 			long buildTime = endTime - startTime;
 			long executeTime = executeEnd - executeStart;
 			if (enableLogging)
-				ClientApi.LOGGER.info("Thread Build("+nodeToRenderThreads.size()+"/"+(lodDim.getWidth()*lodDim.getWidth())+ (fullRegen ? "FULL" : "")+") time: " + buildTime + " ms" + '\n' +
+				ClientApi.LOGGER.debug("Thread Build("+nodeToRenderThreads.size()+"/"+(lodDim.getWidth()*lodDim.getWidth())+ (fullRegen ? "FULL" : "")+") time: " + buildTime + " ms" + '\n' +
 					                        "thread execute time: " + executeTime + " ms");
 
 			//================================//
@@ -400,7 +400,7 @@ public class LodBufferBuilderFactory
 				uploadBuffers(posToUpload);
 				long uploadTime = System.currentTimeMillis() - startUploadTime;
 				if (enableLogging)
-					ClientApi.LOGGER.info("Thread Upload time: " + uploadTime + " ms");
+					ClientApi.LOGGER.debug("Thread Upload time: " + uploadTime + " ms");
 			}
 			catch (Exception e)
 			{
@@ -840,7 +840,7 @@ public class LodBufferBuilderFactory
 	
 	private boolean swapBuffers() {
 		bufferLock.lock();
-		ClientApi.LOGGER.info("Lod Swap Buffers");
+		ClientApi.LOGGER.debug("Lod Swap Buffers");
 		{
 			boolean shouldRegenBuff = true;
 			try

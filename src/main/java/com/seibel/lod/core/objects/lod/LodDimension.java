@@ -38,13 +38,13 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 
+//FIXME: Race condition on lodDim move/resize!
 
 /**
  * This object holds all loaded LOD regions
@@ -62,7 +62,6 @@ public class LodDimension
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	public final IDimensionTypeWrapper dimension;
 	
@@ -77,11 +76,8 @@ public class LodDimension
 	public volatile LodRegion[][] regions;
 	
 	/** stores if the region at the given x and z index needs to be saved to disk */
-	private volatile boolean[][] isRegionDirty;
 	/** stores if the region at the given x and z index needs to be regenerated */
 	// Use int because I need Tri state:
-	// 0: both buffer good. 1: the displaying buffer good. 2: both buffer bad.
-	private volatile int[][] regenRegionBuffer;
 	
 	/**
 	 * if true that means there are regions in this dimension
@@ -140,8 +136,6 @@ public class LodDimension
 		
 		
 		regions = new LodRegion[width][width];
-		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new int[width][width];
 		
 		center = new RegionPos(0, 0);
 	}
@@ -158,6 +152,7 @@ public class LodDimension
 	public synchronized void move(RegionPos regionOffset)
 	{
 		ClientApi.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
+		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
 		int xOffset = regionOffset.x;
 		int zOffset = regionOffset.z;
 		
@@ -169,7 +164,6 @@ public class LodDimension
 			for (int x = 0; x < width; x++)
 				for (int z = 0; z < width; z++) {
 					regions[x][z] = null;
-					regenRegionBuffer[x][z] = 0;
 				}
 			// update the new center
 			center.x += xOffset;
@@ -187,14 +181,10 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset < width) {
+					if (x + xOffset < width)
 						regions[x][z] = regions[x + xOffset][z];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
 				}
 			}
 		}
@@ -205,14 +195,11 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset >= 0) {
+					if (x + xOffset >= 0)
 						regions[x][z] = regions[x + xOffset][z];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
+				}
 			}
 		}
 		
@@ -225,14 +212,10 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (z + zOffset < width) {
+					if (z + zOffset < width)
 						regions[x][z] = regions[x][z + zOffset];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
 				}
 			}
 		}
@@ -243,15 +226,10 @@ public class LodDimension
 			{
 				for (int z = width - 1; z >= 0; z--)
 				{
-					if (z + zOffset >= 0) {
+					if (z + zOffset >= 0)
 						regions[x][z] = regions[x][z + zOffset];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
-				}
 				}
 			}
 		}
@@ -378,18 +356,17 @@ public class LodDimension
 				byte minAllowedDetailLevel;
 				regionX = (x + center.x) - halfWidth;
 				regionZ = (z + center.z) - halfWidth;
-
-				if (regions[x][z] != null) {
+				LodRegion region = regions[x][z];
+				if (region != null) {
 					// check what detail level this region should be
 					// and cut it if it is higher then that
 					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
 							playerPosX, playerPosZ);
 					detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
 					minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
-
-					if (regions[x][z].getMinDetailLevel() < minAllowedDetailLevel) {
-						regions[x][z].cutTree(minAllowedDetailLevel);
-						regenRegionBuffer[x][z] = 2;
+					if (region.getMinDetailLevel() < minAllowedDetailLevel) {
+						region.cutTree(minAllowedDetailLevel);
+						region.needRegenBuffer = 2;
 						regenDimensionBuffers = true;
 					}
 				}
@@ -436,12 +413,15 @@ public class LodDimension
 				
 				boolean updated = false;
 				if (region == null) {
-					regions[x][z] = getRegionFromFile(regionPos, minDetail, generationMode, verticalQuality);
+					region = getRegionFromFile(regionPos, minDetail, generationMode, verticalQuality);
+					regions[x][z] = region;
 					updated = true;
 				} else if (region.getGenerationMode().compareTo(generationMode) < 0 ||
 						region.getVerticalQuality() != verticalQuality ||
 						region.getMinDetailLevel() > minDetail) {
-					regions[x][z] = getRegionFromFile(regions[x][z], minDetail, generationMode, verticalQuality);
+					// The 'getRegionFromFile' will flush and save the region if it returns a new one
+					region = getRegionFromFile(regions[x][z], minDetail, generationMode, verticalQuality);
+					regions[x][z] = region;
 					updated = true;
 				} else if (region.lastMaxDetailLevel != maxDetail) {
 					region.lastMaxDetailLevel = maxDetail;
@@ -449,9 +429,8 @@ public class LodDimension
 				} else if (region.lastMaxDetailLevel != region.getMinDetailLevel()) {
 					updated = true;
 				}
-				
 				if (updated) {
-					regenRegionBuffer[x][z] = 2;
+					region.needRegenBuffer = 2;
 					regenDimensionBuffers = true;
 				}
 			});
@@ -463,54 +442,11 @@ public class LodDimension
 	}
 	
 	/**
-	 * Use addVerticalData when possible.
-	 * Add the given LOD to this dimension at the coordinate
-	 * stored in the LOD. If an LOD already exists at the given
-	 * coordinate it will be overwritten.
-	 */
-	public Boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, long data, boolean dontSave)
-	{
-		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
-		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
-		
-		// don't continue if the region can't be saved
-		LodRegion region = getRegion(regionPosX, regionPosZ);
-		if (region == null)
-			return false;
-		
-		boolean nodeAdded = region.addData(detailLevel, posX, posZ, verticalIndex, data);
-		
-		// only save valid LODs to disk
-		if (!dontSave && fileHandler != null)
-		{
-			try
-			{
-				// mark the region as dirty, so it will be saved to disk
-				int xIndex = (regionPosX - center.x) + halfWidth;
-				int zIndex = (regionPosZ - center.z) + halfWidth;
-				
-				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = 2;
-				regenDimensionBuffers = true;
-			}
-			catch (ArrayIndexOutOfBoundsException e)
-			{
-				e.printStackTrace();
-				// If this happens, the method was probably 
-				// called when the dimension was changing size.
-				// Hopefully this shouldn't be an issue.
-			}
-		}
-		
-		return nodeAdded;
-	}
-	
-	/**
 	 * Add whole column of LODs to this dimension at the coordinate
 	 * stored in the LOD. If an LOD already exists at the given
 	 * coordinate it will be overwritten.
 	 */
-	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data, boolean dontSave)
+	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -521,44 +457,28 @@ public class LodDimension
 			return false;
 		
 		boolean nodeAdded = region.addVerticalData(detailLevel, posX, posZ, data);
-		
-		// only save valid LODs to disk
-		if (!dontSave && fileHandler != null)
-		{
-			try
-			{
-				// mark the region as dirty, so it will be saved to disk
-				int xIndex = (regionPosX - center.x) + halfWidth;
-				int zIndex = (regionPosZ - center.z) + halfWidth;
-				
-				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = 2;
-				regenDimensionBuffers = true;
-			}
-			catch (ArrayIndexOutOfBoundsException e)
-			{
-				e.printStackTrace();
-				// If this happens, the method was probably
-				// called when the dimension was changing size.
-				// Hopefully this shouldn't be an issue.
-			}
+		if (nodeAdded) {
+			region.needRegenBuffer = 2;
+			region.needSaving = true;
+			regenDimensionBuffers = true;
 		}
-		
 		return nodeAdded;
 	}
 	
 	/** marks the region at the given region position to have its buffer rebuilt */
 	public void markRegionBufferToRegen(int xRegion, int zRegion)
 	{
-		int xIndex = (xRegion - center.x) + halfWidth;
-		int zIndex = (zRegion - center.z) + halfWidth;
-		regenRegionBuffer[xIndex][zIndex] = 2;
+		LodRegion r = getRegion(xRegion,zRegion);
+		if (r!=null) {
+			r.needRegenBuffer = 2;
+			regenDimensionBuffers = true;
+		}
 	}
 	
 	/**
 	 * Returns every position that need to be generated based on the position of the player
 	 */
-	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ)
+	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ, GenerationPriority priority)
 	{
 		PosToGenerateContainer posToGenerate;
 		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
@@ -566,7 +486,7 @@ public class LodDimension
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
 			LodRegion lodRegion = regions[x][z];
 			if (lodRegion != null)
-				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ);
+				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, priority);
 		});
 	return posToGenerate;
 	}
@@ -656,8 +576,9 @@ public class LodDimension
 		LodRegion region = getRegion(xRegion, zRegion);
 		if (region == null)
 			return;
-		markRegionBufferToRegen(xRegion, zRegion);
 		region.clear(detailLevel, posX, posZ);
+		region.needRegenBuffer = 2;
+		regenDimensionBuffers = true;
 	}
 	
 	/**
@@ -666,16 +587,12 @@ public class LodDimension
 	 */
 	public boolean getAndClearRegionNeedBufferRegen(int regionX, int regionZ)
 	{
-		//FIXME: Use actual atomics on regenRegionBuffer
-		//FIXME: Race condition on lodDim move/resize!
-		int xIndex = (regionX - center.x) + halfWidth;
-		int zIndex = (regionZ - center.z) + halfWidth;
-		
-		if (xIndex < 0 || xIndex >= width || zIndex < 0 || zIndex >= width)
-			return false;
-		int i = regenRegionBuffer[xIndex][zIndex];
+		//FIXME: Use actual atomics on needRegenBuffer
+		LodRegion region = getRegion(regionX, regionZ);
+		if (region == null) return false;
+		int i = region.needRegenBuffer;
 		if (i > 0) {
-			regenRegionBuffer[xIndex][zIndex]--;
+			region.needRegenBuffer--;
 			return true;
 		}
 		return false;
@@ -696,11 +613,10 @@ public class LodDimension
 		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
 		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
 		LodRegion region = getRegion(xRegion, zRegion);
-		if (region == null)
-			return;
-		markRegionBufferToRegen(xRegion, zRegion);
-		
+		if (region == null) return;
 		region.updateArea(detailLevel, posX, posZ);
+		region.needRegenBuffer = 2;
+		regenDimensionBuffers = true;
 	}
 	
 	/** Returns true if a region exists at the given LevelPos */
@@ -732,9 +648,10 @@ public class LodDimension
 	}
 	
 	/** Save all dirty regions in this LodDimension to file. */
-	public void saveDirtyRegionsToFileAsync()
+	public void saveDirtyRegionsToFile(boolean blockUntilFinished)
 	{
-		fileHandler.saveDirtyRegionsToFileAsync();
+		if (fileHandler == null) return;
+		fileHandler.saveDirtyRegionsToFile(blockUntilFinished);
 	}
 	
 	
@@ -789,13 +706,6 @@ public class LodDimension
 		halfWidth = width/ 2;
 		
 		regions = new LodRegion[width][width];
-		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new int[width][width];
-		
-		// populate isRegionDirty
-		for (int i = 0; i < width; i++)
-			for (int j = 0; j < width; j++)
-				isRegionDirty[i][j] = false;
 	}
 	
 	
@@ -817,15 +727,5 @@ public class LodDimension
 			stringBuilder.append("\n");
 		}
 		return stringBuilder.toString();
-	}
-	
-	public boolean GetIsRegionDirty(int i, int j)
-	{
-		return isRegionDirty[i][j];
-	}
-	
-	public void SetIsRegionDirty(int i, int j, boolean val)
-	{
-		isRegionDirty[i][j] = val;
 	}
 }

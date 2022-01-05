@@ -20,6 +20,7 @@
 package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.PosToRenderContainer;
@@ -67,6 +68,9 @@ public class LodRegion
 	/** this region's z RegionPos */
 	public final int regionPosZ;
 	
+	public volatile int needRegenBuffer = 2;
+	public volatile boolean needSaving = false;
+	
 	public LodRegion(byte minDetailLevel, RegionPos regionPos, DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
 	{
 		this.minDetailLevel = minDetailLevel;
@@ -81,72 +85,7 @@ public class LodRegion
 		{
 			dataContainer[lod] = new VerticalLevelContainer(lod);
 		}
-		
-		boolean fileFound = false;
-		
-		/*
-		preGeneratedChunkPos = new boolean[32 * 32];
-		if (MinecraftWrapper.INSTANCE.hasSinglePlayerServer() && LodConfig.CLIENT.worldGenerator.useExperimentalPreGenLoading.get())
-		{
-			File regionFileDirHead;
-			File regionFileDirParent;
-			// local world
-			
-			ServerWorld serverWorld = LodUtil.getServerWorldFromDimension(MinecraftWrapper.INSTANCE.getCurrentDimension());
-			
-			// provider needs a separate variable to prevent
-			// the compiler from complaining
-			StringBuilder string = new StringBuilder();
-			try
-			{
-				ServerChunkProvider provider = serverWorld.getChunkSource();
-				
-				//System.out.println(provider.dataStorage.dataFolder);
-				regionFileDirHead = new File(provider.dataStorage.dataFolder.getCanonicalFile().getParentFile().toPath().toAbsolutePath().toString() + File.separatorChar + "region", "r." + regionPosZ + "." + regionPosX + ".mca");
-				if (regionFileDirHead.exists())
-				{
-					regionFileDirParent = regionFileDirHead.getParentFile();
-					//string.append(regionFileDirParent.toString());
-					string.append(regionFileDirHead);
-					RegionFile regionFile = new RegionFile(regionFileDirHead, regionFileDirParent, true);
-					for (int x = 0; x < 32; x++)
-					{
-						for (int z = 0; z < 32; z++)
-						{
-							preGeneratedChunkPos[x * 32 + z] = regionFile.doesChunkExist(new ChunkPos(regionPosX * 32 + x, regionPosZ * 32 + z));
-						}
-					}
-					
-					string.append("region " + regionPosX + " " + regionPosZ + "\n");
-					for (int x = 0; x < 32; x++)
-					{
-						for (int z = 0; z < 32; z++)
-						{
-							//regionFile.doesChunkExist()
-							string.append(preGeneratedChunkPos[x * 32 + z] + "\t");
-						}
-						string.append("\n");
-					}
-					regionFile.close();
-				}
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-			System.out.println(string);
-		}*/
-		
 	}
-	
-	
-	/** Return true if the chunk has been pregenerated in game */
-	//public boolean isChunkPreGenerated(int xChunkPos, int zChunkPos)
-	//{
-	//	xChunkPos = LevelPosUtil.getRegionModule(LodUtil.CHUNK_DETAIL_LEVEL, xChunkPos);
-	//	zChunkPos = LevelPosUtil.getRegionModule(LodUtil.CHUNK_DETAIL_LEVEL, zChunkPos);
-	//	return preGeneratedChunkPos[xChunkPos * 32 + zChunkPos];
-	//}
 	
 	/**
 	 * Inserts the data point into the region.
@@ -229,9 +168,9 @@ public class LodRegion
 	 * TODO why don't we return the posToGenerate, it would make this easier to understand
 	 */
 	public void getPosToGenerate(PosToGenerateContainer posToGenerate,
-			int playerBlockPosX, int playerBlockPosZ)
+			int playerBlockPosX, int playerBlockPosZ, GenerationPriority priority)
 	{
-		getPosToGenerate(posToGenerate, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerBlockPosX, playerBlockPosZ);
+		getPosToGenerate(posToGenerate, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerBlockPosX, playerBlockPosZ, priority);
 		
 	}
 	
@@ -242,7 +181,7 @@ public class LodRegion
 	 * TODO why don't we return the posToGenerate, it would make this easier to understand
 	 */
 	private void getPosToGenerate(PosToGenerateContainer posToGenerate, byte detailLevel,
-			int childOffsetPosX, int childOffsetPosZ, int playerPosX, int playerPosZ)
+			int childOffsetPosX, int childOffsetPosZ, int playerPosX, int playerPosZ, GenerationPriority priority)
 	{
 		// equivalent to 2^(...)
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
@@ -275,11 +214,14 @@ public class LodRegion
 				{
 					for (int x = 0; x <= 1; x++)
 						for (int z = 0; z <= 1; z++)
-							getPosToGenerate(posToGenerate, childDetailLevel, childPosX + x, childPosZ + z, playerPosX, playerPosZ);
-				}
-				else
-				{
-					getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ);
+							getPosToGenerate(posToGenerate, childDetailLevel, childPosX + x, childPosZ + z, playerPosX, playerPosZ, priority);
+				} else if (priority == GenerationPriority.FAR_FIRST && detailLevel == posToGenerate.farMinDetail) {
+					if (!doesDataExist(detailLevel, childOffsetPosX, childOffsetPosZ))
+						posToGenerate.addPosToGenerate(detailLevel, childOffsetPosX + regionPosX * size, childOffsetPosZ + regionPosZ * size);
+					else
+						getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ, priority);
+				} else {
+					getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ, priority);
 				}
 			}
 		}

@@ -205,7 +205,7 @@ public class LodBuilder
 				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, minDetailLevel);
 				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, minDetailLevel);
 				if (!lodDim.doesDataExist(minDetailLevel, posX, posZ)) {
-					lodDim.addVerticalData(minDetailLevel, posX, posZ, data, false);
+					lodDim.addVerticalData(minDetailLevel, posX, posZ, data);
 					lodDim.updateData(minDetailLevel, posX, posZ);
 				}
 			}

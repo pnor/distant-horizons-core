@@ -382,7 +382,7 @@ public class LodRenderer
 	}
 	
 	/** Create all buffers that will be used. */
-	public void setupBuffers(LodDimension lodDim)
+	public void setupBuffers()
 	{
 		lodBufferBuilderFactory.allBuffersRequireReset = true;
 	}

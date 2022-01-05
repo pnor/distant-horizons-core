@@ -97,12 +97,21 @@ public class LodWorldGenerator
 		// TODO: Rename the config option
 		if (CONFIG.client().worldGenerator().getAllowUnstableFeatureGeneration()) {
 			if (experimentalWorldGenerator == null) {
-				experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
+				try {
+					experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
 				if (experimentalWorldGenerator == null) CONFIG.client().worldGenerator().setAllowUnstableFeatureGeneration(false);
+				} catch (RuntimeException e) {
+					// Exception may happen if world got unloaded unorderly
+					e.printStackTrace();
+				}
 			}
 		} else {
 			if (experimentalWorldGenerator != null) {
-				experimentalWorldGenerator.stop();
+				try {
+					experimentalWorldGenerator.stop();
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
 				experimentalWorldGenerator = null;
 			}
 		}
@@ -157,9 +166,7 @@ public class LodWorldGenerator
 					IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 					
 					PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(
-							maxChunkGenRequests,
-							playerPosX,
-							playerPosZ);
+							maxChunkGenRequests, playerPosX, playerPosZ, priority);
 					
 					byte detailLevel;
 					int posX;

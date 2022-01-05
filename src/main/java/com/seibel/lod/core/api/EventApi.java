@@ -81,7 +81,6 @@ public class EventApi
 		if (lodDim == null)
 			return;
 		
-		// FIXME: This is in server thread. We shouldn't be accessing the client's renderer!
 		LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
 	}
 	
@@ -99,7 +98,7 @@ public class EventApi
 	
 	public void worldSaveEvent()
 	{
-		ApiShared.lodWorld.saveAllDimensions();
+		ApiShared.lodWorld.saveAllDimensions(false); // Do an async save.
 	}
 	
 	/** This is also called when a new dimension loads */
@@ -126,11 +125,12 @@ public class EventApi
 		ThreadMapUtil.clearMaps();
 		// ClientApi.renderer.markForCleanup();
 		// ClientApi.renderer.destroyBuffers();
-		
-		new Thread(() -> checkIfDisconnectedFromServer()).start();
+		checkIfDisconnectedFromServer();
+		//new Thread(() -> checkIfDisconnectedFromServer()).start();
 	}
 	private void checkIfDisconnectedFromServer()
 	{
+		/*
 		try
 		{
 			// world unloading events are called before disconnecting from the server,
@@ -141,10 +141,10 @@ public class EventApi
 		{
 			// this should never happen, but just in case
 			e.printStackTrace();
-		}
+		}*/
 		
 		
-		if (MC.getWrappedClientWorld() == null || (!MC.connectedToServer() && !MC.hasSinglePlayerServer()))
+		//if (MC.getWrappedClientWorld() == null || (!MC.connectedToServer() && !MC.hasSinglePlayerServer()))
 		{
 			// the player just left the server
 			
@@ -156,7 +156,6 @@ public class EventApi
 			
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);
 			ApiShared.lodWorld.deselectWorld();
-			
 			
 			// prevent issues related to the buffer builder
 			// breaking or retaining previous data when changing worlds.
@@ -213,7 +212,6 @@ public class EventApi
 		RegionPos worldRegionOffset = new RegionPos(playerRegionPos.x - lodDim.getCenterRegionPosX(), playerRegionPos.z - lodDim.getCenterRegionPosZ());
 		if (worldRegionOffset.x != 0 || worldRegionOffset.z != 0)
 		{
-			ApiShared.lodWorld.saveAllDimensions();
 			lodDim.move(worldRegionOffset);
 			//LOGGER.info("offset: " + worldRegionOffset.x + "," + worldRegionOffset.z + "\t center: " + lodDim.getCenterX() + "," + lodDim.getCenterZ());
 		}
@@ -236,12 +234,10 @@ public class EventApi
 		// do the dimensions need to change in size?
 		if (ApiShared.lodBuilder.defaultDimensionWidthInRegions != newWidth || recalculateWidths)
 		{
-			ApiShared.lodWorld.saveAllDimensions();
-			
 			// update the dimensions to fit the new width
 			ApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
 			ApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
-			ClientApi.renderer.setupBuffers(ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension()));
+			ClientApi.renderer.setupBuffers();
 			
 			recalculateWidths = false;
 			//LOGGER.info("new dimension width in regions: " + newWidth + "\t potential: " + newWidth );

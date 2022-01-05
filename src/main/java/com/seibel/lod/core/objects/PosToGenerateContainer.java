@@ -31,7 +31,7 @@ public class PosToGenerateContainer
 {
 	private final int playerPosX;
 	private final int playerPosZ;
-	private final byte farMinDetail;
+	public final byte farMinDetail;
 	private int nearSize;
 	private int farSize;
 	
