@@ -23,9 +23,11 @@ import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
+import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
@@ -80,6 +82,7 @@ public class EventApi
 		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension());
 		if (lodDim == null)
 			return;
+		if (ApiShared.isShuttingDown) return;
 		
 		LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
 	}
@@ -101,9 +104,16 @@ public class EventApi
 		ApiShared.lodWorld.saveAllDimensions(false); // Do an async save.
 	}
 	
+	private boolean isCurrentlyOnSinglePlayerServer = false;
+	
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)
 	{
+		ClientApi.LOGGER.info("WorldLoadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
+		// Always ignore ServerWorld event
+		if (world.getWorldType() == WorldType.ServerWorld) return;
+		isCurrentlyOnSinglePlayerServer = MC.hasSinglePlayerServer();
+		ApiShared.isShuttingDown = false;
 		DataPointUtil.WORLD_HEIGHT = world.getHeight();
 		LodBuilder.MIN_WORLD_HEIGHT = world.getMinHeight(); // This updates the World height
 		
@@ -119,8 +129,12 @@ public class EventApi
 	}
 	
 	/** This is also called when the user disconnects from a server+ */
-	public void worldUnloadEvent()
+	public void worldUnloadEvent(IWorldWrapper world)
 	{
+		ClientApi.LOGGER.info("WorldUnloadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
+		// If it's single player, ignore the client side world unload event
+		// Note: using this as often API call unload event AFTER setting MC to not be in a singlePlayerServer
+		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == WorldType.ClientWorld) return;
 		// the player just unloaded a world/dimension
 		ThreadMapUtil.clearMaps();
 		// ClientApi.renderer.markForCleanup();
@@ -152,15 +166,17 @@ public class EventApi
 			
 			// if this isn't done unfinished tasks may be left in the queue
 			// preventing new LodChunks form being generated
+			ApiShared.isShuttingDown = true;
 			LodWorldGenerator.INSTANCE.restartExecutorService();
 			
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);
-			ApiShared.lodWorld.deselectWorld();
+			ApiShared.lodWorld.deselectWorld(); // This force a save
 			
 			// prevent issues related to the buffer builder
 			// breaking or retaining previous data when changing worlds.
 			ClientApi.renderer.destroyBuffers();
 			ClientApi.renderer.requestCleanup();
+			GLProxy.ensureAllGLJobCompleted();
 			recalculateWidths = true;
 			// TODO: Check if after the refactoring, is this still needed
 			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
@@ -204,6 +220,7 @@ public class EventApi
 		}
 	}
 	
+	// NOTE: This is being called from Render Thread.
 	/** Re-centers the given LodDimension if it needs to be. */
 	public void playerMoveEvent(LodDimension lodDim)
 	{

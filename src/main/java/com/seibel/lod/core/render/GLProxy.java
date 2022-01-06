@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
@@ -39,6 +40,7 @@ import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -65,7 +67,7 @@ public class GLProxy
 	
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
-	private static final ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
+	private ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
@@ -420,6 +422,22 @@ public class GLProxy
 		{
 			// ...and make sure the context is released when the thread finishes
 			setGlContext(GLProxyContext.NONE);	
+		}
+	}
+	
+	public static void ensureAllGLJobCompleted() {
+		if (!hasInstance()) return;
+		ClientApi.LOGGER.info("Blocking until GL jobs finished!");
+		try {
+			instance.workerThread.shutdown();
+			boolean worked = instance.workerThread.awaitTermination(30, TimeUnit.SECONDS);
+			if (!worked)
+				ClientApi.LOGGER.error("GLWorkerThread shutdown timed out! Game may crash on exit due to cleanup failure!");
+		} catch (InterruptedException e) {
+			ClientApi.LOGGER.error("GLWorkerThread shutdown is interrupted! Game may crash on exit due to cleanup failure!");
+			e.printStackTrace();
+		} finally {
+			instance.workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 		}
 	}
 	

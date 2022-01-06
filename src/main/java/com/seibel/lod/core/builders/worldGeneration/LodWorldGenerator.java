@@ -23,9 +23,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
@@ -378,10 +380,21 @@ public class LodWorldGenerator
 		
 		if (genSubThreads != null && !genSubThreads.isShutdown())
 		{
-			genSubThreads.shutdownNow();
+			ClientApi.LOGGER.info("Blocking until generator sub threads terminated!!");
+			try {
+				mainGenThread.shutdownNow();
+				genSubThreads.shutdownNow();
+				boolean worked = genSubThreads.awaitTermination(30, TimeUnit.SECONDS);
+				if (!worked)
+					ClientApi.LOGGER.error("Generator sub threads timed out! May cause crash on game exit due to cleanup failure.");
+			} catch (InterruptedException e) {
+				ClientApi.LOGGER.error("Generator sub threads shutdown is interrupted! May cause crash on game exit due to cleanup failure.");
+				e.printStackTrace();
+			} finally {
+				genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
+						new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+			}
 		}
-		genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
-				new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	}
 	
 }

@@ -56,7 +56,12 @@ public class LodVertexBuffer implements AutoCloseable
 	{
 		if (this.id >= 0)
 		{
-			GLProxy.getInstance().recordOpenGlCall(() -> GL32.glDeleteBuffers(this.id));
+			if (GLProxy.getInstance().getGlContext() == GLProxyContext.PROXY_WORKER) {
+				 GL32.glDeleteBuffers(this.id);
+			} else {
+				final int id = this.id;
+				GLProxy.getInstance().recordOpenGlCall(() -> GL32.glDeleteBuffers(id));
+			}
 			this.id = -1;
 			count--;
 			//ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);

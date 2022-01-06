@@ -43,6 +43,9 @@ public class ApiShared
 	/** Used to determine if the LODs should be regenerated */
 	public static int previousLodRenderDistance = 0;
 	
+	/** Signal whether a world is shutting down */
+	public static volatile boolean isShuttingDown = false;
+	
 	
 	
 	private ApiShared()
