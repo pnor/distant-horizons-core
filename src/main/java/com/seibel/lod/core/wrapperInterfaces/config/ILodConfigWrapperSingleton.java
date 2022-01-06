@@ -54,6 +54,13 @@ public interface ILodConfigWrapperSingleton
 		IGraphics graphics();
 		IWorldGenerator worldGenerator();
 		IAdvanced advanced();
+
+
+		boolean OPTIONS_BUTTON_DEFAULT = true;
+		String OPTIONS_BUTTON_DESC = ""
+				+ " Show the lod button in the options screen next to fov";
+		boolean getOptionsButton();
+		void setOptionsButton(boolean newOptionsButton);
 		
 		
 		//==================//
@@ -274,7 +281,7 @@ public interface ILodConfigWrapperSingleton
 						+ " Higher settings will make terrain look good when looking backwards \n"
 						+ " when changing speeds quickly, but will increase upload times and GPU usage.";
 				int getBacksideCullingRange();
-				void setBacksideCullingRange(int backsideCullingRange);
+				void setBacksideCullingRange(int newBacksideCullingRange);
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
