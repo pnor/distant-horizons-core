@@ -20,6 +20,7 @@
 package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
@@ -192,7 +193,6 @@ public class LodRegion {
 		int childPosX = childOffsetPosX * 2;
 		int childPosZ = childOffsetPosZ * 2;
 
-		int childSize = 1 << (LodUtil.REGION_DETAIL_LEVEL - childDetailLevel);
 
 		byte targetDetailLevel = DetailDistanceUtil.getGenerationDetailFromDistance(minDistance);
 		if (targetDetailLevel <= detailLevel) {
@@ -233,9 +233,15 @@ public class LodRegion {
 	 * understand
 	 */
 	public void getPosToRender(PosToRenderContainer posToRender, int playerPosX, int playerPosZ,
-			boolean requireCorrectDetailLevel) {
-		getPosToRender(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerPosX, playerPosZ,
-				requireCorrectDetailLevel);
+			boolean requireCorrectDetailLevel, DropoffQuality dropoffQuality) {
+		int minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerPosX, playerPosZ, regionPosX, regionPosZ);
+		byte targetLevel = DetailDistanceUtil.getDrawDetailFromDistance(minDistance);
+		if (targetLevel <= dropoffQuality.fastModeSwitch) {
+			getPosToRender(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerPosX, playerPosZ,
+					requireCorrectDetailLevel);
+		} else {
+			getPosToRenderFlat(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, targetLevel, requireCorrectDetailLevel);
+		}
 	}
 
 	/**
@@ -298,6 +304,47 @@ public class LodRegion {
 						for (int z = 0; z <= 1; z++)
 							getPosToRender(posToRender, childDetailLevel, childPosX + x, childPosZ + z, playerPosX,
 									playerPosZ, requireCorrectDetailLevel);
+				} else {
+					posToRender.addPosToRender(detailLevel, posX + regionPosX * size, posZ + regionPosZ * size);
+				}
+			}
+		}
+	}
+
+	/**
+	 * This method will fill the posToRender array with all levelPos that are
+	 * render-able. But the entire region try use the same detail level.
+	 */
+	private void getPosToRenderFlat(PosToRenderContainer posToRender, byte detailLevel, int posX, int posZ, byte targetLevel, boolean requireCorrectDetailLevel) {
+		// equivalent to 2^(...)
+		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+
+		if (detailLevel == targetLevel) {
+			posToRender.addPosToRender(detailLevel, posX + regionPosX * size, posZ + regionPosZ * size);
+		} else // case where (detailLevel > desiredLevel)
+		{
+			int childPosX = posX * 2;
+			int childPosZ = posZ * 2;
+			byte childDetailLevel = (byte) (detailLevel - 1);
+			int childrenCount = 0;
+
+			for (int x = 0; x <= 1; x++) {
+				for (int z = 0; z <= 1; z++) {
+					if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z)) {
+						if (!requireCorrectDetailLevel)
+							childrenCount++;
+						else
+							getPosToRenderFlat(posToRender, childDetailLevel, childPosX + x, childPosZ + z, targetLevel, requireCorrectDetailLevel);
+					}
+				}
+			}
+
+			if (!requireCorrectDetailLevel) {
+				// If all the four children exist go deeper
+				if (childrenCount == 4) {
+					for (int x = 0; x <= 1; x++)
+						for (int z = 0; z <= 1; z++)
+							getPosToRenderFlat(posToRender, childDetailLevel, childPosX + x, childPosZ + z, targetLevel, requireCorrectDetailLevel);
 				} else {
 					posToRender.addPosToRender(detailLevel, posX + regionPosX * size, posZ + regionPosZ * size);
 				}

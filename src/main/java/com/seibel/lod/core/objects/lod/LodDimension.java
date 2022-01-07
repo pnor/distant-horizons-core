@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
@@ -385,7 +386,11 @@ public class LodDimension
 		
 		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
-
+		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
+		if (dropoffQuality == DropoffQuality.AUTO)
+			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
+					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
+		int dropoffSwitch = dropoffQuality.fastModeSwitch;
 		// don't run the expander multiple times
 		// for the same location
 		Runnable thread = () -> {
@@ -423,10 +428,10 @@ public class LodDimension
 					region = getRegionFromFile(regions[x][z], minDetail, generationMode, verticalQuality);
 					regions[x][z] = region;
 					updated = true;
-				} else if (region.lastMaxDetailLevel != maxDetail) {
+				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != maxDetail) {
 					region.lastMaxDetailLevel = maxDetail;
 					updated = true;
-				} else if (region.lastMaxDetailLevel != region.getMinDetailLevel()) {
+				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != region.getMinDetailLevel()) {
 					updated = true;
 				}
 				if (updated) {
@@ -503,11 +508,16 @@ public class LodDimension
 		GenerationPriority generationPriority = CONFIG.client().worldGenerator().getGenerationPriority();
 		if (generationPriority == GenerationPriority.AUTO)
 			generationPriority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST;
+
+		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
+		if (dropoffQuality == DropoffQuality.AUTO)
+			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
+					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
 		
 		boolean requireCorrectDetailLevel = generationPriority == GenerationPriority.NEAR_FIRST;
 		
 		if (region != null)
-			region.getPosToRender(posToRender, playerPosX, playerPosZ, requireCorrectDetailLevel);
+			region.getPosToRender(posToRender, playerPosX, playerPosZ, requireCorrectDetailLevel, dropoffQuality);
 	}
 	
 	/**
