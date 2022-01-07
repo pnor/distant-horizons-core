@@ -266,7 +266,7 @@ public class LodDimensionFileHandler
 		// (Corresponding call is the this::writerMain(...)::...setRelease(false);)
 		//boolean haventStarted = !isFileWritingThreadRunning.compareAndExchangeAcquire(false, true);
 		// The above needs java 9!
-		boolean haventStarted = !isFileWritingThreadRunning.compareAndSet(false, true);
+		boolean haventStarted = isFileWritingThreadRunning.compareAndSet(false, true);
 		
 		if (haventStarted) {
 			// We acquired the atomic lock.

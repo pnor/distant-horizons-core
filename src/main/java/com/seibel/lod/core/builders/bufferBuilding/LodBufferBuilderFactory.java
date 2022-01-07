@@ -461,21 +461,22 @@ public class LodBufferBuilderFactory
 			int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkX;
 			int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkZ;
 			
-			// Currently fixing below
-			// FIXME: We don't need to ignore rendered chunks! Just build it and leave it for the renderer to decide!
-			//We don't want to render this fake block if
-			//The block is inside the render distance with, is not bigger than a chunk and is positioned in a chunk set as vanilla rendered
-			//
-			//The block is in the player chunk or in a chunk adjacent to the player
-			//if(isThisPositionGoingToBeRendered(detailLevel, posX, posZ, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance))
-			//{
-			//	continue;
-			//}
+			// TODO: In the future, We don't need to ignore rendered chunks! Just build it and leave it for the renderer to decide!
+			// We don't want to render this fake block if
+			// The block is inside the render distance with, is not bigger than a chunk and is positioned in a chunk set as vanilla rendered
+			
+			// The block is in the player chunk or in a chunk adjacent to the player
+			if(detailLevel <= LodUtil.CHUNK_DETAIL_LEVEL &&
+				isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(detailLevel, posX),
+						LevelPosUtil.getChunkPos(detailLevel, posZ)))
+			{
+				continue;
+			}
 			
 			//we check if the block to render is not in player chunk
 			boolean posNotInPlayerChunk = !(chunkXdist == 0 && chunkZdist == 0);
-					
-																// We extract the adj data in the four cardinal direction
+			
+			// We extract the adj data in the four cardinal direction
 			
 			// we first reset the adjShadeDisabled. This is used to disable the shade on the border when we have transparent block like water or glass
 			// to avoid having a "darker border" underground
@@ -558,31 +559,20 @@ public class LodBufferBuilderFactory
 		return true;
 	}
 	
-	
-	
+	// Will be removed in a1.7
 	@Deprecated
-	private boolean isThisPositionGoingToBeRendered(byte detailLevel, int posX, int posZ, int chunkPosX, int chunkPosZ, boolean[][] vanillaRenderedChunks, int gameChunkRenderDistance){
+	private boolean isThisPositionGoingToBeRendered(int chunkX, int chunkZ){
+		MovableGridList<Boolean> chunkGrid = ClientApi.renderer.vanillaRenderedChunks;
+		Boolean isRendered = chunkGrid.get(chunkX, chunkZ);
+		
 		// skip any chunks that Minecraft is going to render
-		int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - chunkPosX;
-		int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - chunkPosZ;
-
+		if (isRendered == null || !isRendered) return false; 
+		
 		// check if the chunk is on the border
-		boolean isItBorderPos;
 		if (CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw() == VanillaOverdraw.BORDER)
-			isItBorderPos = LodUtil.isBorderChunk(vanillaRenderedChunks, chunkXdist + gameChunkRenderDistance + 1, chunkZdist + gameChunkRenderDistance + 1);
+			return !LodUtil.isBorderChunk(ClientApi.renderer.vanillaRenderedChunks, chunkX, chunkZ);
 		else
-			isItBorderPos = false;
-		
-		
-		//boolean smallRenderDistance = gameChunkRenderDistance <= LodUtil.MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW;
-		
-		// get the positions that will be rendered
-		
-		return (gameChunkRenderDistance >= Math.abs(chunkXdist)
-				&& gameChunkRenderDistance >= Math.abs(chunkZdist)
-				&& detailLevel <= LodUtil.CHUNK_DETAIL_LEVEL
-				&& vanillaRenderedChunks[chunkXdist + gameChunkRenderDistance + 1][chunkZdist + gameChunkRenderDistance + 1])
-				&& (!isItBorderPos);
+			return true;
 	}
 	
 	

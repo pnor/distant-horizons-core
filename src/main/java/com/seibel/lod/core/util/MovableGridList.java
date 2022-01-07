@@ -67,11 +67,25 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 	}
 	
 	// return null if x,y is outside of the grid
+	// Otherwise, return the new value (for chaining)
 	public T setAndGet(int x, int y, T t) {
 		x = x-centerX+gridCentreToEdge;
 		y = y-centerY+gridCentreToEdge;
 		return _setDirect(x,y, t) ? t : null;
 	}
+	// return null if x,y is outside of the grid
+	// Otherwise, return the old value
+	public T swap(int x, int y, T t) {
+		x = x-centerX+gridCentreToEdge;
+		y = y-centerY+gridCentreToEdge;
+		return _swapDirect(x,y, t);
+	}
+	
+	public boolean inRange(int x, int y) {
+		x = x-centerX+gridCentreToEdge;
+		y = y-centerY+gridCentreToEdge;
+		return (x>=0 && x<gridSize && y>=0 && y<gridSize);
+	} 
 	
 	private final T _getDirect(int x, int y) {
 		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return null;
@@ -82,9 +96,14 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 		super.set(x + y * gridSize, t);
 		return true;
 	}
+	private final T _swapDirect(int x, int y, T t) {
+		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return null;
+		return super.set(x + y * gridSize, t);
+	}
 	
-	public void move(int newCenterX, int newCenterY) {
-		if (centerX == newCenterX && centerY == newCenterY) return;
+	// Return false if haven't changed. Return true if it did
+	public boolean move(int newCenterX, int newCenterY) {
+		if (centerX == newCenterX && centerY == newCenterY) return false;
 		int deltaX = newCenterX - centerX;
 		int deltaY = newCenterY - centerY;
 		
@@ -97,7 +116,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 			// update the new center
 			centerX = newCenterX;
 			centerY = newCenterY;
-			return;
+			return true;
 		}
 		centerX = newCenterX;
 		centerY = newCenterY;
@@ -147,6 +166,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 				}
 			}
 		}
+		return true;
 	}
 
 	public void move(int newCenterX, int newCenterY, Consumer<? super T> d) {

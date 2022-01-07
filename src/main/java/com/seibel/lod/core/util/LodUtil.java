@@ -394,6 +394,7 @@ public class LodUtil
 	 * @param z relative (to the matrix) z chunk to check
 	 * @return true if and only if the chunk is a border of the renderable chunks
 	 */
+	@Deprecated
 	public static boolean isBorderChunk(boolean[][] vanillaRenderedChunks, int x, int z)
 	{
 		if (x < 0 || z < 0 || x >= vanillaRenderedChunks.length || z >= vanillaRenderedChunks[0].length)
@@ -407,6 +408,17 @@ public class LodUtil
 			if (vanillaRenderedChunks[x][z] || (!(tempX < 0 || tempZ < 0 || tempX >= vanillaRenderedChunks.length || tempZ >= vanillaRenderedChunks[0].length)
 				&& !vanillaRenderedChunks[tempX][tempZ]))
 				return true;
+		}
+		return false;
+	}
+	public static boolean isBorderChunk(MovableGridList<Boolean> vanillaRenderedChunks, int chunkX, int chunkZ)
+	{
+		for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
+		{
+			int tempX = chunkX + lodDirection.getNormal().x;
+			int tempZ = chunkZ + lodDirection.getNormal().z;
+			Boolean b = vanillaRenderedChunks.get(tempX, tempZ);
+			if (b == null || !b) return true;
 		}
 		return false;
 	}

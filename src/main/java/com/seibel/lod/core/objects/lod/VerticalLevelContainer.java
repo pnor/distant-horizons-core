@@ -210,14 +210,14 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	private static long[] downgradeVerticalSize(int oldVertSize, int newVertSize, long[] data) {
-		long[] dataToMerge = new long[oldVertSize];
 		int size = data.length/oldVertSize;
+		long[] dataToMerge = new long[oldVertSize];
 		long[] newData = new long[size * newVertSize];
 		for (int i = 0; i < size; i++)
 		{
-			System.arraycopy(oldVertSize, i * oldVertSize, dataToMerge, 0, oldVertSize);
-			dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, oldVertSize, newVertSize);
-			System.arraycopy(dataToMerge, 0, newData, i * newVertSize, newVertSize);
+			System.arraycopy(data, i * oldVertSize, dataToMerge, 0, oldVertSize);
+			long[] tempBuffer = DataPointUtil.mergeMultiData(dataToMerge, oldVertSize, newVertSize);
+			System.arraycopy(tempBuffer, 0, newData, i * newVertSize, newVertSize);
 		}
 		return newData;
 	}

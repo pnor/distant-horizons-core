@@ -101,9 +101,6 @@ public interface IMinecraftRenderWrapper
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
 		
 		int chunkRenderDist = this.getRenderDistance();
-		// if we have a odd render distance, we'll have a empty gap. This way we'll overlap by 1 instead, 
-		// which is preferable to having a hole in the world
-		chunkRenderDist = chunkRenderDist % 2 == 0 ? chunkRenderDist : chunkRenderDist - 1;
 		
 		AbstractChunkPosWrapper centerChunkPos = mcWrapper.getPlayerChunkPos();
 		int startChunkX = centerChunkPos.getX() - chunkRenderDist;
@@ -111,9 +108,9 @@ public interface IMinecraftRenderWrapper
 		
 		// add every position within render distance
 		HashSet<AbstractChunkPosWrapper> renderedPos = new HashSet<AbstractChunkPosWrapper>();
-		for (int chunkX = 0; chunkX < (chunkRenderDist * 2); chunkX++)
+		for (int chunkX = 0; chunkX < (chunkRenderDist * 2+1); chunkX++)
 		{
-			for(int chunkZ = 0; chunkZ < (chunkRenderDist * 2); chunkZ++)
+			for(int chunkZ = 0; chunkZ < (chunkRenderDist * 2+1); chunkZ++)
 			{
 				renderedPos.add(factory.createChunkPos(startChunkX + chunkX, startChunkZ + chunkZ));
 			}

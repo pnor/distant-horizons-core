@@ -59,21 +59,6 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
  */
 public class LodRenderer
 {
-	public static class VanillaRenderedChunksList extends GridList<Boolean> {
-		private static final long serialVersionUID = -5448501880911391315L;
-		
-		public final int centerX;
-		public final int centerZ;
-		
-		public VanillaRenderedChunksList(int range, int centerX, int centerZ) {
-			super(range);
-			this.centerX = centerX;
-			this.centerZ = centerZ;
-			for (int i=0; i<gridSize*gridSize; i++) {
-				add(i, false);
-			}
-		}
-	}
 	public static class LagSpikeCatcher {
 
 		long timer = System.nanoTime();
@@ -109,7 +94,7 @@ public class LodRenderer
 	LodRenderProgram shaderProgram = null;
 	
 	/** This is used to determine if the LODs should be regenerated */
-	private AbstractBlockPosWrapper previousPos = null;
+	private AbstractBlockPosWrapper lastUpdatedPos = null;
 	
 	// these variables are used to determine if the buffers should be rebuilt
 	private int prevRenderDistance = 0;
@@ -133,7 +118,7 @@ public class LodRenderer
 	 * This HashSet contains every chunk that Vanilla Minecraft
 	 * is going to render
 	 */
-	public VanillaRenderedChunksList vanillaRenderedChunks;
+	public MovableGridList<Boolean> vanillaRenderedChunks;
 	public int vanillaRenderedChunksCenterX;
 	public int vanillaRenderedChunksCenterZ;
 	public int vanillaRenderedChunksRefreshTimer;
@@ -504,50 +489,43 @@ public class LodRenderer
 	// returns whether anything changed
 	private boolean updateVanillaRenderedChunks(LodDimension lodDim, boolean recreateChunks) {
 		short chunkRenderDistance = (short) MC_RENDER.getRenderDistance();
-		int chunkX = Math.floorDiv(previousPos.getX(), 16);
-		int chunkZ = Math.floorDiv(previousPos.getZ(), 16);
+		int chunkX = Math.floorDiv(lastUpdatedPos.getX(), 16);
+		int chunkZ = Math.floorDiv(lastUpdatedPos.getZ(), 16);
 		// if the player is high enough, draw all LODs
-		if (previousPos.getY() > 256) {
-			vanillaRenderedChunks = new VanillaRenderedChunksList(
+		if (lastUpdatedPos.getY() > 256) {
+			vanillaRenderedChunks = new MovableGridList<Boolean>(
 					chunkRenderDistance, chunkX, chunkZ);
 			return true;
 		}
-		VanillaRenderedChunksList chunkList;
-		
-		if (recreateChunks) {
-			vanillaRenderedChunks = new VanillaRenderedChunksList(chunkRenderDistance, chunkX, chunkZ);
-			return true;
-		} else {
-			chunkList = vanillaRenderedChunks;
-			chunkX = chunkList.centerX;
-			chunkZ = chunkList.centerZ;
-			chunkRenderDistance = (short) vanillaRenderedChunks.gridCentreToEdge;
-		}
+		MovableGridList<Boolean> chunkList;
 
 		boolean anyChanged = false;
+		if (recreateChunks || vanillaRenderedChunks.gridCentreToEdge != chunkRenderDistance) {
+			chunkList = new MovableGridList<Boolean>(chunkRenderDistance, chunkX, chunkZ);
+			anyChanged = true;
+		} else {
+			// anyChanged = vanillaRenderedChunks.move(chunkX, chunkZ);
+			// chunkList = vanillaRenderedChunks;
+			chunkList = new MovableGridList<Boolean>(chunkRenderDistance, chunkX, chunkZ);
+			anyChanged = true;
+		}
+
 		LagSpikeCatcher getChunks = new LagSpikeCatcher();
-		Set<AbstractChunkPosWrapper> chunkPosToSkip = LodUtil.getNearbyLodChunkPosToSkip(lodDim, previousPos);
+		Set<AbstractChunkPosWrapper> chunkPosToSkip = LodUtil.getNearbyLodChunkPosToSkip(lodDim, lastUpdatedPos);
 		getChunks.end("LodDrawSetup:UpdateStatus:UpdateVanillaChunks:getChunks");
 		for (AbstractChunkPosWrapper pos : chunkPosToSkip)
 		{
-			int xIndex = (pos.getX() - chunkX) + (chunkRenderDistance + 1);
-			int zIndex = (pos.getZ() - chunkZ) + (chunkRenderDistance + 1);
-			
 			// sometimes we are given chunks that are outside the render distance,
 			// This prevents index out of bounds exceptions
-			if (xIndex >= 0 && zIndex >= 0
-						&& xIndex < vanillaRenderedChunks.gridSize
-						&& zIndex < vanillaRenderedChunks.gridSize)
+			if (!chunkList.inRange(pos.getX(), pos.getZ())) continue;
+			Boolean oldBool = chunkList.swap(pos.getX(), pos.getZ(), true);
+			if (oldBool == null || !oldBool)
 			{
-				if (!chunkList.get(chunkList.calculateOffset(xIndex, zIndex)))
-				{
-					chunkList.set(chunkList.calculateOffset(xIndex, zIndex), true);
-					anyChanged = true;
-					lodDim.markRegionBufferToRegen(pos.getRegionX(), pos.getRegionZ());
-				}
+				anyChanged = true;
+				lodDim.markRegionBufferToRegen(pos.getRegionX(), pos.getRegionZ());
 			}
 		}
-		vanillaRenderedChunks = chunkList;
+		if (anyChanged) vanillaRenderedChunks = chunkList;
 		return anyChanged;
 	}
 	
@@ -577,12 +555,12 @@ public class LodRenderer
 		
 		// check if the player has moved
 		if (newTime - prevPlayerPosTime > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveTimeout) { 
-			if (previousPos == null
-				|| Math.abs(newPos.getX() - previousPos.getX()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16
-				|| Math.abs(newPos.getZ() - previousPos.getZ()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16)
+			if (lastUpdatedPos == null
+				|| Math.abs(newPos.getX() - lastUpdatedPos.getX()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16
+				|| Math.abs(newPos.getZ() - lastUpdatedPos.getZ()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16)
 			{
 				tryPartialGen = true;
-				previousPos = newPos;
+				lastUpdatedPos = newPos;
 				posUpdated = true;
 			}
 			prevPlayerPosTime = newTime;
@@ -604,7 +582,7 @@ public class LodRenderer
 		
 		
 		if (tryFullGen && !posUpdated) {
-			previousPos = newPos;
+			lastUpdatedPos = newPos;
 			posUpdated = true;
 		}
 		shouldUpdateChunks |= posUpdated;

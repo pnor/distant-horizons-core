@@ -90,10 +90,10 @@ public class LodBuilder
 	
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
 	{
-		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL);
+		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL, false);
 	}
 	
-	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode)
+	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode, boolean override)
 	{
 		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
 			return;
@@ -130,7 +130,7 @@ public class LodBuilder
 				{
 					lodDim = lodWorld.getLodDimension(dim);
 				}
-				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode));
+				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override);
 			//}
 			//catch (IllegalArgumentException | NullPointerException e)
 			//{
@@ -149,14 +149,14 @@ public class LodBuilder
 	 */
 	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk) throws IllegalArgumentException
 	{
-		generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig());
+		generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(), false);
 	}
 	
 	/**
 	 * Creates a LodNode for a chunk in the given world.
 	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
 	 */
-	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config)
+	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override)
 			throws IllegalArgumentException
 	{
 		//long executeTime = System.currentTimeMillis();
@@ -204,7 +204,9 @@ public class LodBuilder
 			{
 				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, minDetailLevel);
 				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, minDetailLevel);
-				if (!lodDim.doesDataExist(minDetailLevel, posX, posZ)) {
+				long oldData = lodDim.getSingleData(minDetailLevel, posX, posZ);
+				if (override || !DataPointUtil.doesItExist(oldData) ||
+						DataPointUtil.getGenerationMode(oldData)<config.distanceGenerationMode.complexity) {
 					lodDim.addVerticalData(minDetailLevel, posX, posZ, data);
 					lodDim.updateData(minDetailLevel, posX, posZ);
 				}
