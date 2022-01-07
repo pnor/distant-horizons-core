@@ -16,6 +16,8 @@
   "DistantHorizons.config.client.graphics.quality.horizontalScale.@tooltip": "This indicates how quickly fake chunks drop off in quality",
   "DistantHorizons.config.client.graphics.quality.horizontalQuality": "Horizontal quality",
   "DistantHorizons.config.client.graphics.quality.horizontalQuality.@tooltip": "This indicates the exponential base of the quadratic drop-off",
+  "DistantHorizons.config.client.graphics.quality.dropoffQuality": "Dropoff quality",
+  "DistantHorizons.config.client.graphics.quality.dropoffQuality.@tooltip": "This change how detail dropoff is done.",
   "DistantHorizons.config.client.graphics.fogQuality": "Fog options",
   "DistantHorizons.config.client.graphics.fogQuality.fogDistance": "Fog distance",
   "DistantHorizons.config.client.graphics.fogQuality.fogDistance.@tooltip": "At what distance should Fog be drawn on the fake chunks?",
@@ -129,5 +131,8 @@
   "DistantHorizons.config.enum.GpuUploadMethod.DATA": "Data",
   "DistantHorizons.config.enum.BufferRebuildTimes.FREQUENT": "Frequent",
   "DistantHorizons.config.enum.BufferRebuildTimes.NORMAL": "Normal",
-  "DistantHorizons.config.enum.BufferRebuildTimes.RARE": "Rare"
+  "DistantHorizons.config.enum.BufferRebuildTimes.RARE": "Rare",
+  "DistantHorizons.config.enum.DropoffQuality.AUTO": "Auto",
+  "DistantHorizons.config.enum.DropoffQuality.SMOOTH_DROPOFF": "Smooth dropoff",
+  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED": "Performance focused"
 }
