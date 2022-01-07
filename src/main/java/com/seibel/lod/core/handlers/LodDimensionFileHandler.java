@@ -264,7 +264,10 @@ public class LodDimensionFileHandler
 		if (regionToSave.isEmpty()) return;
 		// Use Memory order Acquire to acquire any memory changes on getting this boolean
 		// (Corresponding call is the this::writerMain(...)::...setRelease(false);)
-		boolean haventStarted = !isFileWritingThreadRunning.compareAndExchangeAcquire(false, true);
+		//boolean haventStarted = !isFileWritingThreadRunning.compareAndExchangeAcquire(false, true);
+		// The above needs java 9!
+		boolean haventStarted = !isFileWritingThreadRunning.compareAndSet(false, true);
+		
 		if (haventStarted) {
 			// We acquired the atomic lock.
 			fileWritingThreadPool.execute(this::writerMain);
@@ -274,7 +277,10 @@ public class LodDimensionFileHandler
 	private void writerMain() {
 		// Use Memory order Relaxed as no additional memory changes needed to be visible.
 		// (This is just a safety checks)
-		boolean isStarted = isFileWritingThreadRunning.getPlain();
+		// boolean isStarted = isFileWritingThreadRunning.getPlain();
+		// The above needs java 9!
+		boolean isStarted = isFileWritingThreadRunning.get();
+		
 		if (!isStarted) throw new ConcurrentModificationException("WriterMain Triggered but the thead state is not started!?");
 		ClientApi.LOGGER.info("Lod File Writer started. To-be-written-regions: "+regionToSave.size());
 		Instant start = Instant.now();
@@ -303,7 +309,9 @@ public class LodDimensionFileHandler
 		ClientApi.LOGGER.info("Lod File Writer completed. Took "+Duration.between(start, end));
 		// Use Memory order Release to release any memory changes on setting this boolean
 		// (Corresponding call is the this::saveRegions(...)::...compareAndExchangeAcquire(false, true);)
-		isFileWritingThreadRunning.setRelease(false);
+		// isFileWritingThreadRunning.setRelease(false);
+		// The above needs java 9!
+		isFileWritingThreadRunning.set(false);
 	}
 	
 	/**
