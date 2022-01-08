@@ -23,6 +23,8 @@ import java.io.File;
 
 import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 
 /**
  * Can be either a Server world or a Client world.
@@ -59,6 +61,8 @@ public interface IWorldWrapper
 	
 	/** @throws UnsupportedOperationException if the WorldWrapper isn't for a ServerWorld */
 	File getSaveFolder() throws UnsupportedOperationException;
+
+	default IChunkWrapper tryGetChunk(AbstractChunkPosWrapper pos) {return null;}
 
 	
 }

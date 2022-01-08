@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.api;
 
+import java.util.HashSet;
+
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
@@ -34,6 +36,8 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.ThreadMapUtil;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -66,8 +70,12 @@ public class EventApi
 	{
 		
 	}
-	
-	
+
+	@Deprecated
+	public void chunkLoadEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
+	{
+		//ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.FULL, true);
+	}
 	
 	
 	//=============//
@@ -94,11 +102,6 @@ public class EventApi
 	// world events //
 	//==============//
 	
-	public void chunkLoadEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
-	{
-		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.FULL, true);
-	}
-	
 	public void worldSaveEvent()
 	{
 		ApiShared.lodWorld.saveAllDimensions(false); // Do an async save.
@@ -109,7 +112,8 @@ public class EventApi
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)
 	{
-		ClientApi.LOGGER.info("WorldLoadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
+		ClientApi.LOGGER.info("WorldLoadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ?
+				"clientLevel" : "serverLevel"), new RuntimeException());
 		// Always ignore ServerWorld event
 		if (world.getWorldType() == WorldType.ServerWorld) return;
 		isCurrentlyOnSinglePlayerServer = MC.hasSinglePlayerServer();

@@ -142,6 +142,52 @@ public class LodBuilder
 		});
 		lodGenThreadPool.execute(thread);
 	}
+
+	public void generateLodNodeDirect(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode, boolean override)
+	{
+		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
+			return;
+		
+		// don't try to create an LOD object
+		// if for some reason we aren't
+		// given a valid chunk object
+		if (chunk == null)
+			return;
+		
+			//noinspection GrazieInspection
+			try
+			{
+				// we need a loaded client world in order to
+				// get the textures for blocks
+				if (MC.getWrappedClientWorld() == null)
+					return;
+				
+				// don't try to generate LODs if the user isn't in the world anymore
+				// (this happens a lot when the user leaves a world/server)
+				if (!MC.hasSinglePlayerServer() && !MC.connectedToServer())
+					return;
+				
+				// make sure the dimension exists
+				LodDimension lodDim;
+				if (lodWorld.getLodDimension(dim) == null)
+				{
+					lodDim = new LodDimension(dim, lodWorld, defaultDimensionWidthInRegions);
+					lodWorld.addLodDimension(lodDim);
+				}
+				else
+				{
+					lodDim = lodWorld.getLodDimension(dim);
+				}
+				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override);
+			}
+			catch (IllegalArgumentException | NullPointerException e)
+			{
+				e.printStackTrace();
+				// if the world changes while LODs are being generated
+				// they will throw errors as they try to access things that no longer
+				// exist.
+			}
+	}
 	
 	/**
 	 * Creates a LodNode for a chunk in the given world.
