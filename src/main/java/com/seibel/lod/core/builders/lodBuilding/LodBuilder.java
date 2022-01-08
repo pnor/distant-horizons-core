@@ -399,7 +399,6 @@ public class LodBuilder
 		// 1 means the lighting is a guess
 		int isDefault = 0;
 		
-		IWorldWrapper world = MC.getWrappedServerWorld();
 		
 		int blockBrightness = chunk.getEmittedBrightness(x, y, z);
 		// get the air block above or below this block
@@ -408,12 +407,24 @@ public class LodBuilder
 		else
 			y++;
 		
+		blockLight = chunk.getBlockLight(x, y, z);
+		if (hasSkyLight)
+			skyLight = chunk.getSkyLight(x, y, z);
+		else
+			skyLight = 0;
 		
+		if (blockLight != -1 && skyLight != -1) {
+			blockLight = LodUtil.clamp(0, Math.max(blockLight, blockBrightness), DEFAULT_MAX_LIGHT);
+			return blockLight + (skyLight << 4) + (isDefault << 8);
+		}
+		
+		IWorldWrapper world = MC.getWrappedServerWorld();
 		
 		if (world != null)
 		{
 			// server world sky light (always accurate)
 			blockLight = world.getBlockLight(x,y,z);
+			
 			if (topBlock && !hasCeiling && hasSkyLight)
 				skyLight = DEFAULT_MAX_LIGHT;
 			else
@@ -429,11 +440,10 @@ public class LodBuilder
 				// lets just take a guess
 				if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 				{
-					skyLight = 12;
-					isDefault = 1;
+					skyLight = 6;
 				}
 				else
-					skyLight = 0;
+					skyLight = 6;
 			}
 		}
 		else
@@ -442,8 +452,7 @@ public class LodBuilder
 			if (world==null)
 			{
 				blockLight = 0;
-				skyLight = 12;
-				isDefault = 1;
+				skyLight = 6;
 			}
 			else
 			{
@@ -466,11 +475,10 @@ public class LodBuilder
 							// lets just take a guess
 							if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 							{
-								skyLight = 12;
-								isDefault = 1;
+								skyLight = 6;
 							}
 							else
-								skyLight = 0;
+								skyLight = 6;
 						}
 					}
 				}
