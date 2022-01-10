@@ -49,6 +49,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
  * This is where all the magic happens. <br>
@@ -487,12 +488,13 @@ public class LodRenderer
 	}
 	
 	// returns whether anything changed
-	private boolean updateVanillaRenderedChunks(LodDimension lodDim, boolean recreateChunks) {
-		short chunkRenderDistance = (short) MC_RENDER.getRenderDistance();
+	private boolean updateVanillaRenderedChunks(LodDimension lodDim) {
+		int chunkRenderDistance = MC_RENDER.getRenderDistance()+2;
 		int chunkX = Math.floorDiv(lastUpdatedPos.getX(), 16);
 		int chunkZ = Math.floorDiv(lastUpdatedPos.getZ(), 16);
 		// if the player is high enough, draw all LODs
-		if (lastUpdatedPos.getY() > 256) {
+		IWorldWrapper world = MC.getWrappedClientWorld();
+		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight()) {
 			vanillaRenderedChunks = new MovableGridList<Boolean>(
 					chunkRenderDistance, chunkX, chunkZ);
 			return true;
@@ -500,14 +502,12 @@ public class LodRenderer
 		MovableGridList<Boolean> chunkList;
 
 		boolean anyChanged = false;
-		if (recreateChunks || vanillaRenderedChunks.gridCentreToEdge != chunkRenderDistance) {
+		if (vanillaRenderedChunks == null || vanillaRenderedChunks.gridCentreToEdge != chunkRenderDistance ||
+				vanillaRenderedChunks.getCenterX()!=chunkX || vanillaRenderedChunks.getCenterY()!=chunkZ) {
 			chunkList = new MovableGridList<Boolean>(chunkRenderDistance, chunkX, chunkZ);
 			anyChanged = true;
 		} else {
-			// anyChanged = vanillaRenderedChunks.move(chunkX, chunkZ);
-			// chunkList = vanillaRenderedChunks;
-			chunkList = new MovableGridList<Boolean>(chunkRenderDistance, chunkX, chunkZ);
-			anyChanged = true;
+			chunkList = vanillaRenderedChunks;
 		}
 
 		LagSpikeCatcher getChunks = new LagSpikeCatcher();
@@ -534,7 +534,6 @@ public class LodRenderer
 		long newTime = System.currentTimeMillis();
 		AbstractBlockPosWrapper newPos = MC.getPlayerBlockPos();
 		boolean shouldUpdateChunks = false;
-		boolean posUpdated = false;
 		boolean tryPartialGen = false;
 		boolean tryFullGen = false;
 
@@ -559,9 +558,7 @@ public class LodRenderer
 				|| Math.abs(newPos.getX() - lastUpdatedPos.getX()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16
 				|| Math.abs(newPos.getZ() - lastUpdatedPos.getZ()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16)
 			{
-				tryPartialGen = true;
-				lastUpdatedPos = newPos;
-				posUpdated = true;
+				shouldUpdateChunks = true;
 			}
 			prevPlayerPosTime = newTime;
 		}
@@ -580,14 +577,10 @@ public class LodRenderer
 			prevChunkTime = newTime;
 		}
 		
-		
-		if (tryFullGen && !posUpdated) {
-			lastUpdatedPos = newPos;
-			posUpdated = true;
-		}
-		shouldUpdateChunks |= posUpdated;
+		shouldUpdateChunks |= tryFullGen;
 		if (shouldUpdateChunks) {
-			tryPartialGen |= updateVanillaRenderedChunks(lodDim, posUpdated);
+			lastUpdatedPos = newPos;
+			tryPartialGen |= updateVanillaRenderedChunks(lodDim);
 		}
 		
 		if (tryFullGen) {

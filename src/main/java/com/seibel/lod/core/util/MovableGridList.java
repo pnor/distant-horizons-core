@@ -66,6 +66,13 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 		return _getDirect(x,y);
 	}
 	
+	// return false if x,y is outside of the grid
+	public boolean set(int x, int y, T t) {
+		x = x-centerX+gridCentreToEdge;
+		y = y-centerY+gridCentreToEdge;
+		return _setDirect(x,y, t);
+	}
+	
 	// return null if x,y is outside of the grid
 	// Otherwise, return the new value (for chaining)
 	public T setAndGet(int x, int y, T t) {
@@ -244,7 +251,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 			}
 		}
 	}
-	
+
 
 	// TODO: This is unused but may be useful later on.
 	/*
