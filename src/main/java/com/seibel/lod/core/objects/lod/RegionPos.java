@@ -82,10 +82,29 @@ public class RegionPos
 				.offset(LodUtil.CHUNK_WIDTH / 2, 0, LodUtil.CHUNK_WIDTH / 2);
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		// If the object is compared with itself then return true 
+        if (o == this) {
+            return true;
+        }
+        // Check if o is an instance of RegionPos or not
+        if (!(o instanceof RegionPos)) {
+            return false;
+        }
+        RegionPos c = (RegionPos) o;
+        return c.x==x &&c.z==z;
+	}
+	
 	
 	@Override
 	public String toString()
 	{
 		return "(" + x + "," + z + ")";
+	}
+	
+	@Override
+	public int hashCode() {
+		return Long.hashCode((long)(x) << Integer.BYTES + z);
 	}
 }

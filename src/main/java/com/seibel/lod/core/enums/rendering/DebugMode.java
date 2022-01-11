@@ -34,7 +34,13 @@ public enum DebugMode
 	SHOW_DETAIL,
 	
 	/** LOD colors are based on their detail, and draws in wireframe. */
-	SHOW_DETAIL_WIREFRAME;
+	SHOW_DETAIL_WIREFRAME,
+	
+	/** LOD colors are based on their gen mode. */
+	SHOW_GENMODE,
+	
+	/** LOD colors are based on their gen mode, and draws in wireframe. */
+	SHOW_GENMODE_WIREFRAME;
 	
 	/** used when cycling through the different modes */
 	private DebugMode next;
@@ -43,7 +49,9 @@ public enum DebugMode
 	{
 		OFF.next = SHOW_DETAIL;
 		SHOW_DETAIL.next = SHOW_DETAIL_WIREFRAME;
-		SHOW_DETAIL_WIREFRAME.next = OFF;
+		SHOW_DETAIL_WIREFRAME.next = SHOW_GENMODE;
+		SHOW_GENMODE.next = SHOW_GENMODE_WIREFRAME;
+		SHOW_GENMODE_WIREFRAME.next = OFF;
 	}
 	
 	/** returns the next debug mode */

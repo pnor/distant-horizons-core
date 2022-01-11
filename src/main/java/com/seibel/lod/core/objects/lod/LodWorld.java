@@ -92,6 +92,7 @@ public class LodWorld
 	public void deselectWorld()
 	{
 		worldName = NO_WORLD_LOADED;
+		saveAllDimensions(true); // Make sure all dims are saved. This will block threads
 		lodDimensions = null;
 		isWorldLoaded = false;
 	}
@@ -106,7 +107,8 @@ public class LodWorld
 		if (lodDimensions == null)
 			return;
 		
-		lodDimensions.put(newDimension.dimension, newDimension);
+		LodDimension oldDim = lodDimensions.put(newDimension.dimension, newDimension);
+		if (oldDim != null) oldDim.saveDirtyRegionsToFile(true);
 	}
 	
 	/**
@@ -129,7 +131,7 @@ public class LodWorld
 		if (lodDimensions == null)
 			return;
 		
-		saveAllDimensions();
+		saveAllDimensions(true); //block until saving is done
 		
 		for (IDimensionTypeWrapper key : lodDimensions.keySet())
 			lodDimensions.get(key).setRegionWidth(newRegionWidth);
@@ -138,7 +140,7 @@ public class LodWorld
 	/**
 	 * Requests all dimensions save any dirty regions they may have.
 	 */
-	public void saveAllDimensions()
+	public void saveAllDimensions(boolean isBlocking)
 	{
 		if (lodDimensions == null)
 			return;
@@ -147,8 +149,10 @@ public class LodWorld
 		// but that requires a LodDimension.hasDirtyRegions() method or something similar
 		ClientApi.LOGGER.info("Saving LODs");
 		
-		for (IDimensionTypeWrapper key : lodDimensions.keySet())
-			lodDimensions.get(key).saveDirtyRegionsToFileAsync();
+		for (IDimensionTypeWrapper key : lodDimensions.keySet()) {
+			lodDimensions.get(key).saveDirtyRegionsToFile(isBlocking);
+		}
+		//FIXME: This should block until file is saved.
 	}
 	
 	

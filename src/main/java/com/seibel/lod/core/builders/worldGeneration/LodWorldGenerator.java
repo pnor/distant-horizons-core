@@ -23,11 +23,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LevelPosUtil;
@@ -96,12 +99,21 @@ public class LodWorldGenerator
 		// TODO: Rename the config option
 		if (CONFIG.client().worldGenerator().getAllowUnstableFeatureGeneration()) {
 			if (experimentalWorldGenerator == null) {
-				experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
+				try {
+					experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
 				if (experimentalWorldGenerator == null) CONFIG.client().worldGenerator().setAllowUnstableFeatureGeneration(false);
+				} catch (RuntimeException e) {
+					// Exception may happen if world got unloaded unorderly
+					e.printStackTrace();
+				}
 			}
 		} else {
 			if (experimentalWorldGenerator != null) {
-				experimentalWorldGenerator.stop();
+				try {
+					experimentalWorldGenerator.stop();
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
 				experimentalWorldGenerator = null;
 			}
 		}
@@ -115,6 +127,10 @@ public class LodWorldGenerator
 		// This is fine currently since DistanceGenerationMode doesn't care about the detail level for now.
 		// However, If that was to be changed, This will need to be fixed.
 		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
+		final GenerationPriority priority;
+		if (CONFIG.client().worldGenerator().getGenerationPriority() == GenerationPriority.AUTO)
+			priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST;
+		else priority = CONFIG.client().worldGenerator().getGenerationPriority();
 		
 		if (mode != DistanceGenerationMode.NONE
 				&& !generatorThreadRunning
@@ -152,9 +168,7 @@ public class LodWorldGenerator
 					IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 					
 					PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(
-							maxChunkGenRequests,
-							playerPosX,
-							playerPosZ);
+							maxChunkGenRequests, playerPosX, playerPosZ, priority);
 					
 					byte detailLevel;
 					int posX;
@@ -192,7 +206,9 @@ public class LodWorldGenerator
 						
 						
 						// add the far positions
-						if (farIndex < posToGenerate.getNumberOfFarPos() && posToGenerate.getNthDetail(farIndex, false) != 0)
+						// But if priority is NEAR_FIRST, we only do that if near pos has ran out.
+						if ((nearIndex >= posToGenerate.getNumberOfNearPos() || priority != GenerationPriority.NEAR_FIRST) &&
+								farIndex < posToGenerate.getNumberOfFarPos() && posToGenerate.getNthDetail(farIndex, false) != 0)
 						{
 							detailLevel = (byte) (posToGenerate.getNthDetail(farIndex, false) - 1);
 							posX = posToGenerate.getNthPosX(farIndex, false);
@@ -364,10 +380,21 @@ public class LodWorldGenerator
 		
 		if (genSubThreads != null && !genSubThreads.isShutdown())
 		{
-			genSubThreads.shutdownNow();
+			ClientApi.LOGGER.info("Blocking until generator sub threads terminated!!");
+			try {
+				mainGenThread.shutdownNow();
+				genSubThreads.shutdownNow();
+				boolean worked = genSubThreads.awaitTermination(30, TimeUnit.SECONDS);
+				if (!worked)
+					ClientApi.LOGGER.error("Generator sub threads timed out! May cause crash on game exit due to cleanup failure.");
+			} catch (InterruptedException e) {
+				ClientApi.LOGGER.error("Generator sub threads shutdown is interrupted! May cause crash on game exit due to cleanup failure.");
+				e.printStackTrace();
+			} finally {
+				genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
+						new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+			}
 		}
-		genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
-				new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 	}
 	
 }

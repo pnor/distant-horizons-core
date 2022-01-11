@@ -19,20 +19,28 @@
 
 package com.seibel.lod.core.api;
 
+import java.util.HashSet;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.seibel.lod.core.ModInfo;
+import com.seibel.lod.core.enums.WorldType;
+import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
  * This holds the methods that should be called
@@ -69,14 +77,27 @@ public class ClientApi
 		
 	}
 	
+
+	private HashSet<AbstractChunkPosWrapper> toBeLoaded = null;
 	
-	
+	// TODO: Fix it
+	@Deprecated
+	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
+	{
+		//EventApi.INSTANCE.chunkLoadEvent(chunk, world.getDimensionType());
+		//ClientApi.LOGGER.info("ChunkLoadEvent called for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
+		
+		if (toBeLoaded == null) toBeLoaded = new HashSet<AbstractChunkPosWrapper>();
+		//toBeLoaded.add(WRAPPER_FACTORY.createChunkPos(chunk.getChunkPosX(), chunk.getChunkPosZ()));
+	}
+
+	private HashSet<AbstractChunkPosWrapper> lastFrame = new HashSet<AbstractChunkPosWrapper>();
 	
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
 		applyConfigOverrides();
-		
+
 		// clear any out of date objects
 		MC.clearFrameObjectCache();
 		
@@ -85,8 +106,19 @@ public class ClientApi
 			// only run the first time setup once
 			if (!firstTimeSetupComplete)
 				firstFrameSetup();
-			
-			
+
+			IWorldWrapper world = MC.getWrappedClientWorld();
+			HashSet<AbstractChunkPosWrapper> chunks = MC_RENDER.getVanillaRenderedChunks();
+			if (chunks != null) {
+				for (AbstractChunkPosWrapper pos : chunks) {
+					if (lastFrame.contains(pos)) continue;
+					IChunkWrapper chunk = world.tryGetChunk(pos);
+					if (chunk == null) continue;
+					ApiShared.lodBuilder.generateLodNodeDirect(chunk, ApiShared.lodWorld,
+							world.getDimensionType(), DistanceGenerationMode.FULL, true);
+				}
+			}
+			lastFrame = chunks;
 			if (!MC.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
 				return;
 			
@@ -97,6 +129,8 @@ public class ClientApi
 			DetailDistanceUtil.updateSettings();
 			EVENT_API.viewDistanceChangedEvent();
 			EVENT_API.playerMoveEvent(lodDim);
+			
+			
 			
 			lodDim.cutRegionNodesAsync(MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getZ());
 			lodDim.expandOrLoadRegionsAsync(MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getZ());

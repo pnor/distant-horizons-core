@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
@@ -37,13 +39,13 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 
+//FIXME: Race condition on lodDim move/resize!
 
 /**
  * This object holds all loaded LOD regions
@@ -61,7 +63,6 @@ public class LodDimension
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	public final IDimensionTypeWrapper dimension;
 	
@@ -76,11 +77,8 @@ public class LodDimension
 	public volatile LodRegion[][] regions;
 	
 	/** stores if the region at the given x and z index needs to be saved to disk */
-	private volatile boolean[][] isRegionDirty;
 	/** stores if the region at the given x and z index needs to be regenerated */
 	// Use int because I need Tri state:
-	// 0: both buffer good. 1: the displaying buffer good. 2: both buffer bad.
-	private volatile int[][] regenRegionBuffer;
 	
 	/**
 	 * if true that means there are regions in this dimension
@@ -92,10 +90,9 @@ public class LodDimension
 	
 	private final RegionPos center;
 	
-	/** prevents the cutAndExpandThread from expanding at the same location multiple times */
-	private volatile AbstractChunkPosWrapper lastExpandedChunk;
-	/** prevents the cutAndExpandThread from cutting at the same location multiple times */
-	private volatile AbstractChunkPosWrapper lastCutChunk;
+	private boolean isCutting = false;
+	private boolean isExpanding = false;
+	
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand"));
 	
 	/**
@@ -104,8 +101,6 @@ public class LodDimension
 	 */
 	public LodDimension(IDimensionTypeWrapper newDimension, LodWorld lodWorld, int newWidth)
 	{
-		lastCutChunk = null;
-		lastExpandedChunk = null;
 		dimension = newDimension;
 		width = newWidth;
 		halfWidth = width / 2;
@@ -142,8 +137,6 @@ public class LodDimension
 		
 		
 		regions = new LodRegion[width][width];
-		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new int[width][width];
 		
 		center = new RegionPos(0, 0);
 	}
@@ -159,6 +152,8 @@ public class LodDimension
 	 */
 	public synchronized void move(RegionPos regionOffset)
 	{
+		ClientApi.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
+		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
 		int xOffset = regionOffset.x;
 		int zOffset = regionOffset.z;
 		
@@ -170,7 +165,6 @@ public class LodDimension
 			for (int x = 0; x < width; x++)
 				for (int z = 0; z < width; z++) {
 					regions[x][z] = null;
-					regenRegionBuffer[x][z] = 0;
 				}
 			// update the new center
 			center.x += xOffset;
@@ -188,14 +182,10 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset < width) {
+					if (x + xOffset < width)
 						regions[x][z] = regions[x + xOffset][z];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
 				}
 			}
 		}
@@ -206,14 +196,11 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (x + xOffset >= 0) {
+					if (x + xOffset >= 0)
 						regions[x][z] = regions[x + xOffset][z];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x + xOffset][z];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
+				}
 			}
 		}
 		
@@ -226,14 +213,10 @@ public class LodDimension
 			{
 				for (int z = 0; z < width; z++)
 				{
-					if (z + zOffset < width) {
+					if (z + zOffset < width)
 						regions[x][z] = regions[x][z + zOffset];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
 				}
 			}
 		}
@@ -244,15 +227,10 @@ public class LodDimension
 			{
 				for (int z = width - 1; z >= 0; z--)
 				{
-					if (z + zOffset >= 0) {
+					if (z + zOffset >= 0)
 						regions[x][z] = regions[x][z + zOffset];
-						regenRegionBuffer[x][z] = regenRegionBuffer[x][z + zOffset];
-					}
-					else {
+					else
 						regions[x][z] = null;
-						regenRegionBuffer[x][z] = 0;
-					}
-				}
 				}
 			}
 		}
@@ -261,6 +239,7 @@ public class LodDimension
 		// update the new center
 		center.x += xOffset;
 		center.z += zOffset;
+		ClientApi.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
 	}
 	
 	
@@ -362,152 +341,109 @@ public class LodDimension
 	 */
 	public void cutRegionNodesAsync(int playerPosX, int playerPosZ)
 	{
-		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX), LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
-		
-		if (lastCutChunk == null)
-			lastCutChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
-		
+		if (isCutting) return;
+		isCutting = true;
 		// don't run the tree cutter multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastCutChunk.getX() || newPlayerChunk.getZ() != lastCutChunk.getZ()) {
-			lastCutChunk = newPlayerChunk;
+		Runnable thread = () -> {
+			//ClientApi.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
 
-			Runnable thread = () -> {
-
-				// go over every region in the dimension
-				iterateWithSpiral((int x, int z) -> {
-					int regionX;
-					int regionZ;
-					int minDistance;
-					byte detail;
-					byte minAllowedDetailLevel;
-					regionX = (x + center.x) - halfWidth;
-					regionZ = (z + center.z) - halfWidth;
-
-					if (regions[x][z] != null) {
-						// check what detail level this region should be
-						// and cut it if it is higher then that
-						minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
-								playerPosX, playerPosZ);
-						detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
-						minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
-
-						if (regions[x][z].getMinDetailLevel() > minAllowedDetailLevel) {
-							regions[x][z].cutTree(minAllowedDetailLevel);
-							regenRegionBuffer[x][z] = 2;
-							regenDimensionBuffers = true;
-						}
+			// go over every region in the dimension
+			iterateWithSpiral((int x, int z) -> {
+				int regionX;
+				int regionZ;
+				int minDistance;
+				byte detail;
+				byte minAllowedDetailLevel;
+				regionX = (x + center.x) - halfWidth;
+				regionZ = (z + center.z) - halfWidth;
+				LodRegion region = regions[x][z];
+				if (region != null) {
+					// check what detail level this region should be
+					// and cut it if it is higher then that
+					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
+							playerPosX, playerPosZ);
+					detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
+					minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
+					if (region.getMinDetailLevel() < minAllowedDetailLevel) {
+						region.cutTree(minAllowedDetailLevel);
+						region.needRegenBuffer = 2;
+						regenDimensionBuffers = true;
 					}
-				});
-			};
-			cutAndExpandThread.execute(thread);
-		}
+				}
+			});
+			//ClientApi.LOGGER.info("LodDim cut Region complete: " + playerPosX + "," + playerPosZ);
+			isCutting = false;
+		};
+		cutAndExpandThread.execute(thread);
 	}
 	
 	/** Either expands or loads all regions in the rendered LOD area */
 	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ) {
+
+		if (isExpanding) return;
+		isExpanding = true;
+		
 		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
-		AbstractChunkPosWrapper newPlayerChunk = FACTORY.createChunkPos(LevelPosUtil.getChunkPos((byte) 0, playerPosX),
-				LevelPosUtil.getChunkPos((byte) 0, playerPosZ));
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
-
-		if (lastExpandedChunk == null)
-			lastExpandedChunk = FACTORY.createChunkPos(newPlayerChunk.getX() + 1, newPlayerChunk.getZ() - 1);
-
+		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
+		if (dropoffQuality == DropoffQuality.AUTO)
+			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
+					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
+		int dropoffSwitch = dropoffQuality.fastModeSwitch;
 		// don't run the expander multiple times
 		// for the same location
-		if (newPlayerChunk.getX() != lastExpandedChunk.getX() || newPlayerChunk.getZ() != lastExpandedChunk.getZ()) {
-			lastExpandedChunk = newPlayerChunk;
+		Runnable thread = () -> {
+			//ClientApi.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 
-			Runnable thread = () -> {
+			iterateWithSpiral((int x, int z) -> {
+				int regionX;
+				int regionZ;
+				LodRegion region;
+				int minDistance;
+				int maxDistance;
+				byte minDetail;
+				byte maxDetail;
+				regionX = (x + center.x) - halfWidth;
+				regionZ = (z + center.z) - halfWidth;
+				final RegionPos regionPos = new RegionPos(regionX, regionZ);
+				region = regions[x][z];
 
-				iterateWithSpiral((int x, int z) -> {
-					int regionX;
-					int regionZ;
-					LodRegion region;
-					int minDistance;
-					byte detail;
-					byte levelToGen;
-					regionX = (x + center.x) - halfWidth;
-					regionZ = (z + center.z) - halfWidth;
-					final RegionPos regionPos = new RegionPos(regionX, regionZ);
-					region = regions[x][z];
-
-					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
-							playerPosZ);
-					detail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
-					levelToGen = DetailDistanceUtil.getLodGenDetail(detail).detailLevel;
-
-					// check that the region isn't null and at least this detail level
-					if (region == null || region.getGenerationMode() != generationMode) {
-						// First case, region has to be created
-
-						// try to get the region from file
-						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-
-						// if there is no region file create an empty region
-						if (regions[x][z] == null)
-							regions[x][z] = new LodRegion(levelToGen, regionPos, generationMode, verticalQuality);
-
-						regenRegionBuffer[x][z] = 2;
-						regenDimensionBuffers = true;
-					} else if (region.getMinDetailLevel() > levelToGen) {
-						// Second case, the region exists at a higher detail level.
-
-						// Expand the region by introducing the missing layer
-						region.growTree(levelToGen);
-						regions[x][z] = getRegionFromFile(regionPos, levelToGen, generationMode, verticalQuality);
-						regenRegionBuffer[x][z] = 2;
-						regenDimensionBuffers = true;
-					}
-				});
-			};
-
-			cutAndExpandThread.execute(thread);
-		}
-	}
-	
-	/**
-	 * Use addVerticalData when possible.
-	 * Add the given LOD to this dimension at the coordinate
-	 * stored in the LOD. If an LOD already exists at the given
-	 * coordinate it will be overwritten.
-	 */
-	public Boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, long data, boolean dontSave)
-	{
-		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
-		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
-		
-		// don't continue if the region can't be saved
-		LodRegion region = getRegion(regionPosX, regionPosZ);
-		if (region == null)
-			return false;
-		
-		boolean nodeAdded = region.addData(detailLevel, posX, posZ, verticalIndex, data);
-		
-		// only save valid LODs to disk
-		if (!dontSave && fileHandler != null)
-		{
-			try
-			{
-				// mark the region as dirty, so it will be saved to disk
-				int xIndex = (regionPosX - center.x) + halfWidth;
-				int zIndex = (regionPosZ - center.z) + halfWidth;
+				minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
+						playerPosZ);
+				maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
+						playerPosZ);
+				minDetail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
+				maxDetail = DetailDistanceUtil.getTreeGenDetailFromDistance(maxDistance);
 				
-				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = 2;
-				regenDimensionBuffers = true;
-			}
-			catch (ArrayIndexOutOfBoundsException e)
-			{
-				e.printStackTrace();
-				// If this happens, the method was probably 
-				// called when the dimension was changing size.
-				// Hopefully this shouldn't be an issue.
-			}
-		}
-		
-		return nodeAdded;
+				boolean updated = false;
+				if (region == null) {
+					region = getRegionFromFile(regionPos, minDetail, generationMode, verticalQuality);
+					regions[x][z] = region;
+					updated = true;
+				} else if (region.getGenerationMode().compareTo(generationMode) < 0 ||
+						region.getVerticalQuality() != verticalQuality ||
+						region.getMinDetailLevel() > minDetail) {
+					// The 'getRegionFromFile' will flush and save the region if it returns a new one
+					region = getRegionFromFile(regions[x][z], minDetail, generationMode, verticalQuality);
+					regions[x][z] = region;
+					updated = true;
+				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != maxDetail) {
+					region.lastMaxDetailLevel = maxDetail;
+					updated = true;
+				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != region.getMinDetailLevel()) {
+					updated = true;
+				}
+				if (updated) {
+					region.needRegenBuffer = 2;
+					regenDimensionBuffers = true;
+				}
+			});
+			//ClientApi.LOGGER.info("LodDim expend Region complete: " + playerPosX + "," + playerPosZ);
+			isExpanding = false;
+		};
+
+		cutAndExpandThread.execute(thread);
 	}
 	
 	/**
@@ -515,7 +451,7 @@ public class LodDimension
 	 * stored in the LOD. If an LOD already exists at the given
 	 * coordinate it will be overwritten.
 	 */
-	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data, boolean dontSave)
+	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -526,178 +462,38 @@ public class LodDimension
 			return false;
 		
 		boolean nodeAdded = region.addVerticalData(detailLevel, posX, posZ, data);
-		
-		// only save valid LODs to disk
-		if (!dontSave && fileHandler != null)
-		{
-			try
-			{
-				// mark the region as dirty, so it will be saved to disk
-				int xIndex = (regionPosX - center.x) + halfWidth;
-				int zIndex = (regionPosZ - center.z) + halfWidth;
-				
-				isRegionDirty[xIndex][zIndex] = true;
-				regenRegionBuffer[xIndex][zIndex] = 2;
-				regenDimensionBuffers = true;
-			}
-			catch (ArrayIndexOutOfBoundsException e)
-			{
-				e.printStackTrace();
-				// If this happens, the method was probably
-				// called when the dimension was changing size.
-				// Hopefully this shouldn't be an issue.
-			}
+		if (nodeAdded) {
+			region.needRegenBuffer = 2;
+			region.needSaving = true;
+			regenDimensionBuffers = true;
 		}
-		
 		return nodeAdded;
 	}
 	
 	/** marks the region at the given region position to have its buffer rebuilt */
 	public void markRegionBufferToRegen(int xRegion, int zRegion)
 	{
-		int xIndex = (xRegion - center.x) + halfWidth;
-		int zIndex = (zRegion - center.z) + halfWidth;
-		regenRegionBuffer[xIndex][zIndex] = 2;
+		LodRegion r = getRegion(xRegion,zRegion);
+		if (r!=null) {
+			r.needRegenBuffer = 2;
+			regenDimensionBuffers = true;
+		}
 	}
 	
 	/**
 	 * Returns every position that need to be generated based on the position of the player
 	 */
-	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ)
+	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ, GenerationPriority priority)
 	{
 		PosToGenerateContainer posToGenerate;
-		LodRegion lodRegion;
-		// all the following values are used for the spiral matrix visit
-		// x and z are the matrix coord
-		// dx and dz is the next move on the coordinate in the range -1 0 +1
-		int x, z, dx, dz, t;
-		x = 0;
-		z = 0;
-		dx = 0;
-		dz = -1;
-		
-		// We can use two type of generation scheduling
-		switch (CONFIG.client().worldGenerator().getGenerationPriority())
-		{
-		case NEAR_FIRST:
-			//in the NEAR_FIRST generation scheduling we prioritize the nearest un-generated position to the player
-			//the chunk position to generate will be stored in a posToGenerate object
-			posToGenerate = new PosToGenerateContainer((byte) 10, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
-			
-			int playerChunkX = LevelPosUtil.getChunkPos(LodUtil.BLOCK_DETAIL_LEVEL, playerBlockPosX);
-			int playerChunkZ = LevelPosUtil.getChunkPos(LodUtil.BLOCK_DETAIL_LEVEL, playerBlockPosZ);
-			
-			int complexity;
-			int xChunkToCheck;
-			int zChunkToCheck;
-			byte detailLevel;
-			int posX;
-			int posZ;
-			long data;
-			int numbChunksWide = (width) * 32;
-			int circleLimit = Integer.MAX_VALUE;
-			
-			//posToGenerate is using an insertion sort algorithm which can become really fast if the
-			//original data order is almost ordered. For this reason we explore the matrix of the position to generate
-			//with a spiral matrix visit (a square spiral is almost ordered in the "nearest to farthest" order)
-			for (int i = 0; i < numbChunksWide * numbChunksWide; i++)
-			{
-				//Firstly we check if the posToGenerate has been filled
-				if (maxDataToGenerate == 0)
-				{
-					maxDataToGenerate--;
-					//if it has been filled then we set a stop distance
-					//the stop distance will be current distance (generically x) per square root of 2
-					//this would guarantee a circular generation since (Math.abs(x) * 1.41f) is the
-					//radius of a circle that inscribe a square
-					circleLimit = (int) (Math.abs(x) * 1.41f);
-				}
-				//This second if check if we reached the circleLimit decided in the previous if
-				//if so we stop
-				else if (maxDataToGenerate < 0)
-				{
-					if (circleLimit < Math.abs(x) && circleLimit < Math.abs(z))
-						break;
-				}
-				
-				
-				xChunkToCheck = x + playerChunkX;
-				zChunkToCheck = z + playerChunkZ;
-				
-				//we get the lod region in which the chunk is present
-				lodRegion = getRegion(LodUtil.CHUNK_DETAIL_LEVEL, xChunkToCheck, zChunkToCheck);
-				if (lodRegion == null)
-					continue;
-				
-				//Now we check if the current chunk has been generated with the correct complexity
-				//if(lodRegion.isChunkPreGenerated(xChunkToCheck,zChunkToCheck))
-				//	complexity = DistanceGenerationMode.SERVER.complexity;
-				//else
-					complexity = CONFIG.client().worldGenerator().getDistanceGenerationMode().complexity;
-					
-				
-				//we create the level position info of the chunk
-				detailLevel = lodRegion.getMinDetailLevel();
-				posX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, xChunkToCheck, detailLevel);
-				posZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, zChunkToCheck, detailLevel);
-				
-				data = getSingleData(detailLevel, posX, posZ);
-				
-				//we will generate the position only if the current generation complexity is lower than the target one.
-				//an un-generated area will always have 0 generation
-				if (DataPointUtil.getGenerationMode(data) < complexity)
-				{
-					posToGenerate.addPosToGenerate(detailLevel, posX, posZ);
-					if (maxDataToGenerate >= 0)
-						maxDataToGenerate--;
-				}
-				
-				//with this code section we find the next chunk to check
-				if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z)))
-				{
-					t = dx;
-					dx = -dz;
-					dz = t;
-				}
-				x += dx;
-				z += dz;
-			}
-			break;
-		
-		default:
-		case FAR_FIRST:
-			//in the FAR_FIRST generation we dedicate part of the generation process to the far region with really
-			//low detail quality.
-			
-			posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
-			
-			int xRegion;
-			int zRegion;
-			
-			for (int i = 0; i < width * width; i++)
-			{
-				xRegion = x + center.x;
-				zRegion = z + center.z;
-				
-				//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
-				lodRegion = getRegion(xRegion, zRegion);
-				if (lodRegion != null)
-					lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ);
-				
-				
-				//with this code section we find the next chunk to check
-				if ((x == z) || ((x < 0) && (x == -z)) || ((x > 0) && (x == 1 - z)))
-				{
-					t = dx;
-					dx = -dz;
-					dz = t;
-				}
-				x += dx;
-				z += dz;
-			}
-			break;
-		}
-		return posToGenerate;
+		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
+		iterateWithSpiral((int x, int z) -> {
+			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
+			LodRegion lodRegion = regions[x][z];
+			if (lodRegion != null)
+				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, priority);
+		});
+	return posToGenerate;
 	}
 	
 	/**
@@ -712,11 +508,16 @@ public class LodDimension
 		GenerationPriority generationPriority = CONFIG.client().worldGenerator().getGenerationPriority();
 		if (generationPriority == GenerationPriority.AUTO)
 			generationPriority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST;
+
+		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
+		if (dropoffQuality == DropoffQuality.AUTO)
+			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
+					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
 		
 		boolean requireCorrectDetailLevel = generationPriority == GenerationPriority.NEAR_FIRST;
 		
 		if (region != null)
-			region.getPosToRender(posToRender, playerPosX, playerPosZ, requireCorrectDetailLevel);
+			region.getPosToRender(posToRender, playerPosX, playerPosZ, requireCorrectDetailLevel, dropoffQuality);
 	}
 	
 	/**
@@ -785,8 +586,9 @@ public class LodDimension
 		LodRegion region = getRegion(xRegion, zRegion);
 		if (region == null)
 			return;
-		markRegionBufferToRegen(xRegion, zRegion);
 		region.clear(detailLevel, posX, posZ);
+		region.needRegenBuffer = 2;
+		regenDimensionBuffers = true;
 	}
 	
 	/**
@@ -795,16 +597,12 @@ public class LodDimension
 	 */
 	public boolean getAndClearRegionNeedBufferRegen(int regionX, int regionZ)
 	{
-		//FIXME: Use actual atomics on regenRegionBuffer
-		//FIXME: Race condition on lodDim move/resize!
-		int xIndex = (regionX - center.x) + halfWidth;
-		int zIndex = (regionZ - center.z) + halfWidth;
-		
-		if (xIndex < 0 || xIndex >= width || zIndex < 0 || zIndex >= width)
-			return false;
-		int i = regenRegionBuffer[xIndex][zIndex];
+		//FIXME: Use actual atomics on needRegenBuffer
+		LodRegion region = getRegion(regionX, regionZ);
+		if (region == null) return false;
+		int i = region.needRegenBuffer;
 		if (i > 0) {
-			regenRegionBuffer[xIndex][zIndex]--;
+			region.needRegenBuffer--;
 			return true;
 		}
 		return false;
@@ -825,11 +623,10 @@ public class LodDimension
 		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
 		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
 		LodRegion region = getRegion(xRegion, zRegion);
-		if (region == null)
-			return;
-		markRegionBufferToRegen(xRegion, zRegion);
-		
+		if (region == null) return;
 		region.updateArea(detailLevel, posX, posZ);
+		region.needRegenBuffer = 2;
+		regenDimensionBuffers = true;
 	}
 	
 	/** Returns true if a region exists at the given LevelPos */
@@ -846,13 +643,25 @@ public class LodDimension
 	public LodRegion getRegionFromFile(RegionPos regionPos, byte detailLevel,
 			DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
 	{
-		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, generationMode, verticalQuality) : null;
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, generationMode, verticalQuality) : 
+			new LodRegion(detailLevel, regionPos, generationMode, verticalQuality);
+	}
+	/**
+	 * Loads the region at the given region from file,
+	 * if a file exists for that region.
+	 */
+	public LodRegion getRegionFromFile(LodRegion existingRegion, byte detailLevel,
+			DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
+	{
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, existingRegion, generationMode, verticalQuality) : 
+			new LodRegion(detailLevel, existingRegion.getRegionPos(), generationMode, verticalQuality);
 	}
 	
 	/** Save all dirty regions in this LodDimension to file. */
-	public void saveDirtyRegionsToFileAsync()
+	public void saveDirtyRegionsToFile(boolean blockUntilFinished)
 	{
-		fileHandler.saveDirtyRegionsToFileAsync();
+		if (fileHandler == null) return;
+		fileHandler.saveDirtyRegionsToFile(blockUntilFinished);
 	}
 	
 	
@@ -907,13 +716,6 @@ public class LodDimension
 		halfWidth = width/ 2;
 		
 		regions = new LodRegion[width][width];
-		isRegionDirty = new boolean[width][width];
-		regenRegionBuffer = new int[width][width];
-		
-		// populate isRegionDirty
-		for (int i = 0; i < width; i++)
-			for (int j = 0; j < width; j++)
-				isRegionDirty[i][j] = false;
 	}
 	
 	
@@ -935,15 +737,5 @@ public class LodDimension
 			stringBuilder.append("\n");
 		}
 		return stringBuilder.toString();
-	}
-	
-	public boolean GetIsRegionDirty(int i, int j)
-	{
-		return isRegionDirty[i][j];
-	}
-	
-	public void SetIsRegionDirty(int i, int j, boolean val)
-	{
-		isRegionDirty[i][j] = val;
 	}
 }

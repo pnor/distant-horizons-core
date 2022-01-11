@@ -1,8 +1,8 @@
 {
   "lod.title": "Distant Horizons",
   "DistantHorizons.config.title": "Distant Horizons config",
-  "DistantHorizons.config.ShowButton": "Show menu button",
-  "DistantHorizons.config.ShowButton.@tooltip": "Show the custom button to the left of the fov button",
+  "DistantHorizons.config.optionsButton": "Show options button",
+  "DistantHorizons.config.optionsButton.@tooltip": "Show the custom button to the left of the fov button",
   "DistantHorizons.config.client": "Client",
   "DistantHorizons.config.client.graphics": "Graphics",
   "DistantHorizons.config.client.graphics.quality": "Quality options",
@@ -16,6 +16,8 @@
   "DistantHorizons.config.client.graphics.quality.horizontalScale.@tooltip": "This indicates how quickly fake chunks drop off in quality",
   "DistantHorizons.config.client.graphics.quality.horizontalQuality": "Horizontal quality",
   "DistantHorizons.config.client.graphics.quality.horizontalQuality.@tooltip": "This indicates the exponential base of the quadratic drop-off",
+  "DistantHorizons.config.client.graphics.quality.dropoffQuality": "Dropoff quality",
+  "DistantHorizons.config.client.graphics.quality.dropoffQuality.@tooltip": "This change how detail dropoff is done.",
   "DistantHorizons.config.client.graphics.fogQuality": "Fog options",
   "DistantHorizons.config.client.graphics.fogQuality.fogDistance": "Fog distance",
   "DistantHorizons.config.client.graphics.fogQuality.fogDistance.@tooltip": "At what distance should Fog be drawn on the fake chunks?",
@@ -26,6 +28,7 @@
   "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog": "Disable vanilla fog",
   "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog.@tooltip": "If true disable Minecraft's fog. \nMay cause issues with other mods that edit fog. \nMay cause errors with other fog editing mods",
   "DistantHorizons.config.client.graphics.cloudQuality": "Cloud options",
+  "DistantHorizons.config.client.graphics.cloudQuality.cloudWarning": "§l§nWARNING:§r§n Clouds are still experimental",
   "DistantHorizons.config.client.graphics.cloudQuality.customClouds": "Custom cloud",
   "DistantHorizons.config.client.graphics.cloudQuality.customClouds.@tooltip": "Do you want to use a custom way or rendering the clouds. \nIf you turn this off then the other settings here wont do anything \nThis will also make the clouds more dynamic",
   "DistantHorizons.config.client.graphics.cloudQuality.fabulousClouds": "Fabulous clouds",
@@ -120,6 +123,8 @@
   "DistantHorizons.config.enum.DebugMode.OFF": "Off",
   "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL": "Show detail",
   "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL_WIREFRAME": "Show detail with wireframe",
+  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE": "Show generation mode",
+  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME": "Show generation mode with wireframe",
   "DistantHorizons.config.enum.GpuUploadMethod.AUTO": "Auto",
   "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_STORAGE": "Buffer storage",
   "DistantHorizons.config.enum.GpuUploadMethod.SUB_DATA": "Sub data",
@@ -127,5 +132,8 @@
   "DistantHorizons.config.enum.GpuUploadMethod.DATA": "Data",
   "DistantHorizons.config.enum.BufferRebuildTimes.FREQUENT": "Frequent",
   "DistantHorizons.config.enum.BufferRebuildTimes.NORMAL": "Normal",
-  "DistantHorizons.config.enum.BufferRebuildTimes.RARE": "Rare"
+  "DistantHorizons.config.enum.BufferRebuildTimes.RARE": "Rare",
+  "DistantHorizons.config.enum.DropoffQuality.AUTO": "Auto",
+  "DistantHorizons.config.enum.DropoffQuality.SMOOTH_DROPOFF": "Smooth dropoff",
+  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED": "Performance focused"
 }

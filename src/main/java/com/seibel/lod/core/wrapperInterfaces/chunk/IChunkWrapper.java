@@ -55,4 +55,8 @@ public interface IChunkWrapper
 	boolean isWaterLogged(int x, int y, int z);
 	
 	int getEmittedBrightness(int x, int y, int z);
+	
+	default int getBlockLight(int x, int y, int z) {return -1;}
+	
+	default int getSkyLight(int x, int y, int z) {return -1;}
 }

@@ -90,10 +90,10 @@ public class LodBuilder
 	
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
 	{
-		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL);
+		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL, false);
 	}
 	
-	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode)
+	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode, boolean override)
 	{
 		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
 			return;
@@ -130,7 +130,7 @@ public class LodBuilder
 				{
 					lodDim = lodWorld.getLodDimension(dim);
 				}
-				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode));
+				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override);
 			//}
 			//catch (IllegalArgumentException | NullPointerException e)
 			//{
@@ -142,6 +142,52 @@ public class LodBuilder
 		});
 		lodGenThreadPool.execute(thread);
 	}
+
+	public void generateLodNodeDirect(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode, boolean override)
+	{
+		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
+			return;
+		
+		// don't try to create an LOD object
+		// if for some reason we aren't
+		// given a valid chunk object
+		if (chunk == null)
+			return;
+		
+			//noinspection GrazieInspection
+			try
+			{
+				// we need a loaded client world in order to
+				// get the textures for blocks
+				if (MC.getWrappedClientWorld() == null)
+					return;
+				
+				// don't try to generate LODs if the user isn't in the world anymore
+				// (this happens a lot when the user leaves a world/server)
+				if (!MC.hasSinglePlayerServer() && !MC.connectedToServer())
+					return;
+				
+				// make sure the dimension exists
+				LodDimension lodDim;
+				if (lodWorld.getLodDimension(dim) == null)
+				{
+					lodDim = new LodDimension(dim, lodWorld, defaultDimensionWidthInRegions);
+					lodWorld.addLodDimension(lodDim);
+				}
+				else
+				{
+					lodDim = lodWorld.getLodDimension(dim);
+				}
+				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override);
+			}
+			catch (IllegalArgumentException | NullPointerException e)
+			{
+				e.printStackTrace();
+				// if the world changes while LODs are being generated
+				// they will throw errors as they try to access things that no longer
+				// exist.
+			}
+	}
 	
 	/**
 	 * Creates a LodNode for a chunk in the given world.
@@ -149,14 +195,14 @@ public class LodBuilder
 	 */
 	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk) throws IllegalArgumentException
 	{
-		generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig());
+		generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(), false);
 	}
 	
 	/**
 	 * Creates a LodNode for a chunk in the given world.
 	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
 	 */
-	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config)
+	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override)
 			throws IllegalArgumentException
 	{
 		//long executeTime = System.currentTimeMillis();
@@ -176,6 +222,7 @@ public class LodBuilder
 			return;
 		
 		// determine how many LODs to generate horizontally
+		
 		byte minDetailLevel = region.getMinDetailLevel();
 		HorizontalResolution detail = DetailDistanceUtil.getLodGenDetail(minDetailLevel);
 		
@@ -201,12 +248,16 @@ public class LodBuilder
 			//lodDim.clear(detailLevel, posX, posZ);
 			if (data != null && data.length != 0)
 			{
-				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, detail.detailLevel);
-				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, detail.detailLevel);
-				lodDim.addVerticalData(detailLevel, posX, posZ, data, false);
+				posX = LevelPosUtil.convert((byte) 0, chunk.getChunkPosX() * 16 + startX, minDetailLevel);
+				posZ = LevelPosUtil.convert((byte) 0, chunk.getChunkPosZ() * 16 + startZ, minDetailLevel);
+				long oldData = lodDim.getSingleData(minDetailLevel, posX, posZ);
+				if (override || !DataPointUtil.doesItExist(oldData) ||
+						DataPointUtil.getGenerationMode(oldData)<config.distanceGenerationMode.complexity) {
+					lodDim.addVerticalData(minDetailLevel, posX, posZ, data);
+					lodDim.updateData(minDetailLevel, posX, posZ);
+				}
 			}
 		}
-		lodDim.updateData(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getChunkPosX(), chunk.getChunkPosZ());
 		//executeTime = System.currentTimeMillis() - executeTime;
 		//if (executeTime > 0) ClientApi.LOGGER.info("generateLodNodeFromChunk level: " + detailLevel + " time ms: " + executeTime);
 	}
@@ -394,7 +445,6 @@ public class LodBuilder
 		// 1 means the lighting is a guess
 		int isDefault = 0;
 		
-		IWorldWrapper world = MC.getWrappedServerWorld();
 		
 		int blockBrightness = chunk.getEmittedBrightness(x, y, z);
 		// get the air block above or below this block
@@ -403,12 +453,24 @@ public class LodBuilder
 		else
 			y++;
 		
+		blockLight = chunk.getBlockLight(x, y, z);
+		if (hasSkyLight)
+			skyLight = chunk.getSkyLight(x, y, z);
+		else
+			skyLight = 0;
 		
+		if (blockLight != -1 && skyLight != -1) {
+			blockLight = LodUtil.clamp(0, Math.max(blockLight, blockBrightness), DEFAULT_MAX_LIGHT);
+			return blockLight + (skyLight << 4) + (isDefault << 8);
+		}
+		
+		IWorldWrapper world = MC.getWrappedServerWorld();
 		
 		if (world != null)
 		{
 			// server world sky light (always accurate)
 			blockLight = world.getBlockLight(x,y,z);
+			
 			if (topBlock && !hasCeiling && hasSkyLight)
 				skyLight = DEFAULT_MAX_LIGHT;
 			else
@@ -424,11 +486,10 @@ public class LodBuilder
 				// lets just take a guess
 				if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 				{
-					skyLight = 12;
-					isDefault = 1;
+					skyLight = 6;
 				}
 				else
-					skyLight = 0;
+					skyLight = 6;
 			}
 		}
 		else
@@ -437,8 +498,7 @@ public class LodBuilder
 			if (world==null)
 			{
 				blockLight = 0;
-				skyLight = 12;
-				isDefault = 1;
+				skyLight = 6;
 			}
 			else
 			{
@@ -461,11 +521,10 @@ public class LodBuilder
 							// lets just take a guess
 							if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
 							{
-								skyLight = 12;
-								isDefault = 1;
+								skyLight = 6;
 							}
 							else
-								skyLight = 0;
+								skyLight = 6;
 						}
 					}
 				}

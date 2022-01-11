@@ -23,9 +23,10 @@ import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
@@ -64,8 +65,12 @@ public class EventApi
 	{
 		
 	}
-	
-	
+
+	@Deprecated
+	public void chunkLoadEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
+	{
+		//ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.FULL, true);
+	}
 	
 	
 	//=============//
@@ -80,8 +85,8 @@ public class EventApi
 		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension());
 		if (lodDim == null)
 			return;
+		if (ApiShared.isShuttingDown) return;
 		
-		// FIXME: This is in server thread. We shouldn't be accessing the client's renderer!
 		LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
 	}
 	
@@ -92,19 +97,22 @@ public class EventApi
 	// world events //
 	//==============//
 	
-	public void chunkLoadEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
-	{
-		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.FULL);
-	}
-	
 	public void worldSaveEvent()
 	{
-		ApiShared.lodWorld.saveAllDimensions();
+		ApiShared.lodWorld.saveAllDimensions(false); // Do an async save.
 	}
+	
+	private boolean isCurrentlyOnSinglePlayerServer = false;
 	
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)
 	{
+		ClientApi.LOGGER.info("WorldLoadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ?
+				"clientLevel" : "serverLevel"), new RuntimeException());
+		// Always ignore ServerWorld event
+		if (world.getWorldType() == WorldType.ServerWorld) return;
+		isCurrentlyOnSinglePlayerServer = MC.hasSinglePlayerServer();
+		ApiShared.isShuttingDown = false;
 		DataPointUtil.WORLD_HEIGHT = world.getHeight();
 		LodBuilder.MIN_WORLD_HEIGHT = world.getMinHeight(); // This updates the World height
 		
@@ -120,17 +128,22 @@ public class EventApi
 	}
 	
 	/** This is also called when the user disconnects from a server+ */
-	public void worldUnloadEvent()
+	public void worldUnloadEvent(IWorldWrapper world)
 	{
+		ClientApi.LOGGER.info("WorldUnloadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
+		// If it's single player, ignore the client side world unload event
+		// Note: using this as often API call unload event AFTER setting MC to not be in a singlePlayerServer
+		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == WorldType.ClientWorld) return;
 		// the player just unloaded a world/dimension
 		ThreadMapUtil.clearMaps();
 		// ClientApi.renderer.markForCleanup();
 		// ClientApi.renderer.destroyBuffers();
-		
-		new Thread(() -> checkIfDisconnectedFromServer()).start();
+		checkIfDisconnectedFromServer();
+		//new Thread(() -> checkIfDisconnectedFromServer()).start();
 	}
 	private void checkIfDisconnectedFromServer()
 	{
+		/*
 		try
 		{
 			// world unloading events are called before disconnecting from the server,
@@ -141,10 +154,10 @@ public class EventApi
 		{
 			// this should never happen, but just in case
 			e.printStackTrace();
-		}
+		}*/
 		
 		
-		if (MC.getWrappedClientWorld() == null || (!MC.connectedToServer() && !MC.hasSinglePlayerServer()))
+		//if (MC.getWrappedClientWorld() == null || (!MC.connectedToServer() && !MC.hasSinglePlayerServer()))
 		{
 			// the player just left the server
 			
@@ -152,16 +165,17 @@ public class EventApi
 			
 			// if this isn't done unfinished tasks may be left in the queue
 			// preventing new LodChunks form being generated
+			ApiShared.isShuttingDown = true;
 			LodWorldGenerator.INSTANCE.restartExecutorService();
 			
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);
-			ApiShared.lodWorld.deselectWorld();
-			
+			ApiShared.lodWorld.deselectWorld(); // This force a save
 			
 			// prevent issues related to the buffer builder
 			// breaking or retaining previous data when changing worlds.
 			ClientApi.renderer.destroyBuffers();
 			ClientApi.renderer.requestCleanup();
+			GLProxy.ensureAllGLJobCompleted();
 			recalculateWidths = true;
 			// TODO: Check if after the refactoring, is this still needed
 			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
@@ -205,6 +219,7 @@ public class EventApi
 		}
 	}
 	
+	// NOTE: This is being called from Render Thread.
 	/** Re-centers the given LodDimension if it needs to be. */
 	public void playerMoveEvent(LodDimension lodDim)
 	{
@@ -213,7 +228,6 @@ public class EventApi
 		RegionPos worldRegionOffset = new RegionPos(playerRegionPos.x - lodDim.getCenterRegionPosX(), playerRegionPos.z - lodDim.getCenterRegionPosZ());
 		if (worldRegionOffset.x != 0 || worldRegionOffset.z != 0)
 		{
-			ApiShared.lodWorld.saveAllDimensions();
 			lodDim.move(worldRegionOffset);
 			//LOGGER.info("offset: " + worldRegionOffset.x + "," + worldRegionOffset.z + "\t center: " + lodDim.getCenterX() + "," + lodDim.getCenterZ());
 		}
@@ -236,12 +250,10 @@ public class EventApi
 		// do the dimensions need to change in size?
 		if (ApiShared.lodBuilder.defaultDimensionWidthInRegions != newWidth || recalculateWidths)
 		{
-			ApiShared.lodWorld.saveAllDimensions();
-			
 			// update the dimensions to fit the new width
 			ApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
 			ApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
-			ClientApi.renderer.setupBuffers(ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension()));
+			ClientApi.renderer.setupBuffers();
 			
 			recalculateWidths = false;
 			//LOGGER.info("new dimension width in regions: " + newWidth + "\t potential: " + newWidth );

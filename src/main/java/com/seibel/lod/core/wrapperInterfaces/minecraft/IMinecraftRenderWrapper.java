@@ -22,6 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.minecraft;
 import java.awt.Color;
 import java.util.HashSet;
 
+import com.seibel.lod.core.api.ModAccessorApi;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
@@ -29,6 +30,7 @@ import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
 
 /**
  * Contains everything related to
@@ -77,18 +79,8 @@ public interface IMinecraftRenderWrapper
 	 */
 	public default HashSet<AbstractChunkPosWrapper> getVanillaRenderedChunks()
 	{
-		return getMaximumRenderedChunks();
-	}
-	
-	/**
-	 * This method returns the ChunkPos of every chunk that
-	 * Sodium is going to render this frame.
-	 * <br>
-	 * If not implemented this calls {@link #getMaximumRenderedChunks()}.
-	 */
-	public default HashSet<AbstractChunkPosWrapper> getSodiumRenderedChunks()
-	{
-		return getMaximumRenderedChunks();
+		ISodiumAccessor sodium = ModAccessorApi.get(ISodiumAccessor.class);
+		return sodium==null ? getMaximumRenderedChunks() : sodium.getNormalRenderedChunks();
 	}
 	
 	/**
@@ -101,9 +93,6 @@ public interface IMinecraftRenderWrapper
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
 		
 		int chunkRenderDist = this.getRenderDistance();
-		// if we have a odd render distance, we'll have a empty gap. This way we'll overlap by 1 instead, 
-		// which is preferable to having a hole in the world
-		chunkRenderDist = chunkRenderDist % 2 == 0 ? chunkRenderDist : chunkRenderDist - 1;
 		
 		AbstractChunkPosWrapper centerChunkPos = mcWrapper.getPlayerChunkPos();
 		int startChunkX = centerChunkPos.getX() - chunkRenderDist;
@@ -111,9 +100,9 @@ public interface IMinecraftRenderWrapper
 		
 		// add every position within render distance
 		HashSet<AbstractChunkPosWrapper> renderedPos = new HashSet<AbstractChunkPosWrapper>();
-		for (int chunkX = 0; chunkX < (chunkRenderDist * 2); chunkX++)
+		for (int chunkX = 0; chunkX < (chunkRenderDist * 2+1); chunkX++)
 		{
-			for(int chunkZ = 0; chunkZ < (chunkRenderDist * 2); chunkZ++)
+			for(int chunkZ = 0; chunkZ < (chunkRenderDist * 2+1); chunkZ++)
 			{
 				renderedPos.add(factory.createChunkPos(startChunkX + chunkX, startChunkZ + chunkZ));
 			}

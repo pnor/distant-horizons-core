@@ -22,6 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.config;
 import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.BufferRebuildTimes;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
@@ -54,6 +55,13 @@ public interface ILodConfigWrapperSingleton
 		IGraphics graphics();
 		IWorldGenerator worldGenerator();
 		IAdvanced advanced();
+
+
+		boolean OPTIONS_BUTTON_DEFAULT = true;
+		String OPTIONS_BUTTON_DESC = ""
+				+ " Show the lod button in the options screen next to fov";
+		boolean getOptionsButton();
+		void setOptionsButton(boolean newOptionsButton);
 		
 		
 		//==================//
@@ -133,6 +141,21 @@ public interface ILodConfigWrapperSingleton
 						+ " Highest Quality: " + HorizontalQuality.HIGH;
 				HorizontalQuality getHorizontalQuality();
 				void setHorizontalQuality(HorizontalQuality newHorizontalQuality);
+				
+				DropoffQuality DROPOFF_QUALITY_DEFAULT = DropoffQuality.AUTO;
+				String DROPOFF_QUALITY_DESC = ""
+						+ " This determines how lod level drop off will be done. \n"
+						+ "\n"
+						+ " " + DropoffQuality.SMOOTH_DROPOFF + ": \n"
+						+ "     The lod level is calculated for each point, making the drop off a smooth circle. \n"
+						+ " " + DropoffQuality.PERFORMANCE_FOCUSED + ": \n"
+						+ "     One detail level for an entire region. Minimize CPU usage and \n"
+						+ "     improve terrain refresh delay, especially for high Lod render distance. \n"
+						+ " " + DropoffQuality.AUTO + ": \n"
+						+ "     Use "+ DropoffQuality.SMOOTH_DROPOFF + " for less then 128 Lod render distance, \n"
+						+ "     or "+ DropoffQuality.PERFORMANCE_FOCUSED +" otherwise. \n";
+				DropoffQuality getDropoffQuality();
+				void setDropoffQuality(DropoffQuality newDropoffQuality);
 			}
 			
 			interface IFogQuality
@@ -274,7 +297,7 @@ public interface ILodConfigWrapperSingleton
 						+ " Higher settings will make terrain look good when looking backwards \n"
 						+ " when changing speeds quickly, but will increase upload times and GPU usage.";
 				int getBacksideCullingRange();
-				void setBacksideCullingRange(int backsideCullingRange);
+				void setBacksideCullingRange(int newBacksideCullingRange);
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""

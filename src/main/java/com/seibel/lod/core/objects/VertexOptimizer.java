@@ -152,6 +152,7 @@ public class VertexOptimizer
 	 * This is a map from Direction to the relative normal vector
 	 * we are using this since I'm not sure if the getNormal create new object at every call
 	 */
+	// FIXME: No. It doesn't. Just remove this.
 	@SuppressWarnings("serial")
 	public static final Map<LodDirection, Vec3i> DIRECTION_NORMAL_MAP = new HashMap<LodDirection, Vec3i>()
 	{{

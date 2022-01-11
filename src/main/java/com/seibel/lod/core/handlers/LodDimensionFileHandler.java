@@ -21,11 +21,15 @@ package com.seibel.lod.core.handlers;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
@@ -39,7 +43,7 @@ import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.ThreadMapUtil;
+
 
 /**
  * This object handles creating LodRegions
@@ -84,9 +88,10 @@ public class LodDimensionFileHandler
 	 * Allow saving asynchronously, but never try to save multiple regions
 	 * at a time
 	 */
-	private final ExecutorService fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
+	private AtomicBoolean isFileWritingThreadRunning = new AtomicBoolean(false);
+	private ExecutorService fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
 	
-	
+	private ConcurrentHashMap<RegionPos, LodRegion> regionToSave = new ConcurrentHashMap<RegionPos, LodRegion>();
 	
 	
 	public LodDimensionFileHandler(File newSaveFolder, LodDimension newLodDimension)
@@ -105,19 +110,39 @@ public class LodDimensionFileHandler
 	//================//
 	// read from file //
 	//================//
-	
+
 	/**
-	 * Returns the LodRegion at the given coordinates.
+	 * Returns a new LodRegion at the given coordinates.
 	 * Returns an empty region if the file doesn't exist.
 	 */
 	public LodRegion loadRegionFromFile(byte detailLevel, RegionPos regionPos, DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
 	{
-		int regionX = regionPos.x;
-		int regionZ = regionPos.z;
-		LodRegion region = new LodRegion(LodUtil.REGION_DETAIL_LEVEL, regionPos, generationMode, verticalQuality);
+		// Get one from the region hot cache
+		LodRegion region = regionToSave.get(regionPos);
+		if (region!=null && region.getMinDetailLevel()<=detailLevel &&
+			region.getGenerationMode().compareTo(generationMode)>=0 &&
+			region.getVerticalQuality().compareTo(verticalQuality)>=0)
+			return region; // The current hot cache to-be-saved region match our requirement.
+		region = new LodRegion((byte) (LodUtil.REGION_DETAIL_LEVEL+1), regionPos, generationMode, verticalQuality);
+		return loadRegionFromFile(detailLevel, region, generationMode, verticalQuality);
+	}
+	
+	/**
+	 * Returns the LodRegion that is filled at the given coordinates.
+	 * Returns an empty region if the file doesn't exist.
+	 */
+	public LodRegion loadRegionFromFile(byte detailLevel, LodRegion region, DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
+	{
+		if (region.getGenerationMode().compareTo(generationMode)<0 || region.getVerticalQuality().compareTo(verticalQuality)<0) {
+			regionToSave.put(region.getRegionPos(), region); //FIXME: The hashMap key should prob be a {regionPos,VertQual} pair. 
+			region = new LodRegion((byte) (LodUtil.REGION_DETAIL_LEVEL+1), region.getRegionPos(), generationMode, verticalQuality);
+		}
+		int regionX = region.regionPosX;
+		int regionZ = region.regionPosZ;
 		
-		for (byte tempDetailLevel = LodUtil.REGION_DETAIL_LEVEL; tempDetailLevel >= detailLevel; tempDetailLevel--)
+		for (byte tempDetailLevel = (byte) (region.getMinDetailLevel()-1); tempDetailLevel >= detailLevel; tempDetailLevel--)
 		{
+			
 			File file = getBestMatchingRegionFile(tempDetailLevel, regionX, regionZ, generationMode, verticalQuality);
 			if (file == null) {
 				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
@@ -198,33 +223,96 @@ public class LodDimensionFileHandler
 	// Save to File //
 	//==============//
 	
-	/** Save all dirty regions in this LodDimension to file */
-	public void saveDirtyRegionsToFileAsync()
-	{
-		fileWritingThreadPool.execute(saveDirtyRegionsThread);
+	public void addRegionsToSave(LodRegion r) {
+		regionToSave.put(r.getRegionPos(), r);
 	}
 	
-	private final Thread saveDirtyRegionsThread = new Thread(() ->
+	/** Save all dirty regions in this LodDimension to file */
+	public void saveDirtyRegionsToFile(boolean blockUntilFinished)
 	{
-		try
+		for (int i = 0; i < lodDimension.getWidth(); i++)
 		{
-			for (int i = 0; i < lodDimension.getWidth(); i++)
+			for (int j = 0; j < lodDimension.getWidth(); j++)
 			{
-				for (int j = 0; j < lodDimension.getWidth(); j++)
+				LodRegion r = lodDimension.getRegionByArrayIndex(i, j);
+				
+				if (r != null && r.needSaving)
 				{
-					if (lodDimension.GetIsRegionDirty(i, j) && lodDimension.getRegionByArrayIndex(i, j) != null)
-					{
-						saveRegionToFile(lodDimension.getRegionByArrayIndex(i, j));
-						lodDimension.SetIsRegionDirty(i, j, false);
-					}
+					r.needSaving = false;
+					regionToSave.put(r.getRegionPos(), r);
 				}
 			}
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
+		trySaveRegionsToBeSaved();
+		if (blockUntilFinished) {
+			ClientApi.LOGGER.info("Blocking until lod file save finishes!");
+			try {
+				fileWritingThreadPool.shutdown();
+				boolean worked = fileWritingThreadPool.awaitTermination(30, TimeUnit.SECONDS);
+				if (!worked)
+					ClientApi.LOGGER.error("File writing timed out! File data may not be saved correctly and may cause corruptions!!!");
+			} catch (InterruptedException e) {
+				ClientApi.LOGGER.error("File writing wait is interrupted! File data may not be saved correctly and may cause corruptions!!!");
+				e.printStackTrace();
+			} finally {
+				fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
+			}
 		}
-	});
+	}
+	
+	public void trySaveRegionsToBeSaved() {
+		if (regionToSave.isEmpty()) return;
+		// Use Memory order Acquire to acquire any memory changes on getting this boolean
+		// (Corresponding call is the this::writerMain(...)::...setRelease(false);)
+		//boolean haventStarted = !isFileWritingThreadRunning.compareAndExchangeAcquire(false, true);
+		// The above needs java 9!
+		boolean haventStarted = isFileWritingThreadRunning.compareAndSet(false, true);
+		
+		if (haventStarted) {
+			// We acquired the atomic lock.
+			fileWritingThreadPool.execute(this::writerMain);
+		}
+	}
+
+	private void writerMain() {
+		// Use Memory order Relaxed as no additional memory changes needed to be visible.
+		// (This is just a safety checks)
+		// boolean isStarted = isFileWritingThreadRunning.getPlain();
+		// The above needs java 9!
+		boolean isStarted = isFileWritingThreadRunning.get();
+		
+		if (!isStarted) throw new ConcurrentModificationException("WriterMain Triggered but the thead state is not started!?");
+		ClientApi.LOGGER.info("Lod File Writer started. To-be-written-regions: "+regionToSave.size());
+		Instant start = Instant.now();
+		// Note: Since regionToSave is a ConcurrentHashMap, and the .values() return one that support concurrency,
+		//       this for loop should be safe and loop until all values are gone.
+		while (!regionToSave.isEmpty()) {
+			for (LodRegion r : regionToSave.values()) {
+				//Check if the data has been swapped out right under me. Otherwise remove it from the entry
+				if (!regionToSave.remove(r.getRegionPos(), r)) continue;
+				try
+				{
+					Instant i = Instant.now();
+					ClientApi.LOGGER.info("Lod: Saving Region "+r.getRegionPos());
+					saveRegionToFile(r);
+					Instant j = Instant.now();
+					Duration d = Duration.between(i, j);
+					ClientApi.LOGGER.info("Lod: Region "+r.getRegionPos()+" save finish. Took "+d);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+		Instant end = Instant.now();
+		ClientApi.LOGGER.info("Lod File Writer completed. Took "+Duration.between(start, end));
+		// Use Memory order Release to release any memory changes on setting this boolean
+		// (Corresponding call is the this::saveRegions(...)::...compareAndExchangeAcquire(false, true);)
+		// isFileWritingThreadRunning.setRelease(false);
+		// The above needs java 9!
+		isFileWritingThreadRunning.set(false);
+	}
 	
 	/**
 	 * Save a specific region to disk.<br>
@@ -240,7 +328,7 @@ public class LodDimensionFileHandler
 		{
 			// Get the old file
 			File oldFile = getRegionFile(region.regionPosX, region.regionPosZ, region.getGenerationMode(), detailLevel, region.getVerticalQuality());
-			ClientApi.LOGGER.debug("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] to file.");
+			ClientApi.LOGGER.debug("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] detail "+detailLevel+" to file.");
 			
 			boolean isFileFullyGened = false;
 			// make sure the file and folder exists
@@ -366,14 +454,14 @@ public class LodDimensionFileHandler
 	
 	// Return null if no file found
 	private File getBestMatchingRegionFile(byte detailLevel, int regionX, int regionZ, DistanceGenerationMode targetGenMode, VerticalQuality targetVertQuality) {
-		DistanceGenerationMode genMode = targetGenMode;
+		DistanceGenerationMode genMode = DistanceGenerationMode.FULL;
 		// Search from least GenMode to max GenMode, than least vertQuality to max vertQuality
 		do {
 			File file = getRegionFile(regionX, regionZ, genMode, detailLevel, targetVertQuality);
 			if (file.exists()) return file; // Found target file.
-			targetGenMode = DistanceGenerationMode.next(targetGenMode);
-			if (targetGenMode == null) { // Failed to find any files for this vertQuality. Try next one up.
-				targetGenMode = genMode;
+			genMode = DistanceGenerationMode.previous(genMode);
+			if (genMode==null || genMode==DistanceGenerationMode.previous(targetGenMode)) { // Failed to find any files for this vertQuality. Try next one up.
+				genMode = DistanceGenerationMode.FULL;
 				targetVertQuality = VerticalQuality.next(targetVertQuality);
 			}
 		} while (targetVertQuality != null);
