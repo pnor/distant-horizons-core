@@ -40,13 +40,7 @@ public interface IWrapperFactory
 	
 	
 	AbstractChunkPosWrapper createChunkPos();
-	public default AbstractChunkPosWrapper createChunkPos(long xAndZPositionCombined)
-	{
-		int x = (int) (xAndZPositionCombined & Integer.MAX_VALUE);
-		int z = (int) (xAndZPositionCombined >> Long.SIZE / 2) & Integer.MAX_VALUE;
-		
-		return createChunkPos(x, z);
-	}
+	AbstractChunkPosWrapper createChunkPos(long xAndZPositionCombined);
 	AbstractChunkPosWrapper createChunkPos(int x, int z);
 	AbstractChunkPosWrapper createChunkPos(AbstractChunkPosWrapper newChunkPos);
 	AbstractChunkPosWrapper createChunkPos(AbstractBlockPosWrapper blockPos);

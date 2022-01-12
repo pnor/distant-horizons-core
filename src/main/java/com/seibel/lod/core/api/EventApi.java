@@ -65,12 +65,6 @@ public class EventApi
 	{
 		
 	}
-
-	@Deprecated
-	public void chunkLoadEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
-	{
-		//ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType, DistanceGenerationMode.FULL, true);
-	}
 	
 	
 	//=============//
@@ -122,6 +116,14 @@ public class EventApi
 		// the player just loaded a new world/dimension
 		ApiShared.lodWorld.selectWorld(LodUtil.getWorldID(world));
 		
+		// Make the LodDim if it does not exist
+		if (ApiShared.lodWorld.getLodDimension(world.getDimensionType()) == null)
+		{
+			LodDimension lodDim = new LodDimension(world.getDimensionType(), ApiShared.lodWorld,
+					ApiShared.lodBuilder.defaultDimensionWidthInRegions);
+			ApiShared.lodWorld.addLodDimension(lodDim);
+		}
+		
 		// make sure the correct LODs are being rendered
 		// (if this isn't done the previous world's LODs may be drawn)
 		ClientApi.renderer.regenerateLODsNextFrame();
@@ -132,32 +134,15 @@ public class EventApi
 	{
 		ClientApi.LOGGER.info("WorldUnloadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
 		// If it's single player, ignore the client side world unload event
-		// Note: using this as often API call unload event AFTER setting MC to not be in a singlePlayerServer
+		// Note: using isCurrentlyOnSinglePlayerServer as often API call unload event AFTER setting MC to not be in a singlePlayerServer
 		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == WorldType.ClientWorld) return;
+		
 		// the player just unloaded a world/dimension
 		ThreadMapUtil.clearMaps();
-		// ClientApi.renderer.markForCleanup();
-		// ClientApi.renderer.destroyBuffers();
 		checkIfDisconnectedFromServer();
-		//new Thread(() -> checkIfDisconnectedFromServer()).start();
 	}
 	private void checkIfDisconnectedFromServer()
 	{
-		/*
-		try
-		{
-			// world unloading events are called before disconnecting from the server,
-			// so we need to wait a second for MC to disconnect 
-			Thread.sleep(1000);
-		}
-		catch (InterruptedException e)
-		{
-			// this should never happen, but just in case
-			e.printStackTrace();
-		}*/
-		
-		
-		//if (MC.getWrappedClientWorld() == null || (!MC.connectedToServer() && !MC.hasSinglePlayerServer()))
 		{
 			// the player just left the server
 			
@@ -166,6 +151,8 @@ public class EventApi
 			// if this isn't done unfinished tasks may be left in the queue
 			// preventing new LodChunks form being generated
 			ApiShared.isShuttingDown = true;
+			
+			// TODO Check why world gen is sometimes stuck and timeout
 			LodWorldGenerator.INSTANCE.restartExecutorService();
 			
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);

@@ -22,6 +22,7 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -66,7 +67,8 @@ public class LodBuilder
 	/** Minecraft's max light value */
 	public static final short DEFAULT_MAX_LIGHT = 15;
 	
-	
+	//public static final ExecutorService lodGenThreadPool = Executors.newFixedThreadPool(8, new ThreadFactoryBuilder().setNameFormat("Lod-Builder-%d").build());
+
 	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
@@ -90,25 +92,31 @@ public class LodBuilder
 	
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
 	{
-		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL, false);
+		// Block change event
+		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL, true, ()->{},
+				()->{generateLodNodeAsync(chunk,lodWorld,dim);});
 	}
 	
-	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, DistanceGenerationMode generationMode, boolean override)
+	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim,
+			DistanceGenerationMode generationMode, boolean override, Runnable endCallback, Runnable retryCallback)
 	{
-		if (lodWorld == null || lodWorld.getIsWorldNotLoaded())
+		if (lodWorld == null || lodWorld.getIsWorldNotLoaded()) {
+			endCallback.run();
 			return;
-		
+		}
 		// don't try to create an LOD object
 		// if for some reason we aren't
 		// given a valid chunk object
-		if (chunk == null)
+		if (chunk == null) {
+			endCallback.run();
 			return;
+		}
 		
 		Thread thread = new Thread(() ->
 		{
-			//noinspection GrazieInspection
-			//try
-			//{
+			boolean retryNeeded = false;
+			try
+			{
 				// we need a loaded client world in order to
 				// get the textures for blocks
 				if (MC.getWrappedClientWorld() == null)
@@ -120,25 +128,24 @@ public class LodBuilder
 					return;
 				
 				// make sure the dimension exists
-				LodDimension lodDim;
-				if (lodWorld.getLodDimension(dim) == null)
-				{
-					lodDim = new LodDimension(dim, lodWorld, defaultDimensionWidthInRegions);
-					lodWorld.addLodDimension(lodDim);
-				}
-				else
-				{
-					lodDim = lodWorld.getLodDimension(dim);
-				}
-				generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override);
-			//}
-			//catch (IllegalArgumentException | NullPointerException e)
-			//{
-			//	e.printStackTrace();
+				// if not, it prob means that player left
+				LodDimension lodDim = lodWorld.getLodDimension(dim);
+				if (lodDim == null) return;
+				
+				retryNeeded = !generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override);
+			}
+			catch (RuntimeException e)
+			{
+				e.printStackTrace();
 			//	// if the world changes while LODs are being generated
 			//	// they will throw errors as they try to access things that no longer
 			//	// exist.
-			//}
+			} finally {
+				if (!retryNeeded)
+					endCallback.run();
+				else
+					retryCallback.run();
+			}
 		});
 		lodGenThreadPool.execute(thread);
 	}
@@ -202,7 +209,7 @@ public class LodBuilder
 	 * Creates a LodNode for a chunk in the given world.
 	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
 	 */
-	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override)
+	public boolean generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override)
 			throws IllegalArgumentException
 	{
 		//long executeTime = System.currentTimeMillis();
@@ -215,11 +222,11 @@ public class LodBuilder
 		
 		LodRegion region = lodDim.getRegion(chunk.getRegionPosX(), chunk.getRegionPosZ());
 		if (region == null)
-			return;
+			return false;
 		
 		// this happens if a LOD is generated after the user leaves the world.
 		if (MC.getWrappedClientWorld() == null)
-			return;
+			return false;
 		
 		// determine how many LODs to generate horizontally
 		
@@ -258,6 +265,7 @@ public class LodBuilder
 				}
 			}
 		}
+		return true;
 		//executeTime = System.currentTimeMillis() - executeTime;
 		//if (executeTime > 0) ClientApi.LOGGER.info("generateLodNodeFromChunk level: " + detailLevel + " time ms: " + executeTime);
 	}

@@ -50,6 +50,8 @@ public interface IChunkWrapper
 	int getMinX();
 	int getMinZ();
 	
+	long getLongChunkPos();
+	
 	boolean isLightCorrect();
 	
 	boolean isWaterLogged(int x, int y, int z);

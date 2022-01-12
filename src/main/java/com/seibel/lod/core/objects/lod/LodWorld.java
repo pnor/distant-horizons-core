@@ -65,17 +65,12 @@ public class LodWorld
 	 */
 	public void selectWorld(String newWorldName)
 	{
-		if (newWorldName.isEmpty())
-		{
-			deselectWorld();
-			return;
-		}
-		
 		if (worldName.equals(newWorldName))
 			// don't recreate everything if we
 			// didn't actually change worlds
 			return;
-		
+
+		deselectWorld();
 		worldName = newWorldName;
 		lodDimensions = new Hashtable<>();
 		isWorldLoaded = true;

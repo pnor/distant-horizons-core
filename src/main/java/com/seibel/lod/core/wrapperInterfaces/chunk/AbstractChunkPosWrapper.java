@@ -40,6 +40,7 @@ public abstract class AbstractChunkPosWrapper
 	
 	public abstract int getX();
 	public abstract int getZ();
+	public abstract long getLong();
 	
 	public abstract int getMinBlockX();
 	public abstract int getMinBlockZ();
