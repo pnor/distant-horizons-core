@@ -81,6 +81,7 @@ public class ClientApi
 	
 	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
 	{
+		//ClientApi.LOGGER.info("Lod Generating add: "+chunk.getLongChunkPos());
 		toBeLoaded.add(chunk.getLongChunkPos());
 	}
 
@@ -104,9 +105,16 @@ public class ClientApi
 				return;
 			
 			IWorldWrapper world = MC.getWrappedClientWorld();
-			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension());
+			if (world == null) return;
+			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(world.getDimensionType());
+			
+			// Make the LodDim if it does not exist
 			if (lodDim == null)
-				return;
+			{
+				lodDim = new LodDimension(world.getDimensionType(), ApiShared.lodWorld,
+						ApiShared.lodBuilder.defaultDimensionWidthInRegions);
+				ApiShared.lodWorld.addLodDimension(lodDim);
+			}
 			
 			for (long pos : toBeLoaded) {
 				if (generating.size() >= 8) {
@@ -118,13 +126,13 @@ public class ClientApi
 					toBeLoaded.remove(pos);
 					continue;
 				}
-				if (!chunk.isLightCorrect()) continue;
+				//if (!chunk.isLightCorrect()) continue;
 				toBeLoaded.remove(pos);
 				generating.add(pos);
-				ClientApi.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
+				//ClientApi.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
 				ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld,
 						world.getDimensionType(), DistanceGenerationMode.FULL, true, () -> {
-							ClientApi.LOGGER.info("Lod Generation for "+pos+" done. Remining: " +toBeLoaded.size());
+							//ClientApi.LOGGER.info("Lod Generation for "+pos+" done. Remining: " +toBeLoaded.size());
 							generating.remove(pos);
 						}, () -> {
 							generating.remove(pos);

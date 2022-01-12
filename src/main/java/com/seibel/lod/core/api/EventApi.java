@@ -116,13 +116,6 @@ public class EventApi
 		// the player just loaded a new world/dimension
 		ApiShared.lodWorld.selectWorld(LodUtil.getWorldID(world));
 		
-		// Make the LodDim if it does not exist
-		if (ApiShared.lodWorld.getLodDimension(world.getDimensionType()) == null)
-		{
-			LodDimension lodDim = new LodDimension(world.getDimensionType(), ApiShared.lodWorld,
-					ApiShared.lodBuilder.defaultDimensionWidthInRegions);
-			ApiShared.lodWorld.addLodDimension(lodDim);
-		}
 		
 		// make sure the correct LODs are being rendered
 		// (if this isn't done the previous world's LODs may be drawn)
