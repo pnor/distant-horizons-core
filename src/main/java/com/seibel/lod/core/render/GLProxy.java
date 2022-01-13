@@ -440,32 +440,4 @@ public class GLProxy
 			instance.workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 		}
 	}
-	
-	/** 
-	 * If called from a legacy OpenGL context this will
-	 * set the fog end to infinity with a density of 0. 
-	 * Effectively removing the fog.
-	 * <p>
-	 * This only works with Legacy OpenGL because James hasn't
-	 * looking into a way for it to work with Modern OpenGL.
-	 */
-	public boolean disableLegacyFog()
-	{
-		// make sure this is a legacy OpenGL context 
-		if (minecraftGlCapabilities.glFogf != 0)
-		{
-			// glFogf should only have an address if the current OpenGL
-			// context can call it, and it should only be able to call it in
-			// legacy OpenGL contexts; since it is disabled in Modern
-			// OpenGL.
-			
-			GL11.glFogf(GL11.GL_FOG_START, 0.0f);
-			GL11.glFogf(GL11.GL_FOG_END, Float.MAX_VALUE);
-			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.0f);
-			return true;
-		}
-		return false;
-	}
-	
-	
 }

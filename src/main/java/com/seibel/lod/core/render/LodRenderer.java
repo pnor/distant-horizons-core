@@ -172,9 +172,8 @@ public class LodRenderer
 		
 		GLProxy glProxy = GLProxy.getInstance();
 		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
-			if (!glProxy.disableLegacyFog())
-				if (!MC_RENDER.tryDisableVanillaFog())
-					canVanillaFogBeDisabled = false;
+			if (!MC_RENDER.tryDisableVanillaFog())
+				canVanillaFogBeDisabled = false;
 		
 		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// starting here...
