@@ -69,7 +69,7 @@
   "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds": "GPU upload speed (milliseconds)",
   "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds.@tooltip": "How long should a buffer wait per Megabyte of data uploaded? \nHelpful resource for frame times: https://fpstoms.com",
   "DistantHorizons.config.client.advanced.buffers.rebuildTimes": "Rebuild times",
-  "DistantHorizons.config.client.advanced.buffers.rebuildTimes.@tooltip": "Rebuild times",
+  "DistantHorizons.config.client.advanced.buffers.rebuildTimes.@tooltip": "How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU?",
   "DistantHorizons.config.client.advanced.debugging": "Debug",
   "DistantHorizons.config.client.advanced.debugging.drawLods": "Draw LOD's",
   "DistantHorizons.config.client.advanced.debugging.drawLods.@tooltip": "If true, the mod is enabled and fake chunks will be drawn.",

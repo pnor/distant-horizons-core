@@ -1,0 +1,5 @@
+{
+  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode": "Fog colour mode",
+  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode.@tooltip": "What colour should fog use?",
+  "DistantHorizons.config.enum.FogColorMode.USE_SKY_COLOR": "Use sky colour"
+}
