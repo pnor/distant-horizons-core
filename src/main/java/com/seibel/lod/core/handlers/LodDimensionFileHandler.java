@@ -235,10 +235,11 @@ public class LodDimensionFileHandler
 			for (int j = 0; j < lodDimension.getWidth(); j++)
 			{
 				LodRegion r = lodDimension.getRegionByArrayIndex(i, j);
-				
+
+				// FIXME: Note that the isWriting is a crude attempt at syncing. It won't work.
+				// It just reduce the chance of race condition
 				if (r != null && r.needSaving)
 				{
-					r.needSaving = false;
 					regionToSave.put(r.getRegionPos(), r);
 				}
 			}
@@ -288,10 +289,12 @@ public class LodDimensionFileHandler
 		//       this for loop should be safe and loop until all values are gone.
 		while (!regionToSave.isEmpty()) {
 			for (LodRegion r : regionToSave.values()) {
-				//Check if the data has been swapped out right under me. Otherwise remove it from the entry
-				if (!regionToSave.remove(r.getRegionPos(), r)) continue;
-				try
-				{
+				r.isWriting++;
+				try {
+					if (r.isWriting>1) continue;
+					//Check if the data has been swapped out right under me. Otherwise remove it from the entry
+					if (!regionToSave.remove(r.getRegionPos(), r)) continue;
+					r.needSaving = false;
 					Instant i = Instant.now();
 					ClientApi.LOGGER.info("Lod: Saving Region "+r.getRegionPos());
 					saveRegionToFile(r);
@@ -302,6 +305,8 @@ public class LodDimensionFileHandler
 				catch (Exception e)
 				{
 					e.printStackTrace();
+				} finally {
+					r.isWriting--;
 				}
 			}
 		}

@@ -45,7 +45,7 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
-	boolean addVerticalData(long[] data, int posX, int posZ);
+	boolean addVerticalData(long[] data, int posX, int posZ, boolean override);
 	
 	/**
 	 * With this you can add data to the level container

@@ -70,6 +70,7 @@ public class LodRegion {
 
 	public volatile int needRegenBuffer = 2;
 	public volatile boolean needSaving = false;
+	public volatile int isWriting = 0;
 
 	public LodRegion(byte minDetailLevel, RegionPos regionPos, DistanceGenerationMode generationMode,
 			VerticalQuality verticalQuality) {
@@ -94,6 +95,7 @@ public class LodRegion {
 	 * @return true if the data was added successfully
 	 */
 	public boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, long data) {
+		assert(isWriting!=0);
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 
@@ -114,7 +116,8 @@ public class LodRegion {
 	 * 
 	 * @return true if the data was added successfully
 	 */
-	public boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data) {
+	public boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data, boolean override) {
+		assert(isWriting!=0);
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 
@@ -123,7 +126,12 @@ public class LodRegion {
 		if (this.dataContainer[detailLevel] == null)
 			return false;// this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
 
-		return this.dataContainer[detailLevel].addVerticalData(data, posX, posZ);
+		boolean updated = this.dataContainer[detailLevel].addVerticalData(data, posX, posZ, override);
+		if (updated) {
+			needRegenBuffer = 2;
+			needSaving = true;
+		}
+		return updated;
 	}
 
 	/**
@@ -148,15 +156,6 @@ public class LodRegion {
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainer[detailLevel].getSingleData(posX, posZ);
-	}
-
-	/**
-	 * Clears the datapoint at the given relative position
-	 */
-	public void clear(byte detailLevel, int posX, int posZ) {
-		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
-		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		dataContainer[detailLevel].clear(posX, posZ);
 	}
 
 	/**

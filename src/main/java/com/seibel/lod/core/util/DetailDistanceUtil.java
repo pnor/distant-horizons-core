@@ -44,7 +44,7 @@ public class DetailDistanceUtil
 	private static int minDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
 	private static int maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
 	
-	
+	@Deprecated
 	private static final HorizontalResolution[] lodGenDetails = {
 			HorizontalResolution.BLOCK,
 			HorizontalResolution.TWO_BLOCKS,
@@ -150,6 +150,7 @@ public class DetailDistanceUtil
 		return detail;
 	}
 	
+	@Deprecated
 	public static HorizontalResolution getLodGenDetail(int detail)
 	{
 		if (detail < minGenDetail)
@@ -158,7 +159,8 @@ public class DetailDistanceUtil
 			return lodGenDetails[detail];
 	}
 	
-	
+
+	@Deprecated
 	public static byte getCutLodDetail(int detail)
 	{
 		if (detail < minGenDetail)

@@ -267,6 +267,18 @@ public class DataPointUtil
 		}
 	}
 	
+	/** Return (>0) if dataA should replace dataB, (0) if equal, (<0) if dataB should replace dataA */
+	public static int compareDatapointPriority(long dataA, long dataB) {
+		if (dataA==0 || dataB==0) {
+			if (dataA!=0) dataA = Integer.MAX_VALUE;
+			if (dataB!=0) dataB = Integer.MAX_VALUE;
+			return (int)(dataA-dataB);
+		}
+		int genA = (int)getGenerationMode(dataA);
+		int genB = (int)getGenerationMode(dataB);
+		return genA-genB;
+	}
+	
 	/**
 	 * This method merge column of multiple data together
 	 * @param dataToMerge one or more columns of data

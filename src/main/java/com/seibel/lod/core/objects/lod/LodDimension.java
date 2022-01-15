@@ -354,19 +354,18 @@ public class LodDimension
 				int regionZ;
 				int minDistance;
 				byte detail;
-				byte minAllowedDetailLevel;
 				regionX = (x + center.x) - halfWidth;
 				regionZ = (z + center.z) - halfWidth;
 				LodRegion region = regions[x][z];
-				if (region != null) {
+				if (region != null && !region.needSaving && region.isWriting==0) {
 					// check what detail level this region should be
 					// and cut it if it is higher then that
 					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
 							playerPosX, playerPosZ);
 					detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
-					minAllowedDetailLevel = DetailDistanceUtil.getCutLodDetail(detail);
-					if (region.getMinDetailLevel() < minAllowedDetailLevel) {
-						region.cutTree(minAllowedDetailLevel);
+					if (region.getMinDetailLevel() < detail) {
+						if (region.needSaving) return; // FIXME: A crude attempt at lowering chance of race condition!
+						region.cutTree(detail);
 						region.needRegenBuffer = 2;
 						regenDimensionBuffers = true;
 					}
@@ -408,6 +407,7 @@ public class LodDimension
 				regionZ = (z + center.z) - halfWidth;
 				final RegionPos regionPos = new RegionPos(regionX, regionZ);
 				region = regions[x][z];
+				if (region != null && region.isWriting!=0) return; // FIXME: A crude attempt at lowering chance of race condition!
 
 				minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
 						playerPosZ);
@@ -451,7 +451,7 @@ public class LodDimension
 	 * stored in the LOD. If an LOD already exists at the given
 	 * coordinate it will be overwritten.
 	 */
-	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data)
+	public Boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data, boolean override)
 	{
 		int regionPosX = LevelPosUtil.getRegion(detailLevel, posX);
 		int regionPosZ = LevelPosUtil.getRegion(detailLevel, posZ);
@@ -461,10 +461,8 @@ public class LodDimension
 		if (region == null)
 			return false;
 		
-		boolean nodeAdded = region.addVerticalData(detailLevel, posX, posZ, data);
+		boolean nodeAdded = region.addVerticalData(detailLevel, posX, posZ, data, override);
 		if (nodeAdded) {
-			region.needRegenBuffer = 2;
-			region.needSaving = true;
 			regenDimensionBuffers = true;
 		}
 		return nodeAdded;
@@ -573,22 +571,6 @@ public class LodDimension
 			return DataPointUtil.EMPTY_DATA;
 		
 		return region.getSingleData(detailLevel, posX, posZ);
-	}
-	
-	/** Clears the given region */
-	public void clear(byte detailLevel, int posX, int posZ)
-	{
-		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
-			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
-
-		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
-		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
-		LodRegion region = getRegion(xRegion, zRegion);
-		if (region == null)
-			return;
-		region.clear(detailLevel, posX, posZ);
-		region.needRegenBuffer = 2;
-		regenDimensionBuffers = true;
 	}
 	
 	/**

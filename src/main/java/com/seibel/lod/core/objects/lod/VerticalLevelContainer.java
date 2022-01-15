@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.LongBuffer;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
@@ -92,10 +93,17 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
-	public boolean addVerticalData(long[] data, int posX, int posZ)
+	public boolean addVerticalData(long[] data, int posX, int posZ, boolean override)
 	{
+		int index = posX * size * verticalSize + posZ * verticalSize;
+		int compare = DataPointUtil.compareDatapointPriority(data[0], dataContainer[index]);
+		if (override) {
+			if (compare<0) return false;
+		} else {
+			if (compare<=0) return false;
+		}
 		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
-			dataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = data[verticalIndex];
+			dataContainer[index + verticalIndex] = data[verticalIndex];
 		return true;
 	}
 	
@@ -1131,7 +1139,7 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 		data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getVerticalSize());
 		
-		addVerticalData(data, posX, posZ);
+		addVerticalData(data, posX, posZ, true);
 	}
 	
 	public void newUpdateData(VerticalLevelContainer lowerLevelContainer, int posX, int posZ)
