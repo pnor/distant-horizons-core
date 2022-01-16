@@ -166,8 +166,8 @@ public class LodRegion {
 	 * understand
 	 */
 	public void getPosToGenerate(PosToGenerateContainer posToGenerate, int playerBlockPosX, int playerBlockPosZ,
-			GenerationPriority priority) {
-		getPosToGenerate(posToGenerate, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerBlockPosX, playerBlockPosZ, priority);
+			GenerationPriority priority, boolean shouldSort) {
+		getPosToGenerate(posToGenerate, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerBlockPosX, playerBlockPosZ, priority, shouldSort);
 
 	}
 
@@ -179,7 +179,7 @@ public class LodRegion {
 	 * understand
 	 */
 	private void getPosToGenerate(PosToGenerateContainer posToGenerate, byte detailLevel, int childOffsetPosX,
-			int childOffsetPosZ, int playerPosX, int playerPosZ, GenerationPriority priority) {
+			int childOffsetPosZ, int playerPosX, int playerPosZ, GenerationPriority priority, boolean shouldSort) {
 		// equivalent to 2^(...)
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 
@@ -198,24 +198,24 @@ public class LodRegion {
 			if (targetDetailLevel == detailLevel) {
 				if (!doesDataExist(detailLevel, childOffsetPosX, childOffsetPosZ))
 					posToGenerate.addPosToGenerate(detailLevel, childOffsetPosX + regionPosX * size,
-							childOffsetPosZ + regionPosZ * size);
+							childOffsetPosZ + regionPosZ * size, shouldSort);
 			} else {
 				if (priority == GenerationPriority.FAR_FIRST && detailLevel >= posToGenerate.farMinDetail
 						&& !doesDataExist(detailLevel, childOffsetPosX, childOffsetPosZ)) {
 					posToGenerate.addPosToGenerate(detailLevel, childOffsetPosX + regionPosX * size,
-							childOffsetPosZ + regionPosZ * size);
+							childOffsetPosZ + regionPosZ * size, shouldSort);
 				} else if (detailLevel > LodUtil.CHUNK_DETAIL_LEVEL) {
 					for (int x = 0; x <= 1; x++)
 						for (int z = 0; z <= 1; z++)
 							getPosToGenerate(posToGenerate, childDetailLevel, childPosX + x, childPosZ + z, playerPosX,
-									playerPosZ, priority);
+									playerPosZ, priority, shouldSort);
 				} else {
 					// we want at max one request per chunk (since the world generator creates
 					// chunks).
 					// So for lod smaller than a chunk, only recurse down
 					// the top right child
 					getPosToGenerate(posToGenerate, childDetailLevel, childPosX, childPosZ, playerPosX, playerPosZ,
-							priority);
+							priority, shouldSort);
 				}
 			}
 		}

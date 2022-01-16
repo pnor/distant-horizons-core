@@ -21,6 +21,8 @@ package com.seibel.lod.core.objects.lod;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -75,6 +77,8 @@ public class LodDimension
 	// which is a safer way to get the width then directly asking the arrays
 	/** stores all the regions in this dimension */
 	public volatile LodRegion[][] regions;
+	//NOTE: This list pos is relative to center
+	private volatile RegionPos[] iteratorList = null;
 	
 	/** stores if the region at the given x and z index needs to be saved to disk */
 	/** stores if the region at the given x and z index needs to be regenerated */
@@ -94,6 +98,7 @@ public class LodDimension
 	private boolean isExpanding = false;
 	
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand"));
+	
 	
 	/**
 	 * Creates the dimension centered at (0,0)
@@ -139,6 +144,28 @@ public class LodDimension
 		regions = new LodRegion[width][width];
 		
 		center = new RegionPos(0, 0);
+		generateIteratorList();
+	}
+	
+	private void generateIteratorList() {
+		iteratorList = null;
+		RegionPos[] list = new RegionPos[width*width];
+		
+		int i = 0;
+		for (int ix=-halfWidth; ix<=halfWidth; ix++) {
+			for (int iz=-halfWidth; iz<=halfWidth; iz++) {
+				list[i] = new RegionPos(ix, iz);
+				i++;
+			}
+		}
+		Arrays.sort(list, (a, b) -> {
+			RegionPos posA = (RegionPos)a;
+			RegionPos posB = (RegionPos)b;
+			double disSqrA = posA.x*posA.x+posA.z*posA.z;
+			double disSqrB = posB.x*posB.x+posB.z*posB.z;
+			return Double.compare(disSqrA, disSqrB);
+		});
+		iteratorList = list;
 	}
 	
 	
@@ -333,12 +360,21 @@ public class LodDimension
 	        oy += dy;
 	    }
 	}
+	public void iterateByDistance(PosComsumer r) {
+		if (iteratorList==null) return;
+		for (RegionPos relativePos : iteratorList) {
+			r.run(relativePos.x+halfWidth, relativePos.z+halfWidth);
+		}
+		
+	}
 	
 	
 	/**
 	 * Deletes nodes that are a higher detail then necessary, freeing
 	 * up memory.
 	 */
+	private int totalDirtiedRegions = 0;
+	
 	public void cutRegionNodesAsync(int playerPosX, int playerPosZ)
 	{
 		if (isCutting) return;
@@ -347,7 +383,7 @@ public class LodDimension
 		// for the same location
 		Runnable thread = () -> {
 			//ClientApi.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
-
+			totalDirtiedRegions = 0;
 			// go over every region in the dimension
 			iterateWithSpiral((int x, int z) -> {
 				int regionX;
@@ -357,6 +393,7 @@ public class LodDimension
 				regionX = (x + center.x) - halfWidth;
 				regionZ = (z + center.z) - halfWidth;
 				LodRegion region = regions[x][z];
+				if (region != null && region.needSaving) totalDirtiedRegions++;
 				if (region != null && !region.needSaving && region.isWriting==0) {
 					// check what detail level this region should be
 					// and cut it if it is higher then that
@@ -371,8 +408,12 @@ public class LodDimension
 					}
 				}
 			});
+			if (totalDirtiedRegions > 8) this.saveDirtyRegionsToFile(false);
+			
 			//ClientApi.LOGGER.info("LodDim cut Region complete: " + playerPosX + "," + playerPosZ);
 			isCutting = false;
+			
+			// See if we need to save and flush some data out.
 		};
 		cutAndExpandThread.execute(thread);
 	}
@@ -485,11 +526,12 @@ public class LodDimension
 	{
 		PosToGenerateContainer posToGenerate;
 		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
-		iterateWithSpiral((int x, int z) -> {
+		iterateByDistance((int x, int z) -> {
+			if (posToGenerate.isFull()) return;
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
 			LodRegion lodRegion = regions[x][z];
 			if (lodRegion != null)
-				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, priority);
+				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, priority, (Math.abs(x)+Math.abs(z)<2));
 		});
 	return posToGenerate;
 	}
@@ -698,6 +740,7 @@ public class LodDimension
 		halfWidth = width/ 2;
 		
 		regions = new LodRegion[width][width];
+		generateIteratorList();
 	}
 	
 	
