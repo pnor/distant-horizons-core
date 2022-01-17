@@ -183,18 +183,6 @@ public class DataPointUtil
 		return (byte) ((dataPoint >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
-	/**
-	 * @deprecated
-	 * this used to take into account default light flag, but thanks to leetom this is no longer necessary
-	 */
-	public static byte getLightSkyAlt(long dataPoint)
-	{
-		//if (skyLightPlayer == 0 && ((dataPoint >>> FLAG_SHIFT) & FLAG_MASK) == 1)
-		//	return 0;
-		//else
-			return (byte) ((dataPoint >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
-	}
-	
 	public static byte getLightBlock(long dataPoint)
 	{
 		return (byte) ((dataPoint >>> BLOCK_LIGHT_SHIFT) & BLOCK_LIGHT_MASK);
