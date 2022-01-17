@@ -107,7 +107,6 @@ public enum DistanceGenerationMode
 		case BIOME_ONLY:
 			return DistanceGenerationMode.NONE;
 		case NONE:
-			return null;
 		default:
 			return null;
 		}
@@ -116,8 +115,6 @@ public enum DistanceGenerationMode
 	// Note: return null if out of range
 	public static DistanceGenerationMode next(DistanceGenerationMode mode) {
 		switch (mode) {
-		case FULL:
-			return null;
 		case FEATURES:
 			return DistanceGenerationMode.FULL;
 		case SURFACE:
@@ -128,6 +125,7 @@ public enum DistanceGenerationMode
 			return DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
 		case NONE:
 			return DistanceGenerationMode.BIOME_ONLY;
+		case FULL:
 		default:
 			return null;
 		}

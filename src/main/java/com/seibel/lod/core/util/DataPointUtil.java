@@ -19,8 +19,6 @@
 
 package com.seibel.lod.core.util;
 
-import static com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory.skyLightPlayer;
-
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 
 
@@ -145,8 +143,8 @@ public class DataPointUtil
 	}
 	
 	public static long shiftHeightAndDepth(long dataPoint, short offset) {
-		long height = (dataPoint + (offset << HEIGHT_SHIFT)) & HEIGHT_SHIFTED_MASK;
-		long depth =  (dataPoint + (offset << DEPTH_SHIFT)) & DEPTH_SHIFTED_MASK;
+		long height = (dataPoint + ((long) offset << HEIGHT_SHIFT)) & HEIGHT_SHIFTED_MASK;
+		long depth =  (dataPoint + ((long) offset << DEPTH_SHIFT)) & DEPTH_SHIFTED_MASK;
 		return dataPoint & ~(HEIGHT_SHIFTED_MASK | DEPTH_SHIFTED_MASK) | height | depth;
 	}
 	
@@ -278,8 +276,8 @@ public class DataPointUtil
 			if (dataB!=0) dataB = Integer.MAX_VALUE;
 			return (int)(dataA-dataB);
 		}
-		int genA = (int)getGenerationMode(dataA);
-		int genB = (int)getGenerationMode(dataB);
+		int genA = getGenerationMode(dataA);
+		int genB = getGenerationMode(dataB);
 		return genA-genB;
 	}
 	

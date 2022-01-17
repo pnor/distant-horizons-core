@@ -40,7 +40,6 @@ import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
-import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -105,54 +104,49 @@ public class GLProxy
 	
 	
 	private String getFailedVersionInfo(GLCapabilities c) {
-		StringBuilder str = new StringBuilder("Your supported OpenGL version:\n");
 		
-		str.append("1.1: "+c.OpenGL11+"\n");
-		str.append("1.2: "+c.OpenGL12+"\n");
-		str.append("1.3: "+c.OpenGL13+"\n");
-		str.append("1.4: "+c.OpenGL14+"\n");
-		str.append("1.5: "+c.OpenGL15+"\n");
-		str.append("2.0: "+c.OpenGL20+"\n");
-		str.append("2.1: "+c.OpenGL21+"\n");
-		str.append("3.0: "+c.OpenGL30+"\n");
-		str.append("3.1: "+c.OpenGL31+"\n");
-		str.append("3.2: "+c.OpenGL32+" <- REQUIRED\n");
-		str.append("3.3: "+c.OpenGL33+"\n");
-		str.append("4.0: "+c.OpenGL40+"\n");
-		str.append("4.1: "+c.OpenGL41+"\n");
-		str.append("4.2: "+c.OpenGL42+"\n");
-		str.append("4.3: "+c.OpenGL43+" <- optional improvement\n");
-		str.append("4.4: "+c.OpenGL44+" <- optional improvement\n");
-		str.append("4.5: "+c.OpenGL45+"\n");
-		str.append("4.6: "+c.OpenGL46+"\n");
-		
-		str.append("If you noticed that your computer supports higher OpenGL versions"
+		return "Your supported OpenGL version:\n" + "1.1: " + c.OpenGL11 + "\n" +
+				"1.2: " + c.OpenGL12 + "\n" +
+				"1.3: " + c.OpenGL13 + "\n" +
+				"1.4: " + c.OpenGL14 + "\n" +
+				"1.5: " + c.OpenGL15 + "\n" +
+				"2.0: " + c.OpenGL20 + "\n" +
+				"2.1: " + c.OpenGL21 + "\n" +
+				"3.0: " + c.OpenGL30 + "\n" +
+				"3.1: " + c.OpenGL31 + "\n" +
+				"3.2: " + c.OpenGL32 + " <- REQUIRED\n" +
+				"3.3: " + c.OpenGL33 + "\n" +
+				"4.0: " + c.OpenGL40 + "\n" +
+				"4.1: " + c.OpenGL41 + "\n" +
+				"4.2: " + c.OpenGL42 + "\n" +
+				"4.3: " + c.OpenGL43 + " <- optional improvement\n" +
+				"4.4: " + c.OpenGL44 + " <- optional improvement\n" +
+				"4.5: " + c.OpenGL45 + "\n" +
+				"4.6: " + c.OpenGL46 + "\n" +
+				"If you noticed that your computer supports higher OpenGL versions"
 				+ " but not the required version, try running the game in compatibility mode."
-				+ " (How you turn that on, I have no clue~)");
-		return str.toString();
+				+ " (How you turn that on, I have no clue~)";
 	}
 	private String getVersionInfo(GLCapabilities c) {
-		StringBuilder str = new StringBuilder("Your supported OpenGL version:\n");
 		
-		str.append("1.1: "+c.OpenGL11+"\n");
-		str.append("1.2: "+c.OpenGL12+"\n");
-		str.append("1.3: "+c.OpenGL13+"\n");
-		str.append("1.4: "+c.OpenGL14+"\n");
-		str.append("1.5: "+c.OpenGL15+"\n");
-		str.append("2.0: "+c.OpenGL20+"\n");
-		str.append("2.1: "+c.OpenGL21+"\n");
-		str.append("3.0: "+c.OpenGL30+"\n");
-		str.append("3.1: "+c.OpenGL31+"\n");
-		str.append("3.2: "+c.OpenGL32+" <- REQUIRED\n");
-		str.append("3.3: "+c.OpenGL33+"\n");
-		str.append("4.0: "+c.OpenGL40+"\n");
-		str.append("4.1: "+c.OpenGL41+"\n");
-		str.append("4.2: "+c.OpenGL42+"\n");
-		str.append("4.3: "+c.OpenGL43+" <- optional improvement\n");
-		str.append("4.4: "+c.OpenGL44+" <- optional improvement\n");
-		str.append("4.5: "+c.OpenGL45+"\n");
-		str.append("4.6: "+c.OpenGL46+"\n");
-		return str.toString();
+		return "Your supported OpenGL version:\n" + "1.1: " + c.OpenGL11 + "\n" +
+				"1.2: " + c.OpenGL12 + "\n" +
+				"1.3: " + c.OpenGL13 + "\n" +
+				"1.4: " + c.OpenGL14 + "\n" +
+				"1.5: " + c.OpenGL15 + "\n" +
+				"2.0: " + c.OpenGL20 + "\n" +
+				"2.1: " + c.OpenGL21 + "\n" +
+				"3.0: " + c.OpenGL30 + "\n" +
+				"3.1: " + c.OpenGL31 + "\n" +
+				"3.2: " + c.OpenGL32 + " <- REQUIRED\n" +
+				"3.3: " + c.OpenGL33 + "\n" +
+				"4.0: " + c.OpenGL40 + "\n" +
+				"4.1: " + c.OpenGL41 + "\n" +
+				"4.2: " + c.OpenGL42 + "\n" +
+				"4.3: " + c.OpenGL43 + " <- optional improvement\n" +
+				"4.4: " + c.OpenGL44 + " <- optional improvement\n" +
+				"4.5: " + c.OpenGL45 + "\n" +
+				"4.6: " + c.OpenGL46 + "\n";
 	}
 	
 	

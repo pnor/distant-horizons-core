@@ -48,7 +48,7 @@ public interface IWrapperFactory
 	
 	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper);
 	// Return null to signal that there is no AbstractWorldGenerator
-	public default AbstractExperimentalWorldGeneratorWrapper createExperimentalWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper) {
+	default AbstractExperimentalWorldGeneratorWrapper createExperimentalWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper) {
 		return null;
 	}
 }

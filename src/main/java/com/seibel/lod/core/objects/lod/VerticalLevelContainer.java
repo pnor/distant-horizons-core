@@ -22,13 +22,9 @@ package com.seibel.lod.core.objects.lod;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.LongBuffer;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
@@ -102,8 +98,8 @@ public class VerticalLevelContainer implements LevelContainer
 		} else {
 			if (compare<=0) return false;
 		}
-		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
-			dataContainer[index + verticalIndex] = data[verticalIndex];
+		if (verticalSize >= 0)
+			System.arraycopy(data, 0, dataContainer, index, verticalSize);
 		return true;
 	}
 	
@@ -421,12 +417,14 @@ public class VerticalLevelContainer implements LevelContainer
 		
 		//STEP 1//
 		//We initially reset this position of the data container
-		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
+		final int k = posX * size + posZ;
+		positionDataContainer[k] = PositionDataFormat.EMPTY_DATA;
 		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
 		{
-			verticalDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = VerticalDataFormat.EMPTY_LOD;
-			lightDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
-			colorDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
+			final int j = k * verticalSize + verticalIndex;
+			verticalDataContainer[j] = VerticalDataFormat.EMPTY_LOD;
+			lightDataContainer[j] = 0;
+			colorDataContainer[j] = 0;
 		}
 		
 		
@@ -760,12 +758,14 @@ public class VerticalLevelContainer implements LevelContainer
 	//SPLITTED VERSION OF THE MERGE AND ADD
 	private void resetPosition(int posX, int posZ)
 	{
-		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
+		final int i = posX * size + posZ;
+		positionDataContainer[i] = PositionDataFormat.EMPTY_DATA;
 		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
 		{
-			verticalDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = VerticalDataFormat.EMPTY_LOD;
-			lightDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
-			colorDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
+			final int j = i * verticalSize + verticalIndex;
+			verticalDataContainer[j] = VerticalDataFormat.EMPTY_LOD;
+			lightDataContainer[j] = 0;
+			colorDataContainer[j] = 0;
 		}
 	}
 	

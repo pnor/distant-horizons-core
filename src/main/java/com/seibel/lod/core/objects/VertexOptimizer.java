@@ -30,7 +30,6 @@ import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -329,7 +328,7 @@ public class VertexOptimizer
 		singleAdjDataPoint = adjData.get(LodDirection.DOWN)[0];
 		skipBot = DataPointUtil.doesItExist(singleAdjDataPoint) && DataPointUtil.getHeight(singleAdjDataPoint) == minY;// && DataPointUtil.getAlpha(singleAdjDataPoint) == 255;
 		if(DataPointUtil.doesItExist(singleAdjDataPoint))
-			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+			skyLights.get(LodDirection.DOWN)[0] = DataPointUtil.getLightSky(singleAdjDataPoint);
 		else
 			skyLights.get(LodDirection.DOWN)[0] = skyLights.get(LodDirection.UP)[0];
 		//other sided
@@ -379,12 +378,12 @@ public class VertexOptimizer
 						{
 							adjHeight.get(lodDirection)[0] = getMaxY();
 							adjDepth.get(lodDirection)[0] = getMinY();
-							skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
+							skyLights.get(lodDirection)[0] = DataPointUtil.getLightSky(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
 						}
 						else
 						{
 							adjDepth.get(lodDirection)[faceToDraw] = getMinY();
-							skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+							skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSky(singleAdjDataPoint);
 						}
 						faceToDraw++;
 						toFinish = false;
@@ -410,12 +409,12 @@ public class VertexOptimizer
 							{
 								adjHeight.get(lodDirection)[0] = getMaxY();
 								adjDepth.get(lodDirection)[0] = height;
-								skyLights.get(lodDirection)[0] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
+								skyLights.get(lodDirection)[0] = DataPointUtil.getLightSky(singleAdjDataPoint); //skyLights.get(Direction.UP)[0];
 							}
 							else
 							{
 								adjDepth.get(lodDirection)[faceToDraw] = height;
-								skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+								skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSky(singleAdjDataPoint);
 							}
 							toFinish = false;
 							faceToDraw++;
@@ -443,7 +442,7 @@ public class VertexOptimizer
 						}
 						
 						adjDepth.get(lodDirection)[faceToDraw] = height;
-						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSky(singleAdjDataPoint);
 						faceToDraw++;
 						adjHeight.get(lodDirection)[faceToDraw] = depth;
 						firstFace = false;
@@ -467,7 +466,7 @@ public class VertexOptimizer
 				{
 					singleAdjDataPoint = dataPoint[toFinishIndex];
 					if (DataPointUtil.doesItExist(singleAdjDataPoint))
-						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSkyAlt(singleAdjDataPoint);
+						skyLights.get(lodDirection)[faceToDraw] = DataPointUtil.getLightSky(singleAdjDataPoint);
 					else
 						skyLights.get(lodDirection)[faceToDraw] = skyLights.get(LodDirection.UP)[0];
 				}

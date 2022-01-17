@@ -6,8 +6,8 @@ import java.util.List;
 public class GridList<T> extends ArrayList<T> implements List<T> {
 
 	public static class Pos {
-		public int x;
-		public int y;
+		public final int x;
+		public final int y;
 
 		public Pos(int xx, int yy) {
 			x = xx;

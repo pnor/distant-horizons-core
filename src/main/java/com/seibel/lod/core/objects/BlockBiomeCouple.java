@@ -3,22 +3,21 @@ package com.seibel.lod.core.objects;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class BlockBiomeCouple
 {
-	public static ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
-	public static ConcurrentMap<IBiomeWrapper, ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple>> withBiomeIstanceCache = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<IBiomeWrapper, ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple>> withBiomeIstanceCache = new ConcurrentHashMap<>();
 	
-	String blockName;
-	String biomeName;
-	String coupleName;
+	final String blockName;
+	final String biomeName;
+	final String coupleName;
 	
-	IBiomeWrapper biomeColor;
-	IBlockColorWrapper blockColor;
+	final IBiomeWrapper biomeColor;
+	final IBlockColorWrapper blockColor;
 	
 	public static void addBlockBiomeToCache(IBlockColorWrapper blockColor){
 	}

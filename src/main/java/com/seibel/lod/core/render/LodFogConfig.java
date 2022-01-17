@@ -34,7 +34,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 public class LodFogConfig
 {
 	public FogDrawMode fogDrawMode;
-	public FogDistance fogDistance;
+	public final FogDistance fogDistance;
 	
 	public float nearFogStart = 0;
 	public float nearFogEnd = 0;

@@ -21,7 +21,6 @@ package com.seibel.lod.core.objects.lod;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * A level container is a quad tree level
