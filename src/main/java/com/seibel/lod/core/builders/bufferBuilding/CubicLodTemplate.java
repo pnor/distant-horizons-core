@@ -74,7 +74,7 @@ public class CubicLodTemplate
 				playerZ,
 				adjData,
 				color,
-				DataPointUtil.getLightSkyAlt(data),
+				DataPointUtil.getLightSky(data),
 				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
