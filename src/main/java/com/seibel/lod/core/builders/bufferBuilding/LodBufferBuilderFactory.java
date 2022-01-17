@@ -219,6 +219,7 @@ public class LodBufferBuilderFactory
 		} else {
 			fullRegen = allBuffersRequireReset || frontBufferRequireReset;
 		}
+		
 		if (!fullRegen && !partialRegen) return false;
 		
 		generatingBuffers = true;
@@ -257,9 +258,10 @@ public class LodBufferBuilderFactory
 			int vboX;
 			int vboY;
 			int vboZ;
+
+			boolean tooFar = Math.abs(buildableCenterBlockX-playerX)+Math.abs(buildableCenterBlockZ-playerZ)>100_000;
 			
-			
-			if (fullRegen || buildableBuffers==null || buildableVbos==null
+			if (fullRegen || tooFar || buildableBuffers==null || buildableVbos==null
 					|| setsToRender==null || vertexOptimizerCache==null) {
 				renderRange = lodDim.getWidth()/2; //get lodDim half width
 				buildableBuffers = new MovableGridList<LodBufferBuilder[]>(renderRange, playerRegionX, playerRegionZ);
