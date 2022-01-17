@@ -21,6 +21,7 @@ package com.seibel.lod.core.objects.opengl;
 
 import org.lwjgl.opengl.GL32;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.render.GLProxy;
 

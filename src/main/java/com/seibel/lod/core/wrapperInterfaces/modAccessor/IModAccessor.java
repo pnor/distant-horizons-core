@@ -1,5 +1,5 @@
 package com.seibel.lod.core.wrapperInterfaces.modAccessor;
 
-public interface IModAccessor {
+public abstract interface IModAccessor {
 	String getModName();
 }

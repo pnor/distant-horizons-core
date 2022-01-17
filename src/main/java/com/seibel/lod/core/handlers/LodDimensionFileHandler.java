@@ -57,7 +57,7 @@ import com.seibel.lod.core.util.LodUtil;
 public class LodDimensionFileHandler
 {
 	/** This is the dimension that owns this file handler */
-	private final LodDimension lodDimension;
+	private LodDimension lodDimension;
 	
 	private final File dimensionDataSaveFolder;
 	
@@ -88,10 +88,10 @@ public class LodDimensionFileHandler
 	 * Allow saving asynchronously, but never try to save multiple regions
 	 * at a time
 	 */
-	private final AtomicBoolean isFileWritingThreadRunning = new AtomicBoolean(false);
+	private AtomicBoolean isFileWritingThreadRunning = new AtomicBoolean(false);
 	private ExecutorService fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
 	
-	private final ConcurrentHashMap<RegionPos, LodRegion> regionToSave = new ConcurrentHashMap<RegionPos, LodRegion>();
+	private ConcurrentHashMap<RegionPos, LodRegion> regionToSave = new ConcurrentHashMap<RegionPos, LodRegion>();
 	
 	
 	public LodDimensionFileHandler(File newSaveFolder, LodDimension newLodDimension)
@@ -173,6 +173,7 @@ public class LodDimensionFileHandler
 							+ ". File has been deleted.");
 					// This should not break, but be continue to see whether other detail levels can be loaded or updated
 					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+					continue;
 				}
 				else if (fileVersion > LOD_SAVE_FILE_VERSION)
 				{
@@ -186,6 +187,7 @@ public class LodDimensionFileHandler
 							+ " this region will not be written to in order to protect the newer file.");
 					// This should not break, but be continue to see whether other detail levels can be loaded or updated
 					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
+					continue;
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
 				{

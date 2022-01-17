@@ -22,6 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.world;
 import java.io.File;
 
 import com.seibel.lod.core.enums.WorldType;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 

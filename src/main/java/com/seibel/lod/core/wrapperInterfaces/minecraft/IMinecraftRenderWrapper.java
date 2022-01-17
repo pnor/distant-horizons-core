@@ -55,9 +55,9 @@ public interface IMinecraftRenderWrapper
 	
 	Color getFogColor(float partialTicks);
 	
-	default Color getUnderWaterFogColor(float partialTicks) {return getFogColor(partialTicks);}
+	public default Color getUnderWaterFogColor(float partialTicks) {return getFogColor(partialTicks);}
 
-	default boolean isFogStateInUnderWater() {
+	public default boolean isFogStateInUnderWater() {
 		return false;
 	}
 	
@@ -77,7 +77,7 @@ public interface IMinecraftRenderWrapper
 	 * <br>
 	 * If not implemented this calls {@link #getMaximumRenderedChunks()}.
 	 */
-	default HashSet<AbstractChunkPosWrapper> getVanillaRenderedChunks()
+	public default HashSet<AbstractChunkPosWrapper> getVanillaRenderedChunks()
 	{
 		ISodiumAccessor sodium = ModAccessorApi.get(ISodiumAccessor.class);
 		return sodium==null ? getMaximumRenderedChunks() : sodium.getNormalRenderedChunks();
@@ -87,7 +87,7 @@ public interface IMinecraftRenderWrapper
 	 * <strong>Doesn't need to be implemented.</strong> <br>
 	 * Returns every chunk position within the vanilla render distance.
 	 */
-	default HashSet<AbstractChunkPosWrapper> getMaximumRenderedChunks()
+	public default HashSet<AbstractChunkPosWrapper> getMaximumRenderedChunks()
 	{
 		IMinecraftWrapper mcWrapper = SingletonHandler.get(IMinecraftWrapper.class);
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
@@ -119,9 +119,9 @@ public interface IMinecraftRenderWrapper
 	/** @returns -1 if there was an issue getting the lightmap */
 	int getLightmapTextureWidth();
 	/** @returns -1 if there was an issue getting the lightmap */
-	int getLightmapGLFormat();
+	public int getLightmapGLFormat();
 	
 	// Try and disable vanilla fog. Return true if successful, or false if not able to.
-	boolean tryDisableVanillaFog();
+	public boolean tryDisableVanillaFog();
 	
 }

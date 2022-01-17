@@ -60,6 +60,7 @@ public enum VerticalQuality
 		case MEDIUM:
 			return VerticalQuality.LOW;
 		case LOW:
+			return null;
 		default:
 			return null;
 		}
@@ -68,11 +69,12 @@ public enum VerticalQuality
 	// Note: return null if out of range
 	public static VerticalQuality next(VerticalQuality mode) {
 		switch (mode) {
+		case HIGH:
+			return null;
 		case MEDIUM:
 			return VerticalQuality.HIGH;
 		case LOW:
 			return VerticalQuality.MEDIUM;
-		case HIGH:
 		default:
 			return null;
 		}

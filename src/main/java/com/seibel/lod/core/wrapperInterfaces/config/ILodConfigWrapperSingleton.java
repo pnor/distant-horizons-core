@@ -345,7 +345,7 @@ public interface ILodConfigWrapperSingleton
 			void setGenerationPriority(GenerationPriority newGenerationPriority);
 			
 			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.SURFACE;
-			static String getDistanceGenerationModeDesc(IVersionConstants versionConstants)
+			public static String getDistanceGenerationModeDesc(IVersionConstants versionConstants)
 			{		
 				return ""
 					+ " How detailed should fake chunks be generated outside the vanilla render distance? \n"
@@ -437,7 +437,7 @@ public interface ILodConfigWrapperSingleton
 			static String multiOrSingleThreadText(IVersionConstants versionConstants, DistanceGenerationMode distanceGenerationMode) 
 			{
 				return versionConstants.isWorldGeneratorSingleThreaded(distanceGenerationMode) ? "Singlethreaded" : "Multithreaded"; 
-			}
+			};
 		}
 		
 		

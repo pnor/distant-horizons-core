@@ -85,8 +85,8 @@ public class LodBufferBuilderFactory
 	}
 
 	public static class Pos {
-		public final int x;
-		public final int y;
+		public int x;
+		public int y;
 
 		public Pos(int xx, int yy) {
 			x = xx;
@@ -359,10 +359,12 @@ public class LodBufferBuilderFactory
 				if (!future.get())
 				{
 					ClientApi.LOGGER.error("LodBufferBuilder ran into trouble and had to start over.");
+					continue;
 				}
 				} catch (Exception e) {
 					ClientApi.LOGGER.error("LodBufferBuilder ran into trouble: ");
 					e.printStackTrace();
+					continue;
 				}
 			}
 			
@@ -665,6 +667,8 @@ public class LodBufferBuilderFactory
 		GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod(); 
 		
 		// determine the upload timeout
+		int MBPerMS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
+		long BPerNS = MBPerMS; // MB -> B = 1/1,000,000. MS -> NS = 1,000,000. So, MBPerMS = BPerNS.
 		long remainingNS = 0; // We don't want to pause for like 0.1 ms... so we store those tiny MS.
 		long bytesUploaded = 0;
 		
@@ -693,7 +697,7 @@ public class LodBufferBuilderFactory
 
 				// upload buffers over an extended period of time
 				// to hopefully prevent stuttering.
-				remainingNS += uploadBuffer.capacity()* (long) CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
+				remainingNS += uploadBuffer.capacity()*BPerNS;
 				bytesUploaded += uploadBuffer.capacity();
 				if (remainingNS >= TimeUnit.NANOSECONDS.convert(1000/60, TimeUnit.MILLISECONDS)) {
 					if (remainingNS > MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS) remainingNS = MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS;

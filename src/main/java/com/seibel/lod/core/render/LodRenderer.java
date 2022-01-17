@@ -39,6 +39,7 @@ import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
 import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.GridList;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
@@ -404,8 +405,10 @@ public class LodRenderer
 		// accuracy vs the model view matrix, which only uses floats)
 		//int bufferPosX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
 		//int bufferPosZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
-		double xDiff = projectedView.x - vbosCenterX;
-		double zDiff = projectedView.z - vbosCenterZ;
+		int bufferPosX = vbosCenterX;
+		int bufferPosZ = vbosCenterZ;
+		double xDiff = projectedView.x - bufferPosX;
+		double zDiff = projectedView.z - bufferPosZ;
 		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
 		
 		return mcModelViewMatrix;
@@ -419,8 +422,10 @@ public class LodRenderer
 	{
 		//int worldCenterX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
 		//int worldCenterZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
+		int worldCenterX = vbosCenterX;
+		int worldCenterZ = vbosCenterZ;
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
-		return new Vec3f((float)cameraPos.x - vbosCenterX, (float)cameraPos.y, (float)cameraPos.z - vbosCenterZ);
+		return new Vec3f((float)cameraPos.x - worldCenterX, (float)cameraPos.y, (float)cameraPos.z - worldCenterZ);
 	}
 
 	/**

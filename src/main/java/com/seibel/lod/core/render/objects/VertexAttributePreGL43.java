@@ -48,16 +48,14 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	public void bindBufferToBindingPoint(int buffer, int bindingPoint) {
 		int[] toBind = bindingPointsToIndex[bindingPoint];
 		
-		for (int j : toBind)
-			GL32.glEnableVertexAttribArray(j);
+		for (int i=0; i<toBind.length; i++)
+			GL32.glEnableVertexAttribArray(toBind[i]);
 		
-		for (int j : toBind)
-		{
-			VertexPointer pointer = pointers[j];
-			if (pointer == null)
-				continue;
-			GL32.glVertexAttribPointer(j, pointer.elementCount, pointer.glType,
-					pointer.normalized, strideSize, pointersOffset[j]);
+		for (int i=0; i< toBind.length; i++) {
+			VertexPointer pointer = pointers[toBind[i]];
+			if (pointer==null) continue;
+			GL32.glVertexAttribPointer(toBind[i], pointer.elementCount, pointer.glType,
+					pointer.normalized, strideSize, pointersOffset[toBind[i]]);
 		}
 
 	}
@@ -73,8 +71,8 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	public void unbindBuffersFromBindingPoint(int bindingPoint) {
 		int[] toBind = bindingPointsToIndex[bindingPoint];
 		
-		for (int j : toBind)
-			GL32.glDisableVertexAttribArray(j);
+		for (int i=0; i<toBind.length; i++)
+			GL32.glDisableVertexAttribArray(toBind[i]);
 	}
 
 	@Override

@@ -15,8 +15,8 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 	private static final long serialVersionUID = 5366261085254591277L;
 
 	public static class Pos {
-		public final int x;
-		public final int y;
+		public int x;
+		public int y;
 
 		public Pos(int xx, int yy) {
 			x = xx;
@@ -94,16 +94,16 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 		return (x>=0 && x<gridSize && y>=0 && y<gridSize);
 	} 
 	
-	private T _getDirect(int x, int y) {
+	private final T _getDirect(int x, int y) {
 		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return null;
 		return super.get(x + y * gridSize);
 	}
-	private boolean _setDirect(int x, int y, T t) {
+	private final boolean _setDirect(int x, int y, T t) {
 		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return false;
 		super.set(x + y * gridSize, t);
 		return true;
 	}
-	private T _swapDirect(int x, int y, T t) {
+	private final T _swapDirect(int x, int y, T t) {
 		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return null;
 		return super.set(x + y * gridSize, t);
 	}
@@ -266,7 +266,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 	public String toDetailString() {
 		StringBuilder str = new StringBuilder("\n");
 		int i = 0;
-		str.append(this);
+		str.append(toString());
 		str.append("\n");
 		for (T t : this) {
 			

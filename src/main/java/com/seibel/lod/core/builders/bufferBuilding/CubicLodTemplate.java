@@ -28,6 +28,8 @@ import com.seibel.lod.core.objects.opengl.LodBufferBuilder;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import static com.seibel.lod.core.builders.lodBuilding.LodBuilder.MIN_WORLD_HEIGHT;
 
@@ -72,7 +74,7 @@ public class CubicLodTemplate
 				playerZ,
 				adjData,
 				color,
-				DataPointUtil.getLightSky(data),
+				DataPointUtil.getLightSkyAlt(data),
 				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
