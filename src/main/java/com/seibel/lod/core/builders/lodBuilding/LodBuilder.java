@@ -296,32 +296,27 @@ public class LodBuilder
 		int colorOfBlock = 0;
 		if (strictEdge)
 		{
-			colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs).getColor();
 			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(xAbs, yAbs + 1, zAbs);
-			if (block != null && ((this.config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
+			if (block != null && !block.isToAvoid()
+					&& ((this.config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
 					|| (this.config.client().worldGenerator().getBlocksToAvoid().noCollision && block.hasNoCollision())))
 			{
 				int aboveColorInt = chunk.getBlockColorWrapper(xAbs, yAbs + 1, zAbs).getColor();
 				if (aboveColorInt != 0)
 					colorOfBlock = aboveColorInt;
+				else
+					colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs).getColor();
 			}
 		}
 		
 		for (int y = yAbs - 1; y >= 0; y--)
 		{
 			
-			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs))
+			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs)
+				|| (strictEdge && colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor()))
 			{
 				depth = (short) (y + 1);
 				break;
-			}
-			if (strictEdge)
-			{
-				if (colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor())
-				{
-					depth = (short) (y + 1);
-					break;
-				}
 			}
 		}
 		return depth;
@@ -524,10 +519,11 @@ public class LodBuilder
 		boolean noCollisionAvoidance = config.client().worldGenerator().getBlocksToAvoid().noCollision;
 		
 		IBlockShapeWrapper block = chunk.getBlockShapeWrapper(x, y, z);
-		if (block == null) return false;
-		return !block.isToAvoid()
-					   && !(nonFullAvoidance && block.isNonFull())
-					   && !(noCollisionAvoidance && block.hasNoCollision());
+		
+		return block != null
+					&& !block.isToAvoid()
+					&& !(nonFullAvoidance && block.isNonFull())
+					&& !(noCollisionAvoidance && block.hasNoCollision());
 		
 	}
 }
