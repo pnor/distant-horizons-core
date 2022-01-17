@@ -185,11 +185,15 @@ public class DataPointUtil
 		return (byte) ((dataPoint >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
+	/**
+	 * @deprecated
+	 * this used to take into account default light flag, but thanks to leetom this is no longer necessary
+	 */
 	public static byte getLightSkyAlt(long dataPoint)
 	{
-		if (skyLightPlayer == 0 && ((dataPoint >>> FLAG_SHIFT) & FLAG_MASK) == 1)
-			return 0;
-		else
+		//if (skyLightPlayer == 0 && ((dataPoint >>> FLAG_SHIFT) & FLAG_MASK) == 1)
+		//	return 0;
+		//else
 			return (byte) ((dataPoint >>> SKY_LIGHT_SHIFT) & SKY_LIGHT_MASK);
 	}
 	
@@ -505,7 +509,6 @@ public class DataPointUtil
 				byte tempGenMode = DistanceGenerationMode.FULL.complexity;
 				allEmpty = true;
 				allVoid = true;
-				allDefault = true;
 				long data = 0;
 				
 				for (int index = 0; index < size; index++)
@@ -544,8 +547,6 @@ public class DataPointUtil
 							tempBlue += getBlue(data);
 							tempLightBlock += getLightBlock(data);
 							tempLightSky += getLightSky(data);
-							if (!getFlag(data))
-								allDefault = false;
 						}
 						tempGenMode = (byte) Math.min(tempGenMode, getGenerationMode(data));
 					}
@@ -576,7 +577,7 @@ public class DataPointUtil
 					//{
 					//	add simplification at the end due to color
 					//}
-					dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+					dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, false);
 				}
 			}
 		}

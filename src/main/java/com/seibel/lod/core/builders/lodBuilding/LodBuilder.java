@@ -396,11 +396,8 @@ public class LodBuilder
 	/** Gets the light value for the given block position */
 	private int getLightValue(IChunkWrapper chunk, int x, int y, int z, boolean hasCeiling, boolean hasSkyLight, boolean topBlock)
 	{
-		int skyLight = 0;
+		int skyLight;
 		int blockLight;
-		// 1 means the lighting is a guess
-		int isDefault = 0;
-		
 		
 		int blockBrightness = chunk.getEmittedBrightness(x, y, z);
 		// get the air block above or below this block
@@ -410,77 +407,59 @@ public class LodBuilder
 			y++;
 		
 		blockLight = chunk.getBlockLight(x, y, z);
-		if (hasSkyLight)
-			skyLight = chunk.getSkyLight(x, y, z);
-		else
-			skyLight = 0;
+		skyLight = hasSkyLight ? chunk.getSkyLight(x, y, z) : 0;
 		
-		if (blockLight != -1 && skyLight != -1) {
-			blockLight = LodUtil.clamp(0, Math.max(blockLight, blockBrightness), DEFAULT_MAX_LIGHT);
-			return blockLight + (skyLight << 4) + (isDefault << 8);
-		}
-		
-		IWorldWrapper world = MC.getWrappedServerWorld();
-		
-		if (world != null)
+		if (blockLight == -1 || skyLight == -1)
 		{
-			// server world sky light (always accurate)
-			blockLight = world.getBlockLight(x,y,z);
 			
-			if (topBlock && !hasCeiling && hasSkyLight)
-				skyLight = DEFAULT_MAX_LIGHT;
+			IWorldWrapper world = MC.getWrappedServerWorld();
+			
+			if (world != null)
+			{
+				// server world sky light (always accurate)
+				blockLight = world.getBlockLight(x, y, z);
+				
+				if (topBlock && !hasCeiling && hasSkyLight)
+					skyLight = DEFAULT_MAX_LIGHT;
+				else
+					skyLight = hasSkyLight ? world.getSkyLight(x, y, z) : 0;
+				
+				if (!topBlock && skyLight == 15)
+				{
+					// we are on predicted terrain, and we don't know what the light here is,
+					// lets just take a guess
+					skyLight = 12;
+				}
+			}
 			else
 			{
-				if (hasSkyLight)
-					skyLight = world.getSkyLight(x,y,z);
-				//else
-				//	skyLight = 0;
-			}
-			if (!topBlock && skyLight == 15)
-			{
-				// we are on predicted terrain, and we don't know what the light here is,
-				// lets just take a guess
-				if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
+				world = MC.getWrappedClientWorld();
+				if (world == null)
 				{
-					skyLight = 6;
+					blockLight = 0;
+					skyLight = 12;
 				}
 				else
-					skyLight = 6;
-			}
-		}
-		else
-		{
-			world = MC.getWrappedClientWorld();
-			if (world==null)
-			{
-				blockLight = 0;
-				skyLight = 6;
-			}
-			else
-			{
-				// client world sky light (almost never accurate)
-				blockLight = world.getBlockLight(x,y,z);
-				// estimate what the lighting should be
-				if (hasSkyLight || !hasCeiling)
 				{
-					if (topBlock)
-						skyLight = DEFAULT_MAX_LIGHT;
-					else
+					// client world sky light (almost never accurate)
+					blockLight = world.getBlockLight(x, y, z);
+					// estimate what the lighting should be
+					if (hasSkyLight || !hasCeiling)
 					{
-						if (hasSkyLight)
-							skyLight = world.getSkyLight(x,y,z);
-						//else
-						//	skyLight = 0;
-						if (!chunk.isLightCorrect() && (skyLight == 0 || skyLight == 15))
+						if (topBlock)
+							skyLight = DEFAULT_MAX_LIGHT;
+						else
 						{
-							// we don't know what the light here is,
-							// lets just take a guess
-							if (y >= MC.getWrappedClientWorld().getSeaLevel() - 5)
+							if (hasSkyLight)
+								skyLight = world.getSkyLight(x, y, z);
+							//else
+							//	skyLight = 0;
+							if (!chunk.isLightCorrect() && (skyLight == 0 || skyLight == 15))
 							{
-								skyLight = 6;
+								// we don't know what the light here is,
+								// lets just take a guess
+								skyLight = 12;
 							}
-							else
-								skyLight = 6;
 						}
 					}
 				}
@@ -488,8 +467,7 @@ public class LodBuilder
 		}
 		
 		blockLight = LodUtil.clamp(0, Math.max(blockLight, blockBrightness), DEFAULT_MAX_LIGHT);
-		
-		return blockLight + (skyLight << 4) + (isDefault << 8);
+		return blockLight + (skyLight << 4);
 	}
 	
 	/** Returns a color int for the given block. */
