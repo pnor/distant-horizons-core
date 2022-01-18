@@ -57,7 +57,7 @@ import com.seibel.lod.core.util.LodUtil;
 public class LodDimensionFileHandler
 {
 	/** This is the dimension that owns this file handler */
-	private LodDimension lodDimension;
+	private final LodDimension lodDimension;
 	
 	private final File dimensionDataSaveFolder;
 	
@@ -88,10 +88,10 @@ public class LodDimensionFileHandler
 	 * Allow saving asynchronously, but never try to save multiple regions
 	 * at a time
 	 */
-	private AtomicBoolean isFileWritingThreadRunning = new AtomicBoolean(false);
+	private final AtomicBoolean isFileWritingThreadRunning = new AtomicBoolean(false);
 	private ExecutorService fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
 	
-	private ConcurrentHashMap<RegionPos, LodRegion> regionToSave = new ConcurrentHashMap<RegionPos, LodRegion>();
+	private final ConcurrentHashMap<RegionPos, LodRegion> regionToSave = new ConcurrentHashMap<RegionPos, LodRegion>();
 	
 	
 	public LodDimensionFileHandler(File newSaveFolder, LodDimension newLodDimension)

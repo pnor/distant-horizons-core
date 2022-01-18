@@ -71,15 +71,15 @@ public class BooleanMovableGridList {
 		return _swapDirect(x,y, t);
 	}
 	
-	private final boolean _getDirect(int x, int y) {
+	private boolean _getDirect(int x, int y) {
 		assertIndex(x,y);
 		return b[x + y * gridSize];
 	}
-	private final void _setDirect(int x, int y, boolean t) {
+	private void _setDirect(int x, int y, boolean t) {
 		assertIndex(x,y);
 		b[x + y * gridSize] = t;
 	}
-	private final boolean _swapDirect(int x, int y, boolean t) {
+	private boolean _swapDirect(int x, int y, boolean t) {
 		assertIndex(x,y);
 		boolean r = b[x + y * gridSize];
 		b[x + y * gridSize] = t;

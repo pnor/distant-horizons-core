@@ -665,8 +665,7 @@ public class LodBufferBuilderFactory
 		GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod(); 
 		
 		// determine the upload timeout
-		int MBPerMS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
-		long BPerNS = MBPerMS; // MB -> B = 1/1,000,000. MS -> NS = 1,000,000. So, MBPerMS = BPerNS.
+		long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds(); // MB -> B = 1/1,000,000. MS -> NS = 1,000,000. So, MBPerMS = BPerNS.
 		long remainingNS = 0; // We don't want to pause for like 0.1 ms... so we store those tiny MS.
 		long bytesUploaded = 0;
 		

@@ -157,10 +157,8 @@ public class LodDimension
 			}
 		}
 		Arrays.sort(list, (a, b) -> {
-			RegionPos posA = a;
-			RegionPos posB = b;
-			double disSqrA = posA.x*posA.x+posA.z*posA.z;
-			double disSqrB = posB.x*posB.x+posB.z*posB.z;
+			double disSqrA = a.x* a.x+ a.z* a.z;
+			double disSqrB = b.x* b.x+ b.z* b.z;
 			return Double.compare(disSqrA, disSqrB);
 		});
 		iteratorList = list;

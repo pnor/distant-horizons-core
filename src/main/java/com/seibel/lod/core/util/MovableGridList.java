@@ -94,16 +94,16 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 		return (x>=0 && x<gridSize && y>=0 && y<gridSize);
 	} 
 	
-	private final T _getDirect(int x, int y) {
+	private T _getDirect(int x, int y) {
 		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return null;
 		return super.get(x + y * gridSize);
 	}
-	private final boolean _setDirect(int x, int y, T t) {
+	private boolean _setDirect(int x, int y, T t) {
 		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return false;
 		super.set(x + y * gridSize, t);
 		return true;
 	}
-	private final T _swapDirect(int x, int y, T t) {
+	private T _swapDirect(int x, int y, T t) {
 		if (x<0 || x>=gridSize || y<0 || y>=gridSize) return null;
 		return super.set(x + y * gridSize, t);
 	}

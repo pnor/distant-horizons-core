@@ -404,10 +404,8 @@ public class LodRenderer
 		// accuracy vs the model view matrix, which only uses floats)
 		//int bufferPosX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
 		//int bufferPosZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
-		int bufferPosX = vbosCenterX;
-		int bufferPosZ = vbosCenterZ;
-		double xDiff = projectedView.x - bufferPosX;
-		double zDiff = projectedView.z - bufferPosZ;
+		double xDiff = projectedView.x - vbosCenterX;
+		double zDiff = projectedView.z - vbosCenterZ;
 		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
 		
 		return mcModelViewMatrix;
@@ -421,10 +419,8 @@ public class LodRenderer
 	{
 		//int worldCenterX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
 		//int worldCenterZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
-		int worldCenterX = vbosCenterX;
-		int worldCenterZ = vbosCenterZ;
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
-		return new Vec3f((float)cameraPos.x - worldCenterX, (float)cameraPos.y, (float)cameraPos.z - worldCenterZ);
+		return new Vec3f((float)cameraPos.x - vbosCenterX, (float)cameraPos.y, (float)cameraPos.z - vbosCenterZ);
 	}
 
 	/**

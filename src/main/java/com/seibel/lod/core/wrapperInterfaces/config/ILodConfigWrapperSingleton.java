@@ -345,7 +345,7 @@ public interface ILodConfigWrapperSingleton
 			void setGenerationPriority(GenerationPriority newGenerationPriority);
 			
 			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.SURFACE;
-			public static String getDistanceGenerationModeDesc(IVersionConstants versionConstants)
+			static String getDistanceGenerationModeDesc(IVersionConstants versionConstants)
 			{		
 				return ""
 					+ " How detailed should fake chunks be generated outside the vanilla render distance? \n"
