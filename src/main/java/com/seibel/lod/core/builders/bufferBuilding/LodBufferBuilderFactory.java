@@ -359,12 +359,10 @@ public class LodBufferBuilderFactory
 				if (!future.get())
 				{
 					ClientApi.LOGGER.error("LodBufferBuilder ran into trouble and had to start over.");
-					continue;
 				}
 				} catch (Exception e) {
 					ClientApi.LOGGER.error("LodBufferBuilder ran into trouble: ");
 					e.printStackTrace();
-					continue;
 				}
 			}
 			

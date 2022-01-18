@@ -107,44 +107,41 @@ public class BooleanMovableGridList {
 	}
 
 	public void flipBorder(boolean valueToBeFlipped) {
-		boolean t = valueToBeFlipped;
 		BoolTransformer tran = (v, x, y) -> {
-			if (v!=t) return v;
+			if (v!= valueToBeFlipped) return v;
 			boolean r = false;
-			r |= (isInBound(x-1,y) ? get(x-1,y)==!t : false);
-			r |= (isInBound(x,y-1) ? get(x,y-1)==!t : false);
-			r |= (isInBound(x+1,y) ? get(x+1,y)==!t : false);
-			r |= (isInBound(x,y+1) ? get(x,y+1)==!t : false);
-			return r ? !t : t;
+			r |= (isInBound(x - 1, y) && get(x - 1, y) == !valueToBeFlipped);
+			r |= (isInBound(x, y - 1) && get(x, y - 1) == !valueToBeFlipped);
+			r |= (isInBound(x + 1, y) && get(x + 1, y) == !valueToBeFlipped);
+			r |= (isInBound(x, y + 1) && get(x, y + 1) == !valueToBeFlipped);
+			return r != valueToBeFlipped;
 		};
 		twoStageTransform(tran);
 	}
 	public void flipBorderCorner(boolean valueToBeFlipped) {
-		boolean t = valueToBeFlipped;
 		BoolTransformer tran = (v, x, y) -> {
-			if (v!=t) return v;
+			if (v!= valueToBeFlipped) return v;
 			boolean r = false;
-			r |= (isInBound(x-1,y) ? get(x-1,y)==!t : false);
-			r |= (isInBound(x,y-1) ? get(x,y-1)==!t : false);
-			r |= (isInBound(x+1,y) ? get(x+1,y)==!t : false);
-			r |= (isInBound(x,y+1) ? get(x,y+1)==!t : false);
-			r |= (isInBound(x-1,y-1) ? get(x-1,y-1)==!t : false);
-			r |= (isInBound(x+1,y-1) ? get(x+1,y-1)==!t : false);
-			r |= (isInBound(x+1,y+1) ? get(x+1,y+1)==!t : false);
-			r |= (isInBound(x-1,y+1) ? get(x-1,y+1)==!t : false);
-			return r ? !t : t;
+			r |= (isInBound(x - 1, y) && get(x - 1, y) == !valueToBeFlipped);
+			r |= (isInBound(x, y - 1) && get(x, y - 1) == !valueToBeFlipped);
+			r |= (isInBound(x + 1, y) && get(x + 1, y) == !valueToBeFlipped);
+			r |= (isInBound(x, y + 1) && get(x, y + 1) == !valueToBeFlipped);
+			r |= (isInBound(x - 1, y - 1) && get(x - 1, y - 1) == !valueToBeFlipped);
+			r |= (isInBound(x + 1, y - 1) && get(x + 1, y - 1) == !valueToBeFlipped);
+			r |= (isInBound(x + 1, y + 1) && get(x + 1, y + 1) == !valueToBeFlipped);
+			r |= (isInBound(x - 1, y + 1) && get(x - 1, y + 1) == !valueToBeFlipped);
+			return r != valueToBeFlipped;
 		};
 		twoStageTransform(tran);
 	}
 	public void flipBorderCorner(boolean valueToBeFlipped, int range) {
-		boolean t = valueToBeFlipped;
 		BoolTransformer tran = (v, x, y) -> {
-			if (v!=t) return v;
+			if (v!= valueToBeFlipped) return v;
 			boolean r = false;
 			for (int dx=-range;dx<=range;dx++)
 				for (int dy=-range;dy<=range;dy++)
-					r |= (isInBound(x+dx,y+dy) ? get(x+dx,y+dy)==!t : false);
-			return r ? !t : t;
+					r |= (isInBound(x + dx, y + dy) && get(x + dx, y + dy) == !valueToBeFlipped);
+			return r != valueToBeFlipped;
 		};
 		twoStageTransform(tran);
 	}
@@ -198,7 +195,7 @@ public class BooleanMovableGridList {
 				}
 			}
 		}
-		else if (deltaX >= 0 && deltaY < 0)
+		else if (deltaX >= 0)// && deltaY < 0)
 		{
 			// move everything over to the left-down (as the center moves to the right-up)
 			for (int x = 0; x < gridSize; x++)
@@ -232,16 +229,16 @@ public class BooleanMovableGridList {
 	public String toDetailString() {
 		StringBuilder str = new StringBuilder("\n");
 		int i = 0;
-		str.append(toString());
+		str.append(this);
 		str.append("\n");
 		for (boolean t : b) {
 			str.append(t ? "#" : ".");
 			i++;
 			if (i % gridSize == 0) {
 				str.append("\n");
-			} else {
+			} //else {
 				//str.append(", ");
-			}
+			//}
 		}
 		return str.toString();
 	}

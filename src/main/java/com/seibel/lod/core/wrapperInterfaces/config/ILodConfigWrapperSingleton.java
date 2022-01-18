@@ -437,7 +437,7 @@ public interface ILodConfigWrapperSingleton
 			static String multiOrSingleThreadText(IVersionConstants versionConstants, DistanceGenerationMode distanceGenerationMode) 
 			{
 				return versionConstants.isWorldGeneratorSingleThreaded(distanceGenerationMode) ? "Singlethreaded" : "Multithreaded"; 
-			};
+			}
 		}
 		
 		

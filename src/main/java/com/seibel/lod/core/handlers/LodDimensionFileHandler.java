@@ -173,7 +173,6 @@ public class LodDimensionFileHandler
 							+ ". File has been deleted.");
 					// This should not break, but be continue to see whether other detail levels can be loaded or updated
 					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
-					continue;
 				}
 				else if (fileVersion > LOD_SAVE_FILE_VERSION)
 				{
@@ -187,7 +186,6 @@ public class LodDimensionFileHandler
 							+ " this region will not be written to in order to protect the newer file.");
 					// This should not break, but be continue to see whether other detail levels can be loaded or updated
 					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
-					continue;
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
 				{

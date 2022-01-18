@@ -22,7 +22,6 @@ package com.seibel.lod.core.objects.lod;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,7 +39,6 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
@@ -159,8 +157,8 @@ public class LodDimension
 			}
 		}
 		Arrays.sort(list, (a, b) -> {
-			RegionPos posA = (RegionPos)a;
-			RegionPos posB = (RegionPos)b;
+			RegionPos posA = a;
+			RegionPos posB = b;
 			double disSqrA = posA.x*posA.x+posA.z*posA.z;
 			double disSqrB = posB.x*posB.x+posB.z*posB.z;
 			return Double.compare(disSqrA, disSqrB);

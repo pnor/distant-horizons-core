@@ -266,7 +266,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 	public String toDetailString() {
 		StringBuilder str = new StringBuilder("\n");
 		int i = 0;
-		str.append(toString());
+		str.append(this);
 		str.append("\n");
 		for (T t : this) {
 			
