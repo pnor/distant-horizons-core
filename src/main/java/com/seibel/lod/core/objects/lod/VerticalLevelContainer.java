@@ -417,12 +417,14 @@ public class VerticalLevelContainer implements LevelContainer
 		
 		//STEP 1//
 		//We initially reset this position of the data container
-		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
+		final int indexA = posX * size + posZ;
+		positionDataContainer[indexA] = PositionDataFormat.EMPTY_DATA;
 		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
 		{
-			verticalDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = VerticalDataFormat.EMPTY_LOD;
-			lightDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
-			colorDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
+			final int indexB = indexA * verticalSize + verticalIndex;
+			verticalDataContainer[indexB] = VerticalDataFormat.EMPTY_LOD;
+			lightDataContainer[indexB] = 0;
+			colorDataContainer[indexB] = 0;
 		}
 		
 		
@@ -756,12 +758,14 @@ public class VerticalLevelContainer implements LevelContainer
 	//SPLITTED VERSION OF THE MERGE AND ADD
 	private void resetPosition(int posX, int posZ)
 	{
-		positionDataContainer[posX * size + posZ] = PositionDataFormat.EMPTY_DATA;
+		final int indexA = posX * size + posZ;
+		positionDataContainer[indexA] = PositionDataFormat.EMPTY_DATA;
 		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
 		{
-			verticalDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = VerticalDataFormat.EMPTY_LOD;
-			lightDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
-			colorDataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = 0;
+			final int indexB = indexA * verticalSize + verticalIndex;
+			verticalDataContainer[indexB] = VerticalDataFormat.EMPTY_LOD;
+			lightDataContainer[indexB] = 0;
+			colorDataContainer[indexB] = 0;
 		}
 	}
 	

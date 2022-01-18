@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class BlockBiomeCouple
 {
-	public static ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
 	public static ConcurrentMap<IBiomeWrapper, ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple>> withBiomeIstanceCache = new ConcurrentHashMap<>();
 	
 	String blockName;
