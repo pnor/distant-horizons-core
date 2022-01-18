@@ -523,8 +523,7 @@ public class LodDimension
 		PosToGenerateContainer posToGenerate;
 		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
 		iterateByDistance((int x, int z) -> {
-			boolean isCloseRange = (Math.abs(x-halfWidth)+Math.abs(z-halfWidth)<2);
-			if (!isCloseRange && posToGenerate.isFull()) return;
+			boolean isCloseRange = (Math.abs(x-halfWidth)+Math.abs(z-halfWidth)<=2);
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
 			LodRegion lodRegion = regions[x][z];
 			if (lodRegion != null)

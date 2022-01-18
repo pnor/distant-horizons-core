@@ -65,10 +65,14 @@ public class PosToGenerateContainer
 		{
 			// We are introducing a position in the far array
 			
-			if (farSize < farPosToGenerate.length)
-				farSize++;
-
-			index = farSize - 1;
+			index = farSize;
+			if (index == farPosToGenerate.length) {
+				if (LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) > 0) {
+					return;
+				}
+				index--;
+			} else farSize++;
+			
 			if (sort) {
 				while (index > 0 && LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) <= 0)
 				{
@@ -87,11 +91,15 @@ public class PosToGenerateContainer
 		else
 		{
 			//We are introducing a position in the near array
+
+			index = nearSize;
+			if (index == nearPosToGenerate.length) {
+				if (LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) > 0) {
+					return;
+				}
+				index--;
+			} else nearSize++;
 			
-			if (nearSize < nearPosToGenerate.length)
-				nearSize++;
-			
-			index = nearSize - 1;
 			if (sort) {
 				while (index > 0 && LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) <= 0)
 				{
