@@ -32,7 +32,6 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
@@ -163,13 +162,11 @@ public class LodBuilder
 	public boolean generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override)
 			throws IllegalArgumentException
 	{
+		//config.distanceGenerationMode = DistanceGenerationMode.FULL;
+		
 		//long executeTime = System.currentTimeMillis();
 		if (chunk == null)
 			throw new IllegalArgumentException("generateLodFromChunk given a null chunk");
-		
-		int startX;
-		int startZ;
-		
 		
 		LodRegion region = lodDim.getRegion(chunk.getRegionPosX(), chunk.getRegionPosZ());
 		if (region == null)
@@ -183,30 +180,27 @@ public class LodBuilder
 		
 		// determine how many LODs to generate vertically
 		//VerticalQuality verticalQuality = LodConfig.CLIENT.graphics.qualityOption.verticalQuality.get();
+		
+		// generate the LODs
+		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte)0);
+		long[] data = new long[maxVerticalData*16*16];
+		for (int i = 0; i < 16*16; i++)
+		{
+			int subX = i/16;
+			int subZ = i%16;
+			writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
+		}
+		if (!chunk.isLightCorrect()) return false;
+		
 		region.isWriting++;
 		try {
-			LodRegion newRegion = lodDim.getRegionFromFile(region, (byte)0, region.getGenerationMode(), region.getVerticalQuality());
-			assert(region==newRegion);
-			
-			// generate the LODs
-			int posX;
-			int posZ;
-			for (int i = 0; i < 16*16; i++)
-			{
-				startX = i/16;
-				startZ = i%16;
-				
-				long[] data;
-				long[] dataToMergeVertical = createVerticalDataToMerge((byte)0, chunk, config, startX, startZ);
-				data = DataPointUtil.mergeMultiData(dataToMergeVertical, DataPointUtil.WORLD_HEIGHT / 2 + 1, DetailDistanceUtil.getMaxVerticalData((byte)0));
-				
-				if (data != null && data.length != 0)
-				{
-					posX = chunk.getChunkPosX() * 16 + startX;
-					posZ = chunk.getChunkPosZ() * 16 + startZ;
-					if (region.addVerticalData((byte)0, posX, posZ, data, override))
-						region.updateArea((byte)0, posX, posZ);
-				}
+			if (region.getMinDetailLevel()!= 0) {
+				LodRegion newRegion = lodDim.getRegionFromFile(region, (byte)0, region.getGenerationMode(), region.getVerticalQuality());
+				assert(region==newRegion);
+			}
+			if (region.addChunkOfData((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16, data, maxVerticalData, true)) {
+				region.regenerateLodFromArea((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16);
+				lodDim.regenDimensionBuffers = true;
 			}
 		} finally {
 			region.isWriting--;
@@ -216,81 +210,62 @@ public class LodBuilder
 		//executeTime = System.currentTimeMillis() - executeTime;
 		//if (executeTime > 0) ClientApi.LOGGER.info("generateLodNodeFromChunk level: " + detailLevel + " time ms: " + executeTime);
 	}
-	
+
 	/** creates a vertical DataPoint */
-	private long[] createVerticalDataToMerge(byte detail, IChunkWrapper chunk, LodBuilderConfig config, int startX, int startZ)
+	private void writeVerticalData(long[] data, int dataOffset, int maxVerticalData,
+			IChunkWrapper chunk, LodBuilderConfig config, int chunkSubPosX, int chunkSubPosZ)
 	{
-		// equivalent to 2^detailLevel
-		int size = 1 << detail;
+
+		int totalVerticalData = (chunk.getHeight());
+		long[] dataToMerge = new long[totalVerticalData];
 		
-		long[] dataToMerge = ThreadMapUtil.getBuilderVerticalArray(detail);
-		int verticalData = DataPointUtil.WORLD_HEIGHT / 2 + 1;
-		int height;
-		int depth;
-		int color;
-		int light;
-		int lightSky;
-		int lightBlock;
-		int generation = config.distanceGenerationMode.complexity;
-		
-		int xRel;
-		int zRel;
-		int xAbs;
-		int yAbs;
-		int zAbs;
 		boolean hasCeiling = MC.getWrappedClientWorld().getDimensionType().hasCeiling();
 		boolean hasSkyLight = MC.getWrappedClientWorld().getDimensionType().hasSkyLight();
-		boolean isDefault;
-		int index;
+		int generation = config.distanceGenerationMode.complexity;
+		int count = 0;
+		// FIXME: This yAbs is just messy!
+		int x = chunk.getMinX() + chunkSubPosX;
+		int z = chunk.getMinZ() + chunkSubPosZ;
+		int y = chunk.getMaxY(x, z);
 		
-		for (index = 0; index < size * size; index++)
-		{
-			xRel = startX + index % size;
-			zRel = startZ + index / size;
-			xAbs = chunk.getMinX() + xRel;
-			zAbs = chunk.getMinZ() + zRel;
-			
-			//Calculate the height of the lod
-			yAbs = chunk.getMaxY(xRel,zRel) - MIN_WORLD_HEIGHT;
-			int count = 0;
-			boolean topBlock = true;
-			if (yAbs <= 0)
-				dataToMerge[index * verticalData] = DataPointUtil.createVoidDataPoint(generation);
-			while (yAbs > 0)
-			{
-				height = determineHeightPointFrom(chunk, config, xAbs, yAbs, zAbs);
-				
-				// If the lod is at the default height, it must be void data
-				if (height == 0)
-					break;
-				
-				yAbs = height - 1;
-				// We search light on above air block
-				depth = determineBottomPointFrom(chunk, config, xAbs, yAbs, zAbs, count < this.config.client().graphics().quality().getVerticalQuality().maxConnectedLods && !hasCeiling);
-				if (hasCeiling && topBlock)
-					yAbs = depth;
-				light = getLightValue(chunk, xAbs,yAbs + MIN_WORLD_HEIGHT, zAbs, hasCeiling, hasSkyLight, topBlock);
-				color = generateLodColor(chunk, config, xAbs, yAbs, zAbs);
-				lightBlock = light & 0b1111;
-				lightSky = (light >> 4) & 0b1111;
-				isDefault = ((light >> 8)) == 1;
-				
-				dataToMerge[index * verticalData + count] = DataPointUtil.createDataPoint(height, depth, color, lightSky, lightBlock, generation, isDefault);
-				topBlock = false;
-				yAbs = depth - 1;
-				count++;
-			}
+		boolean topBlock = true;
+		if (y <= chunk.getMinBuildHeight())
+			data[dataOffset] = DataPointUtil.createVoidDataPoint(generation); 
+		while (y > chunk.getMinBuildHeight()) {
+			int height = determineHeightPointFrom(chunk, config, x, y, z);
+			// If the lod is at the default height, it must be void data
+			if (height <= chunk.getMinBuildHeight())
+				break;
+			y = height - 1;
+			// We search light on above air block
+			int depth = determineBottomPointFrom(chunk, config, x, y, z,
+					count < this.config.client().graphics().quality().getVerticalQuality().maxConnectedLods
+					&& !hasCeiling);
+			if (hasCeiling && topBlock)
+				y = depth;
+			int light = getLightValue(chunk, x, y, z, hasCeiling, hasSkyLight, topBlock);
+			int color = generateLodColor(chunk, config, x, y, z);
+			int lightBlock = light & 0b1111;
+			int lightSky = (light >> 4) & 0b1111;
+			boolean isDefault = ((light >> 8)) == 1;
+			dataToMerge[count] = DataPointUtil.createDataPoint(height-chunk.getMinBuildHeight(), depth-chunk.getMinBuildHeight(),
+					color, lightSky, lightBlock, generation, isDefault);
+			topBlock = false;
+			y = depth - 1;
+			count++;
 		}
-		return dataToMerge;
+		long[] result = DataPointUtil.mergeMultiData(dataToMerge, totalVerticalData, maxVerticalData);
+		if (result.length != maxVerticalData) throw new ArrayIndexOutOfBoundsException();
+		System.arraycopy(result, 0, data, dataOffset, maxVerticalData);
 	}
 	
 	/**
 	 * Find the lowest valid point from the bottom.
 	 * Used when creating a vertical LOD.
 	 */
-	private short determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, boolean strictEdge)
+	private int determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, boolean strictEdge)
 	{
-		short depth = 0;
+		int depth = chunk.getMinBuildHeight();
 		
 		int colorOfBlock = 0;
 		if (strictEdge)
@@ -308,7 +283,7 @@ public class LodBuilder
 			}
 		}
 		
-		for (int y = yAbs - 1; y >= 0; y--)
+		for (int y = yAbs - 1; y >= chunk.getMinBuildHeight(); y--)
 		{
 			
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs)
@@ -322,21 +297,16 @@ public class LodBuilder
 	}
 	
 	/** Find the highest valid point from the Top */
-	private short determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
+	private int determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
 		//TODO find a way to skip bottom of the world
-		short height = 0;
-		if (config.useHeightmap)
-			height = (short) chunk.getHeightMapValue(xAbs, zAbs);
-		else
+		int height = chunk.getMinBuildHeight();
+		for (int y = yAbs; y >= chunk.getMinBuildHeight(); y--)
 		{
-			for (int y = yAbs; y >= 0; y--)
+			if (isLayerValidLodPoint(chunk, xAbs, y, zAbs))
 			{
-				if (isLayerValidLodPoint(chunk, xAbs, y, zAbs))
-				{
-					height = (short) (y + 1);
-					break;
-				}
+				height = (y + 1);
+				break;
 			}
 		}
 		return height;

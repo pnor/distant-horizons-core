@@ -29,9 +29,11 @@ import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
  */
 public interface IChunkWrapper
 {
-	int getHeight();
-	
-	boolean isPositionInWater(int x, int y, int z);
+	default int getHeight() {
+		return getMaxBuildHeight()-getMinBuildHeight();
+	}
+	int getMinBuildHeight();
+	int getMaxBuildHeight();
 	
 	int getHeightMapValue(int xRel, int zRel);
 	

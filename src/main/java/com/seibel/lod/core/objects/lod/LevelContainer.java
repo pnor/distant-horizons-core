@@ -42,9 +42,15 @@ public interface LevelContainer
 	 * @param data actual data to add in an array of long[] format.
 	 * @param posX x position in the detail level
 	 * @param posZ z position in the detail level
-	 * @return true if correctly added, false otherwise
+	 * @return true if correctly changed, false otherwise
 	 */
 	boolean addVerticalData(long[] data, int posX, int posZ, boolean override);
+	
+	/**
+	 * With this you can add a square of data to the level container
+	 * @return true if anything changed, false otherwise
+	 */
+	boolean addChunkOfData(long[] data, int posX, int posZ, int widthX, int widthZ, boolean override);
 	
 	/**
 	 * With this you can add data to the level container
@@ -115,4 +121,5 @@ public interface LevelContainer
 	 * @return data as a String
 	 */
 	int getMaxNumberOfLods();
+
 }

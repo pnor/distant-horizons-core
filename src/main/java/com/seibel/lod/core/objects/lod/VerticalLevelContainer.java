@@ -104,6 +104,24 @@ public class VerticalLevelContainer implements LevelContainer
 	}
 	
 	@Override
+	public boolean addChunkOfData(long[] data, int posX, int posZ, int widthX, int widthZ, boolean override)
+	{
+		boolean anyChange = false;
+		if (posX+widthX > size || posZ+widthZ > size)
+			throw new IndexOutOfBoundsException("addChunkOfData param not inside valid range");
+		if (widthX*widthZ*verticalSize > data.length)
+			throw new IndexOutOfBoundsException("addChunkOfData data array not long enough to contain the data to be copied");
+		
+		for (int ox=0; ox<widthX; ox++) {
+			anyChange = DataPointUtil.mergeTwoDataArray(
+					dataContainer, ((ox+posX)*size+posZ) * verticalSize,
+					data, ox*widthX*verticalSize,
+					widthZ, verticalSize, override);
+		}
+		return anyChange;
+	}
+	
+	@Override
 	public boolean addSingleData(long data, int posX, int posZ)
 	{
 		return addData(data, posX, posZ, 0);
@@ -1022,7 +1040,6 @@ public class VerticalLevelContainer implements LevelContainer
 				posX,
 				posZ);
 	}
-	
 	
 	private void mergeAndAddColorLightData(int sliceStart, int sliceEnd, int posZ, int posX, short[] inputPositionData, int[] inputVerticalData, int[] inputColorData, byte[] inputLightData, byte inputDetailLevel, int inputVerticalSize)
 	{

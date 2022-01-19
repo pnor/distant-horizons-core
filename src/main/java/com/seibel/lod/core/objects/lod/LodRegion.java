@@ -90,7 +90,6 @@ public class LodRegion {
 	/**
 	 * Inserts the data point into the region.
 	 * <p>
-	 * TODO this will always return true unless it has
 	 * 
 	 * @return true if the data was added successfully
 	 */
@@ -112,7 +111,6 @@ public class LodRegion {
 	/**
 	 * Inserts the vertical data into the region.
 	 * <p>
-	 * TODO this will always return true unless it has
 	 * 
 	 * @return true if the data was added successfully
 	 */
@@ -127,6 +125,31 @@ public class LodRegion {
 			return false;// this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
 
 		boolean updated = this.dataContainer[detailLevel].addVerticalData(data, posX, posZ, override);
+		if (updated) {
+			needRegenBuffer = 2;
+			needSaving = true;
+		}
+		return updated;
+	}
+	
+	/**
+	 * Inserts the vertical data into the region.
+	 * <p>
+	 * 
+	 * @return true if the data was added successfully
+	 */
+	public boolean addChunkOfData(byte detailLevel, int posX, int posZ, int widthX, int widthZ, long[] data, int verticalSize, boolean override) {
+		assert(isWriting!=0);
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
+
+		// The dataContainer could have null entries if the
+		// detailLevel changes.
+		if (this.dataContainer[detailLevel] == null)
+			return false;// this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
+		if (this.dataContainer[detailLevel].getVerticalSize() != verticalSize) throw new RuntimeException();
+		
+		boolean updated = this.dataContainer[detailLevel].addChunkOfData(data, posX, posZ, widthX, widthZ, override);
 		if (updated) {
 			needRegenBuffer = 2;
 			needSaving = true;
@@ -377,16 +400,52 @@ public class LodRegion {
 			update(up, LevelPosUtil.convert(detailLevel, posX, up), LevelPosUtil.convert(detailLevel, posZ, up));
 		}
 	}
+	
+	public boolean regenerateLodFromArea(byte detailLevel, int posX, int posZ, int widthX, int widthZ) {
+		if (detailLevel >= LodUtil.REGION_DETAIL_LEVEL) return false;
+		
+		if (detailLevel < minDetailLevel) {
+			byte startLevel = minDetailLevel;
+			int maxPosX = Math.floorDiv(posX+widthX-1, (1 << (minDetailLevel-startLevel)))+1;
+			int maxPosZ = Math.floorDiv(posZ+widthZ-1, (1 << (minDetailLevel-startLevel)))+1;
+			posX = Math.floorDiv(posX, (1 << (minDetailLevel-startLevel)));
+			posZ = Math.floorDiv(posZ, (1 << (minDetailLevel-startLevel)));
+			widthX = maxPosX-posX;
+			widthZ = maxPosZ-posZ;
+			detailLevel = minDetailLevel;
+		}
+		do {
+			int maxPosX = Math.floorDiv(posX+widthX-1, 2)+1;
+			int maxPosZ = Math.floorDiv(posZ+widthZ-1, 2)+1;
+			posX = Math.floorDiv(posX, 2);
+			posZ = Math.floorDiv(posZ, 2);
+			widthX = maxPosX-posX;
+			widthZ = maxPosZ-posZ;
+			detailLevel++;
+			chunkUpdate(detailLevel, posX, posZ, widthX, widthZ);
+		} while (detailLevel < LodUtil.REGION_DETAIL_LEVEL);
+		
+		needRegenBuffer = 2;
+		return true;
+	}
 
 	/**
 	 * Update the child at the given relative Pos
 	 * <p>
 	 * TODO could this be renamed mergeChildData?
+	 * TODO make this return whether any value has changed
 	 */
 	private void update(byte detailLevel, int posX, int posZ) {
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		dataContainer[detailLevel].updateData(dataContainer[detailLevel - 1], posX, posZ);
+	}
+	private void chunkUpdate(byte detailLevel, int posX, int posZ, int widthX,int widthZ) {
+		for (int ox=0; ox<widthX; ox++) {
+			for (int oz=0; oz<widthZ; oz++) {
+				update(detailLevel, posX+ox, posZ+oz);
+			}
+		}
 	}
 
 	/**

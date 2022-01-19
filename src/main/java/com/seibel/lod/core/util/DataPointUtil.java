@@ -269,6 +269,45 @@ public class DataPointUtil
 		return genA-genB;
 	}
 	
+	// Merge the newData data into the target data by comparing the Datapoint Priority.
+	// If target and newData are same priority, it will use the target one.
+	// If target and newData size are different, it will copy up to the smallest one.
+	// Return whether anything changed
+	public static boolean mergeTwoDataArray(long[] target, long[] newData, int verticalDataSize) {
+		boolean anyChange = false;
+		for (int i=0; i<target.length&&i<newData.length; i+=verticalDataSize) {
+			if (compareDatapointPriority(newData[i], target[i])>0) {
+				anyChange = true;
+				System.arraycopy(newData, i, target, i, verticalDataSize);
+			}
+		}
+		return anyChange;
+	}
+	
+	// Same as above, but with args for buffer offset.
+	// Return whether anything changed
+	public static boolean mergeTwoDataArray(long[] target, int targetOffset, long[] newData, int newDataOffset, int dataLength, int verticalDataSize, boolean override) {
+		if (targetOffset + verticalDataSize*dataLength>target.length)
+			throw new ArrayIndexOutOfBoundsException("\"target\" array index out of bounds");
+		if (newDataOffset + verticalDataSize*dataLength>newData.length)
+			throw new ArrayIndexOutOfBoundsException("\"newData\" array index out of bounds");
+		boolean anyChange = false;
+		for (int o=0; o<(dataLength*verticalDataSize); o+=verticalDataSize) {
+			if (override) {
+				if (compareDatapointPriority(newData[o+newDataOffset], target[o+targetOffset])>=0) {
+					anyChange = true;
+					System.arraycopy(newData, o+newDataOffset, target, o+targetOffset, verticalDataSize);
+				}
+			} else {
+				if (compareDatapointPriority(newData[o+newDataOffset], target[o+targetOffset])>0) {
+					anyChange = true;
+					System.arraycopy(newData, o+newDataOffset, target, o+targetOffset, verticalDataSize);
+				}
+			}
+		}
+		return anyChange;
+	}
+	
 	/**
 	 * This method merge column of multiple data together
 	 * @param dataToMerge one or more columns of data
