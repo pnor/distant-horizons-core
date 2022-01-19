@@ -420,7 +420,6 @@ public class LodDimension
 		if (isExpanding) return;
 		isExpanding = true;
 		
-		DistanceGenerationMode generationMode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
 		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
 		if (dropoffQuality == DropoffQuality.AUTO)
@@ -455,14 +454,13 @@ public class LodDimension
 				
 				boolean updated = false;
 				if (region == null) {
-					region = getRegionFromFile(regionPos, minDetail, generationMode, verticalQuality);
+					region = getRegionFromFile(regionPos, minDetail, verticalQuality);
 					regions[x][z] = region;
 					updated = true;
-				} else if (region.getGenerationMode().compareTo(generationMode) < 0 ||
-						region.getVerticalQuality() != verticalQuality ||
+				} else if (region.getVerticalQuality() != verticalQuality ||
 						region.getMinDetailLevel() > minDetail) {
 					// The 'getRegionFromFile' will flush and save the region if it returns a new one
-					region = getRegionFromFile(regions[x][z], minDetail, generationMode, verticalQuality);
+					region = getRegionFromFile(regions[x][z], minDetail, verticalQuality);
 					regions[x][z] = region;
 					updated = true;
 				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != maxDetail) {
@@ -518,7 +516,8 @@ public class LodDimension
 	/**
 	 * Returns every position that need to be generated based on the position of the player
 	 */
-	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ, GenerationPriority priority)
+	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ,
+			GenerationPriority priority, DistanceGenerationMode genMode)
 	{
 		PosToGenerateContainer posToGenerate;
 		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
@@ -527,7 +526,7 @@ public class LodDimension
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
 			LodRegion lodRegion = regions[x][z];
 			if (lodRegion != null)
-				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, priority,
+				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, priority, genMode,
 						isCloseRange);
 		});
 	return posToGenerate;
@@ -651,31 +650,29 @@ public class LodDimension
 	}
 	
 	/** Returns true if a region exists at the given LevelPos */
-	public boolean doesDataExist(byte detailLevel, int posX, int posZ)
+	public boolean doesDataExist(byte detailLevel, int posX, int posZ, DistanceGenerationMode requiredMode)
 	{
 		LodRegion region = getRegion(detailLevel, posX, posZ);
-		return region != null && region.doesDataExist(detailLevel, posX, posZ);
+		return region != null && region.doesDataExist(detailLevel, posX, posZ, requiredMode);
 	}
 	
 	/**
 	 * Loads the region at the given RegionPos from file,
 	 * if a file exists for that region.
 	 */
-	public LodRegion getRegionFromFile(RegionPos regionPos, byte detailLevel,
-			DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
+	public LodRegion getRegionFromFile(RegionPos regionPos, byte detailLevel, VerticalQuality verticalQuality)
 	{
-		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, generationMode, verticalQuality) : 
-			new LodRegion(detailLevel, regionPos, generationMode, verticalQuality);
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, verticalQuality) : 
+			new LodRegion(detailLevel, regionPos, verticalQuality);
 	}
 	/**
 	 * Loads the region at the given region from file,
 	 * if a file exists for that region.
 	 */
-	public LodRegion getRegionFromFile(LodRegion existingRegion, byte detailLevel,
-			DistanceGenerationMode generationMode, VerticalQuality verticalQuality)
+	public LodRegion getRegionFromFile(LodRegion existingRegion, byte detailLevel, VerticalQuality verticalQuality)
 	{
-		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, existingRegion, generationMode, verticalQuality) : 
-			new LodRegion(detailLevel, existingRegion.getRegionPos(), generationMode, verticalQuality);
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, existingRegion, verticalQuality) : 
+			new LodRegion(detailLevel, existingRegion.getRegionPos(), verticalQuality);
 	}
 	
 	/** Save all dirty regions in this LodDimension to file. */

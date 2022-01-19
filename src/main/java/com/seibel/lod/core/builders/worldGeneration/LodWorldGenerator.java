@@ -168,7 +168,7 @@ public class LodWorldGenerator
 					IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 					
 					PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(
-							maxChunkGenRequests, playerPosX, playerPosZ, priority);
+							maxChunkGenRequests, playerPosX, playerPosZ, priority, mode);
 					
 					byte detailLevel;
 					int posX;

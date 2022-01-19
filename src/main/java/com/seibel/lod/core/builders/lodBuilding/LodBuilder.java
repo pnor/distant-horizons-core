@@ -195,7 +195,7 @@ public class LodBuilder
 		region.isWriting++;
 		try {
 			if (region.getMinDetailLevel()!= 0) {
-				LodRegion newRegion = lodDim.getRegionFromFile(region, (byte)0, region.getGenerationMode(), region.getVerticalQuality());
+				LodRegion newRegion = lodDim.getRegionFromFile(region, (byte)0, region.getVerticalQuality());
 				assert(region==newRegion);
 			}
 			if (region.addChunkOfData((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16, data, maxVerticalData, true)) {
