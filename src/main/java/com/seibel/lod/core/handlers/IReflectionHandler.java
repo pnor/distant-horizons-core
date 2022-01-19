@@ -46,4 +46,6 @@ public interface IReflectionHandler
 	
 	/** @returns if Sodium (or a sodium like) mod is present. Attempts to find the "SodiumWorldRenderer" class. */
 	boolean sodiumPresent();
+
+	boolean optifinePresent();
 }

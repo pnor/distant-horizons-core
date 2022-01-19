@@ -46,6 +46,7 @@ public class ReflectionHandler implements IReflectionHandler
 	private final Object mcOptionsObject;
 	
 	private Boolean sodiumPresent = null;
+	private boolean optifinePresent = false;
 	
 	
 	
@@ -87,6 +88,7 @@ public class ReflectionHandler implements IReflectionHandler
 		{
 			if (field.getName().equals("ofFogType"))
 			{
+				optifinePresent = true;
 				ofFogField = field;
 				return;
 			}
@@ -158,7 +160,11 @@ public class ReflectionHandler implements IReflectionHandler
 		}
 		return false;
 	}
-	
+	@Override
+	public boolean optifinePresent()
+	{
+		return optifinePresent;
+	}
 	
 	
 	

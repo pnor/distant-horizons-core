@@ -179,6 +179,8 @@ public class LodBuilder
 		if (MC.getWrappedClientWorld() == null)
 			return false;
 		
+		if (!chunk.isLightCorrect()) return false;
+		
 		// determine how many LODs to generate vertically
 		//VerticalQuality verticalQuality = LodConfig.CLIENT.graphics.qualityOption.verticalQuality.get();
 		region.isWriting++;
@@ -209,6 +211,7 @@ public class LodBuilder
 		} finally {
 			region.isWriting--;
 		}
+		
 		return true;
 		//executeTime = System.currentTimeMillis() - executeTime;
 		//if (executeTime > 0) ClientApi.LOGGER.info("generateLodNodeFromChunk level: " + detailLevel + " time ms: " + executeTime);
