@@ -55,11 +55,9 @@ public interface IMinecraftRenderWrapper
 	
 	Color getFogColor(float partialTicks);
 	
-	default Color getUnderWaterFogColor(float partialTicks) {return getFogColor(partialTicks);}
+	default Color getSpecialFogColor(float partialTicks) {return getFogColor(partialTicks);}
 
-	default boolean isFogStateInUnderWater() {
-		return false;
-	}
+	boolean isFogStateSpecial();
 	
 	Color getSkyColor();
 	
@@ -123,5 +121,6 @@ public interface IMinecraftRenderWrapper
 	
 	// Try and disable vanilla fog. Return true if successful, or false if not able to.
 	boolean tryDisableVanillaFog();
+
 	
 }

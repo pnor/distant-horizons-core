@@ -137,9 +137,9 @@ public class LodRenderProgram extends ShaderProgram {
 		setUniform(lightMapUniform, lightmapBindPoint);
 	}
 	
-	public void fillUniformDataForFog(LodFogConfig fogSettings, boolean isUnderWater) {
+	public void fillUniformDataForFog(LodFogConfig fogSettings, boolean allFogMode) {
 		super.bind();
-		if (isUnderWater) {
+		if (allFogMode) {
 			setUniform(fogEnabledUniform, true);
 			setUniform(nearFogEnabledUniform, false);
 			setUniform(farFogEnabledUniform, true);

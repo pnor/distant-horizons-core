@@ -268,9 +268,9 @@ public class LodRenderer
 		/*---------Fill uniform data--------*/
 		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
 		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(vbosCenterX, vbosCenterZ),
-				MC_RENDER.isFogStateInUnderWater() ? getUnderWaterFogColor(partialTicks) : getFogColor(partialTicks), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
+				MC_RENDER.isFogStateSpecial() ? getSpecialFogColor(partialTicks) : getFogColor(partialTicks), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
 		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
-		shaderProgram.fillUniformDataForFog(fogSettings, MC_RENDER.isFogStateInUnderWater());
+		shaderProgram.fillUniformDataForFog(fogSettings, MC_RENDER.isFogStateSpecial());
 		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
 		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
 
@@ -382,9 +382,9 @@ public class LodRenderer
 		
 		return fogColor;
 	}
-	private Color getUnderWaterFogColor(float partialTicks)
+	private Color getSpecialFogColor(float partialTicks)
 	{
-		return MC_RENDER.getUnderWaterFogColor(partialTicks);
+		return MC_RENDER.getSpecialFogColor(partialTicks);
 	}
 	
 	/**
