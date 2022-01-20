@@ -92,6 +92,8 @@ public class LodDimension
 	
 	private final RegionPos center;
 	
+	public volatile int dirtiedRegionsRoughCount = 0;
+	
 	private boolean isCutting = false;
 	private boolean isExpanding = false;
 	
@@ -405,7 +407,7 @@ public class LodDimension
 				}
 			});
 			if (totalDirtiedRegions > 8) this.saveDirtyRegionsToFile(false);
-			
+			dirtiedRegionsRoughCount = totalDirtiedRegions;
 			//ClientApi.LOGGER.info("LodDim cut Region complete: " + playerPosX + "," + playerPosZ);
 			isCutting = false;
 			
@@ -521,13 +523,19 @@ public class LodDimension
 	{
 		PosToGenerateContainer posToGenerate;
 		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
+		
+		
+		// This ensures that we don't spawn way too much regions without finish flushing them first.
+		if (dirtiedRegionsRoughCount > 16) return posToGenerate;
+		GenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? GenerationPriority.NEAR_FIRST : priority;
+		
 		iterateByDistance((int x, int z) -> {
 			boolean isCloseRange = (Math.abs(x-halfWidth)+Math.abs(z-halfWidth)<=2);
 			//boolean isCloseRange = true;
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
 			LodRegion lodRegion = regions[x][z];
 			if (lodRegion != null)
-				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, priority, genMode,
+				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, allowedPriority, genMode,
 						isCloseRange);
 		});
 	return posToGenerate;
