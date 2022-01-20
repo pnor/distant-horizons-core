@@ -117,6 +117,7 @@ public class LodBufferBuilderFactory
 	 * when need be to fit the larger sizes.
 	 */
 	public static final int DEFAULT_MEMORY_ALLOCATION = 1024;
+	public static final int MAX_TRIANGLES_PER_BUFFER = (1024*1024*2) / (LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
 	
 	
 	
@@ -133,7 +134,7 @@ public class LodBufferBuilderFactory
 	
 	/** Stores the vertices when building the VBOs */
 	// FIXME: Use special warparound type of movable grid list in the future
-	public volatile MovableGridList<LodBufferBuilder[]> buildableBuffers;
+	public volatile MovableGridList<LodBufferBuilder> buildableBuffers;
 	
 	/** Used when building new VBOs */
 	public volatile MovableGridList<LodVertexBuffer[]> buildableVbos;
@@ -264,7 +265,7 @@ public class LodBufferBuilderFactory
 			if (fullRegen || tooFar || buildableBuffers==null || buildableVbos==null
 					|| setsToRender==null || vertexOptimizerCache==null) {
 				renderRange = lodDim.getWidth()/2; //get lodDim half width
-				buildableBuffers = new MovableGridList<LodBufferBuilder[]>(renderRange, playerRegionX, playerRegionZ);
+				buildableBuffers = new MovableGridList<LodBufferBuilder>(renderRange, playerRegionX, playerRegionZ);
 				buildableVbos = new MovableGridList<LodVertexBuffer[]>(renderRange, playerRegionX, playerRegionZ);
 				setsToRender = new MovableGridList<PosToRenderContainer>(renderRange, playerRegionX, playerRegionZ);
 				vertexOptimizerCache = new MovableGridList<VertexOptimizer>(renderRange, playerRegionX, playerRegionZ);
@@ -318,23 +319,13 @@ public class LodBufferBuilderFactory
 
 					RegionPos regionPos = new RegionPos(regionX, regionZ);
 					posToUpload.add(regionPos);
-					LodBufferBuilder[] builder = buildableBuffers.get(regionX, regionZ);
-					LodVertexBuffer[] vbo = buildableVbos.get(regionX, regionZ);
-					if (vbo == null) {
-						setupBuffers(regionX, regionZ);
-						vbo = buildableVbos.get(regionX, regionZ);
-					}
+					LodBufferBuilder builder = buildableBuffers.get(regionX, regionZ);
 					if (builder == null) {
-						builder = buildableBuffers.setAndGet(regionX, regionZ, new LodBufferBuilder[vbo.length]);
+						builder = buildableBuffers.setAndGet(regionX, regionZ, new LodBufferBuilder(DEFAULT_MEMORY_ALLOCATION));
+					} else {
+						builder.discard();
 					}
-					for (int i=0; i<builder.length; i++) {
-						if (builder[i] == null)
-							builder[i] = new LodBufferBuilder(DEFAULT_MEMORY_ALLOCATION);
-						else {
-							builder[i].discard();
-						}
-						builder[i].begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
-					}
+					builder.begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
 					byte minDetail = region.getMinDetailLevel();
 					final int pX = playerX;
 					final int pZ = playerZ;
@@ -384,15 +375,13 @@ public class LodBufferBuilderFactory
 				long startUploadTime = System.currentTimeMillis();
 				// clean up any potentially open resources
 				for (RegionPos regPos : posToUpload) {
-					LodBufferBuilder[] buffers = buildableBuffers.get(regPos.x, regPos.z);
-					if (buffers == null) continue;
-					for (LodBufferBuilder buffer : buffers) {
-						try {
-							buffer.end();
-						} catch (Exception e) {
-							ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to close buildable buffer: " + e.getMessage());
-							e.printStackTrace();
-						}
+					LodBufferBuilder buffer = buildableBuffers.get(regPos.x, regPos.z);
+					if (buffer == null) continue;
+					try {
+						buffer.end();
+					} catch (Exception e) {
+						ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to close buildable buffer: " + e.getMessage());
+						e.printStackTrace();
 					}
 				}
 				
@@ -434,7 +423,7 @@ public class LodBufferBuilderFactory
 		DebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
 		VertexOptimizer vertexOptimizer = ThreadMapUtil.getBox();
 		boolean[] adjShadeDisabled = ThreadMapUtil.getAdjShadeDisabledArray();
-		LodBufferBuilder[] currentBuffers = buildableBuffers.get(regPos.x, regPos.z);
+		LodBufferBuilder currentBuffer = buildableBuffers.get(regPos.x, regPos.z);
 		
 		// determine how many LODs we can stack vertically
 		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
@@ -453,7 +442,7 @@ public class LodBufferBuilderFactory
 		
 		for (int index = 0; index < posToRender.getNumberOfPos(); index++)
 		{
-			int bufferIndex = index % currentBuffers.length;
+			int bufferIndex = index;
 			byte detailLevel = posToRender.getNthDetailLevel(index);
 			int posX = posToRender.getNthPosX(index);
 			int posZ = posToRender.getNthPosZ(index);
@@ -550,7 +539,7 @@ public class LodBufferBuilderFactory
 					break;
 				
 				//We send the call to create the vertices
-				CubicLodTemplate.addLodToBuffer(currentBuffers[bufferIndex], vboX, vboZ, data, adjData,
+				CubicLodTemplate.addLodToBuffer(currentBuffer, vboX, vboZ, data, adjData,
 						detailLevel, posX, posZ, vertexOptimizer, debugMode, adjShadeDisabled, cullingRangeX, cullingRangeZ);
 			}
 			
@@ -590,7 +579,8 @@ public class LodBufferBuilderFactory
 	 * <p>
 	 * May have to wait for the bufferLock to open.
 	 */
-	private void setupBuffers(int regionX, int regionZ) {
+	
+	private void setupBuffersTOBEREMOVED(int regionX, int regionZ) {
 		//TODO: Impl actual multibuffers
 		//int regionMemoryRequired = DEFAULT_MEMORY_ALLOCATION;
 		//int numberOfBuffers;
@@ -608,6 +598,7 @@ public class LodBufferBuilderFactory
 		} else {
 			numberOfBuffers = 1;
 		}*/
+		
 		vbos = buildableVbos.setAndGet(regionX, regionZ, new LodVertexBuffer[1]);
 	}
 	
@@ -668,34 +659,68 @@ public class LodBufferBuilderFactory
 		long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds(); // MB -> B = 1/1,000,000. MS -> NS = 1,000,000. So, MBPerMS = BPerNS.
 		long remainingNS = 0; // We don't want to pause for like 0.1 ms... so we store those tiny MS.
 		long bytesUploaded = 0;
+		long totalBuffers = 0;
 		
 		// actually upload the buffers
 		for (RegionPos p : toBeUploaded) {
-			LodBufferBuilder[] buffers = buildableBuffers.get(p.x, p.z);
-			for (int i = 0; i < buffers.length; i++)
-			{
-				ByteBuffer uploadBuffer = null;
-				//FIXME: The sonme Buffers aren't closed/end() and causing errors!
-				try {
-					LagSpikeCatcher b = new LagSpikeCatcher();
-					uploadBuffer = buffers[i].getCleanedByteBuffer();
-					b.end("getCleanedByteBuffer");
-				} catch (IndexOutOfBoundsException e) {
-					// NOTE: Temp try/catch for above FIXME.
-					e.printStackTrace();
-				} catch (RuntimeException e) {
-					ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
-					e.printStackTrace();
-				}
-				if (uploadBuffer == null) continue;
-				LagSpikeCatcher vboU = new LagSpikeCatcher();
-				vboUpload(p, i, uploadBuffer, uploadMethod);
-				vboU.end("vboUpload");
+			LodBufferBuilder buffer = buildableBuffers.get(p.x, p.z);
 
+			ByteBuffer uploadBuffer = null;
+			//FIXME: The sonme Buffers aren't closed/end() and causing errors!
+			try {
+				LagSpikeCatcher b = new LagSpikeCatcher();
+				uploadBuffer = buffer.getCleanedByteBuffer();
+				b.end("getCleanedByteBuffer");
+			} catch (IndexOutOfBoundsException e) {
+				// NOTE: Temp try/catch for above FIXME.
+				e.printStackTrace();
+			} catch (RuntimeException e) {
+				ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
+				e.printStackTrace();
+			}
+			if (uploadBuffer == null) continue;
+			
+
+			int maxLength = MAX_TRIANGLES_PER_BUFFER*(LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
+			LagSpikeCatcher vboSetup = new LagSpikeCatcher();
+			LodVertexBuffer[] vbos = buildableVbos.get(p.x, p.z);
+			int requiredFullBuffers = Math.floorDiv(uploadBuffer.capacity(),maxLength);
+			int additionalBuffer = Math.floorMod(uploadBuffer.capacity(),maxLength);
+			if (vbos == null) {
+				vbos = new LodVertexBuffer[requiredFullBuffers+1];
+				buildableVbos.set(p.x, p.z, vbos);
+			} else if (vbos.length != requiredFullBuffers+1) {
+				LodVertexBuffer[] newVbos = new LodVertexBuffer[requiredFullBuffers+1];
+				if (vbos.length > requiredFullBuffers+1) {
+					for (int i=requiredFullBuffers+1; i<vbos.length; i++) {
+						vbos[i].close();
+						vbos[i] = null;
+					}
+				}
+				for (int i=0; i<newVbos.length && i<vbos.length; i++) {
+					newVbos[i] = vbos[i];
+				}
+				buildableVbos.set(p.x, p.z, newVbos);
+				vbos = newVbos;
+			}
+			vboSetup.end("vboSetup");
+			
+			for (int i=0; i<=requiredFullBuffers; i++) {
+				ByteBuffer subBuffer;
+				if (i==requiredFullBuffers) {
+					subBuffer = uploadBuffer.slice(i*maxLength, additionalBuffer);
+				} else {
+					subBuffer = uploadBuffer.slice(i*maxLength, maxLength);
+				}
+				
+				LagSpikeCatcher vboU = new LagSpikeCatcher();
+				vboUpload(p, i, subBuffer, uploadMethod);
+				vboU.end("vboUpload");
+	
 				// upload buffers over an extended period of time
 				// to hopefully prevent stuttering.
-				remainingNS += uploadBuffer.capacity()*BPerNS;
-				bytesUploaded += uploadBuffer.capacity();
+				remainingNS += subBuffer.capacity()*BPerNS;
+				bytesUploaded += subBuffer.capacity();
 				if (remainingNS >= TimeUnit.NANOSECONDS.convert(1000/60, TimeUnit.MILLISECONDS)) {
 					if (remainingNS > MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS) remainingNS = MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS;
 					try {
@@ -704,8 +729,10 @@ public class LodBufferBuilderFactory
 					remainingNS = 0;
 				}
 			}
+			totalBuffers += (requiredFullBuffers+1);
+			ClientApi.LOGGER.info("Uploaded {} sub buffers for {}", (requiredFullBuffers+1), p);
 		}
-		ClientApi.LOGGER.info("UploadBuffers uploaded "+bytesUploaded+" bytes.");
+		ClientApi.LOGGER.info("UploadBuffers uploaded "+bytesUploaded+" bytes, with {} sub buffers", totalBuffers);
 	}
 	
 	/** Uploads the uploadBuffer so the GPU can use it. */
