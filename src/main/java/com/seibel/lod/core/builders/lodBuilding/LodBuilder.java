@@ -22,6 +22,7 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
@@ -150,15 +151,6 @@ public class LodBuilder
 	 * Creates a LodNode for a chunk in the given world.
 	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
 	 */
-	public void generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk) throws IllegalArgumentException
-	{
-		generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(), false);
-	}
-	
-	/**
-	 * Creates a LodNode for a chunk in the given world.
-	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
-	 */
 	public boolean generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override)
 			throws IllegalArgumentException
 	{
@@ -189,6 +181,12 @@ public class LodBuilder
 			int subX = i/16;
 			int subZ = i%16;
 			writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
+			if (DataPointUtil.isVoid(data[i*maxVerticalData]))
+				ClientApi.LOGGER.info("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
+			if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
+				throw new RuntimeException("Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
+			if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
+				throw new RuntimeException("Datapoint invalid at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
 		}
 		if (!chunk.isLightCorrect()) return false;
 		
@@ -196,12 +194,19 @@ public class LodBuilder
 		try {
 			if (region.getMinDetailLevel()!= 0) {
 				LodRegion newRegion = lodDim.getRegionFromFile(region, (byte)0, region.getVerticalQuality());
-				assert(region==newRegion);
+				if (region!=newRegion)
+					throw new RuntimeException();
 			}
-			if (region.addChunkOfData((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16, data, maxVerticalData, true)) {
-				region.regenerateLodFromArea((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16);
-				lodDim.regenDimensionBuffers = true;
-			}
+			//ClientApi.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
+			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
+			region.addChunkOfData((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16, data, maxVerticalData, override);
+			region.regenerateLodFromArea((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16);
+			lodDim.regenDimensionBuffers = true;
+			
+			if (!region.doesDataExist((byte)0, chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode))
+				throw new RuntimeException();
+		} catch (Exception e) {
+			e.printStackTrace();
 		} finally {
 			region.isWriting--;
 		}

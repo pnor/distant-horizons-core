@@ -173,14 +173,6 @@ public class LevelPosUtil
 		return maxDistance;
 	}
 	
-	public static int maxDistance(byte detailLevel, int posX, int posZ, int playerPosX, int playerPosZ, int xRegion, int zRegion)
-	{
-		int width = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-		int newPosX = xRegion * width + posX;
-		int newPosZ = zRegion * width + posZ;
-		return maxDistance(detailLevel, newPosX, newPosZ, playerPosX, playerPosZ);
-	}
-	
 	
 	public static int minDistance(byte detailLevel, int posX, int posZ, int playerPosX, int playerPosZ)
 	{
@@ -222,14 +214,6 @@ public class LevelPosUtil
 			minDistance = Math.min(minDistance, (int) Math.sqrt(endPosX + endPosZ));
 			return minDistance;
 		}
-	}
-	
-	public static int minDistance(byte detailLevel, int posX, int posZ, int playerPosX, int playerPosZ, int xRegion, int zRegion)
-	{
-		int width = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-		int newPosX = xRegion * width + posX;
-		int newPosZ = zRegion * width + posZ;
-		return minDistance(detailLevel, newPosX, newPosZ, playerPosX, playerPosZ);
 	}
 	
 	public static int compareDistance(int firstDistance, int secondDistance)

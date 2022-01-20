@@ -323,7 +323,7 @@ public class DataPointUtil
 		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT + 1) * 2);
 		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
 		
-		int genMode = DistanceGenerationMode.FULL.complexity;
+		int genMode = getGenerationMode(dataToMerge[0]);
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		boolean limited = false;
@@ -347,7 +347,7 @@ public class DataPointUtil
 					singleData = dataToMerge[dataIndex];
 					if (doesItExist(singleData))
 					{
-						genMode = Math.min(genMode, getGenerationMode(singleData));
+						//genMode = Math.min(genMode, getGenerationMode(singleData));
 						allEmpty = false;
 						if (!isVoid(singleData))
 						{
@@ -368,7 +368,7 @@ public class DataPointUtil
 					singleData = dataToMerge[index * inputVerticalData + dataIndex];
 					if (doesItExist(singleData))
 					{
-						genMode = Math.min(genMode, getGenerationMode(singleData));
+						//genMode = Math.min(genMode, getGenerationMode(singleData));
 						allEmpty = false;
 						if (!isVoid(singleData))
 						{
@@ -531,7 +531,6 @@ public class DataPointUtil
 				int tempBlue = 0;
 				int tempLightBlock = 0;
 				int tempLightSky = 0;
-				byte tempGenMode = DistanceGenerationMode.FULL.complexity;
 				allEmpty = true;
 				allVoid = true;
 				long data = 0;
@@ -573,10 +572,7 @@ public class DataPointUtil
 							tempLightBlock += getLightBlock(data);
 							tempLightSky += getLightSky(data);
 						}
-						tempGenMode = (byte) Math.min(tempGenMode, getGenerationMode(data));
 					}
-					else
-						tempGenMode = (byte) Math.min(tempGenMode, DistanceGenerationMode.NONE.complexity);
 				}
 				
 				if (allEmpty)
@@ -584,7 +580,7 @@ public class DataPointUtil
 					dataPoint[j] = EMPTY_DATA;
 				else if (allVoid)
 					//all the children are void
-					dataPoint[j] = createVoidDataPoint(tempGenMode);
+					dataPoint[j] = createVoidDataPoint(genMode);
 				else
 				{
 					//we have at least 1 child
@@ -602,7 +598,7 @@ public class DataPointUtil
 					//{
 					//	add simplification at the end due to color
 					//}
-					dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, false);
+					dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, genMode, false);
 				}
 			}
 		}

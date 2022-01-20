@@ -87,6 +87,13 @@ public class VerticalLevelContainer implements LevelContainer
 		dataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex] = data;
 		return true;
 	}
+
+	private void forceWriteVerticalData(long[] data, int posX, int posZ)
+	{
+		int index = posX * size * verticalSize + posZ * verticalSize;
+		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
+			dataContainer[index + verticalIndex] = data[verticalIndex];
+	}
 	
 	@Override
 	public boolean addVerticalData(long[] data, int posX, int posZ, boolean override)
@@ -98,8 +105,7 @@ public class VerticalLevelContainer implements LevelContainer
 		} else {
 			if (compare<=0) return false;
 		}
-		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
-			dataContainer[index + verticalIndex] = data[verticalIndex];
+		forceWriteVerticalData(data, posX, posZ);
 		return true;
 	}
 	
@@ -111,6 +117,8 @@ public class VerticalLevelContainer implements LevelContainer
 			throw new IndexOutOfBoundsException("addChunkOfData param not inside valid range");
 		if (widthX*widthZ*verticalSize > data.length)
 			throw new IndexOutOfBoundsException("addChunkOfData data array not long enough to contain the data to be copied");
+		if (posX<0 || posZ<0 || widthX<0 || widthZ<0)
+			throw new IndexOutOfBoundsException("addChunkOfData param is negative");
 		
 		for (int ox=0; ox<widthX; ox++) {
 			anyChange = DataPointUtil.mergeTwoDataArray(
@@ -1143,21 +1151,32 @@ public class VerticalLevelContainer implements LevelContainer
 		int childPosX;
 		int childPosZ;
 		long[] data;
+		boolean anyDataExist = false;
 		for (int x = 0; x <= 1; x++)
 		{
 			for (int z = 0; z <= 1; z++)
 			{
 				childPosX = 2 * posX + x;
 				childPosZ = 2 * posZ + z;
-				
+				if (lowerLevelContainer.doesItExist(childPosX, childPosZ)) anyDataExist = true;
 				for (int verticalIndex = 0; verticalIndex < lowerMaxVertical; verticalIndex++)
 					dataToMerge[(z * 2 + x) * lowerMaxVertical + verticalIndex] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
 			}
 		}
 		data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getVerticalSize());
+		if (!anyDataExist)
+			throw new RuntimeException();
 		
-		addVerticalData(data, posX, posZ, true);
+		if ((!DataPointUtil.doesItExist(data[0])) && anyDataExist)
+			throw new RuntimeException();
+
+		if (DataPointUtil.getGenerationMode(data[0]) != DataPointUtil.getGenerationMode(lowerLevelContainer.getSingleData(posX*2, posZ*2)))
+			throw new RuntimeException();
+		
+		
+		forceWriteVerticalData(data, posX, posZ);
 	}
+	
 	
 	public void newUpdateData(VerticalLevelContainer lowerLevelContainer, int posX, int posZ)
 	{

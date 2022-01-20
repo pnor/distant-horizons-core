@@ -103,8 +103,18 @@ public class RegionPos
 		return "(" + x + "," + z + ")";
 	}
 	
+    public static long asLong(int i, int j) {
+        return (long)i & 0xFFFFFFFFL | ((long)j & 0xFFFFFFFFL) << 32;
+    }
+    public static int getX(long l) {
+        return (int)(l & 0xFFFFFFFFL);
+    }
+    public static int getZ(long l) {
+        return (int)(l >>> 32 & 0xFFFFFFFFL);
+    }
+    
 	@Override
 	public int hashCode() {
-		return Long.hashCode((long)(x) << Integer.BYTES + z);
+		return Long.hashCode(asLong(x,z));
 	}
 }
