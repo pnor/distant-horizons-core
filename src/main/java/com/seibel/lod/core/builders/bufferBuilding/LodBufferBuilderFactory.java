@@ -699,18 +699,25 @@ public class LodBufferBuilderFactory
 				}
 				for (int i=0; i<newVbos.length && i<vbos.length; i++) {
 					newVbos[i] = vbos[i];
+					vbos[i] = null;
 				}
+				for (LodVertexBuffer b : vbos) {
+					if (b != null) throw new RuntimeException("EERTERERER");
+				}
+				
 				buildableVbos.set(p.x, p.z, newVbos);
 				vbos = newVbos;
 			}
 			vboSetup.end("vboSetup");
-			
+			uploadBuffer.rewind();
 			for (int i=0; i<=requiredFullBuffers; i++) {
 				ByteBuffer subBuffer;
+				uploadBuffer.position(i*maxLength);
+				subBuffer = uploadBuffer.slice();
 				if (i==requiredFullBuffers) {
-					subBuffer = uploadBuffer.slice(i*maxLength, additionalBuffer);
+					subBuffer.limit(additionalBuffer);
 				} else {
-					subBuffer = uploadBuffer.slice(i*maxLength, maxLength);
+					subBuffer.limit(maxLength);
 				}
 				
 				LagSpikeCatcher vboU = new LagSpikeCatcher();
@@ -719,8 +726,8 @@ public class LodBufferBuilderFactory
 	
 				// upload buffers over an extended period of time
 				// to hopefully prevent stuttering.
-				remainingNS += subBuffer.capacity()*BPerNS;
-				bytesUploaded += subBuffer.capacity();
+				remainingNS += subBuffer.limit()*BPerNS;
+				bytesUploaded += subBuffer.limit();
 				if (remainingNS >= TimeUnit.NANOSECONDS.convert(1000/60, TimeUnit.MILLISECONDS)) {
 					if (remainingNS > MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS) remainingNS = MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS;
 					try {
@@ -750,10 +757,10 @@ public class LodBufferBuilderFactory
 
 		LodVertexBuffer vbo = vbos[iIndex];
 		// this is how many points will be rendered
-		vbo.vertexCount = (uploadBuffer.capacity() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
+		vbo.vertexCount = (uploadBuffer.limit() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
 		
 		// If size is zero, just ignore it.
-		if (uploadBuffer.capacity()==0) return;
+		if (uploadBuffer.limit()==0) return;
 		LagSpikeCatcher bindBuff = new LagSpikeCatcher();
 		bindBuff.end("glBindBuffer vbo.id");
 		
@@ -763,10 +770,10 @@ public class LodBufferBuilderFactory
 			{
 				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 				long size = vbo.size;
-				if (size < uploadBuffer.capacity() ||
-						size > uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
+				if (size < uploadBuffer.limit() ||
+						size > uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
 				{
-					int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+					int newSize = (int)(uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER);
 					LagSpikeCatcher buffResizeRegen = new LagSpikeCatcher();
 					GL32.glDeleteBuffers(vbo.id);
 					vbo.id = GL32.glGenBuffers();
@@ -790,10 +797,10 @@ public class LodBufferBuilderFactory
 				// Unless the user is running integrated graphics,
 				// in that case this will actually work better than SUB_DATA.
 				long size = vbo.size;
-				if (size < uploadBuffer.capacity() ||
-						size > uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
+				if (size < uploadBuffer.limit() ||
+						size > uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
 				{
-					int newSize = (int) (uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+					int newSize = (int) (uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER);
 					LagSpikeCatcher buffResize = new LagSpikeCatcher();
 					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
 					vbo.size = newSize;
@@ -802,7 +809,7 @@ public class LodBufferBuilderFactory
 				ByteBuffer vboBuffer;
 				// map buffer range is better since it can be explicitly unsynchronized
 				LagSpikeCatcher buffMap = new LagSpikeCatcher();
-				vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer.capacity(),
+				vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer.limit(),
 						GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
 				buffMap.end("glMapBufferRange BuffMapping");
 				LagSpikeCatcher buffWrite = new LagSpikeCatcher();
@@ -823,7 +830,7 @@ public class LodBufferBuilderFactory
 				// But simplest/most compatible
 				LagSpikeCatcher buffData = new LagSpikeCatcher();
 				GL32.glBufferData(GL32.GL_ARRAY_BUFFER, uploadBuffer, GL32.GL_STATIC_DRAW);
-				vbo.size = uploadBuffer.capacity();
+				vbo.size = uploadBuffer.limit();
 				buffData.end("glBufferData Data");
 			}
 			else
@@ -833,10 +840,10 @@ public class LodBufferBuilderFactory
 				// hybrid subData/bufferData //
 				// less stutter, low GPU usage
 				long size = vbo.size;
-				if (size < uploadBuffer.capacity() ||
-						size > uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
+				if (size < uploadBuffer.limit() ||
+						size > uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
 				{
-					int newSize = (int)(uploadBuffer.capacity()*BUFFER_EXPANSION_MULTIPLIER);
+					int newSize = (int)(uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER);
 					LagSpikeCatcher buffResize = new LagSpikeCatcher();
 					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
 					vbo.size = newSize;

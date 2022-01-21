@@ -21,6 +21,7 @@ package com.seibel.lod.core.objects.opengl;
 
 import org.lwjgl.opengl.GL32;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.render.GLProxy;
 
@@ -46,7 +47,7 @@ public class LodVertexBuffer implements AutoCloseable
 		this.id = GL32.glGenBuffers();
 		this.isBufferStorage = isBufferStorage;
 		count++;
-		//ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
+		ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
 	}
 	
 	
@@ -63,7 +64,7 @@ public class LodVertexBuffer implements AutoCloseable
 			}
 			this.id = -1;
 			count--;
-			//ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
+			ClientApi.LOGGER.info("LodVertexBuffer Count: "+count);
 		}
 	}
 }
