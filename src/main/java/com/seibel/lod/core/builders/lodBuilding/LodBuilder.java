@@ -181,8 +181,8 @@ public class LodBuilder
 			int subX = i/16;
 			int subZ = i%16;
 			writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
-			if (DataPointUtil.isVoid(data[i*maxVerticalData]))
-				ClientApi.LOGGER.info("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
+			//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
+			//	ClientApi.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
 			if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
 				throw new RuntimeException("Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
 			if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)

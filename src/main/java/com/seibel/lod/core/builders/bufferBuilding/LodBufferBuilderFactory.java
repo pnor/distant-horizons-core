@@ -71,29 +71,26 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  */
 public class LodBufferBuilderFactory
 {
+	
+	//TODO: Do some Perf logging of Buffer Building
+	public static final boolean ENABLE_BUFFER_PERF_LOGGING = false;
+	public static final boolean ENABLE_BUFFER_SWAP_LOGGING = false;
+	public static final boolean ENABLE_BUFFER_UPLOAD_LOGGING = false;
+	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
+	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
+	
 	public static class LagSpikeCatcher {
 
 		long timer = System.nanoTime();
 		public LagSpikeCatcher() {}
 		public void end(String source) {
+			if (!ENABLE_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
-			if (timer> 16000000) { //16 ms
-				ClientApi.LOGGER.debug("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
+			if (timer > LAG_SPIKE_THRESOLD_NS) {
+				ClientApi.LOGGER.info("LagSpikeCatcher: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
-			
 		}
 	}
-
-	public static class Pos {
-		public int x;
-		public int y;
-
-		public Pos(int xx, int yy) {
-			x = xx;
-			y = yy;
-		}
-	}
-	
 	
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
@@ -232,11 +229,6 @@ public class LodBufferBuilderFactory
 		return true;
 	}
 	
-	// this was pulled out as a separate method so that it could be
-	// more easily edited by hot swapping. Because, As far as James is aware
-	// you can't hot swap lambda expressions.
-	private static final boolean enableLogging = true;
-	
 	private void generateLodBuffersThread(LodRenderer renderer, LodDimension lodDim,
 			int playerX, int playerY, int playerZ, boolean fullRegen)
 	{
@@ -264,6 +256,12 @@ public class LodBufferBuilderFactory
 			
 			if (fullRegen || tooFar || buildableBuffers==null || buildableVbos==null
 					|| setsToRender==null || vertexOptimizerCache==null) {
+				if (buildableVbos != null) {
+					buildableVbos.clear((bs) -> {
+						for (LodVertexBuffer b : bs) if (b!=null) b.close();
+						});
+				}
+				
 				renderRange = lodDim.getWidth()/2; //get lodDim half width
 				buildableBuffers = new MovableGridList<LodBufferBuilder>(renderRange, playerRegionX, playerRegionZ);
 				buildableVbos = new MovableGridList<LodVertexBuffer[]>(renderRange, playerRegionX, playerRegionZ);
@@ -284,7 +282,7 @@ public class LodBufferBuilderFactory
 				vboZ = buildableCenterBlockZ;
 				buildableBuffers.move(playerRegionX, playerRegionZ);
 				buildableVbos.move(playerRegionX, playerRegionZ, (bs) -> {
-					if (bs!=null) for (LodVertexBuffer b : bs) if (b!=null) b.close();
+					for (LodVertexBuffer b : bs) if (b!=null) b.close();
 					}); 
 				setsToRender.move(playerRegionX, playerRegionZ);
 				vertexOptimizerCache.move(playerRegionX, playerRegionZ);
@@ -362,8 +360,8 @@ public class LodBufferBuilderFactory
 			long endTime = System.currentTimeMillis();
 			long buildTime = endTime - startTime;
 			long executeTime = executeEnd - executeStart;
-			if (enableLogging)
-				ClientApi.LOGGER.debug("Thread Build("+nodeToRenderThreads.size()+"/"+(lodDim.getWidth()*lodDim.getWidth())+ (fullRegen ? "FULL" : "")+") time: " + buildTime + " ms" + '\n' +
+			if (ENABLE_BUFFER_PERF_LOGGING)
+				ClientApi.LOGGER.info("Thread Build("+nodeToRenderThreads.size()+"/"+(lodDim.getWidth()*lodDim.getWidth())+ (fullRegen ? "FULL" : "")+") time: " + buildTime + " ms" + '\n' +
 					                        "thread execute time: " + executeTime + " ms");
 
 			//================================//
@@ -388,8 +386,8 @@ public class LodBufferBuilderFactory
 				// upload the new buffers
 				uploadBuffers(posToUpload);
 				long uploadTime = System.currentTimeMillis() - startUploadTime;
-				if (enableLogging)
-					ClientApi.LOGGER.debug("Thread Upload time: " + uploadTime + " ms");
+				if (ENABLE_BUFFER_PERF_LOGGING)
+					ClientApi.LOGGER.info("Thread Upload time: " + uploadTime + " ms");
 			}
 			catch (Exception e)
 			{
@@ -401,7 +399,7 @@ public class LodBufferBuilderFactory
 		}
 		catch (Exception e)
 		{
-			ClientApi.LOGGER.warn("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ");
+			ClientApi.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ");
 			e.printStackTrace();
 		}
 		finally
@@ -574,35 +572,6 @@ public class LodBufferBuilderFactory
 	//===============================//
 	
 	/**
-	 * Called from the LodRenderer to create the
-	 * BufferBuilders. <br><br>
-	 * <p>
-	 * May have to wait for the bufferLock to open.
-	 */
-	
-	private void setupBuffersTOBEREMOVED(int regionX, int regionZ) {
-		//TODO: Impl actual multibuffers
-		//int regionMemoryRequired = DEFAULT_MEMORY_ALLOCATION;
-		//int numberOfBuffers;
-		LodVertexBuffer[] vbos = buildableVbos.get(regionX, regionZ);
-		if (vbos != null)
-			for (LodVertexBuffer vbo : vbos) {
-				if (vbo!=null) vbo.close();
-			}
-		/*
-		if (regionMemoryRequired > LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY)
-		{
-			// TODO shouldn't this be determined with regionMemoryRequired?
-			// always allocating the max memory is a bit expensive isn't it?
-			numberOfBuffers = (int) regionMemoryRequired / LodUtil.MAX_ALLOCATABLE_DIRECT_MEMORY + 1;
-		} else {
-			numberOfBuffers = 1;
-		}*/
-		
-		vbos = buildableVbos.setAndGet(regionX, regionZ, new LodVertexBuffer[1]);
-	}
-	
-	/**
 	 * Sets the buffers and Vbos to null, forcing them to be recreated <br>
 	 * and destroys any bound OpenGL objects. <br>
 	 * <br>
@@ -628,22 +597,20 @@ public class LodBufferBuilderFactory
 		GLProxy.getInstance().recordOpenGlCall(() -> {
 			// destroy the VBOs if they aren't already
 			if (toBeDeletedBuildableVbos != null) {
-				for (LodVertexBuffer[] vbos : toBeDeletedBuildableVbos) {
-					if (vbos == null) continue;
+				toBeDeletedBuildableVbos.clear((vbos) -> {
 					for (LodVertexBuffer vbo : vbos) {
 						if (vbo == null) continue;
 						vbo.close();
 					}
-				}
+				});
 			}
 			if (toBeDeletedDrawableVbos != null) {
-				for (LodVertexBuffer[] vbos : toBeDeletedDrawableVbos) {
-					if (vbos == null) continue;
+				toBeDeletedDrawableVbos.clear((vbos) -> {
 					for (LodVertexBuffer vbo : vbos) {
 						if (vbo == null) continue;
 						vbo.close();
 					}
-				}
+				});
 			}
 		});
 	}
@@ -737,9 +704,11 @@ public class LodBufferBuilderFactory
 				}
 			}
 			totalBuffers += (requiredFullBuffers+1);
-			ClientApi.LOGGER.info("Uploaded {} sub buffers for {}", (requiredFullBuffers+1), p);
+			if (ENABLE_BUFFER_UPLOAD_LOGGING)
+				ClientApi.LOGGER.info("Uploaded {} sub buffers for {}", (requiredFullBuffers+1), p);
 		}
-		ClientApi.LOGGER.info("UploadBuffers uploaded "+bytesUploaded+" bytes, with {} sub buffers", totalBuffers);
+		if (ENABLE_BUFFER_UPLOAD_LOGGING)
+			ClientApi.LOGGER.info("UploadBuffers uploaded "+bytesUploaded+" bytes, with {} sub buffers", totalBuffers);
 	}
 	
 	/** Uploads the uploadBuffer so the GPU can use it. */
@@ -863,7 +832,8 @@ public class LodBufferBuilderFactory
 	
 	private boolean swapBuffers() {
 		bufferLock.lock();
-		ClientApi.LOGGER.debug("Lod Swap Buffers");
+		if (ENABLE_BUFFER_SWAP_LOGGING)
+			ClientApi.LOGGER.info("Lod Swap Buffers");
 		{
 			boolean shouldRegenBuff = true;
 			try

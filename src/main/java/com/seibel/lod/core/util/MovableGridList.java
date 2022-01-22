@@ -48,7 +48,9 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 		}
 	}
 	public void clear(Consumer<? super T> d) {
-		super.forEach(d);
+		super.forEach((t) -> {
+			if (t!=null) d.accept(t);
+		});
 		super.clear();
 		super.ensureCapacity(gridSize*gridSize);
 		for (int i=0; i<gridSize*gridSize; i++) {
@@ -176,8 +178,8 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 		return true;
 	}
 
-	public void move(int newCenterX, int newCenterY, Consumer<? super T> d) {
-		if (centerX == newCenterX && centerY == newCenterY) return;
+	public boolean move(int newCenterX, int newCenterY, Consumer<? super T> d) {
+		if (centerX == newCenterX && centerY == newCenterY) return false;
 		int deltaX = newCenterX - centerX;
 		int deltaY = newCenterY - centerY;
 		
@@ -190,7 +192,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 			// update the new center
 			centerX = newCenterX;
 			centerY = newCenterY;
-			return;
+			return true;
 		}
 		centerX = newCenterX;
 		centerY = newCenterY;
@@ -200,7 +202,8 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 			for (int y=0; y<gridSize; y++) {
 				if (x-deltaX<0 || y-deltaY<0 ||
 					x-deltaX>=gridSize || y-deltaY>=gridSize) {
-					d.accept(_getDirect(x,y));
+					T t = _getDirect(x,y);
+					if (t!=null) d.accept(t);
 				}
 			}
 		}
@@ -250,6 +253,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 				}
 			}
 		}
+		return true;
 	}
 
 

@@ -49,6 +49,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  */
 public class EventApi
 {
+	public static final boolean ENABLE_STACK_DUMP_LOGGING = false;
 	public static final EventApi INSTANCE = new EventApi();
 	
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
@@ -101,7 +102,8 @@ public class EventApi
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)
 	{
-		ClientApi.LOGGER.info("WorldLoadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ?
+		if (ENABLE_STACK_DUMP_LOGGING)
+			ClientApi.LOGGER.info("WorldLoadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ?
 				"clientLevel" : "serverLevel"), new RuntimeException());
 		// Always ignore ServerWorld event
 		if (world.getWorldType() == WorldType.ServerWorld) return;
@@ -125,7 +127,8 @@ public class EventApi
 	/** This is also called when the user disconnects from a server+ */
 	public void worldUnloadEvent(IWorldWrapper world)
 	{
-		ClientApi.LOGGER.info("WorldUnloadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
+		if (ENABLE_STACK_DUMP_LOGGING)
+			ClientApi.LOGGER.info("WorldUnloadEvent called here for "+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"), new RuntimeException());
 		// If it's single player, ignore the client side world unload event
 		// Note: using isCurrentlyOnSinglePlayerServer as often API call unload event AFTER setting MC to not be in a singlePlayerServer
 		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == WorldType.ClientWorld) return;

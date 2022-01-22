@@ -24,9 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,7 +36,6 @@ import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
 import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
@@ -59,6 +56,9 @@ import com.seibel.lod.core.util.LodUtil;
  */
 public class LodDimensionFileHandler
 {
+	public static final boolean ENABLE_SAVE_THREAD_LOGGING = true;
+	public static final boolean ENABLE_SAVE_REGION_LOGGING = false;
+	
 	/** This is the dimension that owns this file handler */
 	private final LodDimension lodDimension;
 	
@@ -161,10 +161,6 @@ public class LodDimensionFileHandler
 				}
 			}
 		}
-		
-		
-		
-		
 	}
 	
 	
@@ -286,8 +282,10 @@ public class LodDimensionFileHandler
 		File file = new File(getFileBasePath() + vertQual + File.separatorChar +
 				DETAIL_FOLDER_NAME_PREFIX + dataContainer.detailLevel + File.separatorChar +
 				FILE_NAME_PREFIX + "." + posX + "." + posZ + FILE_EXTENSION);
-		if (file.exists())
-			throw new IllegalStateException("saveDirect(...) should only be used for converting old save structure!");
+		if (file.exists()) {
+			ClientApi.LOGGER.warn("LOD file write warn. Unable to write [" + file + "] because the newer version file already exist! Skipping this position...");
+			return;
+		}
 		if (!file.getParentFile().exists())
 			file.getParentFile().mkdirs();
 		try {
@@ -337,7 +335,7 @@ public class LodDimensionFileHandler
 		}
 		trySaveRegionsToBeSaved();
 		if (blockUntilFinished) {
-			ClientApi.LOGGER.info("Blocking until lod file save finishes!");
+			if (ENABLE_SAVE_THREAD_LOGGING) ClientApi.LOGGER.info("Blocking until lod file save finishes!");
 			try {
 				fileWritingThreadPool.shutdown();
 				boolean worked = fileWritingThreadPool.awaitTermination(30, TimeUnit.SECONDS);
@@ -374,7 +372,8 @@ public class LodDimensionFileHandler
 		boolean isStarted = isFileWritingThreadRunning.get();
 		
 		if (!isStarted) throw new ConcurrentModificationException("WriterMain Triggered but the thead state is not started!?");
-		ClientApi.LOGGER.info("Lod File Writer started. To-be-written-regions: "+regionToSave.size());
+		if (ENABLE_SAVE_THREAD_LOGGING)
+			ClientApi.LOGGER.info("Lod File Writer started. To-be-written-regions: "+regionToSave.size());
 		Instant start = Instant.now();
 		// Note: Since regionToSave is a ConcurrentHashMap, and the .values() return one that support concurrency,
 		//       this for loop should be safe and loop until all values are gone.
@@ -387,11 +386,13 @@ public class LodDimensionFileHandler
 					if (!regionToSave.remove(r.getRegionPos(), r)) continue;
 					r.needSaving = false;
 					Instant i = Instant.now();
-					ClientApi.LOGGER.info("Lod: Saving Region "+r.getRegionPos());
+					if (ENABLE_SAVE_REGION_LOGGING)
+						ClientApi.LOGGER.info("Lod: Saving Region "+r.getRegionPos());
 					saveRegionToFile(r);
 					Instant j = Instant.now();
 					Duration d = Duration.between(i, j);
-					ClientApi.LOGGER.info("Lod: Region "+r.getRegionPos()+" save finish. Took "+d);
+					if (ENABLE_SAVE_REGION_LOGGING)
+						ClientApi.LOGGER.info("Lod: Region "+r.getRegionPos()+" save finish. Took "+d);
 				}
 				catch (Exception e)
 				{
@@ -402,7 +403,8 @@ public class LodDimensionFileHandler
 			}
 		}
 		Instant end = Instant.now();
-		ClientApi.LOGGER.info("Lod File Writer completed. Took "+Duration.between(start, end));
+		if (ENABLE_SAVE_THREAD_LOGGING)
+			ClientApi.LOGGER.info("Lod File Writer completed. Took "+Duration.between(start, end));
 		// Use Memory order Release to release any memory changes on setting this boolean
 		// (Corresponding call is the this::saveRegions(...)::...compareAndExchangeAcquire(false, true);)
 		// isFileWritingThreadRunning.setRelease(false);
@@ -424,7 +426,8 @@ public class LodDimensionFileHandler
 		{
 			// Get the old file
 			File oldFile = getRegionFile(region.regionPosX, region.regionPosZ, detailLevel, region.getVerticalQuality());
-			ClientApi.LOGGER.debug("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] detail "+detailLevel+" to file.");
+			if (ENABLE_SAVE_REGION_LOGGING)
+				ClientApi.LOGGER.debug("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] detail "+detailLevel+" to file.");
 			
 			boolean isFileFullyGened = false;
 			// make sure the file and folder exists
