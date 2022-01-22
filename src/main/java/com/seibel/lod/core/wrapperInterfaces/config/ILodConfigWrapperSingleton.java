@@ -461,7 +461,7 @@ public interface ILodConfigWrapperSingleton
 				
 				MinDefaultMax<Integer> NUMBER_OF_WORLD_GENERATION_THREADS_DEFAULT
 					= new MinDefaultMax<Integer>(1, 
-							Runtime.getRuntime().availableProcessors() / 2,
+							Math.min(Runtime.getRuntime().availableProcessors()/2, 4),
 							Runtime.getRuntime().availableProcessors());
 				String NUMBER_OF_WORLD_GENERATION_THREADS_DESC = ""
 						+ " How many threads should be used when generating fake chunks outside \n"
@@ -482,7 +482,7 @@ public interface ILodConfigWrapperSingleton
 				
 				MinDefaultMax<Integer> NUMBER_OF_BUFFER_BUILDER_THREADS_MIN_DEFAULT_MAX
 					= new MinDefaultMax<Integer>(1, 
-							Runtime.getRuntime().availableProcessors() / 2, 
+							Math.min(Runtime.getRuntime().availableProcessors()/2, 2), 
 							Runtime.getRuntime().availableProcessors());
 				String NUMBER_OF_BUFFER_BUILDER_THREADS_DESC = ""
 						+ " How many threads are used when building vertex buffers? \n"

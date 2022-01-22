@@ -234,13 +234,15 @@ public class LodBuilder
 		int y = chunk.getMaxY(x, z);
 		
 		boolean topBlock = true;
-		if (y <= chunk.getMinBuildHeight())
-			data[dataOffset] = DataPointUtil.createVoidDataPoint(generation); 
-		while (y > chunk.getMinBuildHeight()) {
+		if (y < chunk.getMinBuildHeight())
+			dataToMerge[0] = DataPointUtil.createVoidDataPoint(generation); 
+		while (y >= chunk.getMinBuildHeight()) {
 			int height = determineHeightPointFrom(chunk, config, x, y, z);
 			// If the lod is at the default height, it must be void data
-			if (height <= chunk.getMinBuildHeight())
+			if (height < chunk.getMinBuildHeight()) {
+				if (topBlock) dataToMerge[0] = DataPointUtil.createVoidDataPoint(generation);
 				break;
+			}
 			y = height - 1;
 			// We search light on above air block
 			int depth = determineBottomPointFrom(chunk, config, x, y, z,
@@ -305,7 +307,7 @@ public class LodBuilder
 	private int determineHeightPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs)
 	{
 		//TODO find a way to skip bottom of the world
-		int height = chunk.getMinBuildHeight();
+		int height = chunk.getMinBuildHeight()-1;
 		for (int y = yAbs; y >= chunk.getMinBuildHeight(); y--)
 		{
 			if (isLayerValidLodPoint(chunk, xAbs, y, zAbs))

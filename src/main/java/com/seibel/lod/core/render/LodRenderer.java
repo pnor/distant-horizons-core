@@ -22,6 +22,7 @@ package com.seibel.lod.core.render;
 import java.awt.Color;
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.lwjgl.opengl.GL32;
 
@@ -59,13 +60,17 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  */
 public class LodRenderer
 {
+	public static final boolean ENABLE_DRAW_LAG_SPIKE_LOGGING = false;
+	public static final long DRAW_LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
+	
 	public static class LagSpikeCatcher {
 
 		long timer = System.nanoTime();
 		public LagSpikeCatcher() {}
 		public void end(String source) {
+			if (!ENABLE_DRAW_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
-			if (timer> 16000000) { //16 ms
+			if (timer> DRAW_LAG_SPIKE_THRESOLD_NS) { //4 ms
 				ClientApi.LOGGER.info("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 			
@@ -163,11 +168,13 @@ public class LodRenderer
 
 		// get MC's shader program
 		// Save all MC render state
+		LagSpikeCatcher drawSaveGLState = new LagSpikeCatcher();
 		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
 		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
 		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
 		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
 		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
+		drawSaveGLState.end("drawSaveGLState");
 		
 		GLProxy glProxy = GLProxy.getInstance();
 		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
@@ -176,16 +183,18 @@ public class LodRenderer
 		
 		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
 		// starting here...
-		LagSpikeCatcher updateStatue = new LagSpikeCatcher();
+		LagSpikeCatcher updateStatus = new LagSpikeCatcher();
 		updateRegenStatus(lodDim, partialTicks);
-		updateStatue.end("LodDrawSetup:UpdateStatus");
+		updateStatus.end("LodDrawSetup:UpdateStatus");
 		
 
 		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
 		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
 		if (markToCleanup) {
+			LagSpikeCatcher drawObjectClenup = new LagSpikeCatcher();
 			markToCleanup = false;
 			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
+			drawObjectClenup.end("drawObjectClenup");
 		}
 		
 		//=================//
@@ -197,6 +206,7 @@ public class LodRenderer
 		// 2. we aren't already regenerating the LODs
 		// 3. we aren't waiting for the build and draw buffers to swap
 		//		(this is to prevent thread conflicts)
+		LagSpikeCatcher swapBuffer = new LagSpikeCatcher();
 		if (lodBufferBuilderFactory.updateAndSwapLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(),
 				MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), partialRegen, fullRegen)) {
 			// the regen process has been started,
@@ -204,7 +214,7 @@ public class LodRenderer
 			fullRegen = false;
 			partialRegen = false;
 		}
-		
+		swapBuffer.end("SwapBuffer");
 		// Get the front buffers to draw
 		MovableGridList<LodVertexBuffer[]> vbos = lodBufferBuilderFactory.getFrontBuffers();
 		int vbosCenterX = lodBufferBuilderFactory.getFrontBuffersCenterX();
@@ -226,17 +236,24 @@ public class LodRenderer
 
 		/*---------Set GL State--------*/
 		// Make sure to unbind current VBO so we don't mess up vanilla settings
+		LagSpikeCatcher drawGLSetup = new LagSpikeCatcher();
+		LagSpikeCatcher drawBindBuff = new LagSpikeCatcher();
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
-		
+		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
+		LagSpikeCatcher drawSetPolygon = new LagSpikeCatcher();
 		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME || CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_GENMODE_WIREFRAME)
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
 		else
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
-
+		drawSetPolygon.end("drawSetPolygon");
+		LagSpikeCatcher drawEnableCull = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_CULL_FACE);
+		drawEnableCull.end("drawEnableCull");
+		LagSpikeCatcher drawEnableDepth = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_DEPTH_TEST);
-		
+		drawEnableDepth.end("drawEnableDepth");
+		drawGLSetup.end("drawGLSetup");
 		// enable transparent rendering
 		// GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
 		// GL32.glEnable(GL32.GL_BLEND);
@@ -245,11 +262,18 @@ public class LodRenderer
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
 		// also binds LightmapTexture, VAO, and ShaderProgram
 		if (!isSetupComplete) {
+			LagSpikeCatcher drawObjectSetup = new LagSpikeCatcher();
 			setup();
+			drawObjectSetup.end("drawObjectSetup");
 		} else {
+			LagSpikeCatcher drawShaderBind = new LagSpikeCatcher();
 			shaderProgram.bind();
+			drawShaderBind.end("drawShaderBind");
 		}
+		LagSpikeCatcher drawSetActiveTexture = new LagSpikeCatcher();
 		GL32.glActiveTexture(GL32.GL_TEXTURE0);
+		drawSetActiveTexture.end("drawSetActiveTexture");
+		LagSpikeCatcher drawCalculateParams = new LagSpikeCatcher();
 		LightmapTexture lightmapTexture = new LightmapTexture();
 		
 		/*---------Get required data--------*/
@@ -264,16 +288,20 @@ public class LodRenderer
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
 		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
 		LodFogConfig fogSettings = new LodFogConfig(CONFIG, REFLECTION_HANDLER, farPlaneBlockDistance, vanillaBlockRenderedDistance);
-
+		drawCalculateParams.end("drawCalculateParams");
+		
 		/*---------Fill uniform data--------*/
+		LagSpikeCatcher drawFillData = new LagSpikeCatcher();
 		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
 		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(vbosCenterX, vbosCenterZ),
 				MC_RENDER.isFogStateSpecial() ? getSpecialFogColor(partialTicks) : getFogColor(partialTicks), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
 		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
 		shaderProgram.fillUniformDataForFog(fogSettings, MC_RENDER.isFogStateSpecial());
 		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
+		LagSpikeCatcher drawFillLightmap = new LagSpikeCatcher();
 		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
-
+		drawFillLightmap.end("drawFillLightmap");
+		drawFillData.end("DrawFillData");
 		//===========//
 		// rendering //
 		//===========//
