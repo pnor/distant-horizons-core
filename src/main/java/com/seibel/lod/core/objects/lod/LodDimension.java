@@ -97,7 +97,8 @@ public class LodDimension
 	private boolean isCutting = false;
 	private boolean isExpanding = false;
 	
-	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand"));
+	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(
+			new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand", Thread.NORM_PRIORITY-1));
 	
 	
 	/**

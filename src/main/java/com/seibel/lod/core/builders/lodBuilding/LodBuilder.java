@@ -66,7 +66,8 @@ public class LodBuilder
 	
 	//public static final ExecutorService lodGenThreadPool = Executors.newFixedThreadPool(8, new ThreadFactoryBuilder().setNameFormat("Lod-Builder-%d").build());
 
-	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
+	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(
+			new LodThreadFactory(this.getClass().getSimpleName(), Thread.NORM_PRIORITY-1));
 	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	

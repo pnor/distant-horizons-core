@@ -92,7 +92,8 @@ public class LodDimensionFileHandler
 	 * at a time
 	 */
 	private final AtomicBoolean isFileWritingThreadRunning = new AtomicBoolean(false);
-	private ExecutorService fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
+	private ExecutorService fileWritingThreadPool = Executors.newSingleThreadExecutor(
+			new LodThreadFactory(this.getClass().getSimpleName(), Thread.NORM_PRIORITY+1));
 	
 	private final ConcurrentHashMap<RegionPos, LodRegion> regionToSave = new ConcurrentHashMap<RegionPos, LodRegion>();
 	
@@ -345,7 +346,7 @@ public class LodDimensionFileHandler
 				ClientApi.LOGGER.error("File writing wait is interrupted! File data may not be saved correctly and may cause corruptions!!!");
 				e.printStackTrace();
 			} finally {
-				fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName()));
+				fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName(), Thread.NORM_PRIORITY+1));
 			}
 		}
 	}

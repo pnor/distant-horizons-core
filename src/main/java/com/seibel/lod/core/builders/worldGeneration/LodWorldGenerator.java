@@ -61,9 +61,10 @@ public class LodWorldGenerator
 	
 	
 	/** This holds the thread used to create LOD generation requests off the main thread. */
-	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator"));
+	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(
+			new LodThreadFactory(this.getClass().getSimpleName() + " world generator", 1));
 	private ExecutorService genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
-			new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
+			new LodThreadFactory("Gen-Worker-Thread", 1));
 	
 	
 	/** we only want to queue up one generator thread at a time */

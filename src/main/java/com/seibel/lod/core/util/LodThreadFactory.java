@@ -30,17 +30,23 @@ import java.util.concurrent.ThreadFactory;
 public class LodThreadFactory implements ThreadFactory
 {
 	public final String threadName;
+	public final int priority;
+	private int threadCount = 0;
 	
 	
-	public LodThreadFactory(String newThreadName)
+	public LodThreadFactory(String newThreadName, int priority)
 	{
+		if (priority < 1 || priority > 10) throw new IllegalArgumentException("Thread priority should be [1-10]!");
 		threadName = newThreadName + " Thread";
+		this.priority = priority;
 	}
 	
 	@Override
 	public Thread newThread(Runnable r)
 	{
-		return new Thread(r, threadName);
+		Thread t = new Thread(r, threadName + "[" + (threadCount++) + "]");
+		t.setPriority(priority);
+		return t;
 	}
 	
 }

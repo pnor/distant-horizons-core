@@ -96,9 +96,11 @@ public class LodBufferBuilderFactory
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	/** The thread used to generate new LODs off the main thread. */
-	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main"));
+	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(
+			new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main", Thread.NORM_PRIORITY-2));
 	/** The threads used to generate buffers. */
-	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(), new ThreadFactoryBuilder().setNameFormat("Buffer-Builder-%d").build());
+	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(),
+			new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY-2));
 	
 	public static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 	
