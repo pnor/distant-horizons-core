@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.util;
 
+import java.util.Arrays;
+
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 
 
@@ -307,7 +309,9 @@ public class DataPointUtil
 		}
 		return anyChange;
 	}
-	
+
+	private static final ThreadLocal<short[]> tLocalHeightAndDepth = new ThreadLocal<short[]>();
+	private static final ThreadLocal<long[]> tMaxVerticalData = new ThreadLocal<long[]>();
 	/**
 	 * This method merge column of multiple data together
 	 * @param dataToMerge one or more columns of data
@@ -318,10 +322,20 @@ public class DataPointUtil
 	public static long[] mergeMultiData(long[] dataToMerge, int inputVerticalData, int maxVerticalData)
 	{
 		int size = dataToMerge.length / inputVerticalData;
-		
+
 		// We initialize the arrays that are going to be used
-		short[] heightAndDepth = ThreadMapUtil.getHeightAndDepth((WORLD_HEIGHT + 1) * 2);
-		long[] dataPoint = ThreadMapUtil.getVerticalDataArray(DetailDistanceUtil.getMaxVerticalData(0));
+		int heightAndDepthLength = (WORLD_HEIGHT / 2 + 1) * 2;
+		short[] heightAndDepth = tLocalHeightAndDepth.get();
+		if (heightAndDepth==null || heightAndDepth.length != heightAndDepthLength) {
+			heightAndDepth = new short[heightAndDepthLength];
+			tLocalHeightAndDepth.set(heightAndDepth);
+		}
+		int dataPointLength = DetailDistanceUtil.getMaxVerticalData(0);
+		long[] dataPoint = tMaxVerticalData.get();
+		if (dataPoint==null || dataPoint.length != dataPointLength) {
+			dataPoint = new long[dataPointLength];
+			tMaxVerticalData.set(dataPoint);
+		} else Arrays.fill(dataPoint, 0);
 		
 		int genMode = getGenerationMode(dataToMerge[0]);
 		boolean allEmpty = true;

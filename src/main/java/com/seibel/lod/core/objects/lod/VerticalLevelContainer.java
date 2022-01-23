@@ -24,6 +24,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import com.seibel.lod.core.dataFormat.*;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -1141,11 +1142,22 @@ public class VerticalLevelContainer implements LevelContainer
 		return new VerticalLevelContainer((byte) (getDetailLevel() - 1));
 	}
 	
+	private static final ThreadLocal<long[][]> tLocalVerticalUpdateArrays = ThreadLocal.withInitial(() ->
+	{
+		return new long[LodUtil.DETAIL_OPTIONS - 1][];
+	});
+	
 	@Override
 	public void updateData(LevelContainer lowerLevelContainer, int posX, int posZ)
 	{
 		//We reset the array
-		long[] dataToMerge = ThreadMapUtil.getVerticalUpdateArray(detailLevel);
+		long[][] verticalUpdateArrays = tLocalVerticalUpdateArrays.get();
+		long[] dataToMerge = verticalUpdateArrays[detailLevel-1];
+		int arrayLength = DetailDistanceUtil.getMaxVerticalData(detailLevel-1) * 4;
+		if (dataToMerge == null || dataToMerge.length != arrayLength) {
+			dataToMerge = new long[arrayLength];
+			verticalUpdateArrays[detailLevel-1] = dataToMerge;
+		} else Arrays.fill(dataToMerge, 0);
 		
 		int lowerMaxVertical = dataToMerge.length / 4;
 		int childPosX;

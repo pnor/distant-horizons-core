@@ -32,7 +32,6 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -134,7 +133,6 @@ public class EventApi
 		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == WorldType.ClientWorld) return;
 		
 		// the player just unloaded a world/dimension
-		ThreadMapUtil.clearMaps();
 		checkIfDisconnectedFromServer();
 	}
 	private void checkIfDisconnectedFromServer()

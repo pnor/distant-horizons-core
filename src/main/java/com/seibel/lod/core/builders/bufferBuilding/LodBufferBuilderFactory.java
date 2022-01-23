@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -35,7 +36,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL44;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
@@ -58,7 +58,6 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.util.ThreadMapUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -414,6 +413,17 @@ public class LodBufferBuilderFactory
 		}
 	}
 	
+	private static final ThreadLocal<VertexOptimizer> tLocalVertexOptimizer = ThreadLocal.withInitial(VertexOptimizer::new);
+	private static HashMap<LodDirection,long[]> makeAdjData(int verticalData) {
+		HashMap<LodDirection,long[]> map = new HashMap<>();
+		map.put(LodDirection.UP, new long[1]);
+		map.put(LodDirection.DOWN, new long[1]);
+		for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
+			map.put(lodDirection, new long[verticalData]);
+		return map;
+	}
+	private static final ThreadLocal<Map<LodDirection, long[]>> tLocalAdjData = new ThreadLocal<Map<LodDirection, long[]>>();
+	
 	private boolean makeLodRenderData(LodDimension lodDim, RegionPos regPos, int playerX, int playerZ,
 			int vboX, int vboZ, byte minDetail, int cullingRangeX, int cullingRangeZ) {
 
@@ -421,15 +431,19 @@ public class LodBufferBuilderFactory
 		int playerChunkX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.CHUNK_DETAIL_LEVEL);
 		int playerChunkZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerZ,LodUtil.CHUNK_DETAIL_LEVEL);
 		DebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
-		VertexOptimizer vertexOptimizer = ThreadMapUtil.getBox();
-		boolean[] adjShadeDisabled = ThreadMapUtil.getAdjShadeDisabledArray();
+		VertexOptimizer vertexOptimizer = tLocalVertexOptimizer.get();
+		boolean[] adjShadeDisabled = new boolean[VertexOptimizer.DIRECTIONS.length];
 		LodBufferBuilder currentBuffer = buildableBuffers.get(regPos.x, regPos.z);
 		
 		// determine how many LODs we can stack vertically
 		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte) 0);
 		
 		//we get or create the map that will contain the adj data
-		Map<LodDirection, long[]> adjData = ThreadMapUtil.getAdjDataArray(maxVerticalData);
+		Map<LodDirection, long[]> adjData = tLocalAdjData.get();
+		if (adjData==null || adjData.get(LodDirection.NORTH).length != maxVerticalData) {
+			adjData = makeAdjData(maxVerticalData);
+			tLocalAdjData.set(adjData);
+		}
 
 		//We ask the lod dimension which block we have to render given the player position
 		PosToRenderContainer posToRender = setsToRender.get(regPos.x, regPos.z);
