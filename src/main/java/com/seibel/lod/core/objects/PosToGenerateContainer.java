@@ -138,6 +138,16 @@ public class PosToGenerateContainer
 		return farSize;
 	}
 	
+	public int getMaxNumberOfNearPos()
+	{
+		return nearPosToGenerate.length;
+	}
+	
+	public int getMaxNumberOfFarPos()
+	{
+		return farPosToGenerate.length;
+	}
+	
 	// TODO what does getNth mean? could the name be more descriptive or is it just a index?
 	public int getNthDetail(int n, boolean near)
 	{

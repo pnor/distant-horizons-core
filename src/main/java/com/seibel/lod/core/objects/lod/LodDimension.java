@@ -473,6 +473,7 @@ public class LodDimension
 				}
 				if (updated) {
 					region.needRegenBuffer = 2;
+					region.needRecheckGenPoint = true;
 					regenDimensionBuffers = true;
 				}
 			});
@@ -534,9 +535,23 @@ public class LodDimension
 			//boolean isCloseRange = true;
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
 			LodRegion lodRegion = regions[x][z];
-			if (lodRegion != null)
+			
+			
+			if (lodRegion != null && lodRegion.needRecheckGenPoint) {
+				int nearCount = posToGenerate.getNumberOfNearPos();
+				int farCount = posToGenerate.getNumberOfFarPos();
+				boolean checkForFlag = (nearCount < posToGenerate.getMaxNumberOfNearPos() && farCount < posToGenerate.getMaxNumberOfFarPos());
+				if (checkForFlag) {
+					lodRegion.needRecheckGenPoint = false;
+				}
 				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, allowedPriority, genMode,
 						isCloseRange);
+				if (checkForFlag) {
+					if (nearCount != posToGenerate.getNumberOfNearPos() || farCount != posToGenerate.getNumberOfFarPos()) {
+						lodRegion.needRecheckGenPoint = true;
+					}
+				}
+			}
 		});
 	return posToGenerate;
 	}

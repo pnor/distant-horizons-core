@@ -67,6 +67,7 @@ public class LodRegion {
 	/** this region's z RegionPos */
 	public final int regionPosZ;
 
+	public volatile boolean needRecheckGenPoint = true;
 	public volatile int needRegenBuffer = 2;
 	public volatile boolean needSaving = false;
 	public volatile int isWriting = 0;
@@ -532,6 +533,7 @@ public class LodRegion {
 			minDetailLevel = levelContainer.getDetailLevel();
 
 		dataContainer[levelContainer.getDetailLevel()] = levelContainer;
+		needRecheckGenPoint = true;
 	}
 
 	// TODO James thinks cutTree and growTree (which he renamed to match cutTree)
@@ -564,6 +566,7 @@ public class LodRegion {
 				dataContainer[detailLevelIndex] = dataContainer[detailLevelIndex + 1].expand();
 			}
 			minDetailLevel = detailLevel;
+			needRecheckGenPoint = true;
 		}
 	}
 
