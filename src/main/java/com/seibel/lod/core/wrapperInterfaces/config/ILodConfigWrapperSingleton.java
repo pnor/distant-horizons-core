@@ -320,7 +320,7 @@ public interface ILodConfigWrapperSingleton
 		{
 			String DESC = "These settings control how fake chunks outside your normal view range are generated.";
 			
-			GenerationPriority GENERATION_PRIORITY_DEFAULT = GenerationPriority.AUTO;
+			GenerationPriority GENERATION_PRIORITY_DEFAULT = GenerationPriority.NEAR_FIRST;
 			String GENERATION_PRIORITY_DESC = ""
 					+ " In what order should fake chunks be generated outside the vanilla render distance? \n"
 					+ "\n"
