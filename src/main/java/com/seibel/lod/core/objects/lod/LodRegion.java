@@ -209,7 +209,8 @@ public class LodRegion {
 	 */
 	public void getPosToGenerate(PosToGenerateContainer posToGenerate, int playerBlockPosX, int playerBlockPosZ,
 			GenerationPriority priority, DistanceGenerationMode genMode, boolean shouldSort) {
-		getPosToGenerate(posToGenerate, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerBlockPosX, playerBlockPosZ, priority, genMode, shouldSort);
+		getPosToGenerate(posToGenerate, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerBlockPosX, playerBlockPosZ,
+				priority, genMode, shouldSort, true);
 
 	}
 
@@ -219,15 +220,15 @@ public class LodRegion {
 	 * <p>
 	 * TODO why don't we return the posToGenerate, it would make this easier to
 	 * understand
+	 * FIXME This is.... absolute hell currently. Needs clean up.
 	 */
 	private void getPosToGenerate(PosToGenerateContainer posToGenerate, byte detailLevel, int offsetPosX, int offsetPosZ,
-			int playerPosX, int playerPosZ, GenerationPriority priority, DistanceGenerationMode genMode, boolean shouldSort) {
+			int playerPosX, int playerPosZ, GenerationPriority priority, DistanceGenerationMode genMode, boolean shouldSort, boolean needFarPos) {
 		// equivalent to 2^(...)
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 
 		// calculate what LevelPos are in range to generate
-		int minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX,
-				playerPosZ);
+		int minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
 		
 		// determine this child's levelPos
 		byte childDetailLevel = (byte) (detailLevel - 1);
@@ -237,34 +238,31 @@ public class LodRegion {
 		
 		byte targetDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 		byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 : calculateFarModeSwitch(targetDetailLevel);
+		boolean doesDataExist = doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode);
 		
-		if (targetDetailLevel <= detailLevel) {
-			if (targetDetailLevel == detailLevel) {
-				if (!doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode)) {
-					if (detailLevel==farModeSwitchLevel && priority == GenerationPriority.FAR_FIRST)
-						posToGenerate.addFarPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
-							offsetPosZ + regionPosZ * size, shouldSort);
-					else
-						posToGenerate.addNearPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
-							offsetPosZ + regionPosZ * size, shouldSort);
-				}
-			} else if (detailLevel == farModeSwitchLevel
-					&& !doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode)) {
-				posToGenerate.addFarPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
+		boolean isFarModeSwitchEdge = needFarPos && detailLevel <= farModeSwitchLevel;
+		if (isFarModeSwitchEdge) needFarPos = false;
+		
+		if (targetDetailLevel >= detailLevel) {
+			if (!doesDataExist) {
+				if (isFarModeSwitchEdge)
+					posToGenerate.addFarPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
 						offsetPosZ + regionPosZ * size, shouldSort);
-			} else if (detailLevel > LodUtil.CHUNK_DETAIL_LEVEL) {
-				for (int x = 0; x <= 1; x++)
-					for (int z = 0; z <= 1; z++)
-						getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX + x, childOffsetPosZ + z, playerPosX,
-								playerPosZ, priority, genMode, shouldSort);
-			} else {
-				// we want at max one request per chunk (since the world generator creates
-				// chunks).
-				// So for lod smaller than a chunk, only recurse down
-				// the top right child
-				getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX, childOffsetPosZ, playerPosX, playerPosZ,
-						priority, genMode, shouldSort);
+				else
+					posToGenerate.addNearPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
+						offsetPosZ + regionPosZ * size, shouldSort);
 			}
+		} else if (!doesDataExist && isFarModeSwitchEdge) {
+			posToGenerate.addFarPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
+					offsetPosZ + regionPosZ * size, shouldSort);
+		} else if (detailLevel > LodUtil.CHUNK_DETAIL_LEVEL) {
+			for (int x = 0; x <= 1; x++)
+				for (int z = 0; z <= 1; z++)
+					getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX + x, childOffsetPosZ + z, playerPosX,
+							playerPosZ, priority, genMode, shouldSort, needFarPos);
+		} else {
+			getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX, childOffsetPosZ, playerPosX, playerPosZ,
+					priority, genMode, shouldSort, needFarPos);
 		}
 	}
 
@@ -309,7 +307,7 @@ public class LodRegion {
 		// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
 		byte farModeSwitchLevel = requireCorrectDetailLevel ? 0 : calculateFarModeSwitch(minLevel);
 		
-		if (detailLevel == minLevel) {
+		if (detailLevel <= minLevel) {
 			posToRender.addPosToRender(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size);
 		} else // case where (detailLevel > desiredLevel)
 		{
