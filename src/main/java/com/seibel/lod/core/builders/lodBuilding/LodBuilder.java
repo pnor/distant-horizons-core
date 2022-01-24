@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
@@ -205,7 +206,7 @@ public class LodBuilder
 			lodDim.regenDimensionBuffers = true;
 			
 			if (!region.doesDataExist((byte)0, chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode))
-				throw new RuntimeException();
+				throw new RuntimeException("data at detail 0 is still null after writes to it!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -247,8 +248,8 @@ public class LodBuilder
 			y = height - 1;
 			// We search light on above air block
 			int depth = determineBottomPointFrom(chunk, config, x, y, z,
-					count < this.config.client().graphics().quality().getVerticalQuality().maxConnectedLods
-					&& !hasCeiling);
+					//count < this.config.client().graphics().quality().getVerticalQuality().maxConnectedLods &&
+					(!hasCeiling || !topBlock));
 			if (hasCeiling && topBlock)
 				y = depth;
 			int light = getLightValue(chunk, x, y, z, hasCeiling, hasSkyLight, topBlock);
@@ -265,6 +266,27 @@ public class LodBuilder
 		long[] result = DataPointUtil.mergeMultiData(dataToMerge, totalVerticalData, maxVerticalData);
 		if (result.length != maxVerticalData) throw new ArrayIndexOutOfBoundsException();
 		System.arraycopy(result, 0, data, dataOffset, maxVerticalData);
+	}
+
+	public static final LodDirection[] DIRECTIONS = new LodDirection[] {
+			LodDirection.UP,
+			LodDirection.DOWN,
+			LodDirection.WEST,
+			LodDirection.EAST,
+			LodDirection.NORTH,
+			LodDirection.SOUTH };
+	
+	private boolean hasCliffFace(IChunkWrapper chunk, int x, int y, int z) {
+		for (LodDirection dir : DIRECTIONS) {
+			int cx = x+dir.getNormal().x;
+			int cy = y+dir.getNormal().y;
+			int cz = z+dir.getNormal().z;
+			if (!chunk.blockPosInsideChunk(cx, cy, cz)) continue;
+			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(cx, cy, cz);
+			if (block == null || block.hasNoCollision() || block.isToAvoid() || block.isNonFull() || block.hasNoCollision())
+				return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -293,9 +315,9 @@ public class LodBuilder
 		
 		for (int y = yAbs - 1; y >= chunk.getMinBuildHeight(); y--)
 		{
-			
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs)
-				|| (strictEdge && colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor()))
+				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs)
+					&& colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor()))
 			{
 				depth = (short) (y + 1);
 				break;

@@ -62,4 +62,10 @@ public interface IChunkWrapper
 	default int getBlockLight(int x, int y, int z) {return -1;}
 	
 	default int getSkyLight(int x, int y, int z) {return -1;}
+	
+	default boolean blockPosInsideChunk(int x, int y, int z) {
+		return (x>=getMinX() && x<=getMaxX()
+				&& y>=getMinBuildHeight() && y<getMaxBuildHeight()
+				&& z>=getMinZ() && z<=getMaxZ());
+	}
 }

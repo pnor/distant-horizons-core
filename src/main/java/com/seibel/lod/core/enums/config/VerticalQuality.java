@@ -29,21 +29,23 @@ package com.seibel.lod.core.enums.config;
 public enum VerticalQuality
 {
 	LOW(
-			new int[] { 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1 },
-			0
+			new int[] { 4, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+			4
 	),
 	
 	MEDIUM(
-			new int[] { 4, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1 },
-			1
+			new int[] { 8, 4, 2, 1, 1, 1, 1, 1, 1, 1, 1 },
+			8
 	),
 	
 	HIGH(
-			new int[] { 8, 8, 4, 4, 2, 2, 2, 1, 1, 1, 1 },
-			2
+			new int[] { 16, 8, 4, 2, 1, 1, 1, 1, 1, 1, 1 },
+			16
 	);
 	
 	public final int[] maxVerticalData;
+	
+	@Deprecated // Will find other ways to optimize
 	public final int maxConnectedLods;
 	
 	VerticalQuality(int[] maxVerticalData, int maxConnectedLods)

@@ -34,8 +34,11 @@ public class DetailDistanceUtil
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	
+	@Deprecated
 	private static final double genMultiplier = 1.0;
+	@Deprecated
 	private static final double treeGenMultiplier = 1.0;
+	@Deprecated
 	private static final double treeCutMultiplier = 1.0;
 	private static byte minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 	private static byte minDrawDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
@@ -43,21 +46,6 @@ public class DetailDistanceUtil
 	private static final int minDistance = 0;
 	private static int minDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
 	private static int maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
-	
-	@Deprecated
-	private static final HorizontalResolution[] lodGenDetails = {
-			HorizontalResolution.BLOCK,
-			HorizontalResolution.TWO_BLOCKS,
-			HorizontalResolution.FOUR_BLOCKS,
-			HorizontalResolution.HALF_CHUNK,
-			HorizontalResolution.CHUNK,
-			HorizontalResolution.CHUNK,
-			HorizontalResolution.CHUNK,
-			HorizontalResolution.CHUNK,
-			HorizontalResolution.CHUNK,
-			HorizontalResolution.CHUNK,
-			HorizontalResolution.CHUNK };
-	
 	
 	
 	public static void updateSettings()
@@ -93,44 +81,54 @@ public class DetailDistanceUtil
 		return baseDistanceFunction(detail);
 	}
 	
-	public static byte baseInverseFunction(int distance, byte minDetail, boolean useRenderMinDistance)
+	public static byte baseInverseFunction(int distance, byte minDetail)
 	{
 		byte detail;
-		if (distance == 0
-				|| (distance < minDetailDistance && useRenderMinDistance)
-				|| CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
-			return minDetail;
+		distance -= minDetailDistance;
+		
+		if (distance < 0 || CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
+			distance = 0;
 		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale() * 16;
+		double scaledDistance = distance;
+		scaledDistance /= distanceUnit;
 		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
-			detail = (byte) (distance / distanceUnit);
+			detail = (byte) (scaledDistance);
 		else
 		{
 			double base = CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase;
 			double logBase = Math.log(base);
-			//noinspection IntegerDivisionInFloatingPointContext
-			detail = (byte) (Math.log(distance / distanceUnit) / logBase);
+			detail = (byte) (Math.log(scaledDistance) / logBase);
 		}
-		return (byte) LodUtil.clamp(minDetail, detail, maxDetail - 1);
+		return (byte) LodUtil.clamp(minDetail, detail+minDetail, maxDetail - 1);
 	}
-	
+
+	public static byte getDetailLevelFromDistance(int distance)
+	{
+		return baseInverseFunction(distance, minDrawDetail);
+	}
+
+	@Deprecated //Reason: All merged into `getDetailLevelFromDistance`
 	public static byte getDrawDetailFromDistance(int distance)
 	{
-		return baseInverseFunction(distance, minDrawDetail, false);
+		return baseInverseFunction(distance, minDrawDetail);
 	}
-	
+
+	@Deprecated //Reason: Same as 'getDrawDetailFromDistance'
 	public static byte getGenerationDetailFromDistance(int distance)
 	{
-		return baseInverseFunction((int) (distance * genMultiplier), minGenDetail, true);
+		return baseInverseFunction((int) (distance * genMultiplier), minGenDetail);
 	}
-	
+
+	@Deprecated //Reason: Same as 'getDrawDetailFromDistance'
 	public static byte getTreeCutDetailFromDistance(int distance)
 	{
-		return baseInverseFunction((int) (distance * treeCutMultiplier), minGenDetail, true);
+		return baseInverseFunction((int) (distance * treeCutMultiplier), minGenDetail);
 	}
-	
+
+	@Deprecated //Reason: Same as 'getDrawDetailFromDistance'
 	public static byte getTreeGenDetailFromDistance(int distance)
 	{
-		return baseInverseFunction((int) (distance * treeGenMultiplier), minGenDetail, true);
+		return baseInverseFunction((int) (distance * treeGenMultiplier), minGenDetail);
 	}
 	
 
@@ -142,33 +140,13 @@ public class DetailDistanceUtil
 		return CONFIG.client().worldGenerator().getDistanceGenerationMode();
 	}*/
 	
+	@Deprecated
 	public static byte getLodDrawDetail(byte detail)
 	{
 		detail += minDrawDetail;
 		if (detail > 10)
 			detail = 10;
 		return detail;
-	}
-	
-	@Deprecated
-	public static HorizontalResolution getLodGenDetail(int detail)
-	{
-		if (detail < minGenDetail)
-			return lodGenDetails[minGenDetail];
-		else
-			return lodGenDetails[detail];
-	}
-	
-
-	@Deprecated
-	public static byte getCutLodDetail(int detail)
-	{
-		if (detail < minGenDetail)
-			return lodGenDetails[minGenDetail].detailLevel;
-		else if (detail == maxDetail)
-			return LodUtil.REGION_DETAIL_LEVEL;
-		else
-			return lodGenDetails[detail].detailLevel;
 	}
 	
 	public static int getMaxVerticalData(int detail)

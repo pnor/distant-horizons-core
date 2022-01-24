@@ -31,7 +31,6 @@ public class PosToGenerateContainer
 {
 	private final int playerPosX;
 	private final int playerPosZ;
-	public final byte farMinDetail;
 	private int nearSize;
 	private int farSize;
 	
@@ -39,14 +38,10 @@ public class PosToGenerateContainer
 	private final int[][] nearPosToGenerate;
 	private final int[][] farPosToGenerate;
 	
-	
-	
-	
-	public PosToGenerateContainer(byte farMinDetail, int maxDataToGenerate, int playerPosX, int playerPosZ)
+	public PosToGenerateContainer(int maxDataToGenerate, int playerPosX, int playerPosZ)
 	{
 		this.playerPosX = playerPosX;
 		this.playerPosZ = playerPosZ;
-		this.farMinDetail = farMinDetail;
 		nearSize = 0;
 		farSize = 0;
 		nearPosToGenerate = new int[maxDataToGenerate][4];
@@ -56,65 +51,67 @@ public class PosToGenerateContainer
 	
 	
 	// TODO what is going on in this method?
-	public void addPosToGenerate(byte detailLevel, int posX, int posZ, boolean sort)
+	public void addNearPosToGenerate(byte detailLevel, int posX, int posZ, boolean sort)
 	{
 		int distance = LevelPosUtil.minDistance(detailLevel, posX, posZ, playerPosX, playerPosZ);
 		int index;
 		
-		if (detailLevel >= farMinDetail)
-		{
-			// We are introducing a position in the far array
-			
-			index = farSize;
-			if (index == farPosToGenerate.length) {
-				if (LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) > 0) {
-					return;
-				}
-				index--;
-			} else farSize++;
-			
-			if (sort) {
-				while (index > 0 && LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) <= 0)
-				{
-					farPosToGenerate[index][0] = farPosToGenerate[index - 1][0];
-					farPosToGenerate[index][1] = farPosToGenerate[index - 1][1];
-					farPosToGenerate[index][2] = farPosToGenerate[index - 1][2];
-					farPosToGenerate[index][3] = farPosToGenerate[index - 1][3];
-					index--;
-				}
-			}
-			farPosToGenerate[index][0] = detailLevel + 1;
-			farPosToGenerate[index][1] = posX;
-			farPosToGenerate[index][2] = posZ;
-			farPosToGenerate[index][3] = distance;
-		}
-		else
-		{
-			//We are introducing a position in the near array
+		//We are introducing a position in the near array
 
-			index = nearSize;
-			if (index == nearPosToGenerate.length) {
-				if (LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) > 0) {
-					return;
-				}
-				index--;
-			} else nearSize++;
-			
-			if (sort) {
-				while (index > 0 && LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) <= 0)
-				{
-					nearPosToGenerate[index][0] = nearPosToGenerate[index - 1][0];
-					nearPosToGenerate[index][1] = nearPosToGenerate[index - 1][1];
-					nearPosToGenerate[index][2] = nearPosToGenerate[index - 1][2];
-					nearPosToGenerate[index][3] = nearPosToGenerate[index - 1][3];
-					index--;
-				}
+		index = nearSize;
+		if (index == nearPosToGenerate.length) {
+			if (LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) > 0) {
+				return;
 			}
-			nearPosToGenerate[index][0] = detailLevel + 1;
-			nearPosToGenerate[index][1] = posX;
-			nearPosToGenerate[index][2] = posZ;
-			nearPosToGenerate[index][3] = distance;
+			index--;
+		} else nearSize++;
+		
+		if (sort) {
+			while (index > 0 && LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) <= 0)
+			{
+				nearPosToGenerate[index][0] = nearPosToGenerate[index - 1][0];
+				nearPosToGenerate[index][1] = nearPosToGenerate[index - 1][1];
+				nearPosToGenerate[index][2] = nearPosToGenerate[index - 1][2];
+				nearPosToGenerate[index][3] = nearPosToGenerate[index - 1][3];
+				index--;
+			}
 		}
+		nearPosToGenerate[index][0] = detailLevel + 1;
+		nearPosToGenerate[index][1] = posX;
+		nearPosToGenerate[index][2] = posZ;
+		nearPosToGenerate[index][3] = distance;
+	}
+
+	// TODO what is going on in this method?
+	public void addFarPosToGenerate(byte detailLevel, int posX, int posZ, boolean sort)
+	{
+		int distance = LevelPosUtil.minDistance(detailLevel, posX, posZ, playerPosX, playerPosZ);
+		int index;
+	
+		// We are introducing a position in the far array
+		
+		index = farSize;
+		if (index == farPosToGenerate.length) {
+			if (LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) > 0) {
+				return;
+			}
+			index--;
+		} else farSize++;
+		
+		if (sort) {
+			while (index > 0 && LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) <= 0)
+			{
+				farPosToGenerate[index][0] = farPosToGenerate[index - 1][0];
+				farPosToGenerate[index][1] = farPosToGenerate[index - 1][1];
+				farPosToGenerate[index][2] = farPosToGenerate[index - 1][2];
+				farPosToGenerate[index][3] = farPosToGenerate[index - 1][3];
+				index--;
+			}
+		}
+		farPosToGenerate[index][0] = detailLevel + 1;
+		farPosToGenerate[index][1] = posX;
+		farPosToGenerate[index][2] = posZ;
+		farPosToGenerate[index][3] = distance;
 	}
 	
 	public boolean isFull() {

@@ -1177,13 +1177,13 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 		data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getVerticalSize());
 		if (!anyDataExist)
-			throw new RuntimeException();
+			throw new RuntimeException("Update data called but no child datapoint exist!");
 		
 		if ((!DataPointUtil.doesItExist(data[0])) && anyDataExist)
-			throw new RuntimeException();
+			throw new RuntimeException("Update data called but higher level datapoint doesn't exist even though child data does exist!");
 
 		if (DataPointUtil.getGenerationMode(data[0]) != DataPointUtil.getGenerationMode(lowerLevelContainer.getSingleData(posX*2, posZ*2)))
-			throw new RuntimeException();
+			throw new RuntimeException("Update data called but higher level datapoint does not have the same GenerationMode as the top left corner child datapoint!");
 		
 		
 		forceWriteVerticalData(data, posX, posZ);

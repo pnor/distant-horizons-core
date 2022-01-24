@@ -19,7 +19,9 @@
 
 package com.seibel.lod.core.api;
 
+import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,6 +62,22 @@ public class ClientApi
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	private static final EventApi EVENT_API = EventApi.INSTANCE;
+
+	public static final boolean ENABLE_LAG_SPIKE_LOGGING = true;
+	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
+	
+	public static class LagSpikeCatcher {
+
+		long timer = System.nanoTime();
+		public LagSpikeCatcher() {}
+		public void end(String source) {
+			if (!ENABLE_LAG_SPIKE_LOGGING) return;
+			timer = System.nanoTime() - timer;
+			if (timer > LAG_SPIKE_THRESOLD_NS) {
+				ClientApi.LOGGER.info("LagSpikeCatcher: "+source+" took "+Duration.ofNanos(timer)+"!");
+			}
+		}
+	}
 	
 	/**
 	 * there is some setup that should only happen once,
@@ -81,8 +99,10 @@ public class ClientApi
 	
 	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
 	{
+		LagSpikeCatcher clientChunkLoad = new LagSpikeCatcher();
 		//ClientApi.LOGGER.info("Lod Generating add: "+chunk.getLongChunkPos());
 		toBeLoaded.add(chunk.getLongChunkPos());
+		clientChunkLoad.end("clientChunkLoad");
 	}
 
 	//private HashSet<AbstractChunkPosWrapper> lastFrame = new HashSet<AbstractChunkPosWrapper>();
@@ -115,7 +135,8 @@ public class ClientApi
 						ApiShared.lodBuilder.defaultDimensionWidthInRegions);
 				ApiShared.lodWorld.addLodDimension(lodDim);
 			}
-			
+
+			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();
 			for (long pos : toBeLoaded) {
 				if (generating.size() >= 8) {
 					//ClientApi.LOGGER.info("Lod Generating Full! Remining: "+toBeLoaded.size());
@@ -139,18 +160,24 @@ public class ClientApi
 							toBeLoaded.add(pos);
 						});
 			}
+			updateToBeLoadedChunk.end("updateToBeLoadedChunk");
 			
 			
 			
-			
+			LagSpikeCatcher updateSettings = new LagSpikeCatcher();
 			DetailDistanceUtil.updateSettings();
 			EVENT_API.viewDistanceChangedEvent();
+			updateSettings.end("updateSettings");
+			LagSpikeCatcher updatePlayerMove = new LagSpikeCatcher();
 			EVENT_API.playerMoveEvent(lodDim);
+			updatePlayerMove.end("updatePlayerMove");
 			
 			
-			
+
+			LagSpikeCatcher cutAndExpendAsync = new LagSpikeCatcher();
 			lodDim.cutRegionNodesAsync(MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getZ());
 			lodDim.expandOrLoadRegionsAsync(MC.getPlayerBlockPos().getX(), MC.getPlayerBlockPos().getZ());
+			cutAndExpendAsync.end("cutAndExpendAsync");
 			
 			
 			

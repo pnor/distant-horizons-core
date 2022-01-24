@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.objects.lod;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
@@ -71,6 +70,15 @@ public class LodRegion {
 	public volatile int needRegenBuffer = 2;
 	public volatile boolean needSaving = false;
 	public volatile int isWriting = 0;
+	
+	public static byte calculateFarModeSwitch(byte targetLevel) {
+		if (targetLevel==0) return 0; // Always use detail 0 if it's way too close
+		double part = targetLevel / (double)LodUtil.REGION_DETAIL_LEVEL;
+		byte farModeLevel = LodUtil.DETAIL_OPTIONS-(LodUtil.CHUNK_DETAIL_LEVEL+1);
+		farModeLevel *= part;
+		farModeLevel += (LodUtil.CHUNK_DETAIL_LEVEL+1);
+		return (byte)LodUtil.clamp(LodUtil.CHUNK_DETAIL_LEVEL+1, farModeLevel, LodUtil.DETAIL_OPTIONS - 1);
+	}
 
 	public LodRegion(byte minDetailLevel, RegionPos regionPos, VerticalQuality verticalQuality) {
 		this.minDetailLevel = minDetailLevel;
@@ -145,7 +153,8 @@ public class LodRegion {
 		// detailLevel changes.
 		if (this.dataContainer[detailLevel] == null)
 			return false;// this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
-		if (this.dataContainer[detailLevel].getVerticalSize() != verticalSize) throw new RuntimeException();
+		if (this.dataContainer[detailLevel].getVerticalSize() != verticalSize)
+			throw new RuntimeException("Provided data's verticalSize is different from current storage's verticalSize!");
 		
 		boolean updated = this.dataContainer[detailLevel].addChunkOfData(data, posX, posZ, widthX, widthZ, override);
 		//ClientApi.LOGGER.info("addChunkOfData(region:{}, level:{}, x:{}, z:{}, wx:{}, wz:{}, override:{}, updated:{})",
@@ -161,7 +170,7 @@ public class LodRegion {
 			
 		}
 		if (!doesDataExist(detailLevel, posX, posZ, DistanceGenerationMode.values()[DataPointUtil.getGenerationMode(data[0])])) {
-			throw new RuntimeException();
+			throw new RuntimeException("Data still doesn't exist after addChunkOfData!");
 		}
 		
 		return updated;
@@ -219,43 +228,44 @@ public class LodRegion {
 		// calculate what LevelPos are in range to generate
 		int minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX,
 				playerPosZ);
-
+		
 		// determine this child's levelPos
 		byte childDetailLevel = (byte) (detailLevel - 1);
 		int childOffsetPosX = offsetPosX * 2;
 		int childOffsetPosZ = offsetPosZ * 2;
 		DistanceGenerationMode testerGenMode = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? DistanceGenerationMode.NONE : genMode;
-
-
-		byte targetDetailLevel = DetailDistanceUtil.getGenerationDetailFromDistance(minDistance);
+		
+		byte targetDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+		byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 : calculateFarModeSwitch(targetDetailLevel);
+		
 		if (targetDetailLevel <= detailLevel) {
 			if (targetDetailLevel == detailLevel) {
-				if (!doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode))
-					posToGenerate.addPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
+				if (!doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode)) {
+					if (detailLevel==farModeSwitchLevel && priority == GenerationPriority.FAR_FIRST)
+						posToGenerate.addFarPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
 							offsetPosZ + regionPosZ * size, shouldSort);
-			} else {
-				if (priority == GenerationPriority.FAR_FIRST && detailLevel >= posToGenerate.farMinDetail
-						&& !doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode)) {
-					posToGenerate.addPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
+					else
+						posToGenerate.addNearPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
 							offsetPosZ + regionPosZ * size, shouldSort);
-				} else if (detailLevel > LodUtil.CHUNK_DETAIL_LEVEL) {
-					for (int x = 0; x <= 1; x++)
-						for (int z = 0; z <= 1; z++)
-							getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX + x, childOffsetPosZ + z, playerPosX,
-									playerPosZ, priority, genMode, shouldSort);
-				} else {
-					// we want at max one request per chunk (since the world generator creates
-					// chunks).
-					// So for lod smaller than a chunk, only recurse down
-					// the top right child
-					getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX, childOffsetPosZ, playerPosX, playerPosZ,
-							priority, genMode, shouldSort);
 				}
+			} else if (detailLevel == farModeSwitchLevel
+					&& !doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode)) {
+				posToGenerate.addFarPosToGenerate(detailLevel, offsetPosX + regionPosX * size,
+						offsetPosZ + regionPosZ * size, shouldSort);
+			} else if (detailLevel > LodUtil.CHUNK_DETAIL_LEVEL) {
+				for (int x = 0; x <= 1; x++)
+					for (int z = 0; z <= 1; z++)
+						getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX + x, childOffsetPosZ + z, playerPosX,
+								playerPosZ, priority, genMode, shouldSort);
+			} else {
+				// we want at max one request per chunk (since the world generator creates
+				// chunks).
+				// So for lod smaller than a chunk, only recurse down
+				// the top right child
+				getPosToGenerate(posToGenerate, childDetailLevel, childOffsetPosX, childOffsetPosZ, playerPosX, playerPosZ,
+						priority, genMode, shouldSort);
 			}
 		}
-		// we have gone beyond the target Detail level
-		// we can stop generating
-
 	}
 
 	/**
@@ -268,12 +278,15 @@ public class LodRegion {
 	public void getPosToRender(PosToRenderContainer posToRender, int playerPosX, int playerPosZ,
 			boolean requireCorrectDetailLevel, DropoffQuality dropoffQuality) {
 		int minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
-		byte targetLevel = DetailDistanceUtil.getDrawDetailFromDistance(minDistance);
+		byte targetLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+		// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
+		byte farModeSwitchLevel = requireCorrectDetailLevel ? 0 : calculateFarModeSwitch(targetLevel);
+		if (requireCorrectDetailLevel) farModeSwitchLevel = 0;
 		if (targetLevel <= dropoffQuality.fastModeSwitch) {
 			getPosToRender(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerPosX, playerPosZ,
 					requireCorrectDetailLevel);
 		} else {
-			getPosToRenderFlat(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, targetLevel, requireCorrectDetailLevel);
+			getPosToRenderFlat(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, targetLevel, farModeSwitchLevel);
 		}
 	}
 
@@ -290,47 +303,40 @@ public class LodRegion {
 		// equivalent to 2^(...)
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 
-		byte desiredLevel;
-		int maxDistance;
-		int minDistance;
-		int childLevel;
-
 		// calculate the LevelPos that are in range
-		maxDistance = LevelPosUtil.maxDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
-		desiredLevel = DetailDistanceUtil.getLodDrawDetail(DetailDistanceUtil.getDrawDetailFromDistance(maxDistance));
-		minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
-		childLevel = DetailDistanceUtil.getLodDrawDetail(DetailDistanceUtil.getDrawDetailFromDistance(minDistance));
-
-		if (detailLevel == childLevel - 1) {
-			posToRender.addPosToRender(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size);
-		} else
-		// if (desiredLevel > detailLevel)
-		// {
-		// we have gone beyond the target Detail level
-		// we can stop generating
-		// } else
-		if (desiredLevel == detailLevel) {
+		int minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
+		byte minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+		// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
+		byte farModeSwitchLevel = requireCorrectDetailLevel ? 0 : calculateFarModeSwitch(minLevel);
+		
+		if (detailLevel == minLevel) {
 			posToRender.addPosToRender(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size);
 		} else // case where (detailLevel > desiredLevel)
 		{
 			int childPosX = (offsetPosX + regionPosX*size) * 2;
 			int childPosZ = (offsetPosZ + regionPosZ*size) * 2;
 			byte childDetailLevel = (byte) (detailLevel - 1);
-			int childrenCount = 0;
-
-			for (int x = 0; x <= 1; x++) {
-				for (int z = 0; z <= 1; z++) {
-					if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
-						if (!requireCorrectDetailLevel)
-							childrenCount++;
-						else
+			
+			if (detailLevel > farModeSwitchLevel) {
+				// Giant block is not acceptable. So leave empty void if data doesn't exist.
+				for (int x = 0; x <= 1; x++) {
+					for (int z = 0; z <= 1; z++) {
+						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
 							getPosToRender(posToRender, childDetailLevel, offsetPosX*2 + x, offsetPosZ*2 + z, playerPosX,
 									playerPosZ, requireCorrectDetailLevel);
+						}
 					}
 				}
-			}
-
-			if (!requireCorrectDetailLevel) {
+			} else {
+				// Giant block is acceptable. So use this level lod if not all child data exist.
+				int childrenCount = 0;
+				for (int x = 0; x <= 1; x++) {
+					for (int z = 0; z <= 1; z++) {
+						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
+							childrenCount++;
+						}
+					}
+				}
 				// If all the four children exist go deeper
 				if (childrenCount == 4) {
 					for (int x = 0; x <= 1; x++)
@@ -348,36 +354,42 @@ public class LodRegion {
 	 * This method will fill the posToRender array with all levelPos that are
 	 * render-able. But the entire region try use the same detail level.
 	 */
-	private void getPosToRenderFlat(PosToRenderContainer posToRender, byte detailLevel, int offsetPosX, int offsetPosZ, byte targetLevel, boolean requireCorrectDetailLevel) {
+	private void getPosToRenderFlat(PosToRenderContainer posToRender, byte detailLevel, int offsetPosX, int offsetPosZ,
+			byte targetLevel, byte farModeSwitchLevel) {
 		// equivalent to 2^(...)
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-
 		if (detailLevel == targetLevel) {
 			posToRender.addPosToRender(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size);
 		} else // case where (detailLevel > desiredLevel)
 		{
 			int childPosX = (offsetPosX + regionPosX*size) * 2;
-			int childPosZ = (offsetPosZ + regionPosX*size) * 2;
+			int childPosZ = (offsetPosZ + regionPosZ*size) * 2;
 			byte childDetailLevel = (byte) (detailLevel - 1);
-			int childrenCount = 0;
-
-			for (int x = 0; x <= 1; x++) {
-				for (int z = 0; z <= 1; z++) {
-					if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
-						if (!requireCorrectDetailLevel)
-							childrenCount++;
-						else
-							getPosToRenderFlat(posToRender, childDetailLevel, offsetPosX*2 + x, offsetPosZ*2 + z, targetLevel, requireCorrectDetailLevel);
+			
+			if (detailLevel > farModeSwitchLevel) {
+				// Giant block is not acceptable. So leave empty void if data doesn't exist.
+				for (int x = 0; x <= 1; x++) {
+					for (int z = 0; z <= 1; z++) {
+						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
+							getPosToRenderFlat(posToRender, childDetailLevel, offsetPosX*2 + x, offsetPosZ*2 + z, targetLevel, farModeSwitchLevel);
+						}
 					}
 				}
-			}
-
-			if (!requireCorrectDetailLevel) {
+			} else {
+				// Giant block is acceptable. So use this level lod if not all child data exist.
+				int childrenCount = 0;
+				for (int x = 0; x <= 1; x++) {
+					for (int z = 0; z <= 1; z++) {
+						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
+							childrenCount++;
+						}
+					}
+				}
 				// If all the four children exist go deeper
 				if (childrenCount == 4) {
 					for (int x = 0; x <= 1; x++)
 						for (int z = 0; z <= 1; z++)
-							getPosToRenderFlat(posToRender, childDetailLevel, offsetPosX*2 + x, offsetPosZ*2 + z, targetLevel, requireCorrectDetailLevel);
+							getPosToRenderFlat(posToRender, childDetailLevel, offsetPosX*2 + x, offsetPosZ*2 + z, targetLevel, farModeSwitchLevel);
 				} else {
 					posToRender.addPosToRender(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size);
 				}

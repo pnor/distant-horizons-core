@@ -398,7 +398,7 @@ public class LodDimension
 					// and cut it if it is higher then that
 					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
 							playerPosX, playerPosZ);
-					detail = DetailDistanceUtil.getTreeCutDetailFromDistance(minDistance);
+					detail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 					if (region.getMinDetailLevel() < detail) {
 						if (region.needSaving) return; // FIXME: A crude attempt at lowering chance of race condition!
 						region.cutTree(detail);
@@ -452,8 +452,8 @@ public class LodDimension
 						playerPosZ);
 				maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
 						playerPosZ);
-				minDetail = DetailDistanceUtil.getTreeGenDetailFromDistance(minDistance);
-				maxDetail = DetailDistanceUtil.getTreeGenDetailFromDistance(maxDistance);
+				minDetail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+				maxDetail = DetailDistanceUtil.getDetailLevelFromDistance(maxDistance);
 				
 				boolean updated = false;
 				if (region == null) {
@@ -524,7 +524,7 @@ public class LodDimension
 			GenerationPriority priority, DistanceGenerationMode genMode)
 	{
 		PosToGenerateContainer posToGenerate;
-		posToGenerate = new PosToGenerateContainer((byte) 8, maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
+		posToGenerate = new PosToGenerateContainer(maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
 		
 		
 		// This ensures that we don't spawn way too much regions without finish flushing them first.
