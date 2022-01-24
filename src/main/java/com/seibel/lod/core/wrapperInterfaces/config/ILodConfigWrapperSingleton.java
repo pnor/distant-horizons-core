@@ -98,7 +98,7 @@ public interface ILodConfigWrapperSingleton
 				HorizontalResolution getDrawResolution();
 				void setDrawResolution(HorizontalResolution newHorizontalResolution);
 				
-				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 1024);
+				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 8192);
 				String LOD_CHUNK_RENDER_DISTANCE_DESC = ""
 						+ " The radius of the mod's render distance. (measured in chunks) \n";
 				int getLodChunkRenderDistance();
