@@ -237,7 +237,7 @@ public class LodRegion {
 		DistanceGenerationMode testerGenMode = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? DistanceGenerationMode.NONE : genMode;
 		
 		byte targetDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-		byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 : calculateFarModeSwitch(targetDetailLevel);
+		int farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? -1 : calculateFarModeSwitch(targetDetailLevel);
 		boolean doesDataExist = doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode);
 		
 		boolean isFarModeSwitchEdge = needFarPos && detailLevel <= farModeSwitchLevel;
