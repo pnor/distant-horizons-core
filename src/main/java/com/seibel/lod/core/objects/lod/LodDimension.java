@@ -568,17 +568,15 @@ public class LodDimension
 		// use FAR_FIRST on local worlds and NEAR_FIRST on servers
 		GenerationPriority generationPriority = CONFIG.client().worldGenerator().getGenerationPriority();
 		if (generationPriority == GenerationPriority.AUTO)
-			generationPriority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST;
+			generationPriority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.BALANCED;
 
 		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
 		if (dropoffQuality == DropoffQuality.AUTO)
 			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
 					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
 		
-		boolean requireCorrectDetailLevel = generationPriority == GenerationPriority.NEAR_FIRST;
-		
 		if (region != null)
-			region.getPosToRender(posToRender, playerPosX, playerPosZ, requireCorrectDetailLevel, dropoffQuality);
+			region.getPosToRender(posToRender, playerPosX, playerPosZ, generationPriority, dropoffQuality);
 	}
 	
 	/**

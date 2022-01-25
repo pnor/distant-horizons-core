@@ -238,6 +238,7 @@ public class LodRegion {
 		
 		byte targetDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 		int farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? -1 : calculateFarModeSwitch(targetDetailLevel);
+		if (priority == GenerationPriority.FAR_FIRST) farModeSwitchLevel = 8;
 		boolean doesDataExist = doesDataExist(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size, testerGenMode);
 		
 		boolean isFarModeSwitchEdge = needFarPos && detailLevel <= farModeSwitchLevel;
@@ -274,16 +275,18 @@ public class LodRegion {
 	 * understand
 	 */
 	public void getPosToRender(PosToRenderContainer posToRender, int playerPosX, int playerPosZ,
-			boolean requireCorrectDetailLevel, DropoffQuality dropoffQuality) {
+			 GenerationPriority priority, DropoffQuality dropoffQuality) {
 		int minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
 		byte targetLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-		// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
-		byte farModeSwitchLevel = requireCorrectDetailLevel ? 0 : calculateFarModeSwitch(targetLevel);
-		if (requireCorrectDetailLevel) farModeSwitchLevel = 0;
 		if (targetLevel <= dropoffQuality.fastModeSwitch) {
 			getPosToRender(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerPosX, playerPosZ,
-					requireCorrectDetailLevel);
+					priority);
 		} else {
+			// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
+			int maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
+			byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 :
+				calculateFarModeSwitch(DetailDistanceUtil.getDetailLevelFromDistance(maxDistance));
+			if (priority == GenerationPriority.FAR_FIRST) farModeSwitchLevel = 8;
 			getPosToRenderFlat(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, targetLevel, farModeSwitchLevel);
 		}
 	}
@@ -297,7 +300,7 @@ public class LodRegion {
 	 * out part of it
 	 */
 	private void getPosToRender(PosToRenderContainer posToRender, byte detailLevel, int offsetPosX, int offsetPosZ, int playerPosX,
-			int playerPosZ, boolean requireCorrectDetailLevel) {
+			int playerPosZ, GenerationPriority priority) {
 		// equivalent to 2^(...)
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 
@@ -305,7 +308,8 @@ public class LodRegion {
 		int minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
 		byte minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 		// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
-		byte farModeSwitchLevel = requireCorrectDetailLevel ? 0 : calculateFarModeSwitch(minLevel);
+		byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 : calculateFarModeSwitch(minLevel);
+		if (priority == GenerationPriority.FAR_FIRST) farModeSwitchLevel = 8;
 		
 		if (detailLevel <= minLevel) {
 			posToRender.addPosToRender(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size);
@@ -321,7 +325,7 @@ public class LodRegion {
 					for (int z = 0; z <= 1; z++) {
 						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
 							getPosToRender(posToRender, childDetailLevel, offsetPosX*2 + x, offsetPosZ*2 + z, playerPosX,
-									playerPosZ, requireCorrectDetailLevel);
+									playerPosZ, priority);
 						}
 					}
 				}
@@ -340,7 +344,7 @@ public class LodRegion {
 					for (int x = 0; x <= 1; x++)
 						for (int z = 0; z <= 1; z++)
 							getPosToRender(posToRender, childDetailLevel, offsetPosX*2 + x, offsetPosZ*2 + z, playerPosX,
-									playerPosZ, requireCorrectDetailLevel);
+									playerPosZ, priority);
 				} else {
 					posToRender.addPosToRender(detailLevel, offsetPosX + regionPosX * size, offsetPosZ + regionPosZ * size);
 				}

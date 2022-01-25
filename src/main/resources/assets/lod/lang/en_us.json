@@ -113,6 +113,7 @@
   "DistantHorizons.config.enum.VanillaOverdraw.BORDER": "Border",
   "DistantHorizons.config.enum.GenerationPriority.AUTO": "Auto",
   "DistantHorizons.config.enum.GenerationPriority.NEAR_FIRST": "Near first",
+  "DistantHorizons.config.enum.GenerationPriority.BALANCED": "Balanced",
   "DistantHorizons.config.enum.GenerationPriority.FAR_FIRST": "Far first",
   "DistantHorizons.config.enum.DistanceGenerationMode.NONE": "None",
   "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY": "Biome only",
