@@ -21,6 +21,7 @@ package com.seibel.lod.core.api;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.seibel.lod.core.api.ClientApi.LagSpikeCatcher;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
 import com.seibel.lod.core.enums.WorldType;
@@ -171,8 +172,11 @@ public class EventApi
 	
 	public void blockChangeEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
 	{
+		if (dimType != MC.getCurrentDimension()) return;
 		// recreate the LOD where the blocks were changed
-		ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld, dimType);		
+		LagSpikeCatcher blockChangeUpdate = new LagSpikeCatcher();
+		ClientApi.INSTANCE.toBeLoaded.add(chunk.getLongChunkPos());
+		blockChangeUpdate.end("clientChunkLoad");
 	}
 	
 	

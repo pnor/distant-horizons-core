@@ -95,7 +95,7 @@ public class ClientApi
 	}
 
 	private final ConcurrentHashMap.KeySetView<Long,Boolean> generating = ConcurrentHashMap.newKeySet();
-	private final ConcurrentHashMap.KeySetView<Long,Boolean> toBeLoaded = ConcurrentHashMap.newKeySet();
+	public final ConcurrentHashMap.KeySetView<Long,Boolean> toBeLoaded = ConcurrentHashMap.newKeySet();
 	
 	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
 	{
