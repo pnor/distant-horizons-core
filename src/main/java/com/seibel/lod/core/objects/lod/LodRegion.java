@@ -234,7 +234,7 @@ public class LodRegion {
 		byte childDetailLevel = (byte) (detailLevel - 1);
 		int childOffsetPosX = offsetPosX * 2;
 		int childOffsetPosZ = offsetPosZ * 2;
-		DistanceGenerationMode testerGenMode = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? DistanceGenerationMode.NONE : genMode;
+		DistanceGenerationMode testerGenMode = genMode;//detailLevel >= LodUtil.CHUNK_DETAIL_LEVEL ? DistanceGenerationMode.NONE : genMode;
 		
 		byte targetDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 		int farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? -1 : calculateFarModeSwitch(targetDetailLevel);
@@ -378,7 +378,7 @@ public class LodRegion {
 				int childrenCount = 0;
 				for (int x = 0; x <= 1; x++) {
 					for (int z = 0; z <= 1; z++) {
-						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.NONE)) {
+						if (doesDataExist(childDetailLevel, childPosX + x, childPosZ + z, DistanceGenerationMode.RENDERABLE)) {
 							childrenCount++;
 						}
 					}
@@ -499,7 +499,7 @@ public class LodRegion {
 			// TODO what does that mean? bottom of what?
 			return DataPointUtil.getGenerationMode(dataContainer[detailLevel].getSingleData(modPosX, modPosZ));
 		else
-			return DistanceGenerationMode.NONE.complexity;
+			throw new RuntimeException("Data does not exist!");
 	}
 
 	/**

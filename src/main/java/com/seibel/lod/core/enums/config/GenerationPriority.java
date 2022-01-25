@@ -32,10 +32,12 @@ package com.seibel.lod.core.enums.config;
  */
 public enum GenerationPriority
 {
-	/** NEAR_FIRST when connected to servers and FAR_FIRST when on single player */
+	/** NEAR_FIRST when connected to servers and BALANCED when on single player */
 	AUTO,
 	
 	NEAR_FIRST,
+	
+	BALANCED,
 	
 	FAR_FIRST
 }

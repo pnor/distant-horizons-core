@@ -57,6 +57,10 @@
   "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration.@tooltip": "Some features may not be thread safe. \nCould cause instability and crashes",
   "DistantHorizons.config.client.worldGenerator.blocksToAvoid": "Block to avoid",
   "DistantHorizons.config.client.worldGenerator.blocksToAvoid.@tooltip": "What block to avoid when generating fake chunks",
+  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration": "Enable Distant Generation",
+  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration.@tooltip": "Whether to enable Distant chunks generator?",
+  "DistantHorizons.config.client.worldGenerator.lightGenerationMode": "Light Generation Mode",
+  "DistantHorizons.config.client.worldGenerator.lightGenerationMode.@tooltip": "How should block and sky lights be processed for distant generation?",
   "DistantHorizons.config.client.advanced": "Advance options",
   "DistantHorizons.config.client.advanced.threading": "Threading",
   "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads": "NO. of world generation threads",
@@ -135,5 +139,7 @@
   "DistantHorizons.config.enum.BufferRebuildTimes.RARE": "Rare",
   "DistantHorizons.config.enum.DropoffQuality.AUTO": "Auto",
   "DistantHorizons.config.enum.DropoffQuality.SMOOTH_DROPOFF": "Smooth dropoff",
-  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED": "Performance focused"
+  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED": "Performance focused",
+  "DistantHorizons.config.enum.LightGenerationMode.FAST": "Fast",
+  "DistantHorizons.config.enum.LightGenerationMode.FANCY": "Fancy"
 }

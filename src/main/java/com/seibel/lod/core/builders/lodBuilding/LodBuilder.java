@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.builders.lodBuilding;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -178,18 +179,27 @@ public class LodBuilder
 		// generate the LODs
 		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte)0);
 		long[] data = new long[maxVerticalData*16*16];
-		for (int i = 0; i < 16*16; i++)
-		{
-			int subX = i/16;
-			int subZ = i%16;
-			writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
-			//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
-			//	ClientApi.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
-			if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
-				throw new RuntimeException("Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
-			if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
-				throw new RuntimeException("Datapoint invalid at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
+		
+		if (!config.quickFillWithVoid) {
+			for (int i = 0; i < 16*16; i++)
+			{
+				int subX = i/16;
+				int subZ = i%16;
+				writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
+				//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
+				//	ClientApi.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
+				if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
+					throw new RuntimeException("Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
+				if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
+					throw new RuntimeException("Datapoint invalid at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
+			}
+		} else {
+			for (int i = 0; i < 16*16; i++)
+			{
+				data[i*maxVerticalData] = DataPointUtil.createVoidDataPoint(config.distanceGenerationMode.complexity);
+			}
 		}
+		
 		if (!chunk.isLightCorrect()) return false;
 		
 		region.isWriting++;
@@ -207,6 +217,8 @@ public class LodBuilder
 			
 			if (!region.doesDataExist((byte)0, chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode))
 				throw new RuntimeException("data at detail 0 is still null after writes to it!");
+			if (!region.doesDataExist(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getChunkPosX(), chunk.getChunkPosZ(), config.distanceGenerationMode))
+				throw new RuntimeException("data at chunk detail level is still null after writes to it!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

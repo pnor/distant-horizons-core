@@ -94,28 +94,17 @@ public class LodWorldGenerator
 	 */
 	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder)
 	{
+		if (!CONFIG.client().worldGenerator().getEnableDistantGeneration()) return;
 		
 		IWorldWrapper world = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 		
 		// TODO: Rename the config option
-		if (CONFIG.client().worldGenerator().getAllowUnstableFeatureGeneration()) {
-			if (experimentalWorldGenerator == null) {
-				try {
-					experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
-				if (experimentalWorldGenerator == null) CONFIG.client().worldGenerator().setAllowUnstableFeatureGeneration(false);
-				} catch (RuntimeException e) {
-					// Exception may happen if world got unloaded unorderly
-					e.printStackTrace();
-				}
-			}
-		} else {
-			if (experimentalWorldGenerator != null) {
-				try {
-					experimentalWorldGenerator.stop();
-				} catch (RuntimeException e) {
-					e.printStackTrace();
-				}
-				experimentalWorldGenerator = null;
+		if (experimentalWorldGenerator == null) {
+			try {
+				experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
+			} catch (RuntimeException e) {
+				// Exception may happen if world got unloaded unorderly
+				e.printStackTrace();
 			}
 		}
 		

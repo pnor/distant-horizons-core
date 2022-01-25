@@ -42,7 +42,8 @@ public class CubicLodTemplate
 {
 	
 	public static void addLodToBuffer(LodBufferBuilder buffer, int playerX, int playerZ, long data, Map<LodDirection, long[]> adjData,
-			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled, int cullingRangeX, int cullingRangeZ)
+			byte detailLevel, int posX, int posZ, VertexOptimizer vertexOptimizer, DebugMode debugging, boolean[] adjShadeDisabled
+			)//, int cullingRangeX, int cullingRangeZ)
 	{
 		if (vertexOptimizer == null)
 			return;
@@ -76,7 +77,7 @@ public class CubicLodTemplate
 				DataPointUtil.getLightBlock(data),
 				adjShadeDisabled);
 		
-		addBoundingBoxToBuffer(buffer, vertexOptimizer, cullingRangeX, cullingRangeZ);
+		addBoundingBoxToBuffer(buffer, vertexOptimizer);//, cullingRangeX, cullingRangeZ);
 	}
 	
 	/** add the given position and color to the buffer */
@@ -123,7 +124,7 @@ public class CubicLodTemplate
 		vertexOptimizer.setAdjData(adjData);
 	}
 	
-	private static void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer, int cullingRangeX, int cullingRangeZ)
+	private static void addBoundingBoxToBuffer(LodBufferBuilder buffer, VertexOptimizer vertexOptimizer)//, int cullingRangeX, int cullingRangeZ)
 	{
 		int color;
 		byte skyLight;

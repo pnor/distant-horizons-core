@@ -27,6 +27,7 @@ import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
+import com.seibel.lod.core.enums.config.LightGenerationMode;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -194,13 +195,11 @@ public interface ILodConfigWrapperSingleton
 				FogColorMode getFogColorMode();
 				void setFogColorMode(FogColorMode newFogColorMode);
 				
-				boolean DISABLE_VANILLA_FOG_DEFAULT = false;
+				boolean DISABLE_VANILLA_FOG_DEFAULT = true;
 				String DISABLE_VANILLA_FOG_DESC = ""
 						+ " If true disable Minecraft's fog. \n"
 						+ "\n"
-						+ " Experimental! Will cause issues with Sodium and \n"
-						+ " may not play nice with other mods that edit fog. \n"
-						+ " Intended for those who do not use Sodium or Optifine.";
+						+ " Experimental! Mod support is not guarantee.";
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
@@ -290,14 +289,14 @@ public interface ILodConfigWrapperSingleton
 						+ " This setting shouldn't affect performance. \n";
 				VanillaOverdraw getVanillaOverdraw();
 				void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
-				
+				/* Disabled for now due to implementation issues.
 				MinDefaultMax<Integer> VANILLA_CULLING_RANGE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0, 32, 512);
 				String VANILLA_CULLING_RANGE_DESC = ""
 						+ " This indicates the minimum range where back sides of blocks start get get culled. \n"
 						+ " Higher settings will make terrain look good when looking backwards \n"
 						+ " when changing speeds quickly, but will increase upload times and GPU usage.";
 				int getBacksideCullingRange();
-				void setBacksideCullingRange(int newBacksideCullingRange);
+				void setBacksideCullingRange(int newBacksideCullingRange);*/
 				
 				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
@@ -319,31 +318,18 @@ public interface ILodConfigWrapperSingleton
 		interface IWorldGenerator
 		{
 			String DESC = "These settings control how fake chunks outside your normal view range are generated.";
-			
-			GenerationPriority GENERATION_PRIORITY_DEFAULT = GenerationPriority.NEAR_FIRST;
-			String GENERATION_PRIORITY_DESC = ""
-					+ " In what order should fake chunks be generated outside the vanilla render distance? \n"
+
+			boolean ENABLE_DISTANT_GENERATION_DEFAULT = true;
+			String ENABLE_DISTANT_GENERATION_DESC = ""
+					+ " Whether to enable Distant chunks generator? \n"
 					+ "\n"
-					+ " " + GenerationPriority.FAR_FIRST + " \n"
-					+ " Fake chunks are generated from lowest to highest detail \n"
-					+ " with a small priority for far away regions. \n"
-					+ " This fills in the world fastest, but you will have large low detail \n"
-					+ " blocks for a while while the generation happens. \n"
+					+ " Turning this on allows Distant Horizons to make lods for chunks \n"
+					+ " that are outside of vanilla view distance. \n"
 					+ "\n"
-					+ " " + GenerationPriority.NEAR_FIRST + " \n"
-					+ " Fake chunks are generated around the player \n"
-					+ " in a spiral, similar to vanilla minecraft. \n"
-					+ " Best used when on a server since we can't generate \n"
-					+ " fake chunks. \n"
-					+ "\n"
-					+ " " + GenerationPriority.AUTO + " \n"
-					+ " Uses " + GenerationPriority.FAR_FIRST + " when on a single player world \n"
-					+ " and " + GenerationPriority.NEAR_FIRST + " when connected to a server. \n"
-					+ "\n"
-					+ " This shouldn't affect performance.";
-			GenerationPriority getGenerationPriority();
-			void setGenerationPriority(GenerationPriority newGenerationPriority);
-			
+					+ " Note that in server, distant generation is always off. \n";
+			boolean getEnableDistantGeneration();
+			void setEnableDistantGeneration(boolean newEnableDistantGeneration);
+
 			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.SURFACE;
 			static String getDistanceGenerationModeDesc(IVersionConstants versionConstants)
 			{		
@@ -354,10 +340,10 @@ public interface ILodConfigWrapperSingleton
 					+ " one chunk in Minecraft 1.16.5 and may be inaccurate for different Minecraft versions. \n"
 					+ " They are included to give a rough estimate as to how the different options \n"
 					+ " may perform in comparison to each other. \n"
+					+ " (Note that all modes will load in already existing chunks) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.NONE + " \n"
-					+ " Don't run the distance generator. \n"
-					+ " No CPU usage - Fastest \n"
+					+ " Only run the Generator to load in already existing chunks. \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.BIOME_ONLY + " \n"
 					+ " Only generate the biomes and use the biome's \n"
@@ -396,7 +382,53 @@ public interface ILodConfigWrapperSingleton
 			DistanceGenerationMode getDistanceGenerationMode();
 			void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode);
 			
+			LightGenerationMode LIGHT_GENERATION_MODE_DEFAULT = LightGenerationMode.FANCY;
+			String LIGHT_GENERATION_MODE_DESC = ""
+					+ " How should block and sky lights be processed for distant generation? \n"
+					+ "\n"
+					+ " Note that this include already existing chunks since vanilla \n"
+					+ " does not store sky light values to save file. \n"
+					+ "\n"
+					+ " " + LightGenerationMode.FAST + ": Use height map to fake the light values. \n"
+					+ " " + LightGenerationMode.FANCY + ": Use actaul light engines to generate proper values. \n"
+					+ "\n"
+					+ " This will effect generation speed, but not the rendering performance.";
+			LightGenerationMode getLightGenerationMode();
+			void setLightGenerationMode(LightGenerationMode newLightGenerationMode);
+			
+			
+			GenerationPriority GENERATION_PRIORITY_DEFAULT = GenerationPriority.NEAR_FIRST;
+			String GENERATION_PRIORITY_DESC = ""
+					+ " In what priority should fake chunks be generated outside the vanilla render distance? \n"
+					+ "\n"
+					+ " " + GenerationPriority.FAR_FIRST + " \n"
+					+ " Fake chunks are generated from lowest to highest detail \n"
+					+ " with a priority for far away regions. \n"
+					+ " This fills in the world fastest, but you will have large low detail \n"
+					+ " blocks for a while while the generation happens. \n"
+					+ "\n"
+					+ " " + GenerationPriority.NEAR_FIRST + " \n"
+					+ " Fake chunks are generated around the player \n"
+					+ " in a spiral, similar to vanilla minecraft. \n"
+					+ " Best used when on a server since we can't generate \n"
+					+ " fake chunks. \n"
+					+ "\n"
+					+ " " + GenerationPriority.BALANCED + " \n"
+					+ " A mix between "+GenerationPriority.NEAR_FIRST+"and"+GenerationPriority.FAR_FIRST+". \n"
+					+ " First prioritise completing nearby highest detail chunks, \n"
+					+ " then focus on filling in the low detail areas away from the player. \n"
+					+ "\n"
+					+ " " + GenerationPriority.AUTO + " \n"
+					+ " Uses " + GenerationPriority.BALANCED + " when on a single player world \n"
+					+ " and " + GenerationPriority.NEAR_FIRST + " when connected to a server. \n"
+					+ "\n"
+					+ " This shouldn't affect performance.";
+			GenerationPriority getGenerationPriority();
+			void setGenerationPriority(GenerationPriority newGenerationPriority);
+			
+			@Deprecated
 			boolean ALLOW_UNSTABLE_FEATURE_GENERATION_DEFAULT = false;
+			@Deprecated
 			String ALLOW_UNSTABLE_FEATURE_GENERATION_DESC = ""
 					+ " When using the " + DistanceGenerationMode.FEATURES + " generation mode \n"
 					+ " some features may not be thread safe, which could \n"
@@ -413,8 +445,10 @@ public interface ILodConfigWrapperSingleton
 					+ " but I'm not sure how to do that. \n"
 					+ " If you are a Java wizard, check out the git issue here: \n"
 					+ " https://gitlab.com/jeseibel/minecraft-lod-mod/-/issues/35 \n";
-			boolean getAllowUnstableFeatureGeneration();
-			void setAllowUnstableFeatureGeneration(boolean newAllowUnstableFeatureGeneration);
+			@Deprecated
+			default boolean getAllowUnstableFeatureGeneration() {return true;}
+			@Deprecated
+			default void setAllowUnstableFeatureGeneration(boolean newAllowUnstableFeatureGeneration) {return;}
 			
 			BlocksToAvoid BLOCKS_TO_AVOID_DEFAULT = BlocksToAvoid.BOTH;
 			String BLOCKS_TO_AVOID_DESC = ""
@@ -522,7 +556,9 @@ public interface ILodConfigWrapperSingleton
 						+ "\n"
 						+ " " + DebugMode.OFF + ": Fake chunks will be drawn with their normal colors. \n"
 						+ " " + DebugMode.SHOW_DETAIL + ": Fake chunks color will be based on their detail level. \n"
-						+ " " + DebugMode.SHOW_DETAIL_WIREFRAME + ": Fake chunks color will be based on their detail level, drawn as a wireframe. \n";
+						+ " " + DebugMode.SHOW_DETAIL_WIREFRAME + ": Fake chunks color will be based on their detail level, drawn as a wireframe. \n"
+						+ " " + DebugMode.SHOW_GENMODE + ": Fake chunks color will be based on their distant generation mode. \n"
+						+ " " + DebugMode.SHOW_GENMODE_WIREFRAME + ": Fake chunks color will be based on their distant generation mode, drawn as a wireframe. \n";
 				DebugMode getDebugMode();
 				void setDebugMode(DebugMode newDebugMode);
 				

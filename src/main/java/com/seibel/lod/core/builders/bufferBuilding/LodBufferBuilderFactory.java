@@ -73,7 +73,7 @@ public class LodBufferBuilderFactory
 	
 	//TODO: Do some Perf logging of Buffer Building
 	public static final boolean ENABLE_BUFFER_PERF_LOGGING = false;
-	public static final boolean ENABLE_BUFFER_SWAP_LOGGING = false;
+	public static final boolean ENABLE_BUFFER_SWAP_LOGGING = true;
 	public static final boolean ENABLE_BUFFER_UPLOAD_LOGGING = false;
 	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
 	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
@@ -296,9 +296,9 @@ public class LodBufferBuilderFactory
 			//================================//
 			
 			skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerX, playerY, playerZ);
-			int minCullingRange = SingletonHandler.get(ILodConfigWrapperSingleton.class).client().graphics().advancedGraphics().getBacksideCullingRange();
-			int cullingRangeX = Math.max((int)(1.5 * Math.abs(lastX - playerX)), minCullingRange);
-			int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)), minCullingRange);
+			//int minCullingRange = SingletonHandler.get(ILodConfigWrapperSingleton.class).client().graphics().advancedGraphics().getBacksideCullingRange();
+			//int cullingRangeX = Math.max((int)(1.5 * Math.abs(lastX - playerX)), minCullingRange);
+			//int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)), minCullingRange);
 			lastX = playerX;
 			lastZ = playerZ;
 			
@@ -330,7 +330,7 @@ public class LodBufferBuilderFactory
 					final int pZ = playerZ;
 
 					nodeToRenderThreads.add(() -> {
-						return makeLodRenderData(lodDim, regionPos, pX, pZ, vboX, vboZ, minDetail, cullingRangeX, cullingRangeZ);
+						return makeLodRenderData(lodDim, regionPos, pX, pZ, vboX, vboZ, minDetail);//, cullingRangeX, cullingRangeZ);
 					});
 				} // region z
 			} // region z
@@ -425,7 +425,7 @@ public class LodBufferBuilderFactory
 	private static final ThreadLocal<Map<LodDirection, long[]>> tLocalAdjData = new ThreadLocal<Map<LodDirection, long[]>>();
 	
 	private boolean makeLodRenderData(LodDimension lodDim, RegionPos regPos, int playerX, int playerZ,
-			int vboX, int vboZ, byte minDetail, int cullingRangeX, int cullingRangeZ) {
+			int vboX, int vboZ, byte minDetail) {//, int cullingRangeX, int cullingRangeZ) {
 
 		//Variable initialization
 		int playerChunkX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL,playerX,LodUtil.CHUNK_DETAIL_LEVEL);
@@ -554,7 +554,7 @@ public class LodBufferBuilderFactory
 				
 				//We send the call to create the vertices
 				CubicLodTemplate.addLodToBuffer(currentBuffer, vboX, vboZ, data, adjData,
-						detailLevel, posX, posZ, vertexOptimizer, debugMode, adjShadeDisabled, cullingRangeX, cullingRangeZ);
+						detailLevel, posX, posZ, vertexOptimizer, debugMode, adjShadeDisabled);//, cullingRangeX, cullingRangeZ);
 			}
 			
 		} // for pos to in list to render

@@ -29,6 +29,16 @@ public class LodDimensionOldFileStructureHandler
 	private final File dimensionDataSaveFolder;
 	private final LodDimensionFileHandler newFileHandler;
 	
+	enum OldDistanceGenerationMode {
+		NONE,
+		BIOME_ONLY,
+		BIOME_ONLY_SIMULATE_HEIGHT,
+		SURFACE,
+		FEATURES,
+		FULL
+	}
+	
+	
 	
 	/** lod */
 	private static final String FILE_NAME_PREFIX = "lod";
@@ -64,7 +74,7 @@ public class LodDimensionOldFileStructureHandler
 	}
 	
 
-	private void loadGenModeToRegion(TempLodRegion region, DistanceGenerationMode genMode)
+	private void loadGenModeToRegion(TempLodRegion region, OldDistanceGenerationMode genMode)
 	{
 		int regionX = region.posX;
 		int regionZ = region.posZ;
@@ -142,12 +152,12 @@ public class LodDimensionOldFileStructureHandler
 		ClientApi.LOGGER.info("Merging region "+regionPos+" at "+verticalQuality+"...");
 		TempLodRegion region = new TempLodRegion(verticalQuality, regionPos);
 		ClientApi.LOGGER.info("Reading data...");
-		loadGenModeToRegion(region, DistanceGenerationMode.FULL);
-		loadGenModeToRegion(region, DistanceGenerationMode.FEATURES);
-		loadGenModeToRegion(region, DistanceGenerationMode.SURFACE);
-		loadGenModeToRegion(region, DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT);
-		loadGenModeToRegion(region, DistanceGenerationMode.BIOME_ONLY);
-		loadGenModeToRegion(region, DistanceGenerationMode.NONE);
+		loadGenModeToRegion(region, OldDistanceGenerationMode.FULL);
+		loadGenModeToRegion(region, OldDistanceGenerationMode.FEATURES);
+		loadGenModeToRegion(region, OldDistanceGenerationMode.SURFACE);
+		loadGenModeToRegion(region, OldDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT);
+		loadGenModeToRegion(region, OldDistanceGenerationMode.BIOME_ONLY);
+		loadGenModeToRegion(region, OldDistanceGenerationMode.NONE);
 		ClientApi.LOGGER.info("Writing data...");
 		saveRegion(region);
 		ClientApi.LOGGER.info("region "+regionPos+" at "+verticalQuality+" merged");
@@ -167,7 +177,7 @@ public class LodDimensionOldFileStructureHandler
 		}
 	}
 	
-	private HashSet<RegionPos> scanOldRegionFiles(VerticalQuality vertQual, DistanceGenerationMode genMode) {
+	private HashSet<RegionPos> scanOldRegionFiles(VerticalQuality vertQual, OldDistanceGenerationMode genMode) {
 		HashSet<RegionPos> result = new HashSet<RegionPos>();
 		File baseBaseFolder = new File(getFileBasePath() + vertQual + File.separatorChar + genMode);
 		if (!baseBaseFolder.exists()) return result;
@@ -187,7 +197,7 @@ public class LodDimensionOldFileStructureHandler
 		return result;
 	}
 	
-	private void renameOldFileStructure(VerticalQuality vertQual, DistanceGenerationMode genMode) {
+	private void renameOldFileStructure(VerticalQuality vertQual, OldDistanceGenerationMode genMode) {
 		File baseBaseFolder = new File(getFileBasePath() + vertQual + File.separatorChar + genMode);
 		if (!baseBaseFolder.exists()) return;
 		baseBaseFolder.renameTo(new File(getFileBasePath() + vertQual + File.separatorChar + genMode + RETIRED_OLD_STRUCT_POSTFIX));
@@ -198,12 +208,12 @@ public class LodDimensionOldFileStructureHandler
 		if (!baseFile.exists()) return;
 		if (!baseFile.isDirectory()) return;
 		HashSet<RegionPos> totalPos = new HashSet<RegionPos>();
-		totalPos.addAll(scanOldRegionFiles(vertQual, DistanceGenerationMode.NONE));
-		totalPos.addAll(scanOldRegionFiles(vertQual, DistanceGenerationMode.BIOME_ONLY));
-		totalPos.addAll(scanOldRegionFiles(vertQual, DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT));
-		totalPos.addAll(scanOldRegionFiles(vertQual, DistanceGenerationMode.SURFACE));
-		totalPos.addAll(scanOldRegionFiles(vertQual, DistanceGenerationMode.FEATURES));
-		totalPos.addAll(scanOldRegionFiles(vertQual, DistanceGenerationMode.FULL));
+		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.NONE));
+		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.BIOME_ONLY));
+		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT));
+		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.SURFACE));
+		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.FEATURES));
+		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.FULL));
 		ArrayList<Future<?>> futures = new ArrayList<Future<?>>();
 		for (RegionPos pos : totalPos) {
 			futures.add(mergerThreads.submit(() -> {
@@ -223,12 +233,12 @@ public class LodDimensionOldFileStructureHandler
 			}
 		});
 		
-		renameOldFileStructure(vertQual, DistanceGenerationMode.NONE);
-		renameOldFileStructure(vertQual, DistanceGenerationMode.BIOME_ONLY);
-		renameOldFileStructure(vertQual, DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT);
-		renameOldFileStructure(vertQual, DistanceGenerationMode.SURFACE);
-		renameOldFileStructure(vertQual, DistanceGenerationMode.FEATURES);
-		renameOldFileStructure(vertQual, DistanceGenerationMode.FULL);
+		renameOldFileStructure(vertQual, OldDistanceGenerationMode.NONE);
+		renameOldFileStructure(vertQual, OldDistanceGenerationMode.BIOME_ONLY);
+		renameOldFileStructure(vertQual, OldDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT);
+		renameOldFileStructure(vertQual, OldDistanceGenerationMode.SURFACE);
+		renameOldFileStructure(vertQual, OldDistanceGenerationMode.FEATURES);
+		renameOldFileStructure(vertQual, OldDistanceGenerationMode.FULL);
 	}
 
 	private String getFileBasePath() {

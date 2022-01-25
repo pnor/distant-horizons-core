@@ -39,6 +39,7 @@ public class LodBuilderConfig
 	public boolean useSolidBlocksInColorGen;
 	/** default: server */
 	public DistanceGenerationMode distanceGenerationMode;
+	public boolean quickFillWithVoid;
 	
 	/**
 	 * default settings for a normal chunk <br>
@@ -47,49 +48,18 @@ public class LodBuilderConfig
 	 * useSolidBlocksInColorGen = true <br>
 	 * generationMode = Server <br>
 	 */
-	public LodBuilderConfig()
+	public LodBuilderConfig(DistanceGenerationMode newDistanceGenerationMode)
 	{
 		useHeightmap = false;
 		useBiomeColors = false;
 		useSolidBlocksInColorGen = true;
-		distanceGenerationMode = DistanceGenerationMode.FULL;
-	}
-	
-	/**
-	 * @param newUseHeightmap default = false
-	 * @param newUseBiomeColors default = false
-	 * @param newUseSolidBlocksInBiomeColor default = true
-	 * @param newDistanceGenerationMode default = Server
-	 */
-	public LodBuilderConfig(boolean newUseHeightmap, boolean newUseBiomeColors,
-			boolean newUseSolidBlocksInBiomeColor, DistanceGenerationMode newDistanceGenerationMode)
-	{
-		useHeightmap = newUseHeightmap;
-		useBiomeColors = newUseBiomeColors;
-		useSolidBlocksInColorGen = newUseSolidBlocksInBiomeColor;
+		quickFillWithVoid = false;
 		distanceGenerationMode = newDistanceGenerationMode;
 	}
 	
-	/**
-	 * @param newUseHeightmap default = false
-	 * @param newUseBiomeColors default = false
-	 * @param newUseSolidBlocksInBiomeColor default = true
-	 */
-	public LodBuilderConfig(boolean newUseHeightmap, boolean newUseBiomeColors, boolean newUseSolidBlocksInBiomeColor)
-	{
-		this();
-		useHeightmap = newUseHeightmap;
-		useBiomeColors = newUseBiomeColors;
-		useSolidBlocksInColorGen = newUseSolidBlocksInBiomeColor;
-		distanceGenerationMode = newUseHeightmap ? DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT : DistanceGenerationMode.BIOME_ONLY;
-	}
-	
-	/**
-	 * @param newDistanceGenerationMode default = Server
-	 */
-	public LodBuilderConfig(DistanceGenerationMode newDistanceGenerationMode)
-	{
-		this();
-		distanceGenerationMode = newDistanceGenerationMode;
+	public static LodBuilderConfig getFillVoidConfig() {
+		LodBuilderConfig config = new LodBuilderConfig(DistanceGenerationMode.NONE);
+		config.quickFillWithVoid = true;
+		return config;
 	}
 }

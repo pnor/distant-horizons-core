@@ -36,7 +36,7 @@ package com.seibel.lod.core.enums.config;
 public enum DistanceGenerationMode
 {
 	/**
-	 * Don't generate anything
+	 * Don't generate anything except just load in already existing chunks
 	 */
 	NONE((byte) 0),
 	
@@ -82,6 +82,7 @@ public enum DistanceGenerationMode
 	 */
 	FULL((byte) 5);
 	
+	public static DistanceGenerationMode RENDERABLE = DistanceGenerationMode.BIOME_ONLY;
 	
 	/**
 	 * The higher the number the more complete the generation is.
