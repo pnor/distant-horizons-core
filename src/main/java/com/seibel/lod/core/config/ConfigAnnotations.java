@@ -44,4 +44,17 @@ public class ConfigAnnotations {
     {
 
     }
+
+    /**
+     * Adds a comment to the file.
+     *
+     * DONT USE AS IT WILL BE REMOVED IN THE REWORK OF THE CONFIG
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @Deprecated
+    public @interface FileComment
+    {
+
+    }
 }
