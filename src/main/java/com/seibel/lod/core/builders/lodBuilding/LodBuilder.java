@@ -249,7 +249,8 @@ public class LodBuilder
 		
 		boolean topBlock = true;
 		if (y < chunk.getMinBuildHeight())
-			dataToMerge[0] = DataPointUtil.createVoidDataPoint(generation); 
+			dataToMerge[0] = DataPointUtil.createVoidDataPoint(generation);
+		int maxConnectedLods = this.config.client().graphics().quality().getVerticalQuality().maxVerticalData[0];
 		while (y >= chunk.getMinBuildHeight()) {
 			int height = determineHeightPointFrom(chunk, config, x, y, z);
 			// If the lod is at the default height, it must be void data
@@ -260,8 +261,7 @@ public class LodBuilder
 			y = height - 1;
 			// We search light on above air block
 			int depth = determineBottomPointFrom(chunk, config, x, y, z,
-					//count < this.config.client().graphics().quality().getVerticalQuality().maxConnectedLods &&
-					(!hasCeiling || !topBlock));
+					count < maxConnectedLods && (!hasCeiling || !topBlock));
 			if (hasCeiling && topBlock)
 				y = depth;
 			int light = getLightValue(chunk, x, y, z, hasCeiling, hasSkyLight, topBlock);

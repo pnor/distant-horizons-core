@@ -324,7 +324,7 @@ public class DataPointUtil
 		int size = dataToMerge.length / inputVerticalData;
 
 		// We initialize the arrays that are going to be used
-		int heightAndDepthLength = WORLD_HEIGHT * 2;
+		int heightAndDepthLength = (WORLD_HEIGHT / 2 + 16) * 2;
 		short[] heightAndDepth = tLocalHeightAndDepth.get();
 		if (heightAndDepth==null || heightAndDepth.length != heightAndDepthLength) {
 			heightAndDepth = new short[heightAndDepthLength];
