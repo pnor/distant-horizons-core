@@ -31,8 +31,8 @@
   "DistantHorizons.config.client.graphics.cloudQuality.cloudWarning": "§nlɐʇuǝɯᴉɹǝdxǝ llᴉʇs ǝɹɐ spnolƆ§r§l§n:פNINɹ∀M",
   "DistantHorizons.config.client.graphics.cloudQuality.customClouds": "pnolɔ ɯoʇsnƆ",
   "DistantHorizons.config.client.graphics.cloudQuality.customClouds.@tooltip": "ɔᴉɯɐuʎp ǝɹoɯ spnolɔ ǝɥʇ ǝʞɐɯ oslɐ llᴉʍ sᴉɥ┴\n ƃuᴉɥʇʎuɐ op ʇuoʍ ǝɹǝɥ sƃuᴉʇʇǝs ɹǝɥʇo ǝɥʇ uǝɥʇ ɟɟo sᴉɥʇ uɹnʇ noʎ ɟI\n ˙spnolɔ ǝɥʇ ƃuᴉɹǝpuǝɹ ɹo ʎɐʍ ɯoʇsnɔ ɐ ǝsn oʇ ʇuɐʍ noʎ op",
-  "DistantHorizons.config.client.graphics.cloudQuality.fabulousClouds": "spnolɔ snolnqɐℲ",
-  "DistantHorizons.config.client.graphics.cloudQuality.fabulousClouds.@tooltip": "פNI┴┴ƎS ˥∀┴NƎWIɹƎԀXƎ N∀ ⅄˥┴NƎɹɹ∩Ɔ SI SIH┴\n ˙ɹǝʇʇǝq ʎɐʍ ʞool spnolɔ sǝʞɐW",
+  "DistantHorizons.config.client.graphics.cloudQuality.coolClouds": "spnolɔ snolnqɐℲ",
+  "DistantHorizons.config.client.graphics.cloudQuality.coolClouds.@tooltip": "§n┴Ǝ⅄ pƎ┴NƎWƎ˥ԀWI ┴ON SI SIH┴ §r§l§n:פNINɹ∀M",
   "DistantHorizons.config.client.graphics.cloudQuality.extendClouds": "spnolɔ ǝɥʇ puǝʇxƎ",
   "DistantHorizons.config.client.graphics.cloudQuality.cloudHeight": "ʇɥƃᴉǝɥ pnolƆ",
   "DistantHorizons.config.client.graphics.advancedGraphics": "uoᴉʇdo ʎʇᴉlɐnb pǝɔuɐʌp∀",
@@ -57,6 +57,10 @@
   "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration.@tooltip": "sǝɥsɐɹɔ puɐ ʎʇᴉlᴉqɐʇsuᴉ ǝsnɐɔ plnoƆ\n ˙ǝɟɐs pɐǝɹɥʇ ǝq ʇou ʎɐɯ sǝɹnʇɐǝɟ ǝɯoS",
   "DistantHorizons.config.client.worldGenerator.blocksToAvoid": "pᴉoʌɐ oʇ ʞɔolq",
   "DistantHorizons.config.client.worldGenerator.blocksToAvoid.@tooltip": "sʞunɥɔ ǝʞɐɟ ƃuᴉʇɐɹǝuǝƃ uǝɥʍ pᴉoʌɐ oʇ ʞɔolq ʇɐɥM",
+  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration": "uoᴉʇɐɹǝuǝפ ʇuɐʇsᴉp ǝlqɐuƎ",
+  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration.@tooltip": "¿ɹoʇɐɹǝuǝƃ sʞunɥɔ ʇuɐʇsᴉp ǝlqɐuǝ oʇ ɹǝɥʇǝɥM",
+  "DistantHorizons.config.client.worldGenerator.lightGenerationMode": "ǝpoW uoᴉʇɐɹǝuǝפ ʇɥƃᴉ˥",
+  "DistantHorizons.config.client.worldGenerator.lightGenerationMode.@tooltip": "¿uoᴉʇɐɹǝuǝƃ ʇuɐʇsᴉp ɹoɟ pǝssǝɔoɹd ǝq sʇɥƃᴉl ʎʞs puɐ ʞɔolq plnoɥs ʍoH",
   "DistantHorizons.config.client.advanced": "suoᴉʇdo ǝɔuɐʌp∀",
   "DistantHorizons.config.client.advanced.threading": "ƃuᴉpɐǝɹɥ┴",
   "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads": "spɐǝɹɥʇ uoᴉʇɐɹǝuǝƃ plɹoʍ ɟo ˙ON",
@@ -109,6 +113,7 @@
   "DistantHorizons.config.enum.VanillaOverdraw.BORDER": "ɹǝpɹoq",
   "DistantHorizons.config.enum.GenerationPriority.AUTO": "oʇn∀",
   "DistantHorizons.config.enum.GenerationPriority.NEAR_FIRST": "ʇsɹᴉɟ ɹɐǝN",
+  "DistantHorizons.config.enum.GenerationPriority.BALANCED": "pǝɔuɐlɐq",
   "DistantHorizons.config.enum.GenerationPriority.FAR_FIRST": "ʇsɹᴉɟ ɹɐℲ",
   "DistantHorizons.config.enum.DistanceGenerationMode.NONE": "ǝuoN",
   "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY": "ʎluo ǝɯoᴉq",
@@ -135,5 +140,7 @@
   "DistantHorizons.config.enum.BufferRebuildTimes.RARE": "ǝɹɐɹ",
   "DistantHorizons.config.enum.DropoffQuality.AUTO": "oʇn∀",
   "DistantHorizons.config.enum.DropoffQuality.SMOOTH_DROPOFF": "ɟɟodoɹp ɥʇooɯS",
-  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED": "pǝsnɔoɟ ǝɔuɐɯɹoɟɹǝԀ"
+  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED": "pǝsnɔoɟ ǝɔuɐɯɹoɟɹǝԀ",
+  "DistantHorizons.config.enum.LightGenerationMode.FAST": "ʇsɐℲ",
+  "DistantHorizons.config.enum.LightGenerationMode.FANCY": "ʎɔuɐℲ"
 }

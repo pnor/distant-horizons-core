@@ -216,15 +216,16 @@ public interface ILodConfigWrapperSingleton
 				boolean getCustomClouds();
 				void setCustomClouds(boolean newCustomClouds);
 
-				boolean FABULOUS_CLOUDS_DEFAULT = false;
-				String FABULOUS_CLOUDS_DESC = ""
+				boolean COOL_CLOUDS_DEFAULT = false;
+				String COOL_CLOUDS_DESC = ""
+						+ " THIS IS NOT IMPLEMENTED YET SO DONT USE \n"
 						+ " A complete rework on how clouds work \n"
 						+ " Rather than getting from a texure and rendering that \n"
 						+ " It gets the terrain height and decides how much cloud to put \n"
 						+ " This idea came from this 11 year old(as of when this is being written) \n"
 						+ "reddit post https://www.reddit.com/r/Minecraft/comments/e7xol/this_is_how_clouds_should_work_gif_simulation/ \n";
-				boolean getFabulousClouds();
-				void setFabulousClouds(boolean newFabulousClouds);
+				boolean getCoolClouds();
+				void setCoolClouds(boolean newFabulousClouds);
 
 				boolean EXTEND_CLOUDS_DEFAULT = true;
 				String EXTEND_CLOUDS_DESC = ""
