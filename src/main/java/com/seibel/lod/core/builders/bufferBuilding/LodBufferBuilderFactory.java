@@ -500,7 +500,7 @@ public class LodBufferBuilderFactory
 				// We avoid cases where the adjPosition is in player chunk while the position is not
 				// to always have a wall underwater
 				if(posToRender.contains(detailLevel, xAdj, zAdj)
-					//&& !isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance)
+					&& !isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(detailLevel, xAdj), LevelPosUtil.getChunkPos(detailLevel,zAdj))
 					&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
 				{
 					for (int verticalIndex = 0; verticalIndex < lodDim.getMaxVerticalData(detailLevel, xAdj, zAdj); verticalIndex++)
@@ -517,7 +517,7 @@ public class LodBufferBuilderFactory
 					
 					adjData.get(lodDirection)[0] = DataPointUtil.EMPTY_DATA;
 					
-					if ((//isThisPositionGoingToBeRendered(detailLevel, xAdj, zAdj, playerChunkX, playerChunkZ, vanillaRenderedChunks, gameChunkRenderDistance) || 
+					if ((isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(detailLevel, xAdj), LevelPosUtil.getChunkPos(detailLevel,zAdj)) || 
 							(posNotInPlayerChunk && adjPosInPlayerChunk))
 								&& !DataPointUtil.isVoid(data))
 					{
