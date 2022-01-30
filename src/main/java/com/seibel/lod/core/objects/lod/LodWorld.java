@@ -149,6 +149,19 @@ public class LodWorld
 		}
 		//FIXME: This should block until file is saved.
 	}
+	/**
+	 * Requests all dimensions to shutdown
+	 */
+	public void shutdownAllDimensions()
+	{
+		if (lodDimensions == null)
+			return;
+		
+		// TODO: Add parallel shutdowns.
+		for (IDimensionTypeWrapper key : lodDimensions.keySet()) {
+			lodDimensions.get(key).shutdown();
+		}
+	}
 	
 	
 	public boolean getIsWorldNotLoaded()

@@ -133,41 +133,27 @@ public class EventApi
 		// Note: using isCurrentlyOnSinglePlayerServer as often API call unload event AFTER setting MC to not be in a singlePlayerServer
 		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == WorldType.ClientWorld) return;
 		
-		// the player just unloaded a world/dimension
-		checkIfDisconnectedFromServer();
-	}
-	private void checkIfDisconnectedFromServer()
-	{
-		{
-			// the player just left the server
-			
-			// TODO should "resetMod()" be called here? -James
-			
-			// if this isn't done unfinished tasks may be left in the queue
-			// preventing new LodChunks form being generated
-			ApiShared.isShuttingDown = true;
-			
-			// TODO Check why world gen is sometimes stuck and timeout
-			LodWorldGenerator.INSTANCE.restartExecutorService();
-			
-			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.set(0);
-			ApiShared.lodWorld.deselectWorld(); // This force a save
-			
-			// prevent issues related to the buffer builder
-			// breaking or retaining previous data when changing worlds.
-			ClientApi.renderer.destroyBuffers();
-			ClientApi.renderer.requestCleanup();
-			GLProxy.ensureAllGLJobCompleted();
-			recalculateWidths = true;
-			// TODO: Check if after the refactoring, is this still needed
-			ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
-			ClientApi.INSTANCE.rendererDisabledBecauseOfExceptions = false;
-			
-			// make sure the nulled objects are freed.
-			// (this prevents an out of memory error when
-			// changing worlds)
-			System.gc();
-		}
+		// TODO should "resetMod()" be called here? -James
+		
+		// if this isn't done unfinished tasks may be left in the queue
+		// preventing new LodChunks form being generated
+		ApiShared.isShuttingDown = true;
+		
+		// TODO Better report on when world gen is stuck and timeout
+		LodWorldGenerator.INSTANCE.restartExecutorService();
+		
+		ApiShared.lodWorld.deselectWorld(); // This force a save and shutdown lodDim properly
+		
+		// prevent issues related to the buffer builder
+		// breaking or retaining previous data when changing worlds.
+		ClientApi.renderer.destroyBuffers();
+		ClientApi.renderer.requestCleanup();
+		GLProxy.ensureAllGLJobCompleted();
+		recalculateWidths = true;
+		
+		// TODO: Check if after the refactoring, is this still needed
+		ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
+		ClientApi.INSTANCE.rendererDisabledBecauseOfExceptions = false;
 	}
 	
 	public void blockChangeEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)

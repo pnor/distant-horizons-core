@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -779,5 +780,17 @@ public class LodDimension
 			stringBuilder.append("\n");
 		}
 		return stringBuilder.toString();
+	}
+
+	public void shutdown() {
+		cutAndExpandThread.shutdown();
+		try {
+			boolean worked = cutAndExpandThread.awaitTermination(5, TimeUnit.SECONDS);
+			if (!worked)
+				ClientApi.LOGGER.error("Cut And Expend threads timed out! May cause crash on game exit due to cleanup failure.");
+		} catch (InterruptedException e) {
+			ClientApi.LOGGER.error("Cut And Expend threads shutdown is interrupted! May cause crash on game exit due to cleanup failure: ", e);
+		}
+		
 	}
 }

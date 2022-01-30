@@ -75,7 +75,7 @@ public class LodWorldGenerator
 	 * to limit how many chunks are queued at once. To prevent chunks from being
 	 * generated for a long time in an area the player is no longer in.
 	 */
-	public final AtomicInteger numberOfChunksWaitingToGenerate = new AtomicInteger(0);
+	public AtomicInteger numberOfChunksWaitingToGenerate = new AtomicInteger(0);
 	
 	public final Set<AbstractChunkPosWrapper> positionsWaitingToBeGenerated = new HashSet<>();
 	
@@ -385,6 +385,8 @@ public class LodWorldGenerator
 						new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 			}
 		}
+		// Doing this instead of setting it to 0 because even if shutdown fail, it won't cause the int to underflow below 0 afterwards
+		numberOfChunksWaitingToGenerate = new AtomicInteger(0);
 	}
 	
 }
