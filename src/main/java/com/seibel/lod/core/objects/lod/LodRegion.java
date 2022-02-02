@@ -498,7 +498,7 @@ public class LodRegion {
 
 		int modPosX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		int modPosZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		if (dataContainer[detailLevel].doesItExist(modPosX, modPosZ))
+		if (dataContainer[detailLevel] != null && dataContainer[detailLevel].doesItExist(modPosX, modPosZ))
 			// We take the bottom information always
 			// TODO what does that mean? bottom of what?
 			return DataPointUtil.getGenerationMode(dataContainer[detailLevel].getSingleData(modPosX, modPosZ));
