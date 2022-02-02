@@ -227,10 +227,7 @@ public class ClientApi
 		if (!configOverrideReminderPrinted)
 		{
 			MC.sendChatMessage(ModInfo.READABLE_NAME + " experimental build " + ModInfo.VERSION);
-			MC.sendChatMessage("You are running a unsupported version of the mod!");
-			MC.sendChatMessage("==========================================");
-			MC.sendChatMessage("SEIZURE WARNING: Flashing lights expected!"); // remove this line when the lighting shaders are fixed
-			MC.sendChatMessage("==========================================");
+			MC.sendChatMessage("You are running an unsupported version of the mod!");
 			MC.sendChatMessage("Here be dragons!");
 			
 			configOverrideReminderPrinted = true;
