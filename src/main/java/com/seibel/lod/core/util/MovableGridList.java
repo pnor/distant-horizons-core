@@ -14,16 +14,6 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 
 	private static final long serialVersionUID = 5366261085254591277L;
 
-	public static class Pos {
-		public int x;
-		public int y;
-
-		public Pos(int xx, int yy) {
-			x = xx;
-			y = yy;
-		}
-	}
-
 	private int centerX;
 	private int centerY;
 	

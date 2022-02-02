@@ -39,6 +39,8 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.MovabeGridRingList;
+import com.seibel.lod.core.util.MovabeGridRingList.Pos;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -75,7 +77,7 @@ public class LodDimension
 	// these three variables are private to force use of the getWidth() method
 	// which is a safer way to get the width then directly asking the arrays
 	/** stores all the regions in this dimension */
-	public volatile LodRegion[][] regions;
+	public MovabeGridRingList<LodRegion> regions;
 	//NOTE: This list pos is relative to center
 	private volatile RegionPos[] iteratorList = null;
 	
@@ -90,8 +92,6 @@ public class LodDimension
 	public volatile boolean regenDimensionBuffers = false;
 	
 	private LodDimensionFileHandler fileHandler;
-	
-	private final RegionPos center;
 	
 	public volatile int dirtiedRegionsRoughCount = 0;
 	
@@ -143,9 +143,7 @@ public class LodDimension
 		}
 		
 		
-		regions = new LodRegion[width][width];
-		
-		center = new RegionPos(0, 0);
+		regions = new MovabeGridRingList<LodRegion>(halfWidth, 0, 0);
 		generateIteratorList();
 	}
 	
@@ -181,91 +179,8 @@ public class LodDimension
 	{
 		ClientApi.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
 		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
-		int xOffset = regionOffset.x;
-		int zOffset = regionOffset.z;
-		
-		// if the x or z offset is equal to or greater than
-		// the total width, just delete the current data
-		// and update the centerX and/or centerZ
-		if (Math.abs(xOffset) >= width || Math.abs(zOffset) >= width)
-		{
-			for (int x = 0; x < width; x++)
-				for (int z = 0; z < width; z++) {
-					regions[x][z] = null;
-				}
-			// update the new center
-			center.x += xOffset;
-			center.z += zOffset;
-			
-			return;
-		}
-		
-		
-		// X
-		if (xOffset > 0)
-		{
-			// move everything over to the left (as the center moves to the right)
-			for (int x = 0; x < width; x++)
-			{
-				for (int z = 0; z < width; z++)
-				{
-					if (x + xOffset < width)
-						regions[x][z] = regions[x + xOffset][z];
-					else
-						regions[x][z] = null;
-				}
-			}
-		}
-		else
-		{
-			// move everything over to the right (as the center moves to the left)
-			for (int x = width - 1; x >= 0; x--)
-			{
-				for (int z = 0; z < width; z++)
-				{
-					if (x + xOffset >= 0)
-						regions[x][z] = regions[x + xOffset][z];
-					else
-						regions[x][z] = null;
-				}
-			}
-		}
-		
-		
-		// Z
-		if (zOffset > 0)
-		{
-			// move everything up (as the center moves down)
-			for (int x = 0; x < width; x++)
-			{
-				for (int z = 0; z < width; z++)
-				{
-					if (z + zOffset < width)
-						regions[x][z] = regions[x][z + zOffset];
-					else
-						regions[x][z] = null;
-				}
-			}
-		}
-		else
-		{
-			// move everything down (as the center moves up)
-			for (int x = 0; x < width; x++)
-			{
-				for (int z = width - 1; z >= 0; z--)
-				{
-					if (z + zOffset >= 0)
-						regions[x][z] = regions[x][z + zOffset];
-					else
-						regions[x][z] = null;
-				}
-			}
-		}
-		
-		
-		// update the new center
-		center.x += xOffset;
-		center.z += zOffset;
+		Pos p = regions.getCenter();
+		regions.move(p.x+regionOffset.x, p.y+regionOffset.z);
 		ClientApi.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
 	}
 	
@@ -280,19 +195,13 @@ public class LodDimension
 	{
 		int xRegion = LevelPosUtil.getRegion(detailLevel, levelPosX);
 		int zRegion = LevelPosUtil.getRegion(detailLevel, levelPosZ);
-		int xIndex = (xRegion - center.x) + halfWidth;
-		int zIndex = (zRegion - center.z) + halfWidth;
+		LodRegion region = regions.get(xRegion, zRegion);
 		
-		if (!regionIsInRange(xRegion, zRegion))
-			return null;
-			// throw new ArrayIndexOutOfBoundsException("Region for level pos " + LevelPosUtil.toString(detailLevel, posX, posZ) + " out of range");
-		else if (regions[xIndex][zIndex] == null)
-			return null;
-		else if (regions[xIndex][zIndex].getMinDetailLevel() > detailLevel)
+		if (region != null && region.getMinDetailLevel() > detailLevel)
 			return null;
 		//throw new InvalidParameterException("Region for level pos " + LevelPosUtil.toString(detailLevel, posX, posZ) + " currently only reach level " + regions[xIndex][zIndex].getMinDetailLevel());
 		
-		return regions[xIndex][zIndex];
+		return region;
 	}
 	
 	/**
@@ -303,37 +212,29 @@ public class LodDimension
 	 */
 	public LodRegion getRegion(int regionPosX, int regionPosZ)
 	{
-		int xIndex = (regionPosX - center.x) + halfWidth;
-		int zIndex = (regionPosZ - center.z) + halfWidth;
-		
-		if (!regionIsInRange(regionPosX, regionPosZ))
-			return null;
-		//throw new ArrayIndexOutOfBoundsException("Region " + regionPosX + " " + regionPosZ + " out of range");
-		
-		return regions[xIndex][zIndex];
+		return regions.get(regionPosX, regionPosZ);
 	}
 	
 	/** Useful when iterating over every region. */
+	@Deprecated
 	public LodRegion getRegionByArrayIndex(int xIndex, int zIndex)
 	{
-		return regions[xIndex][zIndex];
+		Pos p = regions.getMinInRange();
+		return regions.get(p.x+xIndex, p.y+zIndex);
 	}
 	
 	/**
 	 * Overwrite the LodRegion at the location of newRegion with newRegion.
 	 * @throws ArrayIndexOutOfBoundsException if newRegion is outside what can be stored in this LodDimension.
 	 */
-	public synchronized void addOrOverwriteRegion(LodRegion newRegion) throws ArrayIndexOutOfBoundsException
+	/*public synchronized void addOrOverwriteRegion(LodRegion newRegion) throws ArrayIndexOutOfBoundsException
 	{
-		int xIndex = (newRegion.regionPosX - center.x) + halfWidth;
-		int zIndex = (newRegion.regionPosZ - center.z) + halfWidth;
-		
 		if (!regionIsInRange(newRegion.regionPosX, newRegion.regionPosZ))
 			// out of range
 			throw new ArrayIndexOutOfBoundsException("Region " + newRegion.regionPosX + ", " + newRegion.regionPosZ + " out of range");
-		
 		regions[xIndex][zIndex] = newRegion;
-	}
+	}*/
+	
 	public interface PosComsumer {
 		void run(int x, int z);
 	}
@@ -342,7 +243,7 @@ public class LodDimension
 		int ox,oy,dx,dy;
 	    ox = oy = dx = 0;
 	    dy = -1;
-	    int len = regions.length;
+	    int len = regions.getSize();
 	    int maxI = len*len;
 	    int halfLen = len/2;
 	    for(int i =0; i < maxI; i++){
@@ -384,20 +285,18 @@ public class LodDimension
 		Runnable thread = () -> {
 			//ClientApi.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
 			totalDirtiedRegions = 0;
+			Pos minPos = regions.getMinInRange();
 			// go over every region in the dimension
 			iterateWithSpiral((int x, int z) -> {
-				int regionX;
-				int regionZ;
 				int minDistance;
 				byte detail;
-				regionX = (x + center.x) - halfWidth;
-				regionZ = (z + center.z) - halfWidth;
-				LodRegion region = regions[x][z];
+				
+				LodRegion region = regions.get(x+minPos.x, z+minPos.y);
 				if (region != null && region.needSaving) totalDirtiedRegions++;
 				if (region != null && !region.needSaving && region.isWriting==0) {
 					// check what detail level this region should be
 					// and cut it if it is higher then that
-					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ,
+					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, x+minPos.x, z+minPos.y,
 							playerPosX, playerPosZ);
 					detail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 					if (region.getMinDetailLevel() < detail) {
@@ -435,6 +334,7 @@ public class LodDimension
 		Runnable thread = () -> {
 			//ClientApi.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 
+			Pos minPos = regions.getMinInRange();
 			iterateWithSpiral((int x, int z) -> {
 				int regionX;
 				int regionZ;
@@ -443,10 +343,10 @@ public class LodDimension
 				int maxDistance;
 				byte minDetail;
 				byte maxDetail;
-				regionX = (x + center.x) - halfWidth;
-				regionZ = (z + center.z) - halfWidth;
+				regionX = x + minPos.x;
+				regionZ = z + minPos.y;
 				final RegionPos regionPos = new RegionPos(regionX, regionZ);
-				region = regions[x][z];
+				region = regions.get(regionX, regionZ);
 				if (region != null && region.isWriting!=0) return; // FIXME: A crude attempt at lowering chance of race condition!
 
 				minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
@@ -459,13 +359,13 @@ public class LodDimension
 				boolean updated = false;
 				if (region == null) {
 					region = getRegionFromFile(regionPos, minDetail, verticalQuality);
-					regions[x][z] = region;
+					regions.set(regionX, regionZ, region);
 					updated = true;
 				} else if (region.getVerticalQuality() != verticalQuality ||
 						region.getMinDetailLevel() > minDetail) {
 					// The 'getRegionFromFile' will flush and save the region if it returns a new one
-					region = getRegionFromFile(regions[x][z], minDetail, verticalQuality);
-					regions[x][z] = region;
+					region = getRegionFromFile(region, minDetail, verticalQuality);
+					regions.set(regionX, regionZ, region);
 					updated = true;
 				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != maxDetail) {
 					region.lastMaxDetailLevel = maxDetail;
@@ -531,12 +431,12 @@ public class LodDimension
 		// This ensures that we don't spawn way too much regions without finish flushing them first.
 		if (dirtiedRegionsRoughCount > 16) return posToGenerate;
 		GenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? GenerationPriority.NEAR_FIRST : priority;
-		
+		Pos minPos = regions.getMinInRange();
 		iterateByDistance((int x, int z) -> {
 			boolean isCloseRange = (Math.abs(x-halfWidth)+Math.abs(z-halfWidth)<=2);
 			//boolean isCloseRange = true;
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
-			LodRegion lodRegion = regions[x][z];
+			LodRegion lodRegion = regions.get(minPos.x+x, minPos.y+z);
 			
 			
 			if (lodRegion != null && lodRegion.needRecheckGenPoint) {
@@ -724,22 +624,26 @@ public class LodDimension
 	 */
 	public boolean regionIsInRange(int regionX, int regionZ)
 	{
-		int xIndex = (regionX - center.x) + halfWidth;
-		int zIndex = (regionZ - center.z) + halfWidth;
-		
-		return xIndex >= 0 && xIndex < width && zIndex >= 0 && zIndex < width;
+		return regions.inRange(regionX, regionZ);
 	}
 	
 	/** Returns the dimension's center region position X value */
+	@Deprecated // Use getCenterRegionPos() instead
 	public int getCenterRegionPosX()
 	{
-		return center.x;
+		return regions.getCenter().x;
 	}
 	
 	/** Returns the dimension's center region position Z value */
+	@Deprecated // Use getCenterRegionPos() instead
 	public int getCenterRegionPosZ()
 	{
-		return center.z;
+		return regions.getCenter().y;
+	}
+	
+	public RegionPos getCenterRegionPos() {
+		Pos p = regions.getCenter();
+		return new RegionPos(p.x, p.y);
 	}
 	
 	/** returns the width of the dimension in regions */
@@ -748,7 +652,7 @@ public class LodDimension
 		// we want to get the length directly from the
 		// source to make sure it is in sync with region
 		// and isRegionDirty
-		return regions != null ? regions.length : width;
+		return regions != null ? regions.getSize() : width;
 	}
 	
 	/** Update the width of this dimension, in regions */
@@ -756,8 +660,8 @@ public class LodDimension
 	{
 		width = newWidth;
 		halfWidth = width/ 2;
-		
-		regions = new LodRegion[width][width];
+		Pos p = regions.getCenter();
+		regions = new MovabeGridRingList<LodRegion>(halfWidth, p.x, p.y);
 		generateIteratorList();
 	}
 	
@@ -767,18 +671,7 @@ public class LodDimension
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("Dimension : \n");
-		for (LodRegion[] lodRegions : regions)
-		{
-			for (LodRegion region : lodRegions)
-			{
-				if (region == null)
-					stringBuilder.append("n");
-				else
-					stringBuilder.append(region.getMinDetailLevel());
-				stringBuilder.append("\t");
-			}
-			stringBuilder.append("\n");
-		}
+		stringBuilder.append(regions.toDetailString());
 		return stringBuilder.toString();
 	}
 
