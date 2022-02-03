@@ -26,6 +26,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.crypto.spec.GCMParameterSpec;
+
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
@@ -316,12 +318,21 @@ public class LodDimension
 		};
 		cutAndExpandThread.execute(thread);
 	}
-	
+
+	private boolean expandOrLoadPaused = false;
 	/** Either expands or loads all regions in the rendered LOD area */
 	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ) {
 
 		if (isExpanding) return;
+		// We have less than 10% or 1MB ram left. Don't expend.
+		if (expandOrLoadPaused && !LodUtil.checkRamUsage(0.4, 512)) {
+			//ClientApi.LOGGER.info("Not enough ram for expandOrLoadThread. Skipping...");
+			return;
+		} else if (expandOrLoadPaused) {
+			ClientApi.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
+		}
 		isExpanding = true;
+		expandOrLoadPaused = false;
 		
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
 		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
@@ -333,9 +344,19 @@ public class LodDimension
 		// for the same location
 		Runnable thread = () -> {
 			//ClientApi.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
-
 			Pos minPos = regions.getMinInRange();
 			iterateWithSpiral((int x, int z) -> {
+				if (expandOrLoadPaused) return;
+				if (!LodUtil.checkRamUsage(0.1, 32)) {
+					Runtime.getRuntime().gc();
+					if (!LodUtil.checkRamUsage(0.2, 64)) {
+						ClientApi.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
+						// We have less than 10% or 1MB ram left. Don't expend.
+						expandOrLoadPaused = true;
+						saveDirtyRegionsToFile(false);
+						return;
+					}
+				}
 				int regionX;
 				int regionZ;
 				LodRegion region;
@@ -355,8 +376,8 @@ public class LodDimension
 						playerPosZ);
 				minDetail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 				maxDetail = DetailDistanceUtil.getDetailLevelFromDistance(maxDistance);
-				
 				boolean updated = false;
+				boolean expended = false;
 				if (region == null) {
 					region = getRegionFromFile(regionPos, minDetail, verticalQuality);
 					regions.set(regionX, regionZ, region);

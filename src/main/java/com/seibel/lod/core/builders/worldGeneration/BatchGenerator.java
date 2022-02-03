@@ -83,6 +83,8 @@ public class BatchGenerator {
 		generationGroup.updateAllFutures();
 		if (!MC.hasSinglePlayerServer())
 			return;
+		if (!LodUtil.checkRamUsage(0.1, 64)) return;
+		
 		int eventsCount = generationGroup.getEventCount();
 		// If we still all jobs running, return.
 		if (eventsCount >= estimatedPointsToQueue) {

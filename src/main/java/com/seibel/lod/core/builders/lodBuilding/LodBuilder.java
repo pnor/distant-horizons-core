@@ -205,6 +205,11 @@ public class LodBuilder
 		region.isWriting++;
 		try {
 			if (region.getMinDetailLevel()!= 0) {
+				if (!LodUtil.checkRamUsage(0.05, 16)) {
+					ClientApi.LOGGER.warn("LodBuilder: Not enough RAM avalible for building lods! Skipping...");
+					return false;
+				}
+				
 				LodRegion newRegion = lodDim.getRegionFromFile(region, (byte)0, region.getVerticalQuality());
 				if (region!=newRegion)
 					throw new RuntimeException();

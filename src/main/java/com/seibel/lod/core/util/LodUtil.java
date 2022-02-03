@@ -434,4 +434,15 @@ public class LodUtil
 		numb = Float.intBitsToFloat(i);
 		return numb * (1.5F - half * numb * numb);
 	}
+	
+	// True if the requested threshold pass, or false otherwise
+	// For details, see:
+	// https://stackoverflow.com/questions/3571203/what-are-runtime-getruntime-totalmemory-and-freememory
+	public static boolean checkRamUsage(double minFreeMemoryPercent, int minFreeMemoryMB) {
+		long freeMem = Runtime.getRuntime().freeMemory() + Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory();
+		if (freeMem < minFreeMemoryMB * 1024 * 1024) return false;
+		long maxMem = Runtime.getRuntime().maxMemory();
+		if (freeMem/(double)maxMem < minFreeMemoryPercent) return false;
+		return true;
+	}
 }

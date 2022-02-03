@@ -56,6 +56,7 @@ public class DetailDistanceUtil
 		maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;
 	}
 	
+	/*// Need UPDATE and BUG FIX
 	public static int baseDistanceFunction(int detail)
 	{
 		if (detail <= minGenDetail)
@@ -79,11 +80,11 @@ public class DetailDistanceUtil
 	public static int getDrawDistanceFromDetail(int detail)
 	{
 		return baseDistanceFunction(detail);
-	}
+	}*/
 	
 	public static byte baseInverseFunction(int distance, byte minDetail)
 	{
-		byte detail;
+		int detail;
 		distance -= minDetailDistance;
 		
 		if (distance < 0 || CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
@@ -92,12 +93,12 @@ public class DetailDistanceUtil
 		double scaledDistance = distance;
 		scaledDistance /= distanceUnit;
 		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
-			detail = (byte) (scaledDistance);
+			detail = (int) (scaledDistance);
 		else
 		{
 			double base = CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase;
 			double logBase = Math.log(base);
-			detail = (byte) (Math.log(scaledDistance) / logBase);
+			detail = (int) (Math.log(scaledDistance) / logBase);
 		}
 		return (byte) LodUtil.clamp(minDetail, detail+minDetail, maxDetail - 1);
 	}
