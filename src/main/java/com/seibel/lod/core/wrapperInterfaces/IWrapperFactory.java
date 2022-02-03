@@ -24,6 +24,7 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractExperimentalWorldGeneratorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGeneratorWrapper;
 
@@ -33,22 +34,26 @@ import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGenera
  * @author James Seibel
  * @version 12-14-2021
  */
-public interface IWrapperFactory
-{	
+public interface IWrapperFactory {
 	AbstractBlockPosWrapper createBlockPos();
+
 	AbstractBlockPosWrapper createBlockPos(int x, int y, int z);
-	
-	
+
 	AbstractChunkPosWrapper createChunkPos();
+
 	AbstractChunkPosWrapper createChunkPos(long xAndZPositionCombined);
+
 	AbstractChunkPosWrapper createChunkPos(int x, int z);
+
 	AbstractChunkPosWrapper createChunkPos(AbstractChunkPosWrapper newChunkPos);
+
 	AbstractChunkPosWrapper createChunkPos(AbstractBlockPosWrapper blockPos);
-	
-	
-	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper);
-	// Return null to signal that there is no AbstractWorldGenerator
-	default AbstractExperimentalWorldGeneratorWrapper createExperimentalWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper) {
+
+	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension,
+			IWorldWrapper worldWrapper);
+
+	default AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(LodBuilder newLodBuilder,
+			LodDimension newLodDimension, IWorldWrapper worldWrapper) {
 		return null;
 	}
 }

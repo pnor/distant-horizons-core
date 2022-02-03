@@ -43,230 +43,206 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
-import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractExperimentalWorldGeneratorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGeneratorWrapper;
 
 /**
  * A singleton that handles all long distance LOD world generation.
+ * 
  * @author Leonardo Amato
  * @author James Seibel
  * @version 12-11-2021
  */
-public class LodWorldGenerator
-{
+public class LodWorldGenerator {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
-	
-	
-	/** This holds the thread used to create LOD generation requests off the main thread. */
-	private final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(
-			new LodThreadFactory(this.getClass().getSimpleName() + " world generator", 1));
-	private ExecutorService genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
+
+	/**
+	 * This holds the thread used to create LOD generation requests off the main
+	 * thread.
+	 */
+	private final ExecutorService mainGenThread = Executors
+			.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName() + " world generator", 1));
+	private ExecutorService genSubThreads = Executors.newFixedThreadPool(
+			CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
 			new LodThreadFactory("Gen-Worker-Thread", 1));
-	
-	
+
 	/** we only want to queue up one generator thread at a time */
 	private boolean generatorThreadRunning = false;
-	
+
 	/**
 	 * This keeps track of how many chunk generation requests are on going. This is
 	 * to limit how many chunks are queued at once. To prevent chunks from being
 	 * generated for a long time in an area the player is no longer in.
 	 */
 	public AtomicInteger numberOfChunksWaitingToGenerate = new AtomicInteger(0);
-	
+
 	public final Set<AbstractChunkPosWrapper> positionsWaitingToBeGenerated = new HashSet<>();
-	
+
 	/**
 	 * Singleton copy of this object
 	 */
 	public static final LodWorldGenerator INSTANCE = new LodWorldGenerator();
-	public AbstractExperimentalWorldGeneratorWrapper experimentalWorldGenerator;
-	
-	private LodWorldGenerator() {}
-	
+
+	private LodWorldGenerator() {
+	}
+
 	/**
-	 * Queues up LodNodeGenWorkers for the given lodDimension.
-	 * renderer needed so the LodNodeGenWorkers can flag that the
-	 * buffers need to be rebuilt.
+	 * Queues up LodNodeGenWorkers for the given lodDimension. renderer needed so
+	 * the LodNodeGenWorkers can flag that the buffers need to be rebuilt.
 	 */
-	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder)
-	{
-		if (!CONFIG.client().worldGenerator().getEnableDistantGeneration()) return;
-		
-		IWorldWrapper world = LodUtil.getServerWorldFromDimension(lodDim.dimension);
-		
-		// TODO: Rename the config option
-		if (experimentalWorldGenerator == null) {
-			try {
-				experimentalWorldGenerator = WRAPPER_FACTORY.createExperimentalWorldGenerator(lodBuilder, lodDim, world);
-			} catch (RuntimeException e) {
-				// Exception may happen if world got unloaded unorderly
-				e.printStackTrace();
-			}
-		}
-		
-		if (experimentalWorldGenerator != null) {
-			experimentalWorldGenerator.queueGenerationRequests(lodDim, lodBuilder);
+	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder) {
+		if (!CONFIG.client().worldGenerator().getEnableDistantGeneration())
 			return;
-		}
-		
-		// TODO: This currently doesn't use the DetailDistanceUtil.getDistanceGenerationMode(int detail) to get the mode.
-		// This is fine currently since DistanceGenerationMode doesn't care about the detail level for now.
+
+		// TODO: This currently doesn't use the
+		// DetailDistanceUtil.getDistanceGenerationMode(int detail) to get the mode.
+		// This is fine currently since DistanceGenerationMode doesn't care about the
+		// detail level for now.
 		// However, If that was to be changed, This will need to be fixed.
 		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
 		final GenerationPriority priority;
 		if (CONFIG.client().worldGenerator().getGenerationPriority() == GenerationPriority.AUTO)
 			priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST;
-		else priority = CONFIG.client().worldGenerator().getGenerationPriority();
-		
-		if (mode != DistanceGenerationMode.NONE
-				&& !generatorThreadRunning
-				&& MC.hasSinglePlayerServer())
-		{
+		else
+			priority = CONFIG.client().worldGenerator().getGenerationPriority();
+
+		if (mode != DistanceGenerationMode.NONE && !generatorThreadRunning && MC.hasSinglePlayerServer()) {
 			// the thread is now running, don't queue up another thread
 			generatorThreadRunning = true;
-		
+
 			/**
-			 * How many chunks to generate outside the player's view distance at one
-			 * time. (or more specifically how many requests to make at one time). I
-			 * multiply by 8 to make sure there is always a buffer of chunk requests, to
-			 * make sure the CPU is always busy, and we can generate LODs as quickly as
-			 * possible.
+			 * How many chunks to generate outside the player's view distance at one time.
+			 * (or more specifically how many requests to make at one time). I multiply by 8
+			 * to make sure there is always a buffer of chunk requests, to make sure the CPU
+			 * is always busy, and we can generate LODs as quickly as possible.
 			 */
 			int genRequestPerThread = VERSION_CONSTANTS.getWorldGenerationCountPerThread();
 			int maxChunkGenRequests;
 			if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(mode))
-				maxChunkGenRequests = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads() * genRequestPerThread;
-			else maxChunkGenRequests = genRequestPerThread;
-			
-			Runnable generatorFunc = (() ->
-			{
-				try
-				{
+				maxChunkGenRequests = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads()
+						* genRequestPerThread;
+			else
+				maxChunkGenRequests = genRequestPerThread;
+
+			Runnable generatorFunc = (() -> {
+				try {
 					// round the player's block position down to the nearest chunk BlockPos
 					int playerPosX = MC.getPlayerBlockPos().getX();
 					int playerPosZ = MC.getPlayerBlockPos().getZ();
-					
-					
-					//=======================================//
+
+					// =======================================//
 					// fill in positionsWaitingToBeGenerated //
-					//=======================================//
-					
+					// =======================================//
+
 					IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(lodDim.dimension);
-					
-					PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(
-							maxChunkGenRequests, playerPosX, playerPosZ, priority, mode);
-					
+
+					PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(maxChunkGenRequests, playerPosX,
+							playerPosZ, priority, mode);
+
 					byte detailLevel;
 					int posX;
 					int posZ;
 					int nearIndex = 0;
 					int farIndex = 0;
-					
-					for (int i = 0; i < posToGenerate.getNumberOfPos(); i++)
-					{
-						// I wish there was a way to compress this code, but I'm not aware of 
+
+					for (int i = 0; i < posToGenerate.getNumberOfPos(); i++) {
+						// I wish there was a way to compress this code, but I'm not aware of
 						// an easy way to do so.
-						
+
 						// add the near positions
-						if (nearIndex < posToGenerate.getNumberOfNearPos() && posToGenerate.getNthDetail(nearIndex, true) != 0)
-						{
+						if (nearIndex < posToGenerate.getNumberOfNearPos()
+								&& posToGenerate.getNthDetail(nearIndex, true) != 0) {
 							detailLevel = (byte) (posToGenerate.getNthDetail(nearIndex, true) - 1);
 							posX = posToGenerate.getNthPosX(nearIndex, true);
 							posZ = posToGenerate.getNthPosZ(nearIndex, true);
 							nearIndex++;
-							
-							AbstractChunkPosWrapper chunkPos = WRAPPER_FACTORY.createChunkPos(LevelPosUtil.getChunkPos(detailLevel, posX), LevelPosUtil.getChunkPos(detailLevel, posZ));
-							
+
+							AbstractChunkPosWrapper chunkPos = WRAPPER_FACTORY.createChunkPos(
+									LevelPosUtil.getChunkPos(detailLevel, posX),
+									LevelPosUtil.getChunkPos(detailLevel, posZ));
+
 							// prevent generating the same chunk multiple times
 							if (positionsWaitingToBeGenerated.contains(chunkPos))
 								continue;
-							
+
 							// don't add more to the generation queue then allowed
 							if (numberOfChunksWaitingToGenerate.get() >= maxChunkGenRequests)
 								break;
-							
+
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
 							queueWork(chunkPos, mode, lodBuilder, lodDim, serverWorld);
 						}
-						
-						
+
 						// add the far positions
 						// But if priority is NEAR_FIRST, we only do that if near pos has ran out.
-						if ((nearIndex >= posToGenerate.getNumberOfNearPos() || priority != GenerationPriority.NEAR_FIRST) &&
-								farIndex < posToGenerate.getNumberOfFarPos() && posToGenerate.getNthDetail(farIndex, false) != 0)
-						{
+						if ((nearIndex >= posToGenerate.getNumberOfNearPos()
+								|| priority != GenerationPriority.NEAR_FIRST)
+								&& farIndex < posToGenerate.getNumberOfFarPos()
+								&& posToGenerate.getNthDetail(farIndex, false) != 0) {
 							detailLevel = (byte) (posToGenerate.getNthDetail(farIndex, false) - 1);
 							posX = posToGenerate.getNthPosX(farIndex, false);
 							posZ = posToGenerate.getNthPosZ(farIndex, false);
 							farIndex++;
-							
-							AbstractChunkPosWrapper chunkPos = WRAPPER_FACTORY.createChunkPos(LevelPosUtil.getChunkPos(detailLevel, posX), LevelPosUtil.getChunkPos(detailLevel, posZ));
-							
+
+							AbstractChunkPosWrapper chunkPos = WRAPPER_FACTORY.createChunkPos(
+									LevelPosUtil.getChunkPos(detailLevel, posX),
+									LevelPosUtil.getChunkPos(detailLevel, posZ));
+
 							// don't add more to the generation queue then allowed
 							if (numberOfChunksWaitingToGenerate.get() >= maxChunkGenRequests)
 								continue;
-							//break;
-							
+							// break;
+
 							// prevent generating the same chunk multiple times
 							if (positionsWaitingToBeGenerated.contains(chunkPos))
 								continue;
-							
+
 							positionsWaitingToBeGenerated.add(chunkPos);
 							numberOfChunksWaitingToGenerate.addAndGet(1);
 							queueWork(chunkPos, mode, lodBuilder, lodDim, serverWorld);
 						}
 					}
-					
-				}
-				catch (RuntimeException e)
-				{
+
+				} catch (RuntimeException e) {
 					// this shouldn't ever happen, but just in case
 					e.printStackTrace();
-				}
-				finally
-				{
+				} finally {
 					generatorThreadRunning = false;
 				}
 			});
-			
-			if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(mode))
-			{
+
+			if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(mode)) {
 				generatorFunc.run();
-			}
-			else
-			{
+			} else {
 				mainGenThread.execute(generatorFunc);
 			}
-		} // if distanceGenerationMode != DistanceGenerationMode.NONE && !generatorThreadRunning
+		} // if distanceGenerationMode != DistanceGenerationMode.NONE &&
+			// !generatorThreadRunning
 	} // queueGenerationRequests
-	
+
 	private void queueWork(AbstractChunkPosWrapper newPos, DistanceGenerationMode newGenerationMode,
-			LodBuilder newLodBuilder,
-			LodDimension newLodDimension, IWorldWrapper serverWorld)
-	{
+			LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper serverWorld) {
 		// just a few sanity checks
 		if (newPos == null)
 			throw new IllegalArgumentException("LodChunkGenWorker must have a non-null ChunkPos");
-		
+
 		if (newLodBuilder == null)
 			throw new IllegalArgumentException("LodChunkGenThread requires a non-null LodChunkBuilder");
-		
+
 		if (newLodDimension == null)
 			throw new IllegalArgumentException("LodChunkGenThread requires a non-null LodDimension");
-		
+
 		if (serverWorld == null)
 			throw new IllegalArgumentException("LodChunkGenThread requires a non-null ServerWorld");
-		
-		Runnable method = (() -> {generateChunk(newPos, newGenerationMode,
-				newLodBuilder, newLodDimension, serverWorld);});
-		
-		if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(newGenerationMode))
-		{
+
+		Runnable method = (() -> {
+			generateChunk(newPos, newGenerationMode, newLodBuilder, newLodDimension, serverWorld);
+		});
+
+		if (VERSION_CONSTANTS.isWorldGeneratorSingleThreaded(newGenerationMode)) {
 			// --Note: This is now using version constants--
 			// if we are using FULL generation there is no reason
 			// to queue up a bunch of generation requests,
@@ -278,32 +254,29 @@ public class LodWorldGenerator
 			// threaded. So to allow that, we check the boolean for
 			// whether the wrapper requires single thread
 			method.run();
-		}
-		else
-		{
+		} else {
 			// Every other method can
 			// be done asynchronously
 			genSubThreads.execute(method);
 		}
-		
+
 		// useful for debugging
 //    	ClientProxy.LOGGER.info(thread.lodDim.getNumberOfLods());
 //    	ClientProxy.LOGGER.info(genThreads.toString());
 	}
-	
-	private void generateChunk(AbstractChunkPosWrapper pos, DistanceGenerationMode generationMode, 
-			LodBuilder newLodBuilder, LodDimension lodDim, IWorldWrapper worldWrapper)
-	{
+
+	private void generateChunk(AbstractChunkPosWrapper pos, DistanceGenerationMode generationMode,
+			LodBuilder newLodBuilder, LodDimension lodDim, IWorldWrapper worldWrapper) {
 		// try
 		{
-			AbstractWorldGeneratorWrapper worldGenWrapper = WRAPPER_FACTORY.createWorldGenerator(newLodBuilder, lodDim, worldWrapper);
+			AbstractWorldGeneratorWrapper worldGenWrapper = WRAPPER_FACTORY.createWorldGenerator(newLodBuilder, lodDim,
+					worldWrapper);
 			// only generate LodChunks if they can
 			// be added to the current LodDimension
-			
-			if (lodDim.regionIsInRange(pos.getX() / LodUtil.REGION_WIDTH_IN_CHUNKS, pos.getZ() / LodUtil.REGION_WIDTH_IN_CHUNKS))
-			{
-				switch (generationMode)
-				{
+
+			if (lodDim.regionIsInRange(pos.getX() / LodUtil.REGION_WIDTH_IN_CHUNKS,
+					pos.getZ() / LodUtil.REGION_WIDTH_IN_CHUNKS)) {
+				switch (generationMode) {
 				case NONE:
 					// don't generate
 					break;
@@ -334,59 +307,58 @@ public class LodWorldGenerator
 
 				// shows the pool size, active threads, queued tasks and completed tasks
 //				ClientProxy.LOGGER.info(genThreads.toString());
-				
-			}// if in range
+
+			} // if in range
 		}
 		// catch (Exception e)
 		// {
-		// 	ClientApi.LOGGER.error(LodWorldGenerator.class.getSimpleName() + ": ran into an error: " + e.getMessage());
-		// 	e.printStackTrace();
+		// ClientApi.LOGGER.error(LodWorldGenerator.class.getSimpleName() + ": ran into
+		// an error: " + e.getMessage());
+		// e.printStackTrace();
 		// }
 		// finally
 		{
 			// decrement how many threads are running
 			LodWorldGenerator.INSTANCE.numberOfChunksWaitingToGenerate.addAndGet(-1);
-			
+
 			// this position is no longer being generated
 			LodWorldGenerator.INSTANCE.positionsWaitingToBeGenerated.remove(pos);
 		}
 	}// run
-	
+
 	/**
-	 * Stops the current genThreads if they are running
-	 * and then recreates the Executor service. <br><br>
+	 * Stops the current genThreads if they are running and then recreates the
+	 * Executor service. <br>
+	 * <br>
 	 * <p>
-	 * This is done to clear any outstanding tasks
-	 * that may exist after the player leaves their current world.
-	 * If this isn't done unfinished tasks may be left in the queue
-	 * preventing new LodChunks form being generated.
+	 * This is done to clear any outstanding tasks that may exist after the player
+	 * leaves their current world. If this isn't done unfinished tasks may be left
+	 * in the queue preventing new LodChunks form being generated.
 	 */
-	public void restartExecutorService()
-	{
-		if (experimentalWorldGenerator != null) {
-			experimentalWorldGenerator.stop();
-			experimentalWorldGenerator = null;
-		}
-		
-		if (genSubThreads != null && !genSubThreads.isShutdown())
-		{
+	public void restartExecutorService() {
+
+		if (genSubThreads != null && !genSubThreads.isShutdown()) {
 			ClientApi.LOGGER.info("Blocking until generator sub threads terminated!!");
 			try {
 				mainGenThread.shutdownNow();
 				genSubThreads.shutdownNow();
 				boolean worked = genSubThreads.awaitTermination(30, TimeUnit.SECONDS);
 				if (!worked)
-					ClientApi.LOGGER.error("Generator sub threads timed out! May cause crash on game exit due to cleanup failure.");
+					ClientApi.LOGGER.error(
+							"Generator sub threads timed out! May cause crash on game exit due to cleanup failure.");
 			} catch (InterruptedException e) {
-				ClientApi.LOGGER.error("Generator sub threads shutdown is interrupted! May cause crash on game exit due to cleanup failure.");
+				ClientApi.LOGGER.error(
+						"Generator sub threads shutdown is interrupted! May cause crash on game exit due to cleanup failure.");
 				e.printStackTrace();
 			} finally {
-				genSubThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
+				genSubThreads = Executors.newFixedThreadPool(
+						CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads(),
 						new ThreadFactoryBuilder().setNameFormat("Gen-Worker-Thread-%d").build());
 			}
 		}
-		// Doing this instead of setting it to 0 because even if shutdown fail, it won't cause the int to underflow below 0 afterwards
+		// Doing this instead of setting it to 0 because even if shutdown fail, it won't
+		// cause the int to underflow below 0 afterwards
 		numberOfChunksWaitingToGenerate = new AtomicInteger(0);
 	}
-	
+
 }

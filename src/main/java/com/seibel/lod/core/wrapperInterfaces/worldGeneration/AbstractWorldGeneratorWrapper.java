@@ -26,25 +26,24 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
- * This is used for generating chunks
- * in a variety of detail and threading levels.
+ * This is used for generating chunks in a variety of detail and threading
+ * levels.
  * <p>
- * Abstract instead of an interface, so
- * we can define its constructors.
+ * Abstract instead of an interface, so we can define its constructors.
  * 
  * @author James Seibel
  * @version 11-20-2021
  */
-public abstract class AbstractWorldGeneratorWrapper
-{
-	public AbstractWorldGeneratorWrapper(LodBuilder newLodBuilder, LodDimension newLodDimension, IWorldWrapper worldWrapper) { }
-	
-	
+public abstract class AbstractWorldGeneratorWrapper {
+	public AbstractWorldGeneratorWrapper(LodBuilder newLodBuilder, LodDimension newLodDimension,
+			IWorldWrapper worldWrapper) {
+	}
+
 	public abstract void generateBiomesOnly(AbstractChunkPosWrapper pos, DistanceGenerationMode generationMode);
-	
+
 	public abstract void generateSurface(AbstractChunkPosWrapper pos);
-	
+
 	public abstract void generateFeatures(AbstractChunkPosWrapper pos);
-	
+
 	public abstract void generateFull(AbstractChunkPosWrapper pos);
 }
