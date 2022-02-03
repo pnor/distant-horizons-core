@@ -324,15 +324,14 @@ public class LodDimension
 	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ) {
 
 		if (isExpanding) return;
-		// We have less than 10% or 1MB ram left. Don't expend.
-		if (expandOrLoadPaused && !LodUtil.checkRamUsage(0.4, 512)) {
-			//ClientApi.LOGGER.info("Not enough ram for expandOrLoadThread. Skipping...");
-			return;
-		} else if (expandOrLoadPaused) {
-			ClientApi.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
+		// If we have less than 10% or 1MB ram left. Don't expend.
+		if (expandOrLoadPaused) {
+			if (LodUtil.checkRamUsage(0.4, 512)) {
+				ClientApi.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
+				expandOrLoadPaused = false;
+			}
 		}
 		isExpanding = true;
-		expandOrLoadPaused = false;
 		
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
 		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
@@ -346,17 +345,16 @@ public class LodDimension
 			//ClientApi.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 			Pos minPos = regions.getMinInRange();
 			iterateWithSpiral((int x, int z) -> {
-				if (expandOrLoadPaused) return;
-				if (!LodUtil.checkRamUsage(0.1, 32)) {
+				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.1, 32)) {
 					Runtime.getRuntime().gc();
 					if (!LodUtil.checkRamUsage(0.2, 64)) {
 						ClientApi.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
 						// We have less than 10% or 1MB ram left. Don't expend.
 						expandOrLoadPaused = true;
 						saveDirtyRegionsToFile(false);
-						return;
 					}
 				}
+				
 				int regionX;
 				int regionZ;
 				LodRegion region;
@@ -377,17 +375,20 @@ public class LodDimension
 				minDetail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 				maxDetail = DetailDistanceUtil.getDetailLevelFromDistance(maxDistance);
 				boolean updated = false;
-				boolean expended = false;
 				if (region == null) {
-					region = getRegionFromFile(regionPos, minDetail, verticalQuality);
-					regions.set(regionX, regionZ, region);
-					updated = true;
+					if ((!expandOrLoadPaused)) {
+						region = getRegionFromFile(regionPos, minDetail, verticalQuality);
+						regions.set(regionX, regionZ, region);
+						updated = true;
+					}
 				} else if (region.getVerticalQuality() != verticalQuality ||
 						region.getMinDetailLevel() > minDetail) {
 					// The 'getRegionFromFile' will flush and save the region if it returns a new one
-					region = getRegionFromFile(region, minDetail, verticalQuality);
-					regions.set(regionX, regionZ, region);
-					updated = true;
+					if ((!expandOrLoadPaused)) {
+						region = getRegionFromFile(region, minDetail, verticalQuality);
+						regions.set(regionX, regionZ, region);
+						updated = true;
+					}
 				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != maxDetail) {
 					region.lastMaxDetailLevel = maxDetail;
 					updated = true;
