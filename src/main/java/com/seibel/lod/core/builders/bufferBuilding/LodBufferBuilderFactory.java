@@ -114,8 +114,8 @@ public class LodBufferBuilderFactory
 	 * This size will be too small, more than likely. The buffers will be expanded
 	 * when need be to fit the larger sizes.
 	 */
-	public static final int DEFAULT_MEMORY_ALLOCATION = 1024;
-	public static final int MAX_TRIANGLES_PER_BUFFER = (1024*1024*2) / (LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
+	public static final int DEFAULT_MEMORY_ALLOCATION = 128;
+	public static final int MAX_TRIANGLES_PER_BUFFER = (1024*1024*1) / (LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
 	
 	
 	

@@ -81,17 +81,24 @@ public class EventApi {
 		if (ApiShared.isShuttingDown)
 			return;
 
-		try {
-			if (VERSION_CONSTANTS.hasBatchGenerationImplementation()) {
-				if (batchGenerator == null)
-					batchGenerator = new BatchGenerator(ApiShared.lodBuilder, lodDim);
-				batchGenerator.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
-			} else {
-				LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
+		if (CONFIG.client().worldGenerator().getEnableDistantGeneration()) {
+			try {
+				if (VERSION_CONSTANTS.hasBatchGenerationImplementation()) {
+					if (batchGenerator == null)
+						batchGenerator = new BatchGenerator(ApiShared.lodBuilder, lodDim);
+					batchGenerator.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
+				} else {
+					LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
+				}
+			} catch (Exception e) {
+				// Exception may happen if world got unloaded unorderly
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			// Exception may happen if world got unloaded unorderly
-			e.printStackTrace();
+		} else {
+			if (batchGenerator != null) {
+				batchGenerator.stop(false);
+				batchGenerator = null;
+			}
 		}
 	}
 
@@ -153,7 +160,7 @@ public class EventApi {
 		// TODO Better report on when world gen is stuck and timeout
 		if (VERSION_CONSTANTS.hasBatchGenerationImplementation()) {
 			if (batchGenerator != null)
-				batchGenerator.stop();
+				batchGenerator.stop(true);
 			batchGenerator = null;
 		} else {
 			LodWorldGenerator.INSTANCE.restartExecutorService();

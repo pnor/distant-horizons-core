@@ -52,15 +52,16 @@ public class BatchGenerator {
 
 	public BatchGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension) {
 		IWorldWrapper world = LodUtil.getServerWorldFromDimension(newLodDimension.dimension);
+		targetLodDim = newLodDimension;
 		generationGroup = FACTORY.createBatchGenerator(newLodBuilder, newLodDimension, world);
 		MC.sendChatMessage("NOTE: You are currently using Distant Horizon's Batch Chunk Pre-Generator.");
-		ClientApi.LOGGER.info("1.18 Experimental Chunk Generator initialized");
+		ClientApi.LOGGER.info("Batch Chunk Generator initialized");
 	}
 
 	@SuppressWarnings("unused")
 	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder) {
 		if (lodDim != targetLodDim) {
-			stop();
+			stop(false);
 			IWorldWrapper dim = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 			generationGroup = FACTORY.createBatchGenerator(lodBuilder, lodDim, dim);
 			targetLodDim = lodDim;
@@ -256,9 +257,9 @@ public class BatchGenerator {
 
 	}
 
-	public void stop() {
+	public void stop(boolean blocking) {
 		ClientApi.LOGGER.info("1.18 Experimental Chunk Generator shutting down...");
-		generationGroup.stop();
+		generationGroup.stop(blocking);
 	}
 
 }

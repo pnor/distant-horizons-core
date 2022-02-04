@@ -21,5 +21,5 @@ public abstract class AbstractBatchGenerationEnvionmentWrapper {
 
 	public abstract boolean tryAddPoint(int chunkX, int chunkZ, int genSize, Steps targetStep);
 
-	public abstract void stop();
+	public abstract void stop(boolean blocking);
 }

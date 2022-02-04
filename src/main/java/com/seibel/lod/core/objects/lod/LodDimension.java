@@ -345,14 +345,11 @@ public class LodDimension
 			//ClientApi.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 			Pos minPos = regions.getMinInRange();
 			iterateWithSpiral((int x, int z) -> {
-				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.1, 32)) {
-					Runtime.getRuntime().gc();
-					if (!LodUtil.checkRamUsage(0.2, 64)) {
-						ClientApi.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
-						// We have less than 10% or 1MB ram left. Don't expend.
-						expandOrLoadPaused = true;
-						saveDirtyRegionsToFile(false);
-					}
+				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.2, 64)) {
+					ClientApi.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
+					// We have less than 10% or 1MB ram left. Don't expend.
+					expandOrLoadPaused = true;
+					saveDirtyRegionsToFile(false);
 				}
 				
 				int regionX;
