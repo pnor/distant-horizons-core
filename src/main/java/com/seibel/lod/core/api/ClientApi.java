@@ -63,7 +63,7 @@ public class ClientApi
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	private static final EventApi EVENT_API = EventApi.INSTANCE;
 
-	public static final boolean ENABLE_LAG_SPIKE_LOGGING = true;
+	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
 	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
 	
 	public static class LagSpikeCatcher {

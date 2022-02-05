@@ -52,8 +52,6 @@ public interface IWrapperFactory {
 	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension,
 			IWorldWrapper worldWrapper);
 
-	default AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(LodBuilder newLodBuilder,
-			LodDimension newLodDimension, IWorldWrapper worldWrapper) {
-		return null;
-	}
+	AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(LodBuilder newLodBuilder,
+			LodDimension newLodDimension, IWorldWrapper worldWrapper);
 }
