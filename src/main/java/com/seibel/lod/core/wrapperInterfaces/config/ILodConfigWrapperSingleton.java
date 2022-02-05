@@ -74,7 +74,7 @@ public interface ILodConfigWrapperSingleton
 			
 			IQuality quality();
 			IFogQuality fogQuality();
-			ICloudQuality cloudQuality();
+//			ICloudQuality cloudQuality();
 			IAdvancedGraphics advancedGraphics();
 			
 			
@@ -204,6 +204,7 @@ public interface ILodConfigWrapperSingleton
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
 			}
 
+			/*
 			interface ICloudQuality
 			{
 				String DESC = "These settings control the clouds.";
@@ -240,6 +241,7 @@ public interface ILodConfigWrapperSingleton
 				double getCloudHeight();
 				void setCloudHeight(double newCloudHeight);
 			}
+			 */
 
 			interface IAdvancedGraphics
 			{
