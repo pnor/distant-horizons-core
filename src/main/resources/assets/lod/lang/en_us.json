@@ -126,6 +126,7 @@
   "DistantHorizons.config.enum.BlocksToAvoid.NO_COLLISION": "No collision",
   "DistantHorizons.config.enum.BlocksToAvoid.BOTH": "Both",
   "DistantHorizons.config.enum.DebugMode.OFF": "Off",
+  "DistantHorizons.config.enum.DebugMode.SHOW_WIREFRAME": "Show wireframe",
   "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL": "Show detail",
   "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL_WIREFRAME": "Show detail with wireframe",
   "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE": "Show generation mode",

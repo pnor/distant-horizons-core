@@ -52,7 +52,7 @@ public class CubicLodTemplate
 		int blockWidth = 1 << detailLevel;
 		
 		int color;
-		if (debugging != DebugMode.OFF)
+		if (debugging != DebugMode.OFF && debugging != DebugMode.SHOW_WIREFRAME)
 		{
 			if (debugging == DebugMode.SHOW_DETAIL || debugging == DebugMode.SHOW_DETAIL_WIREFRAME)
 				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel].getRGB();

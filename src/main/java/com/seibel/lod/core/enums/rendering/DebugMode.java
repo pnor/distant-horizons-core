@@ -29,6 +29,9 @@ public enum DebugMode
 {
 	/** LODs are rendered normally */
 	OFF,
+
+	/** LOD draws in wireframe. */
+	SHOW_WIREFRAME,
 	
 	/** LOD colors are based on their detail */
 	SHOW_DETAIL,
@@ -47,7 +50,8 @@ public enum DebugMode
 	
 	static
 	{
-		OFF.next = SHOW_DETAIL;
+		OFF.next = SHOW_WIREFRAME;
+		SHOW_WIREFRAME.next = SHOW_DETAIL;
 		SHOW_DETAIL.next = SHOW_DETAIL_WIREFRAME;
 		SHOW_DETAIL_WIREFRAME.next = SHOW_GENMODE;
 		SHOW_GENMODE.next = SHOW_GENMODE_WIREFRAME;

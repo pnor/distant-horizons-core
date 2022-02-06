@@ -242,10 +242,16 @@ public class LodRenderer
 		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
 		LagSpikeCatcher drawSetPolygon = new LagSpikeCatcher();
-		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME || CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_GENMODE_WIREFRAME)
+		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME
+			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_GENMODE_WIREFRAME
+			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_WIREFRAME) {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
-		else
+			GL32.glDisable(GL32.GL_CULL_FACE);
+		}
+		else {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
+			GL32.glEnable(GL32.GL_CULL_FACE);
+		}
 		drawSetPolygon.end("drawSetPolygon");
 		LagSpikeCatcher drawEnableCull = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_CULL_FACE);
@@ -353,6 +359,7 @@ public class LodRenderer
 		shaderProgram.unbind();
 		lightmapTexture.free();
 
+		GL32.glEnable(GL32.GL_CULL_FACE);
 		GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
 		if (currentBlend)
 			GL32.glEnable(GL32.GL_BLEND);

@@ -268,7 +268,8 @@ public class VertexOptimizer
 	 */
 	public int getColor(LodDirection lodDirection)
 	{
-		if (CONFIG.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_DETAIL)
+		if (CONFIG.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_DETAIL &&
+				CONFIG.client().advanced().debugging().getDebugMode() != DebugMode.SHOW_WIREFRAME)
 			return colorMap[DIRECTION_INDEX.get(lodDirection)];
 		else
 			return ColorUtil.applyShade(color, MC.getShade(lodDirection));
