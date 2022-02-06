@@ -16,3 +16,6 @@ It should be automatically included when pulling the full mod.
 
 XZ for Java (data compression)\
 https://tukaani.org/xz/java.html
+
+Toml for Java (config handeling)\
+https://github.com/TheElectronWill/night-config

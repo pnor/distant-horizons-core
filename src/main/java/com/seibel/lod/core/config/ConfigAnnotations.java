@@ -13,7 +13,10 @@ import java.lang.annotation.Target;
  * @version 12-28-2021
  */
 public class ConfigAnnotations {
-    /** a textField, button, etc. that can be interacted with */
+    // Everything with @Deprecated will be removed after 1.6
+
+
+    /** A textField, button, etc. that can be interacted with */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface Entry
@@ -23,17 +26,19 @@ public class ConfigAnnotations {
         @Deprecated
         int width() default 150;
 
+        @Deprecated
         double minValue() default Double.MIN_NORMAL;
 
+        @Deprecated
         double maxValue() default Double.MAX_VALUE;
     }
 
-    /** Makes text (looks like @Entry but dosnt save and has no button */
+    /** For making categories */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface Category
     {
-        String name() default "";
+
     }
 
     /** Makes text (looks like @Entry but dosnt save and has no button */
@@ -44,13 +49,19 @@ public class ConfigAnnotations {
 
     }
 
+    /**
+     * Adds a comment to the file,
+     * This should only be used in special cases where comments from an entry cant reach
+     */
+    @Deprecated
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface FileComment
+    {
 
+    }
 
-
-
-
-
-
+    /** DONT USE AS IT WILL BE REMOVED IN THE REWORK OF THE CONFIG */
     @Deprecated
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
@@ -59,18 +70,5 @@ public class ConfigAnnotations {
         String name() default "";
 
         int width() default 100;
-    }
-
-    /**
-     * Adds a comment to the file.
-     *
-     * DONT USE AS IT WILL BE REMOVED IN THE REWORK OF THE CONFIG
-     */
-    @Deprecated
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
-    public @interface FileComment
-    {
-
     }
 }

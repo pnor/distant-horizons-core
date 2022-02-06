@@ -9,15 +9,11 @@ package com.seibel.lod.core.config;
 public class ConfigEntry<T> {
     private T value;
     private String comment;
-    private double min = Double.MIN_VALUE;
-    private double max = Double.MAX_VALUE;
+    private T min;
+    private T max;
 
-    /** Defult entry */
-    public ConfigEntry() {
-    }
-
-    /** Sets everything */
-    public ConfigEntry(T value, String comment, double min, double max) {
+    /** Creates the entry */
+    private ConfigEntry(T value, String comment, T min, T max) {
         this.value = value;
         this.comment = comment;
         this.min = min;
@@ -35,19 +31,19 @@ public class ConfigEntry<T> {
     }
 
     /** Gets the min value */
-    public double getMin() {
+    public T getMin() {
         return this.min;
     }
     /** Sets the min value */
-    public void setMin(double new_min) {
+    public void setMin(T new_min) {
         this.min = new_min;
     }
     /** Gets the max value */
-    public double getMax() {
+    public T getMax() {
         return this.max;
     }
     /** Sets the max value */
-    public void setMax(double new_max) {
+    public void setMax(T new_max) {
         this.max = new_max;
     }
 
@@ -58,6 +54,17 @@ public class ConfigEntry<T> {
     /** Sets the comment */
     public void setComment(String new_comment) {
         this.comment = new_comment;
+    }
+
+    public boolean isValid() {  // TODO Make this better
+        if (Number.class.isAssignableFrom(this.value.getClass())) { // Only check min max if it is a number
+            if (this.min != null && this.max != null) return true;  // If there is no min max then return
+
+            if ((Double) this.value < (Double) this.min || (Double) this.value > (Double) this.max)
+                return false;
+            else return true;
+        }
+        else return true;
     }
 
     /** Is the value of this equal to another */
@@ -71,8 +78,8 @@ public class ConfigEntry<T> {
     public static class Builder<T> {
         private T tmpValue;
         private String tmpComment;
-        private double tmpMin = Double.MIN_VALUE;
-        private double tmpMax = Double.MAX_VALUE;
+        private T tmpMin;
+        private T tmpMax;
 
         public Builder<T> set(T newValue) {
             this.tmpValue = newValue;
@@ -84,7 +91,7 @@ public class ConfigEntry<T> {
             return this;
         }
 
-        public Builder<T> setMinMax(double newMin, double newMax) {
+        public Builder<T> setMinMax(T newMin, T newMax) {
             this.tmpMin = newMin;
             this.tmpMax = newMax;
             return this;
