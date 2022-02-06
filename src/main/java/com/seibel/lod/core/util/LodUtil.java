@@ -83,11 +83,14 @@ public class LodUtil
 	
 	public static final int CEILED_DIMENSION_MAX_RENDER_DISTANCE = 64; // 0 - 255
 	
+	//FIXME: WE NEED MORE COLORS!!!!
 	/**
 	 * In order of nearest to farthest: <br>
 	 * Red, Orange, Yellow, Green, Cyan, Blue, Magenta, white, gray, black
 	 */
-	public static final Color[] DEBUG_DETAIL_LEVEL_COLORS = new Color[] { Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.WHITE, Color.GRAY, Color.BLACK };
+	public static final Color[] DEBUG_DETAIL_LEVEL_COLORS = new Color[] {
+			Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.BLACK,
+			Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK};
 	
 	
 	public static final byte DETAIL_OPTIONS = 10;
@@ -99,12 +102,12 @@ public class LodUtil
 	/** 1 block wide */
 	public static final byte BLOCK_DETAIL_LEVEL = 0;
 	
-	public static final short MAX_VERTICAL_DATA = 4;
+	//public static final short MAX_VERTICAL_DATA = 4;
 	
 	/**
 	 * measured in Blocks <br>
 	 * detail level max - 1
-	 * 512 blocks
+	 * 256 blocks
 	 */
 	public static final short REGION_WIDTH = 1 << REGION_DETAIL_LEVEL;
 	/**

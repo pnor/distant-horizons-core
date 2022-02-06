@@ -29,7 +29,6 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.SpamReducedLogger;
 
 /**
  * This object holds all loaded LevelContainers acting as a quad tree for a
@@ -45,7 +44,7 @@ import com.seibel.lod.core.util.SpamReducedLogger;
  */
 public class LodRegion {
 	/** Number of detail level supported by a region */
-	private static final byte POSSIBLE_LOD = 10;
+	private static final byte POSSIBLE_LOD = LodUtil.DETAIL_OPTIONS;
 
 	/** Holds the lowest (least detailed) detail level in this region */
 	private byte minDetailLevel;
