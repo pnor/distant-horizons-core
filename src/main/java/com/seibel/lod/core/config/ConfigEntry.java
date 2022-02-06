@@ -25,8 +25,8 @@ public class ConfigEntry<T> {
     }
 
     /** Gets the value */
-    public <T> T get() {
-        return (T) this.value;
+    public T get() {
+        return this.value;
     }
     /** Sets the value */
     public void set(T new_value) {
@@ -61,7 +61,7 @@ public class ConfigEntry<T> {
     }
 
     /** Is the value of this equal to another */
-    public boolean equals(ConfigEntry obj) {
+    public boolean equals(ConfigEntry<?> obj) {
         if (this.value == obj.value)
             return true;
         return false;
@@ -74,25 +74,25 @@ public class ConfigEntry<T> {
         private double tmpMin = Double.MIN_VALUE;
         private double tmpMax = Double.MAX_VALUE;
 
-        public Builder set(T newValue) {
+        public Builder<T> set(T newValue) {
             this.tmpValue = newValue;
             return this;
         }
 
-        public Builder comment(String newComment) {
+        public Builder<T> comment(String newComment) {
             this.tmpComment = newComment;
             return this;
         }
 
-        public Builder setMinMax(double newMin, double newMax) {
+        public Builder<T> setMinMax(double newMin, double newMax) {
             this.tmpMin = newMin;
             this.tmpMax = newMax;
             return this;
         }
 
 
-        public ConfigEntry build() {
-            return new ConfigEntry(tmpValue, tmpComment, tmpMin, tmpMax);
+        public ConfigEntry<T> build() {
+            return new ConfigEntry<T>(tmpValue, tmpComment, tmpMin, tmpMax);
         }
     }
 }
