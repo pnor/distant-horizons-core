@@ -193,22 +193,6 @@ public class EventApi {
 	// Misc Events //
 	// =============//
 
-	public void onKeyInput(int key, int keyAction) {
-		if (CONFIG.client().advanced().debugging().getDebugKeybindingsEnabled()) {
-			if (key == GLFW.GLFW_KEY_F8 && keyAction == GLFW.GLFW_PRESS) {
-				CONFIG.client().advanced().debugging()
-						.setDebugMode(CONFIG.client().advanced().debugging().getDebugMode().getNext());
-				MC.sendChatMessage("F8: Set debug mode " + CONFIG.client().advanced().debugging().getDebugMode());
-			}
-
-			if (key == GLFW.GLFW_KEY_F6 && keyAction == GLFW.GLFW_PRESS) {
-				CONFIG.client().advanced().debugging()
-						.setDrawLods(!CONFIG.client().advanced().debugging().getDrawLods());
-				MC.sendChatMessage("F6: Set rendering " + CONFIG.client().advanced().debugging().getDrawLods());
-			}
-		}
-	}
-
 	// NOTE: This is being called from Render Thread.
 	/** Re-centers the given LodDimension if it needs to be. */
 	public void playerMoveEvent(LodDimension lodDim) {

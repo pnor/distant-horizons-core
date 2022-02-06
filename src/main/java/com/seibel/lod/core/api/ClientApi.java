@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -105,8 +106,6 @@ public class ClientApi
 		clientChunkLoad.end("clientChunkLoad");
 	}
 
-	//private HashSet<AbstractChunkPosWrapper> lastFrame = new HashSet<AbstractChunkPosWrapper>();
-	
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
@@ -249,7 +248,30 @@ public class ClientApi
 		
 		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}
-	
+
+	//=================//
+	//    DUBUG USE    //
+	//=================//
+	// Trigger once on key press, with CLIENT PLAYER.
+	public void keyPressedEvent(int glfwKey) {
+		ClientApi.LOGGER.info("DEBUG: Key Pressed: {}",glfwKey);
+		
+		if (glfwKey == GLFW.GLFW_KEY_F8) {
+					CONFIG.client().advanced().debugging()
+					.setDebugMode(CONFIG.client().advanced().debugging().getDebugMode().getNext());
+			MC.sendChatMessage("F8: Set debug mode to " + CONFIG.client().advanced().debugging().getDebugMode());
+		}
+		
+		if (glfwKey == GLFW.GLFW_KEY_F6) {
+			CONFIG.client().advanced().debugging()
+					.setDrawLods(!CONFIG.client().advanced().debugging().getDrawLods());
+			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getDrawLods());
+		}
+		
+		
+		
+		
+	}
 	
 	
 	
