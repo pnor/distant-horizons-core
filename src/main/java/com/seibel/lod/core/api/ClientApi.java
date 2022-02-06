@@ -19,7 +19,11 @@
 
 package com.seibel.lod.core.api;
 
+import java.lang.ref.WeakReference;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +39,7 @@ import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -52,7 +57,11 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * @version 12-8-2021
  */
 public class ClientApi
-{
+{	
+	public static boolean prefLoggerEnabled = false;
+	public static List<WeakReference<SpamReducedLogger>> spamReducedLoggers
+		= Collections.synchronizedList(new LinkedList<WeakReference<SpamReducedLogger>>());
+	
 	public static final ClientApi INSTANCE = new ClientApi();
 	public static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME);
 	
@@ -66,6 +75,8 @@ public class ClientApi
 
 	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
 	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
+	
+	public static final long SPAM_LOGGER_FLUSH_NS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 	
 	public static class LagSpikeCatcher {
 
@@ -94,6 +105,16 @@ public class ClientApi
 	{
 		
 	}
+	
+	private void flushSpamLoggersState() {
+		synchronized(spamReducedLoggers) {
+			spamReducedLoggers.removeIf((logger) -> logger.get()==null);
+			spamReducedLoggers.forEach((logger) -> {
+				SpamReducedLogger l = logger.get();
+				if (l!=null) l.reset();
+			});
+		}
+	}
 
 	private final ConcurrentHashMap.KeySetView<Long,Boolean> generating = ConcurrentHashMap.newKeySet();
 	public final ConcurrentHashMap.KeySetView<Long,Boolean> toBeLoaded = ConcurrentHashMap.newKeySet();
@@ -106,6 +127,8 @@ public class ClientApi
 		clientChunkLoad.end("clientChunkLoad");
 	}
 
+	private long lastFlush = 0;
+	
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
@@ -116,6 +139,12 @@ public class ClientApi
 		
 		try
 		{
+			if (System.nanoTime() - lastFlush >= SPAM_LOGGER_FLUSH_NS) {
+				lastFlush = System.nanoTime();
+				flushSpamLoggersState();
+			}
+			
+			
 			// only run the first time setup once
 			if (!firstTimeSetupComplete)
 				firstFrameSetup();
@@ -134,6 +163,7 @@ public class ClientApi
 						ApiShared.lodBuilder.defaultDimensionWidthInRegions);
 				ApiShared.lodWorld.addLodDimension(lodDim);
 			}
+			if (prefLoggerEnabled) lodDim.dumpRamUsage();
 
 			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();
 			for (long pos : toBeLoaded) {
@@ -267,9 +297,11 @@ public class ClientApi
 					.setDrawLods(!CONFIG.client().advanced().debugging().getDrawLods());
 			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getDrawLods());
 		}
-		
-		
-		
+
+		if (glfwKey == GLFW.GLFW_KEY_P) {
+			prefLoggerEnabled = !prefLoggerEnabled;
+			MC.sendChatMessage("P: Debug Pref Logger is " + (prefLoggerEnabled ? "enabled" : "disabled"));
+		}
 		
 	}
 	

@@ -122,4 +122,10 @@ public interface LevelContainer
 	 */
 	int getMaxNumberOfLods();
 
+	/**
+	 * This will return a ram usage estimation of this object
+	 * @return long as byte
+	 */
+	long getRoughRamUsage();
+
 }

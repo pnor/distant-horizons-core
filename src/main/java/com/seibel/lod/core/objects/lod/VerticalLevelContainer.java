@@ -1269,6 +1269,12 @@ public class VerticalLevelContainer implements LevelContainer
 	{
 		return size * size * getVerticalSize();
 	}
+
+	@Override
+	public long getRoughRamUsage()
+	{
+		return dataContainer.length * Long.BYTES;
+	}
 	
 	
 }

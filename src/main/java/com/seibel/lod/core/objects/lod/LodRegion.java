@@ -29,6 +29,7 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SpamReducedLogger;
 
 /**
  * This object holds all loaded LevelContainers acting as a quad tree for a
@@ -610,6 +611,8 @@ public class LodRegion {
 		return dataContainer[detailLevel].getVerticalSize();
 	}
 
+	public LevelContainer[] debugGetDataContainers() {return dataContainer;}
+	
 	@Override
 	public String toString() {
 		return getLevel(LodUtil.REGION_DETAIL_LEVEL).toString();

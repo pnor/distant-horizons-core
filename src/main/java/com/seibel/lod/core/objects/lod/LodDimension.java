@@ -26,8 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.spec.GCMParameterSpec;
-
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
@@ -44,6 +42,8 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovabeGridRingList;
 import com.seibel.lod.core.util.MovabeGridRingList.Pos;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.util.SpamReducedLogger;
+import com.seibel.lod.core.util.UnitBytes;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
@@ -687,6 +687,44 @@ public class LodDimension
 		generateIteratorList();
 	}
 	
+	private final SpamReducedLogger ramLogger = new SpamReducedLogger(1);
+	public void dumpRamUsage()
+	{
+		if (!ramLogger.canMaybeLog()) return;
+		int regionCount = width*width;
+		ramLogger.info("Dumping Ram Usage for LodDim in {} with {} regions...", dimension.getDimensionName(), regionCount);
+		int nonNullRegionCount = 0;
+		int dirtiedRegionCount = 0;
+		long totalUsage = 0;
+		int[] detailCount = new int[LodUtil.DETAIL_OPTIONS];
+		long[] detailUsage = new long[LodUtil.DETAIL_OPTIONS];
+		for (LodRegion r : regions) {
+			if (r==null) continue;
+			nonNullRegionCount++;
+			if (r.needSaving) dirtiedRegionCount++;
+			LevelContainer[] container = r.debugGetDataContainers().clone();
+			if (container == null || container.length != LodUtil.DETAIL_OPTIONS) {
+				ClientApi.LOGGER.warn("DumpRamUsage encountered an invalid region!");
+				continue;
+			}
+			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
+				if (container[i] == null) continue;
+				detailCount[i]++;
+				long byteUsage = container[i].getRoughRamUsage();
+				detailUsage[i] += byteUsage;
+				totalUsage += byteUsage;
+			}
+		}
+		ramLogger.info("================================================");
+		ramLogger.info("Non Null Regions: [{}], Dirtied Regions: [{}], Bytes: [{}]",
+				nonNullRegionCount, dirtiedRegionCount, new UnitBytes(totalUsage));
+		ramLogger.info("------------------------------------------------");
+		for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
+			ramLogger.info("DETAIL {}: Containers: [{}], Bytes: [{}]", i, detailCount[i], new UnitBytes(detailUsage[i]));
+		}
+		ramLogger.info("================================================");
+		ramLogger.incLogTries();
+	}
 	
 	@Override
 	public String toString()
