@@ -6,10 +6,9 @@ package com.seibel.lod.core.config;
  * @author coolGi2007
  * @version 02-06-2022
  */
-public class ConfigEntry {
-    private Object value;
+public class ConfigEntry<T> {
+    private T value;
     private String comment;
-    private Class<?> type;
     private double min = Double.MIN_VALUE;
     private double max = Double.MAX_VALUE;
 
@@ -18,20 +17,19 @@ public class ConfigEntry {
     }
 
     /** Sets everything */
-    public ConfigEntry(Object value, Class<?> type, String comment, double min, double max) {
+    public ConfigEntry(T value, String comment, double min, double max) {
         this.value = value;
-        this.type = type;
         this.comment = comment;
         this.min = min;
         this.max = max;
     }
 
     /** Gets the value */
-    public <type> type get() {
-        return (type) this.value;
+    public <T> T get() {
+        return (T) this.value;
     }
     /** Sets the value */
-    public void set(Object new_value) {
+    public void set(T new_value) {
         this.value = new_value;
         // Something to save the value
     }
@@ -64,22 +62,20 @@ public class ConfigEntry {
 
     /** Is the value of this equal to another */
     public boolean equals(ConfigEntry obj) {
-        if (this.value.equals(obj.value))
+        if (this.value == obj.value)
             return true;
         return false;
     }
 
     // Use this so it dosnt do file handling stuff
-    public static class Builder {
-        private Object tmpValue;
+    public static class Builder<T> {
+        private T tmpValue;
         private String tmpComment;
-        private Class<?> tmpType;
         private double tmpMin = Double.MIN_VALUE;
         private double tmpMax = Double.MAX_VALUE;
 
-        public Builder set(Object newValue) {
+        public Builder set(T newValue) {
             this.tmpValue = newValue;
-            this.tmpType = newValue.getClass();
             return this;
         }
 
@@ -96,7 +92,7 @@ public class ConfigEntry {
 
 
         public ConfigEntry build() {
-            return new ConfigEntry(tmpValue, tmpType, tmpComment, tmpMin, tmpMax);
+            return new ConfigEntry(tmpValue, tmpComment, tmpMin, tmpMax);
         }
     }
 }
