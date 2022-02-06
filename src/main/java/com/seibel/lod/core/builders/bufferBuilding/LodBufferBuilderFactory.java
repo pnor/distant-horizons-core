@@ -58,6 +58,8 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.util.SpamReducedLogger;
+import com.seibel.lod.core.util.UnitBytes;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -179,9 +181,6 @@ public class LodBufferBuilderFactory
 	
 	private int lastX = 0;
 	private int lastZ = 0;
-	
-
-	
 	
 	public LodBufferBuilderFactory()
 	{
@@ -578,8 +577,49 @@ public class LodBufferBuilderFactory
 			return true;
 	}
 	
-	
-	
+
+	private final SpamReducedLogger ramLogger = new SpamReducedLogger(1);
+	public void dumpBufferMemoryUsage() {
+		if (!ramLogger.canMaybeLog()) return;
+		ramLogger.info("Dumping Ram Usage for buffer usage...");
+		long bufferCount = 0;
+		long fullBufferCount = 0;
+		long totalUsage = 0;
+		int maxLength = MAX_TRIANGLES_PER_BUFFER*(LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
+		for (LodVertexBuffer[] buffers : buildableVbos) {
+			if (buffers == null) continue;
+			LodVertexBuffer[] bs = buffers.clone();
+			for (LodVertexBuffer b : bs) {
+				if (b == null) continue;
+				bufferCount++;
+				if (b.size == maxLength) {
+					fullBufferCount++;
+				} else if (b.size > maxLength) {
+					ramLogger.info("BUFFER OVERSIZED: {} (max size is {})", new UnitBytes(b.size), new UnitBytes(maxLength));
+				}
+				totalUsage += b.size;
+			}
+		}
+		for (LodVertexBuffer[] buffers : drawableVbos) {
+			if (buffers == null) continue;
+			LodVertexBuffer[] bs = buffers.clone();
+			for (LodVertexBuffer b : bs) {
+				if (b == null) continue;
+				bufferCount++;
+				if (b.size == maxLength) {
+					fullBufferCount++;
+				} else if (b.size > maxLength) {
+					ramLogger.info("BUFFER OVERSIZED: {} (max size is {})", new UnitBytes(b.size), new UnitBytes(maxLength));
+				}
+				totalUsage += b.size;
+			}
+		}
+		ramLogger.info("================================================");
+		ramLogger.info("Buffers: [{}], Full-sized Buffers: [{}], Total: [{}]",
+				bufferCount, fullBufferCount, new UnitBytes(totalUsage));
+		ramLogger.info("================================================");
+		ramLogger.incLogTries();
+	}
 	
 	
 	
@@ -730,6 +770,7 @@ public class LodBufferBuilderFactory
 	/** Uploads the uploadBuffer so the GPU can use it. */
 	private void vboUpload(RegionPos regPos, int iIndex, ByteBuffer uploadBuffer, GpuUploadMethod uploadMethod)
 	{
+		int maxLength = MAX_TRIANGLES_PER_BUFFER*(LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
 		boolean useBuffStorage = uploadMethod == GpuUploadMethod.BUFFER_STORAGE;
 		LodVertexBuffer[] vbos = buildableVbos.get(regPos.x, regPos.z);
 		
@@ -759,6 +800,7 @@ public class LodBufferBuilderFactory
 						size > uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
 				{
 					int newSize = (int)(uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER);
+					if (newSize > maxLength) newSize = maxLength;
 					LagSpikeCatcher buffResizeRegen = new LagSpikeCatcher();
 					GL32.glDeleteBuffers(vbo.id);
 					vbo.id = GL32.glGenBuffers();
@@ -786,6 +828,7 @@ public class LodBufferBuilderFactory
 						size > uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
 				{
 					int newSize = (int) (uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER);
+					if (newSize > maxLength) newSize = maxLength;
 					LagSpikeCatcher buffResize = new LagSpikeCatcher();
 					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
 					vbo.size = newSize;
@@ -829,6 +872,7 @@ public class LodBufferBuilderFactory
 						size > uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER*BUFFER_EXPANSION_MULTIPLIER)
 				{
 					int newSize = (int)(uploadBuffer.limit()*BUFFER_EXPANSION_MULTIPLIER);
+					if (newSize > maxLength) newSize = maxLength;
 					LagSpikeCatcher buffResize = new LagSpikeCatcher();
 					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
 					vbo.size = newSize;

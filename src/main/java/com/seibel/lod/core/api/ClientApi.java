@@ -163,7 +163,10 @@ public class ClientApi
 						ApiShared.lodBuilder.defaultDimensionWidthInRegions);
 				ApiShared.lodWorld.addLodDimension(lodDim);
 			}
-			if (prefLoggerEnabled) lodDim.dumpRamUsage();
+			if (prefLoggerEnabled) {
+				lodDim.dumpRamUsage();
+				ApiShared.lodBufferBuilderFactory.dumpBufferMemoryUsage();
+			}
 
 			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();
 			for (long pos : toBeLoaded) {
