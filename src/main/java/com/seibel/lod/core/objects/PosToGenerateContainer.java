@@ -53,21 +53,22 @@ public class PosToGenerateContainer
 	// TODO what is going on in this method?
 	public void addNearPosToGenerate(byte detailLevel, int posX, int posZ, boolean sort)
 	{
-		int distance = LevelPosUtil.minDistance(detailLevel, posX, posZ, playerPosX, playerPosZ);
+		// FIXME: This is a cast from double to int!!! OVERFLOW MAY HAPPEN!
+		int distance = (int)LevelPosUtil.minDistance(detailLevel, posX, posZ, playerPosX, playerPosZ);
 		int index;
 		
 		//We are introducing a position in the near array
 
 		index = nearSize;
 		if (index == nearPosToGenerate.length) {
-			if (LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) > 0) {
+			if (Integer.compare(distance, nearPosToGenerate[index - 1][3]) > 0) {
 				return;
 			}
 			index--;
 		} else nearSize++;
 		
 		if (sort) {
-			while (index > 0 && LevelPosUtil.compareDistance(distance, nearPosToGenerate[index - 1][3]) <= 0)
+			while (index > 0 && Integer.compare(distance, nearPosToGenerate[index - 1][3]) <= 0)
 			{
 				nearPosToGenerate[index][0] = nearPosToGenerate[index - 1][0];
 				nearPosToGenerate[index][1] = nearPosToGenerate[index - 1][1];
@@ -85,21 +86,22 @@ public class PosToGenerateContainer
 	// TODO what is going on in this method?
 	public void addFarPosToGenerate(byte detailLevel, int posX, int posZ, boolean sort)
 	{
-		int distance = LevelPosUtil.minDistance(detailLevel, posX, posZ, playerPosX, playerPosZ);
+		// FIXME: This is a cast from double to int!!! OVERFLOW MAY HAPPEN!
+		int distance = (int)LevelPosUtil.minDistance(detailLevel, posX, posZ, playerPosX, playerPosZ);
 		int index;
 	
 		// We are introducing a position in the far array
 		
 		index = farSize;
 		if (index == farPosToGenerate.length) {
-			if (LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) > 0) {
+			if (Integer.compare(distance, farPosToGenerate[index - 1][3]) > 0) {
 				return;
 			}
 			index--;
 		} else farSize++;
 		
 		if (sort) {
-			while (index > 0 && LevelPosUtil.compareDistance(distance, farPosToGenerate[index - 1][3]) <= 0)
+			while (index > 0 && Integer.compare(distance, farPosToGenerate[index - 1][3]) <= 0)
 			{
 				farPosToGenerate[index][0] = farPosToGenerate[index - 1][0];
 				farPosToGenerate[index][1] = farPosToGenerate[index - 1][1];

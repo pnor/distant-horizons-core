@@ -228,7 +228,7 @@ public class LodRegion {
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 
 		// calculate what LevelPos are in range to generate
-		int minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
+		double minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
 		
 		// determine this child's levelPos
 		byte childDetailLevel = (byte) (detailLevel - 1);
@@ -276,14 +276,14 @@ public class LodRegion {
 	 */
 	public void getPosToRender(PosToRenderContainer posToRender, int playerPosX, int playerPosZ,
 			 GenerationPriority priority, DropoffQuality dropoffQuality) {
-		int minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
+		double minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
 		byte targetLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 		if (targetLevel <= dropoffQuality.fastModeSwitch) {
 			getPosToRender(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, playerPosX, playerPosZ,
 					priority);
 		} else {
 			// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
-			int maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
+			double maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
 			byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 :
 				calculateFarModeSwitch(DetailDistanceUtil.getDetailLevelFromDistance(maxDistance));
 			if (priority == GenerationPriority.FAR_FIRST) farModeSwitchLevel = 8;
@@ -305,7 +305,7 @@ public class LodRegion {
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
 
 		// calculate the LevelPos that are in range
-		int minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
+		double minDistance = LevelPosUtil.minDistance(detailLevel, offsetPosX + regionPosX*size, offsetPosZ + regionPosZ*size, playerPosX, playerPosZ);
 		byte minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 		// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
 		byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 : calculateFarModeSwitch(minLevel);

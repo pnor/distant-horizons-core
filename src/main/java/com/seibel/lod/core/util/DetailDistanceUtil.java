@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.util;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -42,10 +43,10 @@ public class DetailDistanceUtil
 	private static final double treeCutMultiplier = 1.0;
 	private static byte minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 	private static byte minDrawDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
-	private static final int maxDetail = LodUtil.REGION_DETAIL_LEVEL + 1;
-	private static final int minDistance = 0;
-	private static int minDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
-	private static int maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
+	private static final byte maxDetail = LodUtil.DETAIL_OPTIONS;
+	private static final double minDistance = 0;
+	private static double minDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
+	private static double maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
 	
 	
 	public static void updateSettings()
@@ -56,8 +57,7 @@ public class DetailDistanceUtil
 		maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;
 	}
 	
-	/*// Need UPDATE and BUG FIX
-	public static int baseDistanceFunction(int detail)
+	public static double baseDistanceFunction(int detail)
 	{
 		if (detail <= minGenDetail)
 			return minDistance;
@@ -69,21 +69,27 @@ public class DetailDistanceUtil
 		
 		int distanceUnit = CONFIG.client().graphics().quality().getHorizontalScale() * 16;
 		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
-			return (detail * distanceUnit);
+			return ((double)detail * distanceUnit);
 		else
 		{
 			double base = CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase;
-			return (int) (Math.pow(base, detail) * distanceUnit);
+			return Math.pow(base, detail) * distanceUnit;
 		}
 	}
 	
-	public static int getDrawDistanceFromDetail(int detail)
+	public static double getDrawDistanceFromDetail(int detail)
 	{
 		return baseDistanceFunction(detail);
-	}*/
+	}
 	
-	public static byte baseInverseFunction(int distance, byte minDetail)
+	public static byte baseInverseFunction(double distance, byte minDetail)
 	{
+		double maxDetailDistance = getDrawDistanceFromDetail(maxDetail-1);
+		if (distance > maxDetailDistance) {
+			//ClientApi.LOGGER.info("DEBUG: Scale as max: {}", distance);
+			return maxDetail-1;
+		}
+		
 		int detail;
 		distance -= minDetailDistance;
 		
@@ -103,33 +109,9 @@ public class DetailDistanceUtil
 		return (byte) LodUtil.clamp(minDetail, detail+minDetail, maxDetail - 1);
 	}
 
-	public static byte getDetailLevelFromDistance(int distance)
+	public static byte getDetailLevelFromDistance(double distance)
 	{
 		return baseInverseFunction(distance, minDrawDetail);
-	}
-
-	@Deprecated //Reason: All merged into `getDetailLevelFromDistance`
-	public static byte getDrawDetailFromDistance(int distance)
-	{
-		return baseInverseFunction(distance, minDrawDetail);
-	}
-
-	@Deprecated //Reason: Same as 'getDrawDetailFromDistance'
-	public static byte getGenerationDetailFromDistance(int distance)
-	{
-		return baseInverseFunction((int) (distance * genMultiplier), minGenDetail);
-	}
-
-	@Deprecated //Reason: Same as 'getDrawDetailFromDistance'
-	public static byte getTreeCutDetailFromDistance(int distance)
-	{
-		return baseInverseFunction((int) (distance * treeCutMultiplier), minGenDetail);
-	}
-
-	@Deprecated //Reason: Same as 'getDrawDetailFromDistance'
-	public static byte getTreeGenDetailFromDistance(int distance)
-	{
-		return baseInverseFunction((int) (distance * treeGenMultiplier), minGenDetail);
 	}
 	
 
@@ -140,15 +122,6 @@ public class DetailDistanceUtil
 	{
 		return CONFIG.client().worldGenerator().getDistanceGenerationMode();
 	}*/
-	
-	@Deprecated
-	public static byte getLodDrawDetail(byte detail)
-	{
-		detail += minDrawDetail;
-		if (detail > 10)
-			detail = 10;
-		return detail;
-	}
 	
 	public static int getMaxVerticalData(int detail)
 	{

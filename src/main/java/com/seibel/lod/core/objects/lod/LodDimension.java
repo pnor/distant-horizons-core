@@ -290,7 +290,7 @@ public class LodDimension
 			Pos minPos = regions.getMinInRange();
 			// go over every region in the dimension
 			iterateWithSpiral((int x, int z) -> {
-				int minDistance;
+				double minDistance;
 				byte detail;
 				
 				LodRegion region = regions.get(x+minPos.x, z+minPos.y);
@@ -358,8 +358,8 @@ public class LodDimension
 				int regionX;
 				int regionZ;
 				LodRegion region;
-				int minDistance;
-				int maxDistance;
+				double minDistance;
+				double maxDistance;
 				byte minDetail;
 				byte maxDetail;
 				regionX = x + minPos.x;
@@ -372,6 +372,19 @@ public class LodDimension
 						playerPosZ);
 				maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
 						playerPosZ);
+				{
+					double debugRPosX = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, regionX, (byte) 0) + LodUtil.REGION_WIDTH/2;
+					double debugRPosZ = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, regionZ, (byte) 0) + LodUtil.REGION_WIDTH/2;
+					double deltaRPosX = debugRPosX - playerPosX;
+					double deltaRPosZ = debugRPosZ - playerPosZ;
+					double debugDistance = Math.sqrt(deltaRPosX*deltaRPosX + deltaRPosZ*deltaRPosZ);
+					if (minDistance > debugDistance || maxDistance < debugDistance || minDistance > maxDistance) {
+						ClientApi.LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
+								+ "At center block pos: {} {}, region pos: {}",
+								minDistance, maxDistance, debugDistance, debugRPosX, debugRPosZ, regionPos);
+						return;
+					}
+				}
 				minDetail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 				maxDetail = DetailDistanceUtil.getDetailLevelFromDistance(maxDistance);
 				boolean updated = false;
@@ -695,6 +708,7 @@ public class LodDimension
 		ramLogger.info("Dumping Ram Usage for LodDim in {} with {} regions...", dimension.getDimensionName(), regionCount);
 		int nonNullRegionCount = 0;
 		int dirtiedRegionCount = 0;
+		int writingRegionCount = 0;
 		long totalUsage = 0;
 		int[] detailCount = new int[LodUtil.DETAIL_OPTIONS];
 		long[] detailUsage = new long[LodUtil.DETAIL_OPTIONS];
@@ -702,11 +716,15 @@ public class LodDimension
 			if (r==null) continue;
 			nonNullRegionCount++;
 			if (r.needSaving) dirtiedRegionCount++;
+			if (r.isWriting != 0) writingRegionCount++;
 			LevelContainer[] container = r.debugGetDataContainers().clone();
 			if (container == null || container.length != LodUtil.DETAIL_OPTIONS) {
 				ClientApi.LOGGER.warn("DumpRamUsage encountered an invalid region!");
 				continue;
 			}
+			
+			
+			
 			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
 				if (container[i] == null) continue;
 				detailCount[i]++;
@@ -716,8 +734,8 @@ public class LodDimension
 			}
 		}
 		ramLogger.info("================================================");
-		ramLogger.info("Non Null Regions: [{}], Dirtied Regions: [{}], Bytes: [{}]",
-				nonNullRegionCount, dirtiedRegionCount, new UnitBytes(totalUsage));
+		ramLogger.info("Non Null Regions: [{}], Dirtied Regions: [{}], Writing Regions: [{}], Bytes: [{}]",
+				nonNullRegionCount, dirtiedRegionCount, writingRegionCount, new UnitBytes(totalUsage));
 		ramLogger.info("------------------------------------------------");
 		for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
 			ramLogger.info("DETAIL {}: Containers: [{}], Bytes: [{}]", i, detailCount[i], new UnitBytes(detailUsage[i]));
