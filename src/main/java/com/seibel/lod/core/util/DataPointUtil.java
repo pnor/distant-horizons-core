@@ -309,6 +309,24 @@ public class DataPointUtil
 		}
 		return anyChange;
 	}
+	
+	// Extract a section of data from the 2D data array
+	public static long[] extractDataArray(long[] source, int inWidth, int inHeight, int outX, int outY, int outWidth, int outHeight) {
+		int dataSetSize = source.length/inWidth/inHeight;
+		if (dataSetSize*inWidth*inHeight != source.length)
+			throw new ArrayIndexOutOfBoundsException("\"source\" array invalid width and height");
+		if (outWidth > inWidth || outX + outWidth > inWidth)
+			throw new ArrayIndexOutOfBoundsException("X index out of bounds");
+		if (outHeight > inHeight || outY + outHeight > inHeight)
+			throw new ArrayIndexOutOfBoundsException("Y index out of bounds");
+		long[] out = new long[dataSetSize*outWidth*outHeight];
+		for (int x=0; x<outWidth; x++) {
+			System.arraycopy(source, ((outX+x)*inHeight+outY)*dataSetSize,
+					out, (x*outHeight)*dataSetSize,
+					outHeight*dataSetSize);
+		}
+		return out;
+	}
 
 	private static final ThreadLocal<short[]> tLocalHeightAndDepth = new ThreadLocal<short[]>();
 	private static final ThreadLocal<long[]> tMaxVerticalData = new ThreadLocal<long[]>();
@@ -330,7 +348,7 @@ public class DataPointUtil
 			heightAndDepth = new short[heightAndDepthLength];
 			tLocalHeightAndDepth.set(heightAndDepth);
 		}
-		int dataPointLength = DetailDistanceUtil.getMaxVerticalData(0);
+		int dataPointLength = maxVerticalData;
 		long[] dataPoint = tMaxVerticalData.get();
 		if (dataPoint==null || dataPoint.length != dataPointLength) {
 			dataPoint = new long[dataPointLength];

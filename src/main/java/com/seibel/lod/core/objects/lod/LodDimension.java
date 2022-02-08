@@ -464,7 +464,7 @@ public class LodDimension
 		
 		
 		// This ensures that we don't spawn way too much regions without finish flushing them first.
-		if (dirtiedRegionsRoughCount > 16) return posToGenerate;
+		//if (dirtiedRegionsRoughCount > 16) return posToGenerate;
 		GenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? GenerationPriority.NEAR_FIRST : priority;
 		Pos minPos = regions.getMinInRange();
 		iterateByDistance((int x, int z) -> {

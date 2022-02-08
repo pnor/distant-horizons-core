@@ -32,12 +32,14 @@ import com.seibel.lod.core.objects.lod.LodWorld;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -90,15 +92,15 @@ public class LodBuilder
 	
 	}
 	
-	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim)
+	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, boolean genAll)
 	{
 		// Block change event
-		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL, true, ()->{},
-				()->{generateLodNodeAsync(chunk,lodWorld,dim);});
+		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL, true, genAll, ()->{},
+				()->{generateLodNodeAsync(chunk,lodWorld,dim, genAll);});
 	}
 	
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim,
-			DistanceGenerationMode generationMode, boolean override, Runnable endCallback, Runnable retryCallback)
+			DistanceGenerationMode generationMode, boolean override, boolean genAll, Runnable endCallback, Runnable retryCallback)
 	{
 		if (lodWorld == null || lodWorld.getIsWorldNotLoaded()) {
 			endCallback.run();
@@ -132,7 +134,7 @@ public class LodBuilder
 				LodDimension lodDim = lodWorld.getLodDimension(dim);
 				if (lodDim == null) return;
 				
-				retryNeeded = !generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override);
+				retryNeeded = !generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override, genAll);
 			}
 			catch (RuntimeException e)
 			{
@@ -154,28 +156,19 @@ public class LodBuilder
 	 * Creates a LodNode for a chunk in the given world.
 	 * @throws IllegalArgumentException thrown if either the chunk or world is null.
 	 */
-	public boolean generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override)
-			throws IllegalArgumentException
+	public boolean generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override, boolean genAll)
 	{
-		//config.distanceGenerationMode = DistanceGenerationMode.FULL;
-		
-		//long executeTime = System.currentTimeMillis();
 		if (chunk == null)
 			throw new IllegalArgumentException("generateLodFromChunk given a null chunk");
-		
 		LodRegion region = lodDim.getRegion(chunk.getRegionPosX(), chunk.getRegionPosZ());
 		if (region == null)
 			return false;
-		
 		// this happens if a LOD is generated after the user leaves the world.
 		if (MC.getWrappedClientWorld() == null)
 			return false;
-		
 		if (!chunk.isLightCorrect()) return false;
 		
-		// determine how many LODs to generate vertically
-		//VerticalQuality verticalQuality = LodConfig.CLIENT.graphics.qualityOption.verticalQuality.get();
-		
+
 		// generate the LODs
 		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte)0);
 		long[] data = new long[maxVerticalData*16*16];
@@ -199,9 +192,19 @@ public class LodBuilder
 				data[i*maxVerticalData] = DataPointUtil.createVoidDataPoint(config.distanceGenerationMode.complexity);
 			}
 		}
-		
 		if (!chunk.isLightCorrect()) return false;
 		
+		if (genAll) {
+			return writeAllLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
+		} else {
+			return writePartialLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
+		}
+		
+	}
+	
+	private boolean writeAllLodNodeData(LodDimension lodDim, LodRegion region, int chunkX, int chunkZ,
+			long[] data, LodBuilderConfig config, boolean override)
+	{	
 		region.isWriting++;
 		try {
 			if (region.getMinDetailLevel()!= 0) {
@@ -216,25 +219,89 @@ public class LodBuilder
 			}
 			//ClientApi.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
 			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
-			region.addChunkOfData((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16, data, maxVerticalData, override);
-			region.regenerateLodFromArea((byte)0, chunk.getMinX(), chunk.getMinZ(), 16, 16);
+			region.addChunkOfData((byte)0, chunkX*16, chunkZ*16, 16, 16, data, data.length/16/16, override);
+			region.regenerateLodFromArea((byte)0, chunkX*16, chunkZ*16, 16, 16);
 			lodDim.regenDimensionBuffers = true;
 			
-			if (!region.doesDataExist((byte)0, chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode))
+			if (!region.doesDataExist((byte)0, chunkX*16, chunkZ*16, config.distanceGenerationMode))
 				throw new RuntimeException("data at detail 0 is still null after writes to it!");
-			if (!region.doesDataExist(LodUtil.CHUNK_DETAIL_LEVEL, chunk.getChunkPosX(), chunk.getChunkPosZ(), config.distanceGenerationMode))
+			if (!region.doesDataExist(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, chunkZ, config.distanceGenerationMode))
 				throw new RuntimeException("data at chunk detail level is still null after writes to it!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			region.isWriting--;
 		}
-		
 		return true;
-		//executeTime = System.currentTimeMillis() - executeTime;
-		//if (executeTime > 0) ClientApi.LOGGER.info("generateLodNodeFromChunk level: " + detailLevel + " time ms: " + executeTime);
 	}
 
+	private boolean writePartialLodNodeData(LodDimension lodDim, LodRegion region, int chunkX, int chunkZ,
+			long[] data, LodBuilderConfig config, boolean override)
+	{
+		region.isWriting++;
+		try {
+			byte targetLevel = region.getMinDetailLevel();
+			int vertQual = DetailDistanceUtil.getMaxVerticalData(targetLevel);
+			int lodCount = (targetLevel >= LodUtil.CHUNK_DETAIL_LEVEL) ?
+					1 : 1 << (LodUtil.CHUNK_DETAIL_LEVEL - targetLevel);
+			if (targetLevel != 0) {
+				int lodWidth = 16/lodCount;
+				int inputVertQual = data.length/16/16;
+				long[] mergedData = new long[vertQual*lodCount*lodCount];
+				for (int subX=0; subX<lodCount; subX++) {
+					for (int subZ=0; subZ<lodCount; subZ++) {
+						long[] toBeMerged = DataPointUtil.extractDataArray(
+								data, 16, 16, subX*lodWidth, subZ*lodWidth, lodWidth, lodWidth);
+						if(toBeMerged.length != lodWidth*lodWidth*inputVertQual) throw new RuntimeException();
+						long[] merged = DataPointUtil.mergeMultiData(toBeMerged, inputVertQual, vertQual);
+						if (merged.length != vertQual) throw new RuntimeException();
+						if (!DataPointUtil.doesItExist(merged[0]) ||
+								DataPointUtil.getGenerationMode(merged[0]) != config.distanceGenerationMode.complexity)
+							throw new RuntimeException();
+						System.arraycopy(merged, 0, mergedData, (subZ+subX*lodCount)*vertQual, vertQual);
+					}
+				}
+				data = mergedData;
+			}
+			if (lodCount*lodCount*vertQual != data.length) throw new RuntimeException();
+			for (int i=0; i<data.length; i+=vertQual) {
+				if (!DataPointUtil.doesItExist(data[i]) ||
+						DataPointUtil.getGenerationMode(data[i]) != config.distanceGenerationMode.complexity) {
+					ClientApi.LOGGER.error("NULL data at {}, detail {}, vertQual {}, lodCount {}, chunkPos [{},{}]\n"
+							+ "Data: {}",
+							i, targetLevel, vertQual, lodCount, chunkX, chunkZ, DataPointUtil.toString(data[i]));
+					throw new RuntimeException("Null data!");
+				}
+			}
+			
+			
+			//ClientApi.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
+			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
+			region.addChunkOfData(targetLevel,
+					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
+					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkZ, targetLevel),
+					lodCount, lodCount, data, vertQual, override);
+			region.regenerateLodFromArea(targetLevel,
+					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
+					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkZ, targetLevel),
+					lodCount, lodCount);
+			lodDim.regenDimensionBuffers = true;
+			
+			if (!region.doesDataExist(targetLevel,
+					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
+					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkZ, targetLevel),
+					config.distanceGenerationMode))
+				throw new RuntimeException("data at detail 0 is still null after writes to it!");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			region.isWriting--;
+		}
+		return true;
+	}
+
+	
+	
 	/** creates a vertical DataPoint */
 	private void writeVerticalData(long[] data, int dataOffset, int maxVerticalData,
 			IChunkWrapper chunk, LodBuilderConfig config, int chunkSubPosX, int chunkSubPosZ)

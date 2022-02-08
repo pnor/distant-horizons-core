@@ -184,7 +184,7 @@ public class ClientApi
 				generating.add(pos);
 				//ClientApi.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
 				ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld,
-						world.getDimensionType(), DistanceGenerationMode.FULL, true, () -> {
+						world.getDimensionType(), DistanceGenerationMode.FULL, true, true, () -> {
 							//ClientApi.LOGGER.info("Lod Generation for "+pos+" done. Remining: " +toBeLoaded.size());
 							generating.remove(pos);
 						}, () -> {

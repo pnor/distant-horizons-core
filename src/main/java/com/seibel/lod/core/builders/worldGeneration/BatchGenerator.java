@@ -160,7 +160,7 @@ public class BatchGenerator {
 					int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, false));
 					int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, false));
 					int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep)) {
+					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, false)) {
 						toGenerate--;
 					}
 				}
@@ -174,7 +174,7 @@ public class BatchGenerator {
 					int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, true));
 					int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, true));
 					int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep)) {
+					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, true)) {
 						toGenerate--;
 					}
 				}
@@ -193,7 +193,7 @@ public class BatchGenerator {
 					int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, true));
 					int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, true));
 					int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep)) {
+					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, true)) {
 						toGenerate--;
 					}
 					if (toGenerate <= 0)
@@ -212,7 +212,7 @@ public class BatchGenerator {
 						int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, false));
 						int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, false));
 						int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-						if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep)) {
+						if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, false)) {
 							toGenerate--;
 						}
 					}
