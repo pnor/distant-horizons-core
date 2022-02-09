@@ -385,8 +385,8 @@ public class LodDimension
 						return;
 					}
 				}
-				minDetail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-				maxDetail = DetailDistanceUtil.getDetailLevelFromDistance(maxDistance);
+				minDetail = DetailDistanceUtil.getGenDetailLevelFromDistance(minDistance);
+				maxDetail = DetailDistanceUtil.getGenDetailLevelFromDistance(maxDistance);
 				boolean updated = false;
 				if (region == null) {
 					if ((!expandOrLoadPaused)) {
