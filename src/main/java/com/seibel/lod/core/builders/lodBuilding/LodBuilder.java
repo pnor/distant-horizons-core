@@ -365,7 +365,7 @@ public class LodBuilder
 			int cx = x+dir.getNormal().x;
 			int cy = y+dir.getNormal().y;
 			int cz = z+dir.getNormal().z;
-			if (!chunk.blockPosInsideChunk(cx, cy, cz)) continue;
+			if (!chunk.blockPosInsideChunk(cx, cy, cz)) return true;
 			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(cx, cy, cz);
 			if (block == null || block.hasNoCollision() || block.isToAvoid() || block.isNonFull() || block.hasNoCollision())
 				return true;
