@@ -19,6 +19,9 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
@@ -69,7 +72,7 @@ public class LodRegion {
 	public volatile boolean needRecheckGenPoint = true;
 	public volatile int needRegenBuffer = 2;
 	public volatile boolean needSaving = false;
-	public volatile int isWriting = 0;
+	public final AtomicInteger isWriting = new AtomicInteger(0);
 	
 	public static byte calculateFarModeSwitch(byte targetLevel) {
 		if (targetLevel==0) return 0; // Always use detail 0 if it's way too close
@@ -100,7 +103,7 @@ public class LodRegion {
 	 * @return true if the data was added successfully
 	 */
 	public boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, long data) {
-		assert(isWriting!=0);
+		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been aquired!");
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 
@@ -121,7 +124,7 @@ public class LodRegion {
 	 * @return true if the data was added successfully
 	 */
 	public boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data, boolean override) {
-		assert(isWriting!=0);
+		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been aquired!");
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 
@@ -145,7 +148,7 @@ public class LodRegion {
 	 * @return true if the data was added successfully
 	 */
 	public boolean addChunkOfData(byte detailLevel, int posX, int posZ, int widthX, int widthZ, long[] data, int verticalSize, boolean override) {
-		assert(isWriting!=0);
+		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been aquired!");
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 

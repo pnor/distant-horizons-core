@@ -205,7 +205,7 @@ public class LodBuilder
 	private boolean writeAllLodNodeData(LodDimension lodDim, LodRegion region, int chunkX, int chunkZ,
 			long[] data, LodBuilderConfig config, boolean override)
 	{	
-		region.isWriting++;
+		region.isWriting.incrementAndGet();
 		try {
 			if (region.getMinDetailLevel()!= 0) {
 				if (!LodUtil.checkRamUsage(0.05, 16)) {
@@ -230,7 +230,7 @@ public class LodBuilder
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			region.isWriting--;
+			region.isWriting.decrementAndGet();
 		}
 		return true;
 	}
@@ -238,7 +238,7 @@ public class LodBuilder
 	private boolean writePartialLodNodeData(LodDimension lodDim, LodRegion region, int chunkX, int chunkZ,
 			long[] data, LodBuilderConfig config, boolean override)
 	{
-		region.isWriting++;
+		region.isWriting.incrementAndGet();
 		try {
 			byte targetLevel = region.getMinDetailLevel();
 			int vertQual = DetailDistanceUtil.getMaxVerticalData(targetLevel);
@@ -295,7 +295,7 @@ public class LodBuilder
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			region.isWriting--;
+			region.isWriting.decrementAndGet();
 		}
 		return true;
 	}

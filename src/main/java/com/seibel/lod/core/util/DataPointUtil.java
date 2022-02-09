@@ -261,10 +261,9 @@ public class DataPointUtil
 	
 	/** Return (>0) if dataA should replace dataB, (0) if equal, (<0) if dataB should replace dataA */
 	public static int compareDatapointPriority(long dataA, long dataB) {
-		if (dataA==0 || dataB==0) {
-			if (dataA!=0) dataA = Integer.MAX_VALUE;
-			if (dataB!=0) dataB = Integer.MAX_VALUE;
-			return (int)(dataA-dataB);
+		if (!doesItExist(dataA) || !doesItExist(dataB)) {
+			if (doesItExist(dataA)) return Integer.MAX_VALUE;
+			if (doesItExist(dataB)) return Integer.MIN_VALUE;
 		}
 		int genA = (int)getGenerationMode(dataA);
 		int genB = (int)getGenerationMode(dataB);

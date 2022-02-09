@@ -585,6 +585,8 @@ public class LodBufferBuilderFactory
 		long bufferCount = 0;
 		long fullBufferCount = 0;
 		long totalUsage = 0;
+		long builderCount = 0;
+		long totalBuilderUsage = 0;
 		int maxLength = MAX_TRIANGLES_PER_BUFFER*(LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
 		for (LodVertexBuffer[] buffers : buildableVbos) {
 			if (buffers == null) continue;
@@ -599,6 +601,11 @@ public class LodBufferBuilderFactory
 				}
 				totalUsage += b.size;
 			}
+		}
+		for (LodBufferBuilder builder : buildableBuffers) {
+			if (builder == null) continue;
+			builderCount++;
+			totalBuilderUsage += builder.getMemUsage();
 		}
 		for (LodVertexBuffer[] buffers : drawableVbos) {
 			if (buffers == null) continue;
@@ -617,6 +624,8 @@ public class LodBufferBuilderFactory
 		ramLogger.info("================================================");
 		ramLogger.info("Buffers: [{}], Full-sized Buffers: [{}], Total: [{}]",
 				bufferCount, fullBufferCount, new UnitBytes(totalUsage));
+		ramLogger.info("Builders: [{}], Total: [{}]",
+				builderCount, new UnitBytes(totalBuilderUsage));
 		ramLogger.info("================================================");
 		ramLogger.incLogTries();
 	}

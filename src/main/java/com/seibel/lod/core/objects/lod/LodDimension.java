@@ -295,7 +295,7 @@ public class LodDimension
 				
 				LodRegion region = regions.get(x+minPos.x, z+minPos.y);
 				if (region != null && region.needSaving) totalDirtiedRegions++;
-				if (region != null && !region.needSaving && region.isWriting==0) {
+				if (region != null && !region.needSaving && region.isWriting.get()==0) {
 					// check what detail level this region should be
 					// and cut it if it is higher then that
 					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, x+minPos.x, z+minPos.y,
@@ -366,7 +366,7 @@ public class LodDimension
 				regionZ = z + minPos.y;
 				final RegionPos regionPos = new RegionPos(regionX, regionZ);
 				region = regions.get(regionX, regionZ);
-				if (region != null && region.isWriting!=0) return; // FIXME: A crude attempt at lowering chance of race condition!
+				if (region != null && region.isWriting.get()!=0) return; // FIXME: A crude attempt at lowering chance of race condition!
 
 				minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
 						playerPosZ);
@@ -716,15 +716,12 @@ public class LodDimension
 			if (r==null) continue;
 			nonNullRegionCount++;
 			if (r.needSaving) dirtiedRegionCount++;
-			if (r.isWriting != 0) writingRegionCount++;
+			if (r.isWriting.get() != 0) writingRegionCount++;
 			LevelContainer[] container = r.debugGetDataContainers().clone();
 			if (container == null || container.length != LodUtil.DETAIL_OPTIONS) {
 				ClientApi.LOGGER.warn("DumpRamUsage encountered an invalid region!");
 				continue;
 			}
-			
-			
-			
 			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
 				if (container[i] == null) continue;
 				detailCount[i]++;
@@ -742,6 +739,7 @@ public class LodDimension
 		}
 		ramLogger.info("================================================");
 		ramLogger.incLogTries();
+		fileHandler.dumpBufferMemoryUsage();
 	}
 	
 	@Override

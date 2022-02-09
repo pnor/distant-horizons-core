@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -37,12 +38,15 @@ import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.objects.lod.LevelContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SpamReducedLogger;
+import com.seibel.lod.core.util.UnitBytes;
 
 
 /**
@@ -316,6 +320,47 @@ public class LodDimensionFileHandler
 	public void addRegionsToSave(LodRegion r) {
 		regionToSave.put(r.getRegionPos(), r);
 	}
+
+	private final SpamReducedLogger ramLogger = new SpamReducedLogger(1);
+	public void dumpBufferMemoryUsage() {
+		if (!ramLogger.canMaybeLog()) return;
+		ArrayList<LodRegion> regions = new ArrayList<LodRegion>(regionToSave.values());
+		ramLogger.info("Dumping Ram Usage for file writer for {} with {} regions...",
+				lodDimension.dimension.getDimensionName(), regions.size());
+		int nonNullRegionCount = 0;
+		int nonDirtiedRegionCount = 0;
+		int writingRegionCount = 0;
+		long totalUsage = 0;
+		int[] detailCount = new int[LodUtil.DETAIL_OPTIONS];
+		long[] detailUsage = new long[LodUtil.DETAIL_OPTIONS];
+		for (LodRegion r : regions) {
+			if (r==null) continue;
+			nonNullRegionCount++;
+			if (!r.needSaving) nonDirtiedRegionCount++;
+			if (r.isWriting.get() != 0) writingRegionCount++;
+			LevelContainer[] container = r.debugGetDataContainers().clone();
+			if (container == null || container.length != LodUtil.DETAIL_OPTIONS) {
+				ClientApi.LOGGER.warn("DumpRamUsage encountered an invalid region!");
+				continue;
+			}
+			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
+				if (container[i] == null) continue;
+				detailCount[i]++;
+				long byteUsage = container[i].getRoughRamUsage();
+				detailUsage[i] += byteUsage;
+				totalUsage += byteUsage;
+			}
+		}
+		ramLogger.info("================================================");
+		ramLogger.info("Non Null Regions: [{}], Non-Dirtied Regions: [{}], Writing Regions: [{}], Bytes: [{}]",
+				nonNullRegionCount, nonDirtiedRegionCount, writingRegionCount, new UnitBytes(totalUsage));
+		ramLogger.info("------------------------------------------------");
+		for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
+			ramLogger.info("DETAIL {}: Containers: [{}], Bytes: [{}]", i, detailCount[i], new UnitBytes(detailUsage[i]));
+		}
+		ramLogger.info("================================================");
+		ramLogger.incLogTries();
+	}
 	
 	/** Save all dirty regions in this LodDimension to file */
 	public void saveDirtyRegionsToFile(boolean blockUntilFinished)
@@ -380,9 +425,9 @@ public class LodDimensionFileHandler
 		//       this for loop should be safe and loop until all values are gone.
 		while (!regionToSave.isEmpty()) {
 			for (LodRegion r : regionToSave.values()) {
-				r.isWriting++;
+				
 				try {
-					if (r.isWriting>1) continue;
+					if (r.isWriting.getAndIncrement()>0) continue;
 					//Check if the data has been swapped out right under me. Otherwise remove it from the entry
 					if (!regionToSave.remove(r.getRegionPos(), r)) continue;
 					r.needSaving = false;
@@ -399,7 +444,7 @@ public class LodDimensionFileHandler
 				{
 					e.printStackTrace();
 				} finally {
-					r.isWriting--;
+					r.isWriting.decrementAndGet();
 				}
 			}
 		}

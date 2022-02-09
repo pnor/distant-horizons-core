@@ -64,6 +64,8 @@ public class LodBufferBuilder
 		this.buffer = allocateByteBuffer(bufferSizeInBytes * 4);
 	}
 	
+	public int getMemUsage() {return buffer.capacity();}
+	
 	
 	
 	/** originally from MC's GLAllocation class */
