@@ -83,7 +83,7 @@ public class DetailDistanceUtil
 		return baseDistanceFunction(detail);
 	}
 	
-	public static byte baseInverseFunction(double distance, byte minDetail)
+	public static byte baseInverseFunction(double distance)
 	{
 		double maxDetailDistance = getDrawDistanceFromDetail(maxDetail-1);
 		if (distance > maxDetailDistance) {
@@ -96,22 +96,21 @@ public class DetailDistanceUtil
 		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
 			detail = (int) (distance/distanceUnit);
 		else
-		{
-			detail = (int) (Math.log(distance) / logBase);
-		}
-		return (byte) LodUtil.clamp(minDetail, detail+minDetail, maxDetail - 1);
+			detail = (int) (Math.log(distance/distanceUnit) / logBase);
+		
+		return (byte) LodUtil.clamp(minDrawDetail, detail+minDrawDetail, maxDetail - 1);
 	}
 	
 	public static byte getDetailLevelFromDistance(double distance)
 	{
-		return baseInverseFunction(distance, minDrawDetail);
+		return baseInverseFunction(distance);
 	}
 	
 	public static byte getGenDetailLevelFromDistance(double distance)
 	{
 		if(distance < minGenDetailDistance)
 			return minGenDetail;
-		return baseInverseFunction(distance, minDrawDetail);
+		return baseInverseFunction(distance);
 	}
 	
 	
