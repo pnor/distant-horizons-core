@@ -380,7 +380,6 @@ public class LodBuilder
 	private int determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, boolean strictEdge)
 	{
 		int depth = chunk.getMinBuildHeight();
-		
 		int colorOfBlock = 0;
 		if (strictEdge)
 		{
@@ -389,19 +388,16 @@ public class LodBuilder
 					&& ((this.config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
 					|| (this.config.client().worldGenerator().getBlocksToAvoid().noCollision && block.hasNoCollision())))
 			{
-				int aboveColorInt = chunk.getBlockColorWrapper(xAbs, yAbs + 1, zAbs).getColor();
-				if (aboveColorInt != 0)
-					colorOfBlock = aboveColorInt;
-				else
-					colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs).getColor();
+				colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs + 1, zAbs).getColor();
 			}
+			if (colorOfBlock == 0)
+				colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs).getColor();
 		}
 		
 		for (int y = yAbs - 1; y >= chunk.getMinBuildHeight(); y--)
 		{
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs)
-				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs)
-					&& colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor()))
+				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs) && colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor()))
 			{
 				depth = (short) (y + 1);
 				break;
