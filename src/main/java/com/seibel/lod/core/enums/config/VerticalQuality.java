@@ -22,25 +22,30 @@ package com.seibel.lod.core.enums.config;
 /**
  * heightmap <br>
  * multi_lod <br>
- * 
+ *
  * @author Leonardo Amato
  * @version 10-07-2021
  */
 public enum VerticalQuality
 {
 	LOW(
-			new int[] { 4, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-			4
+			new int[] { 4, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1 },
+			2
 	),
 	
 	MEDIUM(
-			new int[] { 8, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1 },
-			8
+			new int[] { 6, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1 },
+			4
 	),
 	
 	HIGH(
+			new int[] { 8, 6, 4, 2, 2, 2, 2, 1, 1, 1, 1 },
+			6
+	),
+	
+	ULTRA(
 			new int[] { 16, 8, 4, 2, 2, 2, 2, 1, 1, 1, 1 },
-			16
+			12
 	);
 	
 	public final int[] maxVerticalData;
@@ -55,8 +60,10 @@ public enum VerticalQuality
 	}
 	
 	// Note: return null if out of range
-	public static VerticalQuality previous(VerticalQuality mode) {
-		switch (mode) {
+	public static VerticalQuality previous(VerticalQuality mode)
+	{
+		switch (mode)
+		{
 		case HIGH:
 			return VerticalQuality.MEDIUM;
 		case MEDIUM:
@@ -66,10 +73,12 @@ public enum VerticalQuality
 			return null;
 		}
 	}
-
+	
 	// Note: return null if out of range
-	public static VerticalQuality next(VerticalQuality mode) {
-		switch (mode) {
+	public static VerticalQuality next(VerticalQuality mode)
+	{
+		switch (mode)
+		{
 		case MEDIUM:
 			return VerticalQuality.HIGH;
 		case LOW:
