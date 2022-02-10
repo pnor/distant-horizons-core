@@ -32,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.lwjgl.opengl.GL32;
@@ -98,15 +99,21 @@ public class LodBufferBuilderFactory
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	/** The thread used to generate new LODs off the main thread. */
-	public static final ExecutorService mainGenThread = Executors.newSingleThreadExecutor(
-			new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main", Thread.NORM_PRIORITY-2));
+	private static LodThreadFactory mainGenThreadFactory =
+			new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - main", Thread.NORM_PRIORITY-2);
+	public static ExecutorService mainGenThread = Executors.newSingleThreadExecutor(mainGenThreadFactory);
+	
 	/** The threads used to generate buffers. */
-	public static final ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(),
-			new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY-2));
+	private static LodThreadFactory bufferBuilderThreadFactory =
+			new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY-2);
+	public static ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(),
+			bufferBuilderThreadFactory);
 
 	/** The thread used to upload buffers. */
-	public static final ExecutorService bufferUploadThread = Executors.newSingleThreadExecutor(
-			new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - upload", Thread.NORM_PRIORITY-1));
+	private static LodThreadFactory bufferUploadThreadFactory =
+			new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - upload", Thread.NORM_PRIORITY-1);
+	public static ExecutorService bufferUploadThread = Executors.newSingleThreadExecutor(
+			bufferUploadThreadFactory);
 	
 	public static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 	
@@ -329,33 +336,34 @@ public class LodBufferBuilderFactory
 					final int pX = playerX;
 					final int pZ = playerZ;
 					
-					CompletableFuture<RegionPos> future = new CompletableFuture<RegionPos>();
-
-					bufferBuilderThreads.submit(() -> {
-						LodBufferBuilder builder = buildableBuffers.get(regionX, regionZ);
-						if (builder == null) {
-							builder = buildableBuffers.setAndGet(regionX, regionZ, new LodBufferBuilder(DEFAULT_MEMORY_ALLOCATION));
-						} else {
-							builder.reset();
-						}
-						builder.begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
-						future.complete(makeLodRenderData(lodDim, regionPos, pX, pZ, vboX, vboZ, minDetail));//, cullingRangeX, cullingRangeZ);
-					});
-					
-					futuresBuffer.add(future.whenCompleteAsync((regPos, e) -> {
-						LodBufferBuilder buffer = buildableBuffers.get(regPos.x, regPos.z);
-						if (buffer == null) return;
-						try {
-							buffer.end();
-						} catch (Exception e2) {
-							ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to close buildable buffer: " + e.getMessage());
-							e2.printStackTrace();
-							buildableBuffers.set(regPos.x, regPos.z, null);
-						}
-						if (e!=null) return;
-						uploadBuffers(regPos);
-						buildableBuffers.set(regPos.x, regPos.z, null);
-					}, bufferUploadThread));
+					CompletableFuture<RegionPos> future = CompletableFuture.supplyAsync(() -> {
+							LodBufferBuilder builder = buildableBuffers.get(regionX, regionZ);
+							if (builder == null) {
+								builder = buildableBuffers.setAndGet(regionX, regionZ, new LodBufferBuilder(DEFAULT_MEMORY_ALLOCATION));
+							} else {
+								builder.reset();
+							}
+							builder.begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
+							return makeLodRenderData(lodDim, regionPos, pX, pZ, vboX, vboZ, minDetail);//, cullingRangeX, cullingRangeZ);
+						}, bufferUploadThread)
+						.whenCompleteAsync((regPos, e) -> {
+							LodBufferBuilder buffer = buildableBuffers.get(regPos.x, regPos.z);
+							if (buffer == null) return;
+							try {
+								buffer.end();
+							} catch (Exception e2) {
+								ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to close buildable buffer: ", e2);
+							}
+							if (e!=null) return;
+							try {
+								uploadBuffers(regPos);
+							} catch (Exception e3) {
+								ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
+							} finally {
+								buildableBuffers.set(regPos.x, regPos.z, null);
+							}
+						}, bufferUploadThread);
+					futuresBuffer.add(future);
 				} // region z
 			} // region z
 
@@ -367,10 +375,21 @@ public class LodBufferBuilderFactory
 			// wait for all threads to finish
 			CompletableFuture<Void> allFutures = CompletableFuture.allOf(futuresBuffer.toArray(new CompletableFuture[futuresBuffer.size()]));
 			try {
-				allFutures.get();
+				allFutures.get(30, TimeUnit.SECONDS);
+			} catch (TimeoutException te) {
+				ClientApi.LOGGER.error("LodBufferBuilder timed out: ", te);
+				bufferBuilderThreadFactory.dumpAllThreadStacks();
+				bufferUploadThreadFactory.dumpAllThreadStacks();
+				bufferBuilderThreads.shutdownNow();
+				bufferUploadThread.shutdownNow();
+				bufferBuilderThreadFactory = new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY-2);
+				bufferBuilderThreads = Executors.newFixedThreadPool(CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(),
+						bufferBuilderThreadFactory);
+				bufferUploadThreadFactory = new LodThreadFactory(LodBufferBuilderFactory.class.getSimpleName() + " - upload", Thread.NORM_PRIORITY-1);
+				bufferUploadThread = Executors.newSingleThreadExecutor(bufferUploadThreadFactory);
+				return;
 			} catch (Exception e) {
-				ClientApi.LOGGER.error("LodBufferBuilder ran into trouble: ");
-				e.printStackTrace();
+				ClientApi.LOGGER.error("LodBufferBuilder ran into trouble: ", e);
 			}
 			long executeEnd = System.currentTimeMillis();
 			
@@ -380,14 +399,12 @@ public class LodBufferBuilderFactory
 			if (ENABLE_BUFFER_PERF_LOGGING)
 				ClientApi.LOGGER.info("Thread Build&Upload("+nodeToRenderThreads.size()+"/"+(lodDim.getWidth()*lodDim.getWidth())+ (fullRegen ? "FULL" : "")+") time: " + buildTime + " ms" + '\n' +
 					                        "thread execute time: " + executeTime + " ms");
-			
 			// mark that the buildable buffers as ready to swap
 			switchVbos = true;
 		}
 		catch (Exception e)
 		{
-			ClientApi.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ");
-			e.printStackTrace();
+			ClientApi.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
 		}
 		finally
 		{
@@ -674,103 +691,6 @@ public class LodBufferBuilderFactory
 			}
 		});
 	}
-
-	/** Upload all buildableBuffers to the GPU. We should already be in the builder context */
-	private void uploadBuffers(List<RegionPos> toBeUploaded)
-	{
-		GLProxy glProxy = GLProxy.getInstance();
-		// determine the upload method
-		GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod(); 
-		
-		// determine the upload timeout
-		long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds(); // MB -> B = 1/1,000,000. MS -> NS = 1,000,000. So, MBPerMS = BPerNS.
-		long remainingNS = 0; // We don't want to pause for like 0.1 ms... so we store those tiny MS.
-		long bytesUploaded = 0;
-		long totalBuffers = 0;
-		
-		// actually upload the buffers
-		for (RegionPos p : toBeUploaded) {
-			LodBufferBuilder buffer = buildableBuffers.get(p.x, p.z);
-
-			ByteBuffer uploadBuffer = null;
-			//FIXME: The sonme Buffers aren't closed/end() and causing errors!
-			try {
-				LagSpikeCatcher b = new LagSpikeCatcher();
-				uploadBuffer = buffer.getCleanedByteBuffer();
-				b.end("getCleanedByteBuffer");
-			} catch (IndexOutOfBoundsException e) {
-				// NOTE: Temp try/catch for above FIXME.
-				e.printStackTrace();
-			} catch (RuntimeException e) {
-				ClientApi.LOGGER.error(LodBufferBuilderFactory.class.getSimpleName() + " - UploadBuffers failed: " + e.getMessage());
-				e.printStackTrace();
-			}
-			if (uploadBuffer == null) continue;
-			
-
-			int maxLength = MAX_TRIANGLES_PER_BUFFER*(LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
-			LagSpikeCatcher vboSetup = new LagSpikeCatcher();
-			LodVertexBuffer[] vbos = buildableVbos.get(p.x, p.z);
-			int requiredFullBuffers = Math.floorDiv(uploadBuffer.limit(),maxLength);
-			int additionalBuffer = Math.floorMod(uploadBuffer.limit(),maxLength);
-			if (vbos == null) {
-				vbos = new LodVertexBuffer[requiredFullBuffers+1];
-				buildableVbos.set(p.x, p.z, vbos);
-			} else if (vbos.length != requiredFullBuffers+1) {
-				LodVertexBuffer[] newVbos = new LodVertexBuffer[requiredFullBuffers+1];
-				if (vbos.length > requiredFullBuffers+1) {
-					for (int i=requiredFullBuffers+1; i<vbos.length; i++) {
-						vbos[i].close();
-						vbos[i] = null;
-					}
-				}
-				for (int i=0; i<newVbos.length && i<vbos.length; i++) {
-					newVbos[i] = vbos[i];
-					vbos[i] = null;
-				}
-				for (LodVertexBuffer b : vbos) {
-					if (b != null) throw new RuntimeException("EERTERERER");
-				}
-				
-				buildableVbos.set(p.x, p.z, newVbos);
-				vbos = newVbos;
-			}
-			vboSetup.end("vboSetup");
-			uploadBuffer.rewind();
-			for (int i=0; i<=requiredFullBuffers; i++) {
-				ByteBuffer subBuffer;
-				uploadBuffer.position(i*maxLength);
-				subBuffer = uploadBuffer.slice();
-				if (i==requiredFullBuffers) {
-					subBuffer.limit(additionalBuffer);
-				} else {
-					subBuffer.limit(maxLength);
-				}
-				
-				LagSpikeCatcher vboU = new LagSpikeCatcher();
-				vboUpload(p, i, subBuffer, uploadMethod);
-				vboU.end("vboUpload");
-	
-				// upload buffers over an extended period of time
-				// to hopefully prevent stuttering.
-				remainingNS += subBuffer.limit()*BPerNS;
-				bytesUploaded += subBuffer.limit();
-				if (remainingNS >= TimeUnit.NANOSECONDS.convert(1000/60, TimeUnit.MILLISECONDS)) {
-					if (remainingNS > MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS) remainingNS = MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS;
-					try {
-						Thread.sleep(remainingNS/1000000, (int) (remainingNS%1000000));
-					} catch (InterruptedException e) {}
-					remainingNS = 0;
-				}
-			}
-			totalBuffers += (requiredFullBuffers+1);
-			if (ENABLE_BUFFER_UPLOAD_LOGGING)
-				ClientApi.LOGGER.info("Uploaded {} sub buffers for {}", (requiredFullBuffers+1), p);
-		}
-		if (ENABLE_BUFFER_UPLOAD_LOGGING)
-			ClientApi.LOGGER.info("UploadBuffers uploaded "+bytesUploaded+" bytes, with {} sub buffers", totalBuffers);
-	}
-	
 	
 	/** Upload all buildableBuffers to the GPU. We should already be in the builder context */
 	private void uploadBuffers(RegionPos p)
