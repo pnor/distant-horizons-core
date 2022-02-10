@@ -26,6 +26,7 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
 import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
 import com.seibel.lod.core.enums.WorldType;
+import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.render.GLProxy;
@@ -136,6 +137,7 @@ public class EventApi {
 		// make sure the correct LODs are being rendered
 		// (if this isn't done the previous world's LODs may be drawn)
 		ClientApi.renderer.regenerateLODsNextFrame();
+		ApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
 	}
 
 	/** This is also called when the user disconnects from a server+ */
@@ -174,6 +176,7 @@ public class EventApi {
 		ClientApi.renderer.requestCleanup();
 		GLProxy.ensureAllGLJobCompleted();
 		recalculateWidths = true;
+		ApiShared.previousVertQual = null;
 
 		// TODO: Check if after the refactoring, is this still needed
 		ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
@@ -206,7 +209,7 @@ public class EventApi {
 			// "\t center: " + lodDim.getCenterX() + "," + lodDim.getCenterZ());
 		}
 	}
-
+	
 	/** Re-sizes all LodDimensions if they need to be. */
 	public void viewDistanceChangedEvent() {
 		// calculate how wide the dimension(s) should be in regions

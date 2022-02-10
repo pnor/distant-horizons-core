@@ -220,10 +220,8 @@ public class LodRenderer
 		int vbosCenterX = lodBufferBuilderFactory.getFrontBuffersCenterX();
 		int vbosCenterZ = lodBufferBuilderFactory.getFrontBuffersCenterZ();
 		
-		// @Unused
 		if (vbos == null) {
-			// There is still no vbos, which means nothing needs to be drawn. So no rendering needed
-			// (Vbos should be setup by now)
+			// There is no vbos, which means nothing needs to be drawn. So skip rendering
 			return;
 		}
 		
@@ -403,7 +401,7 @@ public class LodRenderer
 	/** Create all buffers that will be used. */
 	public void setupBuffers()
 	{
-		lodBufferBuilderFactory.allBuffersRequireReset = true;
+		lodBufferBuilderFactory.triggerReset();
 	}
 
 	private Color getFogColor(float partialTicks)

@@ -33,6 +33,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
@@ -143,7 +144,13 @@ public class ClientApi
 				lastFlush = System.nanoTime();
 				flushSpamLoggersState();
 			}
-			
+
+			if (ApiShared.previousVertQual != CONFIG.client().graphics().quality().getVerticalQuality()) {
+				ApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
+				EventApi.INSTANCE.worldUnloadEvent(MC.getWrappedServerWorld());
+				EventApi.INSTANCE.worldLoadEvent(MC.getWrappedClientWorld());
+				return;
+			}
 			
 			// only run the first time setup once
 			if (!firstTimeSetupComplete)

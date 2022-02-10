@@ -116,7 +116,7 @@ public class LodBufferBuilderFactory
 	 * This size will be too small, more than likely. The buffers will be expanded
 	 * when need be to fit the larger sizes.
 	 */
-	public static final int DEFAULT_MEMORY_ALLOCATION = 128;
+	public static final int DEFAULT_MEMORY_ALLOCATION = (LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3)*8;
 	public static final int MAX_TRIANGLES_PER_BUFFER = (1024*1024*1) / (LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
 	
 	
@@ -166,6 +166,9 @@ public class LodBufferBuilderFactory
 	 * and are waiting to be swapped with the drawable buffers
 	 */
 	private boolean switchVbos = false;
+	// The hideFrontBuffer is for when switching dimensions
+	private volatile boolean hideFrontBuffer = false;
+	private volatile boolean hideBackBuffer = false;
 	
 	/** Size of the buffer builders in bytes last time we created them */
 	public int previousBufferSize = 0;
@@ -321,7 +324,7 @@ public class LodBufferBuilderFactory
 					if (builder == null) {
 						builder = buildableBuffers.setAndGet(regionX, regionZ, new LodBufferBuilder(DEFAULT_MEMORY_ALLOCATION));
 					} else {
-						builder.discard();
+						builder.reset();
 					}
 					builder.begin(GL32.GL_QUADS, LodUtil.LOD_VERTEX_FORMAT);
 					byte minDetail = region.getMinDetailLevel();
@@ -380,6 +383,7 @@ public class LodBufferBuilderFactory
 					} catch (Exception e) {
 						ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to close buildable buffer: " + e.getMessage());
 						e.printStackTrace();
+						buildableBuffers.set(regPos.x, regPos.z, null);
 					}
 				}
 				
@@ -558,6 +562,7 @@ public class LodBufferBuilderFactory
 			
 		} // for pos to in list to render
 		// the thread executed successfully
+		currentBuffer.end();
 		return true;
 	}
 	
@@ -716,8 +721,8 @@ public class LodBufferBuilderFactory
 			int maxLength = MAX_TRIANGLES_PER_BUFFER*(LodUtil.LOD_VERTEX_FORMAT.getByteSize()*3);
 			LagSpikeCatcher vboSetup = new LagSpikeCatcher();
 			LodVertexBuffer[] vbos = buildableVbos.get(p.x, p.z);
-			int requiredFullBuffers = Math.floorDiv(uploadBuffer.capacity(),maxLength);
-			int additionalBuffer = Math.floorMod(uploadBuffer.capacity(),maxLength);
+			int requiredFullBuffers = Math.floorDiv(uploadBuffer.limit(),maxLength);
+			int additionalBuffer = Math.floorMod(uploadBuffer.limit(),maxLength);
 			if (vbos == null) {
 				vbos = new LodVertexBuffer[requiredFullBuffers+1];
 				buildableVbos.set(p.x, p.z, vbos);
@@ -929,6 +934,8 @@ public class LodBufferBuilderFactory
 			    shouldRegenBuff = frontBufferRequireReset || allBuffersRequireReset;
 				frontBufferRequireReset = allBuffersRequireReset;
 				allBuffersRequireReset = false;
+				hideFrontBuffer = hideBackBuffer;
+				hideBackBuffer = false;
 			}
 			catch (Exception e)
 			{
@@ -946,7 +953,7 @@ public class LodBufferBuilderFactory
 	/** Get the newly created VBOs */
 	public MovableGridList<LodVertexBuffer[]> getFrontBuffers()
 	{
-		return drawableVbos;
+		return shouldDrawFrontBuffer() ? drawableVbos : null;
 	}
 	public int getFrontBuffersCenterX()
 	{
@@ -955,5 +962,14 @@ public class LodBufferBuilderFactory
 	public int getFrontBuffersCenterZ()
 	{
 		return drawableCenterBlockZ;
+	}
+
+	public void triggerReset() {
+		allBuffersRequireReset = true;
+		hideBackBuffer = true;
+		hideFrontBuffer = true;
+	}
+	public boolean shouldDrawFrontBuffer() {
+		return !hideFrontBuffer;
 	}
 }

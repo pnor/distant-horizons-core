@@ -326,6 +326,33 @@ public class DataPointUtil
 		}
 		return out;
 	}
+	
+	// Extract a section of data from the 2D data array
+	// WARN: if sourceVertSize == targetVertSize, it will return the source array!!! Be careful about this!
+	public static long[] changeMaxVertSize(long[] source, int sourceVertSize, int targetVertSize) {
+		if (source.length%sourceVertSize != 0)
+			throw new ArrayIndexOutOfBoundsException("\"source\" array invalid vertical size or length");
+		if (sourceVertSize == targetVertSize) return source;
+		if (sourceVertSize > targetVertSize) {
+			int size = source.length/sourceVertSize;
+			long[] dataToMerge = new long[sourceVertSize];
+			long[] newData = new long[size * targetVertSize];
+			for (int i = 0; i < size; i++)
+			{
+				System.arraycopy(source, i * sourceVertSize, dataToMerge, 0, sourceVertSize);
+				long[] tempBuffer = DataPointUtil.mergeMultiData(dataToMerge, sourceVertSize, targetVertSize);
+				System.arraycopy(tempBuffer, 0, newData, i * targetVertSize, targetVertSize);
+			}
+			return newData;
+		} else {
+			int size = source.length/sourceVertSize;
+			long[] newData = new long[size * targetVertSize];
+			for (int i = 0; i < size; i++) {
+				System.arraycopy(source, i * sourceVertSize, newData, i * targetVertSize, sourceVertSize);
+			}
+			return newData;
+		}
+	}
 
 	private static final ThreadLocal<short[]> tLocalHeightAndDepth = new ThreadLocal<short[]>();
 	private static final ThreadLocal<long[]> tMaxVerticalData = new ThreadLocal<long[]>();
@@ -336,6 +363,7 @@ public class DataPointUtil
 	 * @param maxVerticalData max vertical size of the merged data
 	 * @return one column of correctly parsed data
 	 */
+	// TODO: Make this operate on a out param array, to allow skipping copy array on use
 	public static long[] mergeMultiData(long[] dataToMerge, int inputVerticalData, int maxVerticalData)
 	{
 		int size = dataToMerge.length / inputVerticalData;

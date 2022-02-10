@@ -240,19 +240,6 @@ public class VerticalLevelContainer implements LevelContainer
 		return result;
 	}
 	
-	private static long[] downgradeVerticalSize(int oldVertSize, int newVertSize, long[] data) {
-		int size = data.length/oldVertSize;
-		long[] dataToMerge = new long[oldVertSize];
-		long[] newData = new long[size * newVertSize];
-		for (int i = 0; i < size; i++)
-		{
-			System.arraycopy(data, i * oldVertSize, dataToMerge, 0, oldVertSize);
-			long[] tempBuffer = DataPointUtil.mergeMultiData(dataToMerge, oldVertSize, newVertSize);
-			System.arraycopy(tempBuffer, 0, newData, i * newVertSize, newVertSize);
-		}
-		return newData;
-	}
-	
 	private static void patchHeightAndDepth(long[] data, int offset) {
 		for (int i=0; i<data.length; i++) {
 			data[i] = DataPointUtil.shiftHeightAndDepth(data[i], (short)offset);
@@ -285,146 +272,10 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 		
 		int targetMaxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
-		if (fileMaxVerticalData > targetMaxVerticalData)
-		{
-			verticalSize = targetMaxVerticalData;
-			this.dataContainer = downgradeVerticalSize(fileMaxVerticalData, targetMaxVerticalData, tempDataContainer);
-		}
-		else
-		{
-			verticalSize = fileMaxVerticalData;
-			this.dataContainer = tempDataContainer;
-		}
+		verticalSize = targetMaxVerticalData;
+		dataContainer = DataPointUtil.changeMaxVertSize(tempDataContainer, fileMaxVerticalData, verticalSize);
 	}
-	
-	// Deprecated. Please use the DataInputStream version.
-	@Deprecated
-	public VerticalLevelContainer(byte[] inputData, int version)
-	{
-		minHeight = SingletonHandler.get(IMinecraftWrapper.class).getWrappedClientWorld().getMinHeight();
-		int tempMaxVerticalData;
-		int tempIndex;
-		int index = 0;
-		long newData;
-		detailLevel = inputData[index];
-		index++;
-		tempMaxVerticalData = inputData[index] & 0b01111111;
-		index++;
-		size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
-		int x = size * size * tempMaxVerticalData;
-		long[] tempDataContainer = new long[x];
-		
-		if (version == 6)
-		{
-			for (int i = 0; i < x; i++)
-			{
-				newData = 0;
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
-				index += 8;
-				
-				newData = DataPointUtil.createDataPoint(
-						DataPointUtil.getAlpha(newData),
-						DataPointUtil.getRed(newData),
-						DataPointUtil.getGreen(newData),
-						DataPointUtil.getBlue(newData),
-						DataPointUtil.getHeight(newData) - minHeight,
-						DataPointUtil.getDepth(newData) - minHeight,
-						DataPointUtil.getLightSky(newData),
-						DataPointUtil.getLightBlock(newData),
-						DataPointUtil.getGenerationMode(newData),
-						DataPointUtil.getFlag(newData));
-				
-				tempDataContainer[i] = newData;
-			}
-		}
-		else if (version == 7)
-		{
-			for (int i = 0; i < x; i++)
-			{
-				newData = 0;
-				for (tempIndex = 0; tempIndex < 8; tempIndex++)
-					newData += (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
-				index += 8;
-				
-				newData = DataPointUtil.createDataPoint(
-						DataPointUtil.getAlpha(newData),
-						DataPointUtil.getRed(newData),
-						DataPointUtil.getGreen(newData),
-						DataPointUtil.getBlue(newData),
-						DataPointUtil.getHeight(newData) - 64 - minHeight,
-						DataPointUtil.getDepth(newData) - 64 - minHeight,
-						DataPointUtil.getLightSky(newData),
-						DataPointUtil.getLightBlock(newData),
-						DataPointUtil.getGenerationMode(newData),
-						DataPointUtil.getFlag(newData));
-				
-				tempDataContainer[i] = newData;
-			}
-		}
-		else //if (version == 8)
-		{
-			short tempMinHeight = inputData[index];
-			index++;
-			tempMinHeight |= (((short) inputData[index]) & 0xff) << 8;
-			index++;
-			if (tempMinHeight != minHeight)
-			{
-				for (int i = 0; i < x; i++)
-				{
-					newData = 0;
-					for (tempIndex = 0; tempIndex < 8; tempIndex++)
-						newData |= (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
-					index += 8;
-					newData = DataPointUtil.createDataPoint(
-							DataPointUtil.getAlpha(newData),
-							DataPointUtil.getRed(newData),
-							DataPointUtil.getGreen(newData),
-							DataPointUtil.getBlue(newData),
-							DataPointUtil.getHeight(newData) + tempMinHeight - minHeight,
-							DataPointUtil.getDepth(newData) + tempMinHeight - minHeight,
-							DataPointUtil.getLightSky(newData),
-							DataPointUtil.getLightBlock(newData),
-							DataPointUtil.getGenerationMode(newData),
-							DataPointUtil.getFlag(newData));
-					
-					tempDataContainer[i] = newData;
-				}
-			}
-			else
-			{
-				for (int i = 0; i < x; i++)
-				{
-					newData = 0;
-					for (tempIndex = 0; tempIndex < 8; tempIndex++)
-						newData |= (((long) inputData[index + tempIndex]) & 0xff) << (8 * tempIndex);
-					index += 8;
-					tempDataContainer[i] = newData;
-				}
-			}
-		}
-		
-		if (tempMaxVerticalData > DetailDistanceUtil.getMaxVerticalData(detailLevel))
-		{
-			int tempMaxVerticalData2 = DetailDistanceUtil.getMaxVerticalData(detailLevel);
-			long[] dataToMerge = new long[tempMaxVerticalData];
-			long[] tempDataContainer2 = new long[size * size * tempMaxVerticalData2];
-			for (int i = 0; i < size * size; i++)
-			{
-				System.arraycopy(tempDataContainer, i * tempMaxVerticalData, dataToMerge, 0, tempMaxVerticalData);
-				dataToMerge = DataPointUtil.mergeMultiData(dataToMerge, tempMaxVerticalData, tempMaxVerticalData2);
-				System.arraycopy(dataToMerge, 0, tempDataContainer2, i * tempMaxVerticalData2, tempMaxVerticalData2);
-			}
-			verticalSize = tempMaxVerticalData2;
-			this.dataContainer = tempDataContainer2;
-		}
-		else
-		{
-			verticalSize = tempMaxVerticalData;
-			this.dataContainer = tempDataContainer;
-		}
-	}
-	
+
 	/**
 	 * This method merge column of multiple data together
 	 * @return one column of correctly parsed data

@@ -21,14 +21,8 @@ package com.seibel.lod.core.objects.opengl;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 /**
  * A (almost) exact copy of Minecraft's
@@ -41,46 +35,28 @@ import com.google.common.collect.Lists;
  */
 public class LodBufferBuilder
 {
-	private static final Logger LOGGER = LogManager.getLogger();
 	public ByteBuffer buffer;
 	
-	private final List<LodBufferBuilder.DrawState> vertexCounts = Lists.newArrayList();
-	private int lastRenderedCountIndex = 0;
-	private int totalRenderedBytes = 0;
 	private int nextElementByte = 0;
-	private int totalUploadedBytes = 0;
 	private int vertices;
 	private LodVertexFormatElement currentElement;
 	private int elementIndex;
-	private int mode;
 	private LodVertexFormat format;
 	private boolean building;
 	
-	
-	
-	
 	public LodBufferBuilder(int bufferSizeInBytes)
 	{
-		this.buffer = allocateByteBuffer(bufferSizeInBytes * 4);
+		this.buffer = allocateByteBuffer(bufferSizeInBytes);
 	}
 	
 	public int getMemUsage() {return buffer.capacity();}
-	
-	
 	
 	/** originally from MC's GLAllocation class */
 	private ByteBuffer allocateByteBuffer(int bufferSizeInBytes)
 	{
 		return ByteBuffer.allocateDirect(bufferSizeInBytes).order(ByteOrder.nativeOrder());
 	}
-	/** originally from MC's GLAllocation class */
-	@SuppressWarnings("unused")
-	private FloatBuffer allocateFloatBuffer(int bufferSizeInBytes)
-	{
-		return allocateByteBuffer(bufferSizeInBytes).asFloatBuffer();
-	}
-	
-	
+
 	
 	/** make sure the buffer doesn't overflow when inserting new elements */
 	private void ensureVertexCapacity()
@@ -92,7 +68,7 @@ public class LodBufferBuilder
 		if (this.nextElementByte + vertexSizeInBytes > this.buffer.capacity())
 		{
 			int i = this.buffer.capacity();
-			int j = i + roundUp(vertexSizeInBytes);
+			int j = roundUp((int) ((i + vertexSizeInBytes)*2));
 			//LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", i, j);
 			ByteBuffer bytebuffer = allocateByteBuffer(j);
 			this.buffer.position(0);
@@ -101,9 +77,23 @@ public class LodBufferBuilder
 			this.buffer = bytebuffer;
 		}
 	}
+	private void packBuffer() {
+		int cap = this.buffer.capacity();
+		int filled = this.format.getByteSize() * this.vertices;
+		this.buffer.position(0);
+		this.buffer.limit(filled);
+		if (cap - filled > 4096) {
+			ByteBuffer bytebuffer = allocateByteBuffer(filled);
+			bytebuffer.put(this.buffer);
+			bytebuffer.rewind();
+			this.buffer = bytebuffer;
+		}
+		
+	}
+	
 	private static int roundUp(int vertexSizeInBytes)
 	{
-		int i = 2097152; // 2 ^ 21
+		int i = 4096; // 4 KB (1 page)
 		if (vertexSizeInBytes == 0)
 		{
 			return i;
@@ -119,127 +109,6 @@ public class LodBufferBuilder
 			return j == 0 ? vertexSizeInBytes : vertexSizeInBytes + i - j;
 		}
 	}
-	
-	
-	/* not currently needed sortQuads()
-	// the x,y,z location is a blockPos
-	public void sortQuads(float x, float y, float z)
-	{
-		((Buffer) this.buffer).clear();
-		FloatBuffer floatbuffer = this.buffer.asFloatBuffer();
-		int i = this.vertices / 4;
-		float[] afloat = new float[i];
-		
-		for (int j = 0; j < i; ++j)
-		{
-			afloat[j] = getQuadDistanceFromPlayer(floatbuffer, x, y, z, this.format.getIntegerSize(), this.totalRenderedBytes / 4 + j * this.format.getVertexSize());
-		}
-		
-		int[] aint = new int[i];
-		
-		for (int k = 0; k < aint.length; aint[k] = k++)
-		{
-		}
-		
-		IntArrays.mergeSort(aint, (p_227830_1_, p_227830_2_) ->
-		{
-			return Floats.compare(afloat[p_227830_2_], afloat[p_227830_1_]);
-		});
-		BitSet bitset = new BitSet();
-		FloatBuffer floatbuffer1 = allocateFloatBuffer(this.format.getIntegerSize() * 4);
-		
-		for (int l = bitset.nextClearBit(0); l < aint.length; l = bitset.nextClearBit(l + 1))
-		{
-			int i1 = aint[l];
-			if (i1 != l)
-			{
-				this.limitToVertex(floatbuffer, i1);
-				((Buffer) floatbuffer1).clear();
-				floatbuffer1.put(floatbuffer);
-				int j1 = i1;
-				
-				for (int k1 = aint[i1]; j1 != l; k1 = aint[k1])
-				{
-					this.limitToVertex(floatbuffer, k1);
-					FloatBuffer floatbuffer2 = floatbuffer.slice();
-					this.limitToVertex(floatbuffer, j1);
-					floatbuffer.put(floatbuffer2);
-					bitset.set(j1);
-					j1 = k1;
-				}
-				
-				this.limitToVertex(floatbuffer, l);
-				((Buffer) floatbuffer1).flip();
-				floatbuffer.put(floatbuffer1);
-			}
-			
-			bitset.set(l);
-		}
-	}
-	
-	
-	private void limitToVertex(FloatBuffer p_227829_1_, int p_227829_2_)
-	{
-		int i = this.format.getIntegerSize() * 4;
-		((Buffer) p_227829_1_).limit(this.totalRenderedBytes / 4 + (p_227829_2_ + 1) * i);
-		((Buffer) p_227829_1_).position(this.totalRenderedBytes / 4 + p_227829_2_ * i);
-	}
-	*/
-	
-	/* not curerntly needed getState()
-	public LodBufferBuilder.State getState()
-	{
-		((Buffer) this.buffer).limit(this.nextElementByte);
-		((Buffer) this.buffer).position(this.totalRenderedBytes);
-		ByteBuffer bytebuffer = ByteBuffer.allocate(this.vertices * this.format.getVertexSize());
-		bytebuffer.put(this.buffer);
-		((Buffer) this.buffer).clear();
-		return new LodBufferBuilder.State(bytebuffer, this.format);
-	}
-	*/
-	
-	/* not currently needed getQuadDistanceFromPlayer()
-	private static float getQuadDistanceFromPlayer(FloatBuffer floatBuffer, float x, float y, float z, int p_181665_4_, int p_181665_5_)
-	{
-		float f = floatBuffer.get(p_181665_5_ + p_181665_4_ * 0 + 0);
-		float f1 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 0 + 1);
-		float f2 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 0 + 2);
-		float f3 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 1 + 0);
-		float f4 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 1 + 1);
-		float f5 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 1 + 2);
-		float f6 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 2 + 0);
-		float f7 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 2 + 1);
-		float f8 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 2 + 2);
-		float f9 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 3 + 0);
-		float f10 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 3 + 1);
-		float f11 = floatBuffer.get(p_181665_5_ + p_181665_4_ * 3 + 2);
-		float f12 = (f + f3 + f6 + f9) * 0.25F - x;
-		float f13 = (f1 + f4 + f7 + f10) * 0.25F - y;
-		float f14 = (f2 + f5 + f8 + f11) * 0.25F - z;
-		return f12 * f12 + f13 * f13 + f14 * f14;
-	}
-	*/
-	
-	/* not currently needed restoreState()
-	public void restoreState(LodBufferBuilder.State bufferState)
-	{
-		((Buffer) bufferState.data).clear();
-		int i = bufferState.data.capacity();
-		this.ensureCapacity(i);
-		((Buffer) this.buffer).limit(this.buffer.capacity());
-		((Buffer) this.buffer).position(this.totalRenderedBytes);
-		this.buffer.put(bufferState.data);
-		((Buffer) this.buffer).clear();
-		LodVertexFormat LodVertexFormat = bufferState.format;
-		this.switchFormat(LodVertexFormat);
-		this.vertices = i / LodVertexFormat.getVertexSize();
-		this.nextElementByte = this.totalRenderedBytes + this.vertices * LodVertexFormat.getVertexSize();
-	}
-	*/
-	
-	
-	
-	
 
 	private void switchFormat(LodVertexFormat newFormat)
 	{
@@ -266,11 +135,11 @@ public class LodBufferBuilder
 		else
 		{
 			this.building = true;
-			this.mode = openGlLodVertexFormat;
 			this.switchFormat(LodVertexFormat);
 			this.currentElement = LodVertexFormat.getElements().get(0);
 			this.elementIndex = 0;
 			this.buffer.clear();
+			this.vertices = 0;
 		}
 	}
 	
@@ -278,16 +147,12 @@ public class LodBufferBuilder
 	{
 		if (!this.building)
 		{
-			throw new IllegalStateException("Not building!");
-		}
-		else
-		{
+			return;
+		} else {
 			this.building = false;
-			this.vertexCounts.add(new LodBufferBuilder.DrawState(this.format, this.vertices, this.mode));
-			this.totalRenderedBytes += this.vertices * this.format.getByteSize();
-			this.vertices = 0;
 			this.currentElement = null;
 			this.elementIndex = 0;
+			packBuffer();
 		}
 	}
 	
@@ -386,103 +251,16 @@ public class LodBufferBuilder
 		}
 	}
 	
-	
-	
-	
-	
-	
-	/* not currently needed fullVertex()
-	 * TODO James isn't sure about these names
-	public void vertex(float blockPosX, float blockPosY, float blockPosZ, 
-			float red, float green, float blue, float alpha, 
-			float textureU, float textureV, 
-			int p_225588_10_, int p_225588_11_, 
-			float p_225588_12_, float p_225588_13_, float p_225588_14_)
-	{
-		if (this.defaultColorSet)
-		{
-			throw new IllegalStateException();
-		}
-		else if (this.fastFormat)
-		{
-			this.putFloat(0, blockPosX);
-			this.putFloat(4, blockPosY);
-			this.putFloat(8, blockPosZ);
-			this.putByte(12, (byte) ((int) (red * 255.0F)));
-			this.putByte(13, (byte) ((int) (green * 255.0F)));
-			this.putByte(14, (byte) ((int) (blue * 255.0F)));
-			this.putByte(15, (byte) ((int) (alpha * 255.0F)));
-			this.putFloat(16, textureU);
-			this.putFloat(20, textureV);
-			int i;
-			if (this.fullFormat)
-			{
-				this.putShort(24, (short) (p_225588_10_ & '\uffff'));
-				this.putShort(26, (short) (p_225588_10_ >> 16 & '\uffff'));
-				i = 28;
-			}
-			else
-			{
-				i = 24;
-			}
-			
-			this.putShort(i + 0, (short) (p_225588_11_ & '\uffff'));
-			this.putShort(i + 2, (short) (p_225588_11_ >> 16 & '\uffff'));
-			this.putByte(i + 4, IVertexConsumer.normalIntValue(p_225588_12_));
-			this.putByte(i + 5, IVertexConsumer.normalIntValue(p_225588_13_));
-			this.putByte(i + 6, IVertexConsumer.normalIntValue(p_225588_14_));
-			this.nextElementByte += i + 8;
-			this.endVertex();
-		}
-		else
-		{
-			super.vertex(blockPosX, blockPosY, blockPosZ, red, green, blue, alpha, textureU, textureV, p_225588_10_, p_225588_11_, p_225588_12_, p_225588_13_, p_225588_14_);
-		}
-	}
-	*/
-	
-	/** 
-	 * James isn't sure what the difference between 
-	 * using this method and just directly getting the buffer would be.
-	 * But this was what was being used before, so it will stay for now.
-	 * 
-	 * If anyone figures out what is special about this, please replace this comment.
-	 */
 	public ByteBuffer getCleanedByteBuffer()
 	{
-		LodBufferBuilder.DrawState bufferbuilder$drawstate = this.vertexCounts.get(this.lastRenderedCountIndex++);
-		this.buffer.position(this.totalUploadedBytes);
-		this.totalUploadedBytes += bufferbuilder$drawstate.vertexCount() * bufferbuilder$drawstate.format().getByteSize();
-		this.buffer.limit(this.totalUploadedBytes);
-		if (this.lastRenderedCountIndex == this.vertexCounts.size() && this.vertices == 0)
-		{
-			this.clear();
-		}
-		
-		ByteBuffer bytebuffer = this.buffer.slice();
-		//bytebuffer.order(this.buffer.order()); // FORGE: Fix incorrect byte order
-		this.buffer.clear();
-		return bytebuffer; // the original method also returned bufferbuilder$drawstate
+		return this.buffer;
 	}
 	
-	
-	public void clear()
+	public void reset()
 	{
-		if (this.totalRenderedBytes != this.totalUploadedBytes)
-		{
-			LOGGER.warn("Bytes mismatch " + this.totalRenderedBytes + " " + this.totalUploadedBytes);
-		}
-		
-		this.discard();
-	}
-	
-	public void discard()
-	{
-		this.totalRenderedBytes = 0;
-		this.totalUploadedBytes = 0;
 		this.nextElementByte = 0;
-		this.vertexCounts.clear();
-		this.lastRenderedCountIndex = 0;
+		this.vertices = 0;
+		this.buffer.clear();
 	}
 	
 	public LodVertexFormatElement currentElement()
@@ -502,14 +280,9 @@ public class LodBufferBuilder
 		return this.building;
 	}
 	
-	
-	
-	
-	
 	//==================//
 	// internal classes //
 	//==================//
-	
 	
 	public static final class DrawState
 	{
@@ -538,18 +311,6 @@ public class LodBufferBuilder
 		{
 			return this.mode;
 		}
-	}
-	
-	
-	
-	// Forge added methods
-	public void putBulkData(ByteBuffer buffer)
-	{
-		ensureCapacity(buffer.limit() + this.format.getByteSize());
-		this.buffer.position(this.vertices * this.format.getByteSize());
-		this.buffer.put(buffer);
-		this.vertices += buffer.limit() / this.format.getByteSize();
-		this.nextElementByte += buffer.limit();
 	}
 	
 	public LodVertexFormat getLodVertexFormat()

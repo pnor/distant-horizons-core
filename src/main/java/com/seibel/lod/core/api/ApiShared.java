@@ -21,6 +21,7 @@ package com.seibel.lod.core.api;
 
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LodWorld;
 
 /**
@@ -42,6 +43,7 @@ public class ApiShared
 	public static int previousChunkRenderDistance = 0;
 	/** Used to determine if the LODs should be regenerated */
 	public static int previousLodRenderDistance = 0;
+	public static VerticalQuality previousVertQual = null;
 	
 	/** Signal whether a world is shutting down */
 	public static volatile boolean isShuttingDown = false;
