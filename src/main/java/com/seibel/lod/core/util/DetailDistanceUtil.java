@@ -31,8 +31,7 @@ public class DetailDistanceUtil
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
-	private static byte minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
-	private static byte minDrawDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
+	private static byte minDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 	private static final byte maxDetail = LodUtil.DETAIL_OPTIONS;
 	private static final double minDistance = 0;
 	private static double distanceUnit = 16 * CONFIG.client().graphics().quality().getHorizontalScale();
@@ -43,21 +42,19 @@ public class DetailDistanceUtil
 	public static void updateSettings()
 	{
 		distanceUnit = 16 * CONFIG.client().graphics().quality().getHorizontalScale();
-		minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
-		minDrawDetail = (byte) Math.max(CONFIG.client().graphics().quality().getDrawResolution().detailLevel, CONFIG.client().graphics().quality().getDrawResolution().detailLevel);
+		minDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 		maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;
 		logBase = Math.log(CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase);
 	}
 	
 	public static double baseDistanceFunction(int detail)
 	{
-		if (detail <= minGenDetail)
+		if (detail <= minDetail)
 			return minDistance;
 		if (detail >= maxDetail)
 			return maxDistance;
 		
-		if (CONFIG.client().graphics().advancedGraphics().getAlwaysDrawAtMaxQuality())
-			return detail * 0x10000; //if you want more you are doing wrong
+		detail-=minDetail;
 		
 		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
 			return ((double)detail * distanceUnit);
@@ -88,7 +85,7 @@ public class DetailDistanceUtil
 		else
 			detail = (int) (Math.log(distance/distanceUnit) / logBase);
 		
-		return (byte) LodUtil.clamp(minDrawDetail, detail+minDrawDetail, maxDetail - 1);
+		return (byte) LodUtil.clamp(minDetail, detail+minDetail, maxDetail - 1);
 	}
 	
 	public static byte getDetailLevelFromDistance(double distance)
@@ -106,7 +103,7 @@ public class DetailDistanceUtil
 	
 	public static int getMaxVerticalData(int detail)
 	{
-		return CONFIG.client().graphics().quality().getVerticalQuality().maxVerticalData[LodUtil.clamp(minGenDetail, detail, LodUtil.REGION_DETAIL_LEVEL)];
+		return CONFIG.client().graphics().quality().getVerticalQuality().maxVerticalData[LodUtil.clamp(minDetail, detail, LodUtil.REGION_DETAIL_LEVEL)];
 	}
 	
 }
