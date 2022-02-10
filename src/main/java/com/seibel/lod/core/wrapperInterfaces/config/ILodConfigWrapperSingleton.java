@@ -99,7 +99,7 @@ public interface ILodConfigWrapperSingleton
 				HorizontalResolution getDrawResolution();
 				void setDrawResolution(HorizontalResolution newHorizontalResolution);
 				
-				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 8192);
+				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 2048);
 				String LOD_CHUNK_RENDER_DISTANCE_DESC = ""
 						+ " The radius of the mod's render distance. (measured in chunks) \n";
 				int getLodChunkRenderDistance();
@@ -258,19 +258,7 @@ public interface ILodConfigWrapperSingleton
 						+ " Disable this if you see LODs disappearing at the corners of your vision. \n";
 				boolean getDisableDirectionalCulling();
 				void setDisableDirectionalCulling(boolean newDisableDirectionalCulling);
-				
-				boolean ALWAYS_DRAW_AT_MAD_QUALITY_DEFAULT = false;
-				String ALWAYS_DRAW_AT_MAD_QUALITY_DESC = ""
-						+ " Disable quality falloff, \n"
-						+ " all fake chunks will be drawn at the highest \n"
-						+ " available detail level. \n"
-						+ "\n"
-						+ " WARNING: \n"
-						+ " This could cause an Out Of Memory crash when using render \n"
-						+ " distances higher than 128 and will drastically increase GPU usage. \n";
-				boolean getAlwaysDrawAtMaxQuality();
-				void setAlwaysDrawAtMaxQuality(boolean newAlwaysDrawAtMaxQuality);
-				
+
 				VanillaOverdraw VANILLA_OVERDRAW_DEFAULT = VanillaOverdraw.DYNAMIC;
 				String VANILLA_OVERDRAW_DESC = ""
 						+ " How often should LODs be drawn on top of regular chunks? \n"
@@ -301,7 +289,7 @@ public interface ILodConfigWrapperSingleton
 				int getBacksideCullingRange();
 				void setBacksideCullingRange(int newBacksideCullingRange);*/
 				
-				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = false;
+				boolean USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT = true;
 				String USE_EXTENDED_NEAR_CLIP_PLANE_DESC = ""
 						+ " Will prevent some overdraw issues, but may cause nearby fake chunks to render incorrectly \n"
 						+ " especially when in/near an ocean. \n"
@@ -333,7 +321,7 @@ public interface ILodConfigWrapperSingleton
 			boolean getEnableDistantGeneration();
 			void setEnableDistantGeneration(boolean newEnableDistantGeneration);
 
-			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.SURFACE;
+			DistanceGenerationMode DISTANCE_GENERATION_MODE_DEFAULT = DistanceGenerationMode.FEATURES;
 			static String getDistanceGenerationModeDesc(IVersionConstants versionConstants)
 			{		
 				return ""
@@ -428,30 +416,6 @@ public interface ILodConfigWrapperSingleton
 					+ " This shouldn't affect performance.";
 			GenerationPriority getGenerationPriority();
 			void setGenerationPriority(GenerationPriority newGenerationPriority);
-			
-			@Deprecated
-			boolean ALLOW_UNSTABLE_FEATURE_GENERATION_DEFAULT = false;
-			@Deprecated
-			String ALLOW_UNSTABLE_FEATURE_GENERATION_DESC = ""
-					+ " When using the " + DistanceGenerationMode.FEATURES + " generation mode \n"
-					+ " some features may not be thread safe, which could \n"
-					+ " cause instability and crashes. \n"
-					+ " By default (false) those features are skipped, \n"
-					+ " improving stability, but decreasing how many features are \n"
-					+ " actually generated. \n"
-					+ " (for example: some tree generation is unstable, \n"
-					+ "               so some trees may not be generated.) \n"
-					+ " By setting this to true, all features will be generated, \n"
-					+ " but your game will be more unstable and crashes may occur. \n"
-					+ "\n"
-					+ " I would love to remove this option and always generate everything, \n"
-					+ " but I'm not sure how to do that. \n"
-					+ " If you are a Java wizard, check out the git issue here: \n"
-					+ " https://gitlab.com/jeseibel/minecraft-lod-mod/-/issues/35 \n";
-			@Deprecated
-			default boolean getAllowUnstableFeatureGeneration() {return true;}
-			@Deprecated
-			default void setAllowUnstableFeatureGeneration(boolean newAllowUnstableFeatureGeneration) {return;}
 			
 			BlocksToAvoid BLOCKS_TO_AVOID_DEFAULT = BlocksToAvoid.BOTH;
 			String BLOCKS_TO_AVOID_DESC = ""
@@ -566,7 +530,7 @@ public interface ILodConfigWrapperSingleton
 				DebugMode getDebugMode();
 				void setDebugMode(DebugMode newDebugMode);
 				
-				boolean DEBUG_KEYBINDINGS_ENABLED_DEFAULT = true;
+				boolean DEBUG_KEYBINDINGS_ENABLED_DEFAULT = false;
 				String DEBUG_KEYBINDINGS_ENABLED_DESC = ""
 						+ " If true the F8 key can be used to cycle through the different debug modes. \n"
 						+ " and the F6 key can be used to enable and disable LOD rendering.";
@@ -601,7 +565,7 @@ public interface ILodConfigWrapperSingleton
 				GpuUploadMethod getGpuUploadMethod();
 				void setGpuUploadMethod(GpuUploadMethod newGpuUploadMethod);
 				
-				MinDefaultMax<Integer> GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 10, 5000);
+				MinDefaultMax<Integer> GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DEFAULT = new MinDefaultMax<Integer>(0, 0, 50);
 				String GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DESC = ""
 						+ " How long should a buffer wait per Megabyte of data uploaded?\n"
 						+ " Helpful resource for frame times: https://fpstoms.com \n"

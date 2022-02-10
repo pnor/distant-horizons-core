@@ -268,8 +268,14 @@ public class ClientApi
 			MC.sendChatMessage(ModInfo.READABLE_NAME + " experimental build " + ModInfo.VERSION);
 			MC.sendChatMessage("You are running an unsupported version of the mod!");
 			MC.sendChatMessage("Here be dragons!");
+			MC.sendChatMessage("======================");
+			MC.sendChatMessage("====   REMINDER   ====");
+			MC.sendChatMessage("======================");
+			MC.sendChatMessage("Remember to DISABLE this in CLientApi.applyConfigOverrides()");
+			MC.sendChatMessage("For the offical release!");
 			
 			configOverrideReminderPrinted = true;
+			CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 		}
 		
 //		CONFIG.client().worldGenerator().setDistanceGenerationMode(DistanceGenerationMode.FULL);
@@ -286,7 +292,6 @@ public class ClientApi
 //		CONFIG.client().advanced().buffers().setRebuildTimes(BufferRebuildTimes.FREQUENT);
 		
 		
-		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}
 
 	//=================//
@@ -294,8 +299,9 @@ public class ClientApi
 	//=================//
 	// Trigger once on key press, with CLIENT PLAYER.
 	public void keyPressedEvent(int glfwKey) {
-		ClientApi.LOGGER.info("DEBUG: Key Pressed: {}",glfwKey);
-		
+
+		if (!CONFIG.client().advanced().debugging().getDebugKeybindingsEnabled()) return;
+
 		if (glfwKey == GLFW.GLFW_KEY_F8) {
 					CONFIG.client().advanced().debugging()
 					.setDebugMode(CONFIG.client().advanced().debugging().getDebugMode().getNext());
