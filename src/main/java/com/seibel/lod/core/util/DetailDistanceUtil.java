@@ -21,7 +21,6 @@ package com.seibel.lod.core.util;
 
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 
 /**
  * 
@@ -31,20 +30,12 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 public class DetailDistanceUtil
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
-	
-	@Deprecated
-	private static final double genMultiplier = 1.0;
-	@Deprecated
-	private static final double treeGenMultiplier = 1.0;
-	@Deprecated
-	private static final double treeCutMultiplier = 1.0;
+
 	private static byte minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 	private static byte minDrawDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 	private static final byte maxDetail = LodUtil.DETAIL_OPTIONS;
 	private static final double minDistance = 0;
 	private static double distanceUnit = 16 * CONFIG.client().graphics().quality().getHorizontalScale();
-	private static double minGenDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
 	private static double maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
 	private static double logBase = Math.log(CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase);
 	
@@ -52,7 +43,6 @@ public class DetailDistanceUtil
 	public static void updateSettings()
 	{
 		distanceUnit = 16 * CONFIG.client().graphics().quality().getHorizontalScale();
-		minGenDetailDistance = (int) (MC_RENDER.getRenderDistance()*16 * 1.42f);
 		minGenDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
 		minDrawDetail = (byte) Math.max(CONFIG.client().graphics().quality().getDrawResolution().detailLevel, CONFIG.client().graphics().quality().getDrawResolution().detailLevel);
 		maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;
@@ -105,16 +95,6 @@ public class DetailDistanceUtil
 	{
 		return baseInverseFunction(distance);
 	}
-	
-	public static byte getGenDetailLevelFromDistance(double distance)
-	{
-		if(distance < minGenDetailDistance)
-			return minGenDetail;
-		return baseInverseFunction(distance);
-	}
-	
-	
-	
 	
 	// NOTE: The recent LodWorldGenerator changes assumes that this value doesn't change with 'detail'.
 	// If this is changed, LodWorldGenerator needs to be fixed!
