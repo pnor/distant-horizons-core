@@ -55,21 +55,6 @@
 	"Disable vanilla fog",
   "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog.@tooltip":
 	"§6True:§r disables Minecraft's fog on vanilla chunks.\n§6False:§r Minecraft renders fog like normal.\n\nMay cause issues with other mods that edit fog.\nDisable if vanilla chunks are completely covered in fog.",
-  "DistantHorizons.config.client.graphics.cloudQuality":
-	"Cloud options",
-  "DistantHorizons.config.client.graphics.cloudQuality.cloudWarning":
-	"§6§nWARNING:§r§n Clouds are still experimental",
-  "DistantHorizons.config.client.graphics.cloudQuality.customClouds":
-	"Custom cloud",
-  "DistantHorizons.config.client.graphics.cloudQuality.customClouds.@tooltip":
-	"Do you want to use a custom way or rendering the clouds.\nIf you turn this off then the other settings here wont do anything\nThis will also make the clouds more dynamic",
-  "DistantHorizons.config.client.graphics.cloudQuality.coolClouds":
-	"Cool clouds",
-  "DistantHorizons.config.client.graphics.cloudQuality.coolClouds.@tooltip":
-	"§6§nWARNING:§r§n THIS IS NOT IMPLEMENTED YET",
-  "DistantHorizons.config.client.graphics.cloudQuality.extendClouds":
-	"Extend the clouds",
-  "DistantHorizons.config.client.graphics.cloudQuality.cloudHeight":
 	"Cloud height",
   "DistantHorizons.config.client.graphics.advancedGraphics":
 	"Advanced quality option",
