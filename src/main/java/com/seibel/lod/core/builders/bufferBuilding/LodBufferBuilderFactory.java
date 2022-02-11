@@ -911,7 +911,7 @@ public class LodBufferBuilderFactory
 	private boolean swapBuffers() {
 		bufferLock.lock();
 		if (ENABLE_BUFFER_SWAP_LOGGING)
-			ClientApi.LOGGER.info("Lod Swap Buffers");
+			ClientApi.LOGGER.debug("Lod Swap Buffers");
 		{
 			boolean shouldRegenBuff = true;
 			try

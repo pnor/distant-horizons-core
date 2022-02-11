@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.builders.lodBuilding;
 
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,7 +38,6 @@ import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -158,46 +156,51 @@ public class LodBuilder
 	 */
 	public boolean generateLodNodeFromChunk(LodDimension lodDim, IChunkWrapper chunk, LodBuilderConfig config, boolean override, boolean genAll)
 	{
-		if (chunk == null)
-			throw new IllegalArgumentException("generateLodFromChunk given a null chunk");
-		LodRegion region = lodDim.getRegion(chunk.getRegionPosX(), chunk.getRegionPosZ());
-		if (region == null)
-			return false;
-		// this happens if a LOD is generated after the user leaves the world.
-		if (MC.getWrappedClientWorld() == null)
-			return false;
-		if (!chunk.isLightCorrect()) return false;
-		
-
-		// generate the LODs
-		int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte)0);
-		long[] data = new long[maxVerticalData*16*16];
-		
-		if (!config.quickFillWithVoid) {
-			for (int i = 0; i < 16*16; i++)
-			{
-				int subX = i/16;
-				int subZ = i%16;
-				writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
-				//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
-				//	ClientApi.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
-				if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
-					throw new RuntimeException("Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
-				if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
-					throw new RuntimeException("Datapoint invalid at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
+		try {
+			if (chunk == null)
+				throw new IllegalArgumentException("generateLodFromChunk given a null chunk");
+			LodRegion region = lodDim.getRegion(chunk.getRegionPosX(), chunk.getRegionPosZ());
+			if (region == null)
+				return false;
+			// this happens if a LOD is generated after the user leaves the world.
+			if (MC.getWrappedClientWorld() == null)
+				return false;
+			if (!chunk.isLightCorrect()) return false;
+			
+	
+			// generate the LODs
+			int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte)0);
+			long[] data = new long[maxVerticalData*16*16];
+			
+			if (!config.quickFillWithVoid) {
+				for (int i = 0; i < 16*16; i++)
+				{
+					int subX = i/16;
+					int subZ = i%16;
+					writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
+					//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
+					//	ClientApi.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
+					if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
+						throw new RuntimeException("writeVerticalData result: Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
+					if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
+						throw new RuntimeException("writeVerticalData result: Datapoint invalid at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
+				}
+			} else {
+				for (int i = 0; i < 16*16; i++)
+				{
+					data[i*maxVerticalData] = DataPointUtil.createVoidDataPoint(config.distanceGenerationMode.complexity);
+				}
 			}
-		} else {
-			for (int i = 0; i < 16*16; i++)
-			{
-				data[i*maxVerticalData] = DataPointUtil.createVoidDataPoint(config.distanceGenerationMode.complexity);
+			if (!chunk.isLightCorrect()) return false;
+			
+			if (genAll) {
+				return writeAllLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
+			} else {
+				return writePartialLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
 			}
-		}
-		if (!chunk.isLightCorrect()) return false;
-		
-		if (genAll) {
-			return writeAllLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
-		} else {
-			return writePartialLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
+		} catch (RuntimeException e) {
+			ClientApi.LOGGER.error("LodBuilder encountered an error on building lod for chunk {}: {}", chunk ,e);
+			return false;
 		}
 		
 	}
@@ -209,7 +212,7 @@ public class LodBuilder
 		try {
 			if (region.getMinDetailLevel()!= 0) {
 				if (!LodUtil.checkRamUsage(0.05, 16)) {
-					ClientApi.LOGGER.warn("LodBuilder: Not enough RAM avalible for building lods! Skipping...");
+					ClientApi.LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
 					return false;
 				}
 				
@@ -227,8 +230,6 @@ public class LodBuilder
 				throw new RuntimeException("data at detail 0 is still null after writes to it!");
 			if (!region.doesDataExist(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, chunkZ, config.distanceGenerationMode))
 				throw new RuntimeException("data at chunk detail level is still null after writes to it!");
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
 			region.isWriting.decrementAndGet();
 		}
@@ -291,7 +292,7 @@ public class LodBuilder
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkZ, targetLevel),
 					config.distanceGenerationMode))
-				throw new RuntimeException("data at detail 0 is still null after writes to it!");
+				throw new RuntimeException("data at detail "+ targetLevel+" is still null after writes to it!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

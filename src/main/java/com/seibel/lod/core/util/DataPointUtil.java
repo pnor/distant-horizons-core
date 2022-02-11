@@ -110,9 +110,9 @@ public class DataPointUtil
 	public static long createVoidDataPoint(int generationMode)
 	{
 		long dataPoint = 0;
-		dataPoint += (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
-		dataPoint += VOID_MASK << VOID_SHIFT;
-		dataPoint += EXISTENCE_MASK << EXISTENCE_SHIFT;
+		dataPoint |= (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
+		dataPoint |= VOID_MASK << VOID_SHIFT;
+		dataPoint |= EXISTENCE_MASK << EXISTENCE_SHIFT;
 		return dataPoint;
 	}
 	
@@ -129,18 +129,17 @@ public class DataPointUtil
 	public static long createDataPoint(int alpha, int red, int green, int blue, int height, int depth, int lightSky, int lightBlock, int generationMode, boolean flag)
 	{
 		long dataPoint = 0;
-		dataPoint += (long) (alpha >>> ALPHA_DOWNSIZE_SHIFT) << ALPHA_SHIFT;
-		dataPoint += (red & RED_MASK) << RED_SHIFT;
-		dataPoint += (green & GREEN_MASK) << GREEN_SHIFT;
-		dataPoint += (blue & BLUE_MASK) << BLUE_SHIFT;
-		dataPoint += (height & HEIGHT_MASK) << HEIGHT_SHIFT;
-		dataPoint += (depth & DEPTH_MASK) << DEPTH_SHIFT;
-		dataPoint += (lightBlock & BLOCK_LIGHT_MASK) << BLOCK_LIGHT_SHIFT;
-		dataPoint += (lightSky & SKY_LIGHT_MASK) << SKY_LIGHT_SHIFT;
-		dataPoint += (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
-		if (flag) dataPoint += FLAG_MASK << FLAG_SHIFT;
-		dataPoint += EXISTENCE_MASK << EXISTENCE_SHIFT;
-		
+		dataPoint |= (long) (alpha >>> ALPHA_DOWNSIZE_SHIFT) << ALPHA_SHIFT;
+		dataPoint |= (red & RED_MASK) << RED_SHIFT;
+		dataPoint |= (green & GREEN_MASK) << GREEN_SHIFT;
+		dataPoint |= (blue & BLUE_MASK) << BLUE_SHIFT;
+		dataPoint |= (height & HEIGHT_MASK) << HEIGHT_SHIFT;
+		dataPoint |= (depth & DEPTH_MASK) << DEPTH_SHIFT;
+		dataPoint |= (lightBlock & BLOCK_LIGHT_MASK) << BLOCK_LIGHT_SHIFT;
+		dataPoint |= (lightSky & SKY_LIGHT_MASK) << SKY_LIGHT_SHIFT;
+		dataPoint |= (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
+		if (flag) dataPoint |= FLAG_MASK << FLAG_SHIFT;
+		dataPoint |= EXISTENCE_MASK << EXISTENCE_SHIFT;
 		return dataPoint;
 	}
 	
