@@ -1,146 +1,276 @@
 {
-  "lod.title": "suozᴉɹoH ʇuɐʇsᴉp",
-  "DistantHorizons.config.title": "ƃᴉɟuoɔ suozᴉɹoH ʇuɐʇsᴉp",
-  "DistantHorizons.config.optionsButton": "uoʇʇnq suoᴉʇdo ʍoɥS",
-  "DistantHorizons.config.optionsButton.@tooltip": "uoʇʇnq ʌoɟ ǝɥʇ ɟo ʇɟǝl ǝɥʇ oʇ uoʇʇnq ɯoʇsnɔ ǝɥʇ ʍoɥS",
-  "DistantHorizons.config.client": "ʇuǝᴉlƆ",
-  "DistantHorizons.config.client.graphics": "sɔᴉɥdɐɹפ",
-  "DistantHorizons.config.client.graphics.quality": "suoᴉʇdo ʎʇᴉlɐnQ",
-  "DistantHorizons.config.client.graphics.quality.drawResolution": "uoᴉʇnlosǝɹ ʍɐɹp",
-  "DistantHorizons.config.client.graphics.quality.drawResolution.@tooltip": "¿ʇɐ uʍɐɹp ǝq plnoɥs sʞunɥɔ ǝʞɐɟ lᴉɐʇǝp ɯnɯᴉxɐɯ ǝɥʇ sᴉ ʇɐɥM",
-  "DistantHorizons.config.client.graphics.quality.lodChunkRenderDistance": "ǝɔuɐʇsᴉp ɹǝpuǝɹ ʞunɥƆ",
-  "DistantHorizons.config.client.graphics.quality.lodChunkRenderDistance.@tooltip": "sʞunɥɔ uᴉ pǝɹnsɐǝɯ 'ǝɔuɐʇsᴉp ɹǝpuǝɹ s,poɯ ǝɥ┴",
-  "DistantHorizons.config.client.graphics.quality.verticalQuality": "ʎʇᴉlɐnb lɐɔᴉʇɹǝΛ",
-  "DistantHorizons.config.client.graphics.quality.verticalQuality.@tooltip": "ǝƃɐsn ∩Ԁפ ǝsɐǝɹɔuᴉ puɐ ʎɹoɯǝɯ ǝɹoɯ ǝsn llᴉʍ suoᴉʇdo ɹǝɥƃᴉH\n ˙ʇɔǝ 'spuɐlsᴉ ƃuᴉʇɐolɟ 'sǝʌɐɔ 'sƃuɐɥɹǝʌo ʇuǝsǝɹdǝɹ llᴉʍ sʞunɥɔ ǝʞɐɟ pǝlᴉɐʇǝp ʍoɥ sǝʇɐɔᴉpuᴉ sᴉɥ┴",
-  "DistantHorizons.config.client.graphics.quality.horizontalScale": "ǝlɐɔs lɐʇuozᴉɹoH",
-  "DistantHorizons.config.client.graphics.quality.horizontalScale.@tooltip": "ʎʇᴉlɐnb uᴉ ɟɟo doɹp sʞunɥɔ ǝʞɐɟ ʎlʞɔᴉnb ʍoɥ sǝʇɐɔᴉpuᴉ sᴉɥ┴",
-  "DistantHorizons.config.client.graphics.quality.horizontalQuality": "ʎʇᴉlɐnb lɐʇuozᴉɹoH",
-  "DistantHorizons.config.client.graphics.quality.horizontalQuality.@tooltip": "ɟɟo-doɹp ɔᴉʇɐɹpɐnb ǝɥʇ ɟo ǝsɐq lɐᴉʇuǝuodxǝ ǝɥʇ sǝʇɐɔᴉpuᴉ sᴉɥ┴",
-  "DistantHorizons.config.client.graphics.quality.dropoffQuality": "ʎʇᴉlɐnb ɟɟodoɹp",
-  "DistantHorizons.config.client.graphics.quality.dropoffQuality.@tooltip": "˙ǝuop sᴉ ɟɟodoɹp lᴉɐʇǝp ʍoɥ ǝƃuɐɥɔ sᴉɥ┴",
-  "DistantHorizons.config.client.graphics.fogQuality": "suoᴉʇdo ƃoℲ",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDistance": "ǝɔuɐʇsᴉp ƃoℲ",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDistance.@tooltip": "¿sʞunɥɔ ǝʞɐɟ ǝɥʇ uo uʍɐɹp ǝq ƃoℲ plnoɥs ǝɔuɐʇsᴉp ʇɐɥʍ ʇ∀",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDrawMode": "ǝpoɯ ʍɐɹp ƃoℲ",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDrawMode.@tooltip": "¿uʍɐɹp ǝq ƃoɟ plnoɥs uǝɥM",
-  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode": "ǝpoɯ ɹoloɔ ƃoℲ",
-  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode.@tooltip": "¿ǝsn ƃoɟ plnoɥs ɹoloɔ ʇɐɥM",
-  "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog": "ƃoɟ ɐllᴉuɐʌ ǝlqɐsᴉp",
-  "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog.@tooltip": "spoɯ ƃuᴉʇᴉpǝ ƃoɟ ɹǝɥʇo ɥʇᴉʍ sɹoɹɹǝ ǝsnɐɔ ʎɐW\n ˙ƃoɟ ʇᴉpǝ ʇɐɥʇ spoɯ ɹǝɥʇo ɥʇᴉʍ sǝnssᴉ ǝsnɐɔ ʎɐW\n ˙ƃoɟ s,ʇɟɐɹɔǝuᴉW ǝlqɐsᴉp ǝnɹʇ ɟI",
-  "DistantHorizons.config.client.graphics.cloudQuality": "suoᴉʇdo pnolƆ",
-  "DistantHorizons.config.client.graphics.cloudQuality.cloudWarning": "§nlɐʇuǝɯᴉɹǝdxǝ llᴉʇs ǝɹɐ spnolƆ§r§l§n:פNINɹ∀M",
-  "DistantHorizons.config.client.graphics.cloudQuality.customClouds": "pnolɔ ɯoʇsnƆ",
-  "DistantHorizons.config.client.graphics.cloudQuality.customClouds.@tooltip": "ɔᴉɯɐuʎp ǝɹoɯ spnolɔ ǝɥʇ ǝʞɐɯ oslɐ llᴉʍ sᴉɥ┴\n ƃuᴉɥʇʎuɐ op ʇuoʍ ǝɹǝɥ sƃuᴉʇʇǝs ɹǝɥʇo ǝɥʇ uǝɥʇ ɟɟo sᴉɥʇ uɹnʇ noʎ ɟI\n ˙spnolɔ ǝɥʇ ƃuᴉɹǝpuǝɹ ɹo ʎɐʍ ɯoʇsnɔ ɐ ǝsn oʇ ʇuɐʍ noʎ op",
-  "DistantHorizons.config.client.graphics.cloudQuality.coolClouds": "spnolɔ snolnqɐℲ",
-  "DistantHorizons.config.client.graphics.cloudQuality.coolClouds.@tooltip": "§n┴Ǝ⅄ pƎ┴NƎWƎ˥ԀWI ┴ON SI SIH┴ §r§l§n:פNINɹ∀M",
-  "DistantHorizons.config.client.graphics.cloudQuality.extendClouds": "spnolɔ ǝɥʇ puǝʇxƎ",
-  "DistantHorizons.config.client.graphics.cloudQuality.cloudHeight": "ʇɥƃᴉǝɥ pnolƆ",
-  "DistantHorizons.config.client.graphics.advancedGraphics": "uoᴉʇdo ʎʇᴉlɐnb pǝɔuɐʌp∀",
-  "DistantHorizons.config.client.graphics.advancedGraphics.lodTemplate": "ǝʇɐldɯǝʇ pO˥",
-  "DistantHorizons.config.client.graphics.advancedGraphics.lodTemplate.@tooltip": "¡pǝʇuǝɯǝldɯᴉ sᴉ ƆIq∩Ɔ ʎluo ʎlʇuǝɹɹnƆ :Ǝ┴ON\n ¿uʍɐɹp ǝq spO˥ ǝɥʇ plnoɥs ʍoH",
-  "DistantHorizons.config.client.graphics.advancedGraphics.disableDirectionalCulling": "ƃuᴉllnɔ lɐuoᴉʇɔǝɹᴉp ǝlqɐsᴉp",
-  "DistantHorizons.config.client.graphics.advancedGraphics.disableDirectionalCulling.@tooltip": "ǝɔuɐɯɹoɟɹǝd ƃuᴉsɐǝɹɔǝp 'ɐɹǝɯɐɔ s,ɹǝʎɐld ǝɥʇ puᴉɥǝq ǝsoɥʇ uǝʌǝ 'uʍɐɹp ǝɹɐ spO˥ llɐ ǝnɹʇ ɟI\n ˙ǝɔuɐɯɹoɟɹǝd ƃuᴉsɐǝɹɔuᴉ 'uʍɐɹp ʇ,uǝɹɐ ɐɹǝɯɐɔ s,ɹǝʎɐld ǝɥʇ puᴉɥǝq sʞunɥɔ ǝʞɐɟ ǝslɐɟ ɟI",
-  "DistantHorizons.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality": "ʎʇᴉlɐnb xɐɯ ʇɐ ʍɐɹp sʎɐʍl∀",
-  "DistantHorizons.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality.@tooltip": "lǝʌǝl lᴉɐʇǝp ǝlqɐlᴉɐʌɐ ʇsǝɥƃᴉɥ ǝɥʇ ʇɐ uʍɐɹp ǝq llᴉʍ sʞunɥɔ ǝʞɐɟ llɐ 'ɟɟollɐɟ ʎʇᴉlɐnb ǝlqɐsᴉp",
-  "DistantHorizons.config.client.graphics.advancedGraphics.vanillaOverdraw": "ʍɐɹpɹǝʌo ɐllᴉuɐΛ",
-  "DistantHorizons.config.client.graphics.advancedGraphics.vanillaOverdraw.@tooltip": "˙sǝʌɐɔ uᴉ ɹo sʞɔolq ʇuǝɹɐdsuɐɹʇ ɹoɟ ppo ʞool ʎɐɯ ʇnq 'plɹoʍ ǝɥʇ uᴉ sǝloɥ ʇuǝʌǝɹd llᴉʍ S⅄∀M˥∀ puɐ Ⅎ˥∀H\n ¿sʞunɥɔ ɹɐlnƃǝɹ ɟo doʇ uo uʍɐɹp ǝq spO˥ plnoɥs uǝʇɟo ʍoH",
-  "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane": "ǝuɐld dᴉlɔ ɹɐǝu pǝpuǝʇxǝ ǝs∩",
-  "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane.@tooltip": "uɐǝɔo uɐ ɹɐǝu/uᴉ uǝɥʍ ʎllɐᴉɔǝdsǝ ʎlʇɔǝɹɹoɔuᴉ ɹǝpuǝɹ oʇ sʞunɥɔ ǝʞɐɟ ʎqɹɐǝu ǝsnɐɔ ʎɐɯ ʇnq 'sǝnssᴉ ʍɐɹpɹǝʌo ǝɯos ʇuǝʌǝɹd llᴉM",
-  "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange": "ǝƃuɐɹ ƃuᴉllnƆ ǝpᴉsʞɔɐq",
-  "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange.@tooltip": "˙pǝllnɔ ʇǝƃ ʇǝƃ ʇɹɐʇs sʞɔolq ɟo sǝpᴉs ʞɔɐq ǝɹǝɥʍ ǝƃuɐɹ ɯnɯᴉuᴉɯ ǝɥʇ sǝʇɐɔᴉpuᴉ sᴉɥ┴",
-  "DistantHorizons.config.client.worldGenerator": "ɹoʇɐɹǝuǝƃ plɹoM",
-  "DistantHorizons.config.client.worldGenerator.generationPriority": "ʎʇᴉɹoᴉɹd uoᴉʇɐɹǝuǝפ",
-  "DistantHorizons.config.client.worldGenerator.generationPriority.@tooltip": "ɹǝʎɐld ǝɥʇ punoɹɐ pǝʇɐɹǝuǝƃ ƃuᴉǝq sʞunɥɔ ǝɥʇ ɟo ʎʇᴉɹoᴉɹd ǝɥʇ sᴉ ʇɐɥM",
-  "DistantHorizons.config.client.worldGenerator.distanceGenerationMode": "ǝpoɯ uoᴉʇɐɹǝuǝƃ ǝɔuɐʇsᴉp",
-  "DistantHorizons.config.client.worldGenerator.distanceGenerationMode.@tooltip": "sʞunɥɔ ǝʞɐɟ ƃuᴉʇɐɹǝuǝƃ uǝɥʍ pǝsn ǝq plnoɥs uoᴉʇɐɹǝuǝƃ ǝɥʇ ɟo ɥɔnɯ ʍoHǝpoɯ uoᴉʇɐɹǝuǝƃ ǝɔuɐʇsᴉp",
-  "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration": "uoᴉʇɐɹǝuǝƃ ǝɹnʇɐǝɟ ǝlqɐʇsun ʍoll∀",
-  "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration.@tooltip": "sǝɥsɐɹɔ puɐ ʎʇᴉlᴉqɐʇsuᴉ ǝsnɐɔ plnoƆ\n ˙ǝɟɐs pɐǝɹɥʇ ǝq ʇou ʎɐɯ sǝɹnʇɐǝɟ ǝɯoS",
-  "DistantHorizons.config.client.worldGenerator.blocksToAvoid": "pᴉoʌɐ oʇ ʞɔolq",
-  "DistantHorizons.config.client.worldGenerator.blocksToAvoid.@tooltip": "sʞunɥɔ ǝʞɐɟ ƃuᴉʇɐɹǝuǝƃ uǝɥʍ pᴉoʌɐ oʇ ʞɔolq ʇɐɥM",
-  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration": "uoᴉʇɐɹǝuǝפ ʇuɐʇsᴉp ǝlqɐuƎ",
-  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration.@tooltip": "¿ɹoʇɐɹǝuǝƃ sʞunɥɔ ʇuɐʇsᴉp ǝlqɐuǝ oʇ ɹǝɥʇǝɥM",
-  "DistantHorizons.config.client.worldGenerator.lightGenerationMode": "ǝpoW uoᴉʇɐɹǝuǝפ ʇɥƃᴉ˥",
-  "DistantHorizons.config.client.worldGenerator.lightGenerationMode.@tooltip": "¿uoᴉʇɐɹǝuǝƃ ʇuɐʇsᴉp ɹoɟ pǝssǝɔoɹd ǝq sʇɥƃᴉl ʎʞs puɐ ʞɔolq plnoɥs ʍoH",
-  "DistantHorizons.config.client.advanced": "suoᴉʇdo ǝɔuɐʌp∀",
-  "DistantHorizons.config.client.advanced.threading": "ƃuᴉpɐǝɹɥ┴",
-  "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads": "spɐǝɹɥʇ uoᴉʇɐɹǝuǝƃ plɹoʍ ɟo ˙ON",
-  "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads.@tooltip": "spɐǝɹɥʇ ɟo ɹǝqɯnu ʇuǝɹɹnɔ ɹnoʎ puɐ Ɩ uǝǝʍʇǝq ǝq ʎluo uɐƆ\n ɹǝqɯnu sᴉɥʇ ǝsɐǝɹɔuᴉ 'pǝǝds uoᴉʇɐɹǝuǝƃ pO˥ ǝsɐǝɹɔuᴉ oʇ ʇuɐʍ noʎ ɟI ˙ɹǝqɯnu sᴉɥʇ ǝsɐǝɹɔǝp 'spO˥ ʇuɐʇsᴉp ƃuᴉʇɐɹǝuǝƃ uǝɥʍ ƃuᴉɹǝʇʇnʇs ǝɔuǝᴉɹǝdxǝ noʎ ɟI\n ˙ǝɔuɐʇsᴉp ɹǝpuǝɹ lɐɯɹou ǝɥʇ ǝpᴉsʇno spO˥ ƃuᴉʇɐɹǝuǝƃ uǝɥʍ pǝsn ǝɹɐ spɐǝɹɥʇ ʎuɐɯ ʍoɥ sᴉ sᴉɥ┴",
-  "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads": "spɐǝɹɥʇ ɹǝplᴉnq ɹǝɟɟnq ɟo ˙ON",
-  "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads.@tooltip": "spɐǝɹɥʇ ɟo ɹǝqɯnu ʇuǝɹɹnɔ ɹnoʎ puɐ Ɩ uǝǝʍʇǝq ǝq ʎluo uɐƆ\n (sʞunɥɔ ǝʞɐɟ ǝɥʇ ʍɐɹp oʇ ∩Ԁפ ɹnoʎ oʇ ʇuǝs sƃuᴉɥʇ ǝɥ┴) sɹǝɟɟnq xǝʇɹǝʌ ƃuᴉplᴉnq uǝɥʍ pǝsn ǝɹɐ spɐǝɹɥʇ ʎuɐɯ ʍoɥ sᴉ sᴉɥ┴",
-  "DistantHorizons.config.client.advanced.buffers": "sɹǝɟɟnq",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod": "poɥʇǝɯ pɐoldn ∩Ԁפ",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod.@tooltip": "¿∩Ԁפ ǝɥʇ oʇ ʎɹʇǝɯoǝƃ pɐoldn oʇ pǝsn ǝq plnoɥs poɥʇǝɯ ʇɐɥM",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds": "(spuoɔǝsᴉllᴉɯ) pǝǝds pɐoldn ∩Ԁפ",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds.@tooltip": "https://fpstoms.com :sǝɯᴉʇ ǝɯɐɹɟ ɹoɟ ǝɔɹnosǝɹ lnɟdlǝH\n ¿pǝpɐoldn ɐʇɐp ɟo ǝʇʎqɐƃǝW ɹǝd ʇᴉɐʍ ɹǝɟɟnq ɐ plnoɥs ƃuol ʍoH",
-  "DistantHorizons.config.client.advanced.buffers.rebuildTimes": "sǝɯᴉʇ plᴉnqǝɹ",
-  "DistantHorizons.config.client.advanced.buffers.rebuildTimes.@tooltip": "¿∩Ԁפ ǝɥʇ oʇ ʇuǝs puɐ ʇlᴉnqǝɹ ǝq (ʎɹʇǝɯoǝƃ) sɹǝɟɟnq xǝʇɹǝʌ plnoɥs ʎlʇuǝnbǝɹɟ ʍoH",
-  "DistantHorizons.config.client.advanced.debugging": "ƃnqǝp",
-  "DistantHorizons.config.client.advanced.debugging.drawLods": "s,pO˥ ʍɐɹp",
-  "DistantHorizons.config.client.advanced.debugging.drawLods.@tooltip": "˙uʍɐɹp ǝq llᴉʍ sʞunɥɔ ǝʞɐɟ puɐ pǝlqɐuǝ sᴉ poɯ ǝɥʇ 'ǝnɹʇ ɟI",
-  "DistantHorizons.config.client.advanced.debugging.debugMode": "ǝpoɯ ƃnqǝp",
-  "DistantHorizons.config.client.advanced.debugging.debugMode.@tooltip": "ʇuɐʍ noʎ op ǝpoɯ ƃnqǝp ɟo ǝdʎʇ ʇɐɥM",
-  "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings": "sƃuᴉpuᴉqʎǝʞ ƃnqǝp ǝlqɐuƎ",
-  "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings.@tooltip": "ǝɯɐƃ uᴉ ʎlɟ ǝɥʇ uo ǝpoɯ ƃnqǝp ǝɥʇ ǝƃuɐɥɔ oʇ sƃuᴉpuᴉqʎǝʞ ƃnqǝp ǝlqɐuƎ",
-  "DistantHorizons.config.enum.HorizontalResolution.BLOCK": "ʞɔolq",
-  "DistantHorizons.config.enum.HorizontalResolution.TWO_BLOCKS": "sʞɔolq ᄅ",
-  "DistantHorizons.config.enum.HorizontalResolution.FOUR_BLOCKS": "sʞɔolq ㄣ",
-  "DistantHorizons.config.enum.HorizontalResolution.HALF_CHUNK": "ʞunɥɔ ɐ ɟlɐH",
-  "DistantHorizons.config.enum.HorizontalResolution.CHUNK": "ʞunɥƆ",
-  "DistantHorizons.config.enum.VerticalQuality.LOW": "ʍo˥",
-  "DistantHorizons.config.enum.VerticalQuality.MEDIUM": "ɯnᴉpǝW",
-  "DistantHorizons.config.enum.VerticalQuality.HIGH": "ɥƃᴉH",
-  "DistantHorizons.config.enum.HorizontalScale.LOW": "ʍo˥",
-  "DistantHorizons.config.enum.HorizontalScale.MEDIUM": "ɯnᴉpǝW",
-  "DistantHorizons.config.enum.HorizontalScale.HIGH": "ɥƃᴉH",
-  "DistantHorizons.config.enum.HorizontalQuality.LOWEST": "ʇsǝʍo˥",
-  "DistantHorizons.config.enum.HorizontalQuality.LOW": "ʍo˥",
-  "DistantHorizons.config.enum.HorizontalQuality.MEDIUM": "ɯnᴉpǝW",
-  "DistantHorizons.config.enum.HorizontalQuality.HIGH": "ɥƃᴉH",
-  "DistantHorizons.config.enum.FogDistance.NEAR": "ɹɐǝN",
-  "DistantHorizons.config.enum.FogDistance.FAR": "ɹɐℲ",
-  "DistantHorizons.config.enum.FogDistance.NEAR_AND_FAR": "ɹɐɟ puɐ ɹɐǝN",
-  "DistantHorizons.config.enum.FogDrawMode.USE_OPTIFINE_SETTING": "sƃuᴉʇʇǝs pǝppoɯ ǝs∩",
-  "DistantHorizons.config.enum.FogDrawMode.FOG_ENABLED": "pǝlqɐuǝ ƃoℲ",
-  "DistantHorizons.config.enum.FogDrawMode.FOG_DISABLED": "pǝlqɐsᴉp ƃoℲ",
-  "DistantHorizons.config.enum.FogColorMode.USE_WORLD_FOG_COLOR": "ƃoɟ plɹoʍ ǝs∩",
-  "DistantHorizons.config.enum.FogColorMode.USE_SKY_COLOR": "ɹoloɔ ʎʞs ǝs∩",
-  "DistantHorizons.config.enum.LodTemplate.CUBIC": "ɔᴉqnƆ",
-  "DistantHorizons.config.enum.LodTemplate.TRIANGULAR": "ɹɐlnƃuɐᴉɹ┴",
-  "DistantHorizons.config.enum.LodTemplate.DYNAMIC": "ɔᴉɯɐuʎp",
-  "DistantHorizons.config.enum.VanillaOverdraw.NEVER": "ɹǝʌǝN",
-  "DistantHorizons.config.enum.VanillaOverdraw.DYNAMIC": "ɔᴉɯɐuʎp",
-  "DistantHorizons.config.enum.VanillaOverdraw.ALWAYS": "sʎɐʍl∀",
-  "DistantHorizons.config.enum.VanillaOverdraw.BORDER": "ɹǝpɹoq",
-  "DistantHorizons.config.enum.GenerationPriority.AUTO": "oʇn∀",
-  "DistantHorizons.config.enum.GenerationPriority.NEAR_FIRST": "ʇsɹᴉɟ ɹɐǝN",
-  "DistantHorizons.config.enum.GenerationPriority.BALANCED": "pǝɔuɐlɐq",
-  "DistantHorizons.config.enum.GenerationPriority.FAR_FIRST": "ʇsɹᴉɟ ɹɐℲ",
-  "DistantHorizons.config.enum.DistanceGenerationMode.NONE": "ǝuoN",
-  "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY": "ʎluo ǝɯoᴉq",
-  "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT": "ʇɥƃᴉǝɥ ǝʇɐlnɯᴉs ʎluo ǝɯoᴉq",
-  "DistantHorizons.config.enum.DistanceGenerationMode.SURFACE": "ǝɔɐɟɹnS",
-  "DistantHorizons.config.enum.DistanceGenerationMode.FEATURES": "sǝɹnʇɐǝℲ",
-  "DistantHorizons.config.enum.DistanceGenerationMode.FULL": "llnℲ",
-  "DistantHorizons.config.enum.BlocksToAvoid.NONE": "ǝuoN",
-  "DistantHorizons.config.enum.BlocksToAvoid.NON_FULL": "llnɟ uoN",
-  "DistantHorizons.config.enum.BlocksToAvoid.NO_COLLISION": "uoᴉsᴉlloɔ oN",
-  "DistantHorizons.config.enum.BlocksToAvoid.BOTH": "ɥʇoq",
-  "DistantHorizons.config.enum.DebugMode.OFF": "ɟɟO",
-  "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL": "lᴉɐʇǝp ʍoɥS",
-  "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL_WIREFRAME": "ǝɯɐɹɟǝɹᴉʍ ɥʇᴉʍ lᴉɐʇǝp ʍoɥS",
-  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE": "ǝpoɯ uoᴉʇɐɹǝuǝƃ ʍoɥS",
-  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME": "ǝɯɐɹɟǝɹᴉʍ ɥʇᴉʍ ǝpoɯ uoᴉʇɐɹǝuǝƃ ʍoɥS",
-  "DistantHorizons.config.enum.GpuUploadMethod.AUTO": "oʇn∀",
-  "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_STORAGE": "ǝƃɐɹoʇs ɹǝɟɟnq",
-  "DistantHorizons.config.enum.GpuUploadMethod.SUB_DATA": "ɐʇɐp qnS",
-  "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_MAPPING": "ƃuᴉddɐɯ ɹǝɟɟnq",
-  "DistantHorizons.config.enum.GpuUploadMethod.DATA": "ɐʇɐp",
-  "DistantHorizons.config.enum.BufferRebuildTimes.FREQUENT": "ʇuǝnbǝɹℲ",
-  "DistantHorizons.config.enum.BufferRebuildTimes.NORMAL": "lɐɯɹoN",
-  "DistantHorizons.config.enum.BufferRebuildTimes.RARE": "ǝɹɐɹ",
-  "DistantHorizons.config.enum.DropoffQuality.AUTO": "oʇn∀",
-  "DistantHorizons.config.enum.DropoffQuality.SMOOTH_DROPOFF": "ɟɟodoɹp ɥʇooɯS",
-  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED": "pǝsnɔoɟ ǝɔuɐɯɹoɟɹǝԀ",
-  "DistantHorizons.config.enum.LightGenerationMode.FAST": "ʇsɐℲ",
-  "DistantHorizons.config.enum.LightGenerationMode.FANCY": "ʎɔuɐℲ"
+  "lod.title":
+	"suozᴉɹoH ʇuɐʇsᴉp",
+  "DistantHorizons.config.title":
+	"ƃᴉɟuoɔ suozᴉɹoH ʇuɐʇsᴉp",
+  "DistantHorizons.config.optionsButton":
+	"uoʇʇnq suoᴉʇdo ʍoɥS",
+  "DistantHorizons.config.optionsButton.@tooltip":
+	"uoʇʇnq ʌoɟ ǝɥʇ ɟo ʇɟǝl ǝɥʇ oʇ uoʇʇnq ƃᴉɟuoɔ ǝɥʇ ʍoɥS",
+  "DistantHorizons.config.client":
+	"ʇuǝᴉlƆ",
+  "DistantHorizons.config.client.graphics":
+	"sɔᴉɥdɐɹפ",
+  "DistantHorizons.config.client.graphics.quality":
+	"suoᴉʇdo ʎʇᴉlɐnQ",
+  "DistantHorizons.config.client.graphics.quality.drawResolution":
+	"uoᴉʇnlosǝɹ ʍɐɹp",
+  "DistantHorizons.config.client.graphics.quality.drawResolution.@tooltip":
+	"ʞɔolq §6:ʇsǝᴉɔuɐℲ§r\nʞunɥƆ §6:ʇsǝʇsɐℲ§r\n\n˙ʇɐ pǝɹǝpuǝɹ ǝɹɐ sʞunɥɔ ǝʞɐɟ lᴉɐʇǝp ɯnɯᴉxɐɯ ǝɥ┴",
+  "DistantHorizons.config.client.graphics.quality.lodChunkRenderDistance":
+	"ǝɔuɐʇsᴉp ɹǝpuǝɹ ʞunɥƆ",
+  "DistantHorizons.config.client.graphics.quality.lodChunkRenderDistance.@tooltip":
+	"˙sʞunɥɔ uᴉ pǝɹnsɐǝɯ 'ǝɔuɐʇsᴉp ɹǝpuǝɹ s,poɯ ǝɥ┴",
+  "DistantHorizons.config.client.graphics.quality.verticalQuality":
+	"ʎʇᴉlɐnb lɐɔᴉʇɹǝΛ",
+  "DistantHorizons.config.client.graphics.quality.verticalQuality.@tooltip":
+	"˙ǝƃɐsn ∩Ԁפ puɐ ʎɹoɯǝɯ ǝsɐǝɹɔuᴉ llᴉʍ suoᴉʇdo ɹǝɥƃᴉH\n\n˙ɔʇǝ 'sǝpᴉsɟɟᴉlɔ 'sǝʌɐɔ 'sƃuɐɥɹǝʌo ʇuǝsǝɹdǝɹ sʞunɥɔ ǝʞɐɟ llǝʍ ʍoH",
+  "DistantHorizons.config.client.graphics.quality.horizontalScale":
+	"ǝlɐɔs lɐʇuozᴉɹoH",
+  "DistantHorizons.config.client.graphics.quality.horizontalScale.@tooltip":
+	"˙ǝƃɐsn ∩Ԁפ puɐ ʎɹoɯǝɯ ǝsɐǝɹɔuᴉ llᴉʍ ʇnq\nsdoɹp uǝǝʍʇǝq ǝɔuɐʇsᴉp ǝɥʇ ǝsɐǝɹɔuᴉ llᴉʍ sƃuᴉʇʇǝs ɹǝɥƃᴉH\n\n˙ǝɹɐ ʎʇᴉlɐnb uᴉ sdoɹp ʇɹɐddɐ ɹɐɟ ʍoH",
+  "DistantHorizons.config.client.graphics.quality.horizontalQuality":
+	"ʎʇᴉlɐnb lɐʇuozᴉɹoH",
+  "DistantHorizons.config.client.graphics.quality.horizontalQuality.@tooltip":
+	"˙ǝƃɐsn ∩Ԁפ puɐ ʎɹoɯǝɯ ǝsɐǝɹɔuᴉ llᴉʍ ʇnq\nsdoɹp uǝǝʍʇǝq ǝɔuɐʇsᴉp ǝɥʇ ǝsɐǝɹɔuᴉ llᴉʍ sƃuᴉʇʇǝs ɹǝɥƃᴉH\n\n˙ǝɹɐ ʎʇᴉlɐnb uᴉ sdoɹp ʇɹɐddɐ ɹɐɟ ʍoH",
+  "DistantHorizons.config.client.graphics.quality.dropoffQuality":
+	"ʎʇᴉlɐnb ɟɟodoɹp",
+  "DistantHorizons.config.client.graphics.quality.dropoffQuality.@tooltip":
+	"˙ƃuᴉɹǝʇʇnʇs ɟo ǝɔuɐɥɔ ǝɥʇ puɐ ǝƃɐsn ∩ԀƆ ƃuᴉsɐǝɹɔuᴉ\n'ʇlᴉnqǝɹ ǝq oʇ sɐɥ ʎɹʇǝɯoǝƃ ǝɥʇ uǝʇɟo ʍoɥ ǝsɐǝɹɔuᴉ llᴉʍ ʇnq\nǝlqɐɔᴉʇou ssǝl ɟɟodoɹp ǝɥʇ ǝʞɐɯ llᴉʍ sƃuᴉʇʇǝs ɹǝɥƃᴉH\n\n˙pǝʇɐlnɔlɐɔ sᴉ ɟɟodoɹp lᴉɐʇǝp ʍoH",
+  "DistantHorizons.config.client.graphics.fogQuality":
+	"suoᴉʇdo ƃoℲ",
+  "DistantHorizons.config.client.graphics.fogQuality.fogDistance":
+	"ǝɔuɐʇsᴉp ƃoℲ",
+  "DistantHorizons.config.client.graphics.fogQuality.fogDistance.@tooltip":
+	"˙sʞunɥɔ ǝʞɐɟ uo pǝɹǝpuǝɹ ǝq llᴉʍ ƃoℲ (s)ǝɔuɐʇsᴉp ǝɥ┴",
+  "DistantHorizons.config.client.graphics.fogQuality.fogDrawMode":
+	"ǝpoɯ ʍɐɹp ƃoℲ",
+  "DistantHorizons.config.client.graphics.fogQuality.fogDrawMode.@tooltip":
+	"˙sʞunɥɔ ǝʞɐɟ uo pǝɹǝpuǝɹ ǝq llᴉʍ ƃoɟ uǝɥM",
+  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode":
+	"ǝpoɯ ɹoloɔ ƃoℲ",
+  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode.@tooltip":
+	"˙sʞunɥɔ ǝʞɐɟ uo ƃoɟ ǝɥʇ ɟo ɹoloɔ ǝɥ┴",
+  "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog":
+	"ƃoɟ ɐllᴉuɐʌ ǝlqɐsᴉp",
+  "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog.@tooltip":
+	"˙ƃoɟ uᴉ pǝɹǝʌoɔ ʎlǝʇǝldɯoɔ ǝɹɐ sʞunɥɔ ɐllᴉuɐʌ ɟᴉ ǝlqɐsᴉp\n˙ƃoɟ ʇᴉpǝ ʇɐɥʇ spoɯ ɹǝɥʇo ɥʇᴉʍ sǝnssᴉ ǝsnɐɔ ʎɐW\n\n˙lɐɯɹou ǝʞᴉl ƃoɟ sɹǝpuǝɹ ʇɟɐɹɔǝuᴉW §6:ǝslɐℲ§r\n˙sʞunɥɔ ɐllᴉuɐʌ uo ƃoɟ s,ʇɟɐɹɔǝuᴉW sǝlqɐsᴉp §6:ǝnɹ┴§r",
+  "DistantHorizons.config.client.graphics.advancedGraphics":
+	"uoᴉʇdo ʎʇᴉlɐnb pǝɔuɐʌp∀",
+  "DistantHorizons.config.client.graphics.advancedGraphics.lodTemplate":
+	"ǝʇɐldɯǝʇ pO˥",
+  "DistantHorizons.config.client.graphics.advancedGraphics.lodTemplate.@tooltip":
+	"¡pǝʇuǝɯǝldɯᴉ sᴉ ƆIq∩Ɔ ʎluo ʎlʇuǝɹɹnƆ :Ǝ┴ON\n¿pǝɹǝpuǝɹ ǝq spO˥ ǝɥʇ plnoɥs ʍoH",
+  "DistantHorizons.config.client.graphics.advancedGraphics.disableDirectionalCulling":
+	"ƃuᴉllnɔ lɐuoᴉʇɔǝɹᴉp ǝlqɐsᴉp",
+  "DistantHorizons.config.client.graphics.advancedGraphics.disableDirectionalCulling.@tooltip":
+	"˙uoᴉsᴉʌ ɹnoʎ ɟo ǝƃpǝ ǝɥʇ ʇɐ ƃuᴉɹɐǝddɐsᴉp sʞunɥɔ ǝʞɐɟ ǝǝs noʎ ssǝlun ǝslɐℲ ǝʌɐǝ˥\n\n˙pǝɹǝpuǝɹ sʎɐʍlɐ ǝɹɐ sʞunɥɔ ǝʞɐɟ §6:ǝnɹ┴§r\n˙ǝɔuɐɯɹoɟɹǝd ƃuᴉʌoɹdɯᴉ 'pǝɹǝpuǝɹ ʇ,uǝɹɐ ɐɹǝɯɐɔ s,ɹǝʎɐld ǝɥʇ puᴉɥǝq sʞunɥɔ ǝʞɐɟ 6§:ǝslɐℲ§r",
+  "DistantHorizons.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality":
+	"ʎʇᴉlɐnb xɐɯ ʇɐ ʍɐɹp sʎɐʍl∀",
+  "DistantHorizons.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality.@tooltip":
+	"˙ǝƃɐsn ∩Ԁפ puɐ ʎɹoɯǝɯ ǝsɐǝɹɔuᴉ ʎllɐɔᴉʇsɐɹp llᴉʍ sᴉɥʇ ƃuᴉlqɐuƎ\n\n˙lǝʌǝl lᴉɐʇǝp ǝlqɐlᴉɐʌɐ ʇsǝɥƃᴉɥ ǝɥʇ ʇɐ pǝɹǝpuǝɹ ǝq llᴉʍ sʞunɥɔ ǝʞɐɟ llɐ §6:ǝnɹ┴§r\n˙ǝɔuɐɯɹoɟɹǝd ƃuᴉʌoɹdɯᴉ 'ǝɹɐ ʎǝɥʇ ɹǝʎɐld ǝɥʇ ɯoɹɟ ɹǝɥʇɹɐɟ ǝɥʇ ʎʇᴉlɐnb uᴉ ɟɟo doɹp llᴉʍ sʞunɥɔ ǝʞɐɟ §6:ǝslɐℲ§r",
+  "DistantHorizons.config.client.graphics.advancedGraphics.vanillaOverdraw":
+	"ʍɐɹpɹǝʌo ɐllᴉuɐΛ",
+  "DistantHorizons.config.client.graphics.advancedGraphics.vanillaOverdraw.@tooltip":
+	"˙plɹoʍ ǝɥʇ uᴉ sǝloɥ ǝq ʎɐɯ ǝɹǝɥʇ ʇnq 'ǝɔuɐʇsᴉp ɹǝpuǝɹ ɐllᴉuɐʌ ǝɥʇ dɐlɹǝʌo ɹǝʌǝu llᴉʍ sʞunɥɔ ǝʞɐɟ §6:ɹǝʌǝN§r\n˙ƃuᴉʌoɯ ʇ,usᴉ ɹǝʎɐld ǝɥʇ uǝɥʍ sdɐƃ ƃuᴉʇuǝʌǝɹd 'ǝɔuɐʇsᴉp ɹǝpuǝɹ ɐllᴉuɐʌ ǝɥʇ ɟo ɹǝpɹoq ǝɥʇ uo sʞunɥɔ ǝʞɐɟ sɹǝpuǝɹ §6:ɹǝpɹoq§r\n˙sǝʌɐɔ uᴉ ɹo sʞɔolq ʇuǝɹɐdsuɐɹʇ ɹoɟ ppo ʞool ʎɐɯ ʇnq 'plɹoʍ ǝɥʇ uᴉ sǝloɥ sʇuǝʌǝɹd §6:sʎɐʍl∀§r\n˙uoᴉsuǝɯᴉp puɐ ǝɔuɐʇsᴉp ɹǝpuǝɹ ɐllᴉuɐʌ uo pǝsɐq uoᴉʇdo ʇsǝq ǝɥʇ ʞɔᴉd oʇ sʇdɯǝʇʇɐ §6:ɔᴉɯɐuʎp§r\n\n˙sʞunɥɔ ɹɐlnƃǝɹ ɟo doʇ uo pǝɹǝpuǝɹ ǝq llᴉʍ sʞunɥɔ ǝʞɐɟ uǝʇɟo ʍoɥ sǝuᴉɯɹǝʇǝp",
+  "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane":
+	"ǝuɐld dᴉlɔ ɹɐǝu pǝpuǝʇxǝ ǝs∩",
+  "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane.@tooltip":
+	"˙ǝɔuɐʇsᴉp ɹǝpuǝɹ ɐllᴉuɐʌ ɹǝƃuol ɐ ɥʇᴉʍ ǝlqɐɔᴉʇou ssǝ˥\n˙sǝʌɐǝl ʎɔuɐɟ ɹɐǝu uǝɥʍ ʎllɐᴉɔǝdsǝ 'ʎlʇɔǝɹɹoɔuᴉ ɹǝpuǝɹ oʇ sʞunɥɔ ǝʞɐɟ ʎqɹɐǝu ǝsnɐɔ ʎɐɯ ʇnq\n'sǝnssᴉ ʍɐɹpɹǝʌo ǝɯos ʇuǝʌǝɹd llᴉM",
+  "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange":
+	"ǝƃuɐɹ ƃuᴉllnƆ ǝpᴉsʞɔɐq",
+  "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange.@tooltip":
+	"˙ǝɔuɐɯɹoɟɹǝd ǝʌoɹdɯᴉ oʇ pǝɹǝpuǝɹ ʇ,uǝɹɐ sʞunɥɔ ǝʞɐɟ ɟo ǝpᴉs ʞɔɐq ǝɥʇ ǝɹǝɥʍ ǝɔuɐʇsᴉp ǝɥ┴",
+  "DistantHorizons.config.client.worldGenerator":
+	"ɹoʇɐɹǝuǝƃ plɹoM",
+  "DistantHorizons.config.client.worldGenerator.generationPriority":
+	"ʎʇᴉɹoᴉɹd uoᴉʇɐɹǝuǝפ",
+  "DistantHorizons.config.client.worldGenerator.generationPriority.@tooltip":
+	"˙ɹǝʎɐld ǝɥʇ punoɹɐ pǝʇɐɹǝuǝƃ ƃuᴉǝq sʞunɥɔ ɹoɟ ʎʇᴉɹoᴉɹd ǝɥ┴",
+  "DistantHorizons.config.client.worldGenerator.distanceGenerationMode":
+	"ǝpoɯ uoᴉʇɐɹǝuǝƃ ǝɔuɐʇsᴉp",
+  "DistantHorizons.config.client.worldGenerator.distanceGenerationMode.@tooltip":
+	"(˙ʎlʇɔǝɹɹoɔuᴉ ǝʇɐɹǝuǝƃ sʞunɥɔ ǝʞɐɟ ǝɥʇ ssǝlun ǝsn ʇ,uop 'ʍols ʎɹǝΛ) llnℲ §6:ʎʇᴉlᴉqɐʇɐdɯoɔ ʇsǝq§r\n(pǝʇsǝƃƃns) sǝɹnʇɐǝℲ §6:ʎʇᴉlɐnQ ʇsǝq§r\nʎluo ǝɯoᴉq §6:ʇsǝʇsɐℲ§r\n\n˙ǝɔuɐʇsᴉp ɹǝpuǝɹ ɐllᴉuɐʌ ǝɥʇ ǝpᴉsʇno sʞunɥɔ ǝʞɐɟ ƃuᴉʇɐɹǝuǝƃ uǝɥʍ ǝq plnoɥs uoᴉʇɐɹǝuǝƃ ǝɥʇ pǝʇɐɔᴉldɯoɔ ʍoH",
+  "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration":
+	"uoᴉʇɐɹǝuǝƃ ǝɹnʇɐǝɟ ǝlqɐʇsun ʍoll∀",
+  "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration.@tooltip":
+	"Some features may not be thread safe.\nCould cause instability and crashes",
+  "DistantHorizons.config.client.worldGenerator.blocksToAvoid":
+	"pᴉoʌɐ oʇ ʞɔolq",
+  "DistantHorizons.config.client.worldGenerator.blocksToAvoid.@tooltip":
+	"˙sʞunɥɔ ǝʞɐɟ ƃuᴉʇɐɹǝuǝƃ uǝɥʍ ǝɹouƃᴉ oʇ sʞɔolq ɟo sǝdʎʇ ǝɥʇ sǝuᴉɟǝp",
+  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration":
+	"uoᴉʇɐɹǝuǝפ ʇuɐʇsᴉp ǝlqɐuƎ",
+  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration.@tooltip":
+	"˙ǝɔuɐʇsᴉp ɹǝpuǝɹ ɐllᴉuɐʌ ǝɥʇ uᴉɥʇᴉʍ ǝʇɐɹǝuǝƃ ʎluo llᴉʍ sʞunɥɔ ǝʞɐɟ §6:ǝslɐℲ§r\n\n˙∩ԀƆ ɟo ʇunoɯɐ ǝƃɹɐl ɐ ǝsn uɐɔ sᴉɥʇ :ǝʇoN\n˙ǝɔuɐʇsᴉp ɹǝpuǝɹ ɐllᴉuɐʌ ǝɥʇ ǝpᴉsʇno pǝʇɐɹǝuǝƃ ǝq llᴉʍ sʞunɥɔ ǝʞɐɟ ɹǝʎɐld ǝlƃuᴉs uᴉ §6:ǝnɹ┴§r",
+  "DistantHorizons.config.client.worldGenerator.lightGenerationMode":
+	"ǝpoW uoᴉʇɐɹǝuǝפ ʇɥƃᴉ˥",
+  "DistantHorizons.config.client.worldGenerator.lightGenerationMode.@tooltip":
+	"˙§6:ʇsɐℲ§r oʇ sᴉɥʇ ʇǝs 'ʞɔɐlq ɹɐǝddɐ sʞunɥɔ ǝʞɐɟ ǝɥʇ ɟI\n\n˙ɥʇooɯs sɐ ǝq ʇ,uoʍ sʍopɐɥs 'ƃuᴉʇɥƃᴉl ʞɔolq ǝʇɐɯᴉʇsǝ §6:ʇsɐℲ§r\n˙ƃuᴉʇɥƃᴉl ǝʇɐɹnɔɔɐ sǝʌᴉƃ 'ǝuᴉƃuǝ ƃuᴉʇɥƃᴉl s,ʇɟɐɹɔǝuᴉW ǝsn §6:ʎɔuɐℲ§r",
+  "DistantHorizons.config.client.advanced":
+	"suoᴉʇdo ǝɔuɐʌp∀",
+  "DistantHorizons.config.client.advanced.threading":
+	"ƃuᴉpɐǝɹɥ┴",
+  "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads":
+	"spɐǝɹɥʇ uoᴉʇɐɹǝuǝƃ plɹoʍ ɟo ˙ON",
+  "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads.@tooltip":
+	"˙ʇunoɔ ɹossǝɔoɹd s,∩ԀƆ ɹnoʎ puɐ Ɩ uǝǝʍʇǝq ǝq ʎluo uɐƆ\n\n˙ɹǝqɯnu sᴉɥʇ ǝsɐǝɹɔuᴉ :pǝǝds uoᴉʇɐɹǝuǝƃ pO˥ ǝsɐǝɹɔuᴉ oʇ ʇuɐʍ noʎ ɟI\n˙ɹǝqɯnu sᴉɥʇ ǝsɐǝɹɔǝp :sʞunɥɔ ǝʞɐɟ ƃuᴉʇɐɹǝuǝƃ uǝɥʍ ƃuᴉɹǝʇʇnʇs ǝɔuǝᴉɹǝdxǝ noʎ ɟI\n˙ǝɔuɐʇsᴉp ɹǝpuǝɹ lɐɯɹou ǝɥʇ ǝpᴉsʇno\nsʞunɥɔ ǝʞɐɟ ǝʇɐɹǝuǝƃ oʇ pǝsn spɐǝɹɥʇ ɟo ɹǝqɯnu ǝɥ┴",
+  "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads":
+	"spɐǝɹɥʇ ɹǝplᴉnq ɹǝɟɟnq ɟo ˙ON",
+  "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads.@tooltip":
+	"The number of threads used when building vertex buffers\n(The things sent to your GPU to draw the fake chunks).\nCan only be between 1 and your CPU's processor count.",
+  "DistantHorizons.config.client.advanced.buffers":
+	"sɹǝɟɟnq",
+  "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod":
+	"poɥʇǝɯ pɐoldn ∩Ԁפ",
+  "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod.@tooltip":
+	"˙ʇɔǝɟɟǝ llnɟ ǝɥʇ ǝǝs oʇ uᴉoɾǝɹ puɐ ƃuᴉʌɐǝl oʇ ǝʌɐɥ ʎɐɯ noʎ ploʍ ɐ uᴉ ǝɹɐ noʎ ɟᴉ :ǝʇoN\n˙ƃuᴉʇʇǝs sᴉɥʇ ƃuᴉƃuɐɥɔ ʎɹʇ 'ʍol sᴉ ǝƃɐsn ∩Ԁפ puɐ ∩ԀƆ ɹnoʎ ǝlᴉɥʍ ƃuᴉɹǝʇʇnʇs ǝɔuǝᴉɹǝdxǝ noʎ ɟI\n\n˙∩Ԁפ ǝɥʇ oʇ ʎɹʇǝɯoǝƃ ƃuᴉpɐoldn ɹoɟ poɥʇǝɯ ǝɥ┴",
+  "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds":
+	"(spuoɔǝsᴉllᴉɯ) pǝǝds pɐoldn ∩Ԁפ",
+  "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds.@tooltip":
+	"˙ƃuᴉɹǝʇʇnʇs ǝɯɐɹɟ sᴉ ǝɹǝɥʇ ɟᴉ pǝsɐǝɹɔuᴉ ǝq ʎɐW\n¿pǝpɐoldn ɐʇɐp ɟo ǝʇʎqɐƃǝW ɹǝd ʇᴉɐʍ ɹǝɟɟnq ɐ plnoɥs ƃuol ʍoH",
+  "DistantHorizons.config.client.advanced.buffers.rebuildTimes":
+	"sǝɯᴉʇ plᴉnqǝɹ",
+  "DistantHorizons.config.client.advanced.buffers.rebuildTimes.@tooltip":
+	"¿∩Ԁפ ǝɥʇ oʇ ʇuǝs puɐ ʇlᴉnqǝɹ ǝq (ʎɹʇǝɯoǝƃ) sɹǝɟɟnq xǝʇɹǝʌ plnoɥs ʎlʇuǝnbǝɹɟ ʍoH",
+  "DistantHorizons.config.client.advanced.debugging":
+	"ƃnqǝp",
+  "DistantHorizons.config.client.advanced.debugging.drawLods":
+	"s,pO˥ ʍɐɹp",
+  "DistantHorizons.config.client.advanced.debugging.drawLods.@tooltip":
+	"˙ǝlᴉɟ oʇ pǝʌɐs puɐ pǝʇɐɹǝuǝƃ ǝq llᴉʇs llᴉʍ ʎǝɥʇ ɹǝʌǝʍoɥ 'pǝɹǝpuǝɹ ǝq ʇou llᴉʍ sʞunɥɔ ǝʞɐɟ §6:ǝslɐℲ§r\n˙pǝɹǝpuǝɹ ǝq llᴉʍ sʞunɥɔ ǝʞɐɟ §6:ǝnɹ┴§r",
+  "DistantHorizons.config.client.advanced.debugging.debugMode":
+	"ǝpoɯ ƃnqǝp",
+  "DistantHorizons.config.client.advanced.debugging.debugMode.@tooltip":
+	"˙ǝpoɯ ƃnqǝp ǝʌᴉʇɔɐ ǝɥ┴",
+  "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings":
+	"sƃuᴉpuᴉqʎǝʞ ƃnqǝp ǝlqɐuƎ",
+  "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings.@tooltip":
+	"§6True:§r debug keybindings can be used to change the Debug mode in game.",
+  "DistantHorizons.config.enum.HorizontalResolution.BLOCK":
+	"ʞɔolq",
+  "DistantHorizons.config.enum.HorizontalResolution.TWO_BLOCKS":
+	"sʞɔolq ᄅ",
+  "DistantHorizons.config.enum.HorizontalResolution.FOUR_BLOCKS":
+	"sʞɔolq ㄣ",
+  "DistantHorizons.config.enum.HorizontalResolution.HALF_CHUNK":
+	"ʞunɥɔ ɐ ɟlɐH",
+  "DistantHorizons.config.enum.HorizontalResolution.CHUNK":
+	"ʞunɥƆ",
+  "DistantHorizons.config.enum.VerticalQuality.LOW":
+	"ʍo˥",
+  "DistantHorizons.config.enum.VerticalQuality.MEDIUM":
+	"ɯnᴉpǝW",
+  "DistantHorizons.config.enum.VerticalQuality.HIGH":
+	"ɥƃᴉH",
+  "DistantHorizons.config.enum.HorizontalScale.LOW":
+	"ʍo˥",
+  "DistantHorizons.config.enum.HorizontalScale.MEDIUM":
+	"ɯnᴉpǝW",
+  "DistantHorizons.config.enum.HorizontalScale.HIGH":
+	"ɥƃᴉH",
+  "DistantHorizons.config.enum.HorizontalQuality.LOWEST":
+	"Lowest",
+  "DistantHorizons.config.enum.HorizontalQuality.LOW":
+	"ʍo˥",
+  "DistantHorizons.config.enum.HorizontalQuality.MEDIUM":
+	"ɯnᴉpǝW",
+  "DistantHorizons.config.enum.HorizontalQuality.HIGH":
+	"ɥƃᴉH",
+  "DistantHorizons.config.enum.FogDistance.NEAR":
+	"ɹɐǝN",
+  "DistantHorizons.config.enum.FogDistance.FAR":
+	"ɹɐℲ",
+  "DistantHorizons.config.enum.FogDistance.NEAR_AND_FAR":
+	"ɹɐɟ puɐ ɹɐǝN",
+  "DistantHorizons.config.enum.FogDrawMode.USE_OPTIFINE_SETTING":
+	"sƃuᴉʇʇǝs pǝppoɯ ǝs∩",
+  "DistantHorizons.config.enum.FogDrawMode.FOG_ENABLED":
+	"pǝlqɐuƎ",
+  "DistantHorizons.config.enum.FogDrawMode.FOG_DISABLED":
+	"pǝlqɐsᴉp",
+  "DistantHorizons.config.enum.FogColorMode.USE_WORLD_FOG_COLOR":
+	"ƃoɟ plɹoʍ ǝs∩",
+  "DistantHorizons.config.enum.FogColorMode.USE_SKY_COLOR":
+	"ɹoloɔ ʎʞs ǝs∩",
+  "DistantHorizons.config.enum.LodTemplate.CUBIC":
+	"ɔᴉqnƆ",
+  "DistantHorizons.config.enum.LodTemplate.TRIANGULAR":
+	"ɹɐlnƃuɐᴉɹ┴",
+  "DistantHorizons.config.enum.LodTemplate.DYNAMIC":
+	"ɔᴉɯɐuʎp",
+  "DistantHorizons.config.enum.VanillaOverdraw.NEVER":
+	"ɹǝʌǝN",
+  "DistantHorizons.config.enum.VanillaOverdraw.DYNAMIC":
+	"ɔᴉɯɐuʎp",
+  "DistantHorizons.config.enum.VanillaOverdraw.ALWAYS":
+	"sʎɐʍl∀",
+  "DistantHorizons.config.enum.VanillaOverdraw.BORDER":
+	"ɹǝpɹoq",
+  "DistantHorizons.config.enum.GenerationPriority.AUTO":
+	"oʇn∀",
+  "DistantHorizons.config.enum.GenerationPriority.NEAR_FIRST":
+	"ʇsɹᴉɟ ɹɐǝN",
+  "DistantHorizons.config.enum.GenerationPriority.BALANCED":
+	"pǝɔuɐlɐq",
+  "DistantHorizons.config.enum.GenerationPriority.FAR_FIRST":
+	"ʇsɹᴉɟ ɹɐℲ",
+  "DistantHorizons.config.enum.DistanceGenerationMode.NONE":
+	"ǝuoN",
+  "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY":
+	"ʎluo ǝɯoᴉq",
+  "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT":
+	"ʇɥƃᴉǝɥ ǝʇɐlnɯᴉs ʎluo ǝɯoᴉq",
+  "DistantHorizons.config.enum.DistanceGenerationMode.SURFACE":
+	"ǝɔɐɟɹnS",
+  "DistantHorizons.config.enum.DistanceGenerationMode.FEATURES":
+	"sǝɹnʇɐǝℲ",
+  "DistantHorizons.config.enum.DistanceGenerationMode.FULL":
+	"llnℲ",
+  "DistantHorizons.config.enum.BlocksToAvoid.NONE":
+	"ǝuoN",
+  "DistantHorizons.config.enum.BlocksToAvoid.NON_FULL":
+	"llnɟ uoN",
+  "DistantHorizons.config.enum.BlocksToAvoid.NO_COLLISION":
+	"uoᴉsᴉlloɔ oN",
+  "DistantHorizons.config.enum.BlocksToAvoid.BOTH":
+	"ɥʇoq",
+  "DistantHorizons.config.enum.DebugMode.OFF":
+	"ɟɟO",
+  "DistantHorizons.config.enum.DebugMode.SHOW_WIREFRAME":
+	"ǝɯɐɹɟǝɹᴉʍ ʍoɥS",
+  "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL":
+	"lᴉɐʇǝp ʍoɥS",
+  "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL_WIREFRAME":
+	"ǝɯɐɹɟǝɹᴉʍ ɥʇᴉʍ lᴉɐʇǝp ʍoɥS",
+  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE":
+	"ǝpoɯ uoᴉʇɐɹǝuǝƃ ʍoɥS",
+  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME":
+	"ǝɯɐɹɟǝɹᴉʍ ɥʇᴉʍ ǝpoɯ uoᴉʇɐɹǝuǝƃ ʍoɥS",
+  "DistantHorizons.config.enum.GpuUploadMethod.AUTO":
+	"oʇn∀",
+  "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_STORAGE":
+	"ǝƃɐɹoʇs ɹǝɟɟnq",
+  "DistantHorizons.config.enum.GpuUploadMethod.SUB_DATA":
+	"ɐʇɐp qnS",
+  "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_MAPPING":
+	"ƃuᴉddɐɯ ɹǝɟɟnq",
+  "DistantHorizons.config.enum.GpuUploadMethod.DATA":
+	"ɐʇɐp",
+  "DistantHorizons.config.enum.BufferRebuildTimes.FREQUENT":
+	"ʇuǝnbǝɹℲ",
+  "DistantHorizons.config.enum.BufferRebuildTimes.NORMAL":
+	"lɐɯɹoN",
+  "DistantHorizons.config.enum.BufferRebuildTimes.RARE":
+	"ǝɹɐɹ",
+  "DistantHorizons.config.enum.DropoffQuality.AUTO":
+	"oʇn∀",
+  "DistantHorizons.config.enum.DropoffQuality.SMOOTH_DROPOFF":
+	"ɟɟodoɹp ɥʇooɯS",
+  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED":
+	"pǝsnɔoɟ ǝɔuɐɯɹoɟɹǝԀ",
+  "DistantHorizons.config.enum.LightGenerationMode.FAST":
+	"ʇsɐℲ",
+  "DistantHorizons.config.enum.LightGenerationMode.FANCY":
+	"ʎɔuɐℲ"
 }
