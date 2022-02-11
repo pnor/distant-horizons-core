@@ -375,17 +375,10 @@ public class LodUtil
 		// if the skipRadius is being used
 		if (skipRadius != 0)
 		{
-			for (int x = centerChunk.getX() - chunkRenderDist; x < centerChunk.getX() + chunkRenderDist; x++)
-			{
-				for (int z = centerChunk.getZ() - chunkRenderDist; z < centerChunk.getZ() + chunkRenderDist; z++)
-				{
-					if (x <= centerChunk.getX() - skipRadius || x >= centerChunk.getX() + skipRadius
-							|| z <= centerChunk.getZ() - skipRadius || z >= centerChunk.getZ() + skipRadius)
-					{
-						posToSkip.remove(FACTORY.createChunkPos(x, z));
-					}
-				}
-			}
+			posToSkip.removeIf((pos) -> {
+				return (pos.getX() < centerChunk.getX() - skipRadius || pos.getX() > centerChunk.getX() + skipRadius
+						|| pos.getZ() < centerChunk.getZ() - skipRadius || pos.getZ() > centerChunk.getZ() + skipRadius);
+			});
 		}
 		return posToSkip;
 	}

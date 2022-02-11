@@ -50,4 +50,15 @@ public abstract class AbstractChunkPosWrapper
 	
 	public abstract AbstractBlockPosWrapper getWorldPosition();
 	
+	@Override
+	public int hashCode() {
+		return Long.hashCode(getLong());
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof AbstractChunkPosWrapper)) return false;
+		return getLong() == ((AbstractChunkPosWrapper)obj).getLong();
+	}
+	
 }
