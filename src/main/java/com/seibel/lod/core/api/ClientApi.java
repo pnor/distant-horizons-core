@@ -133,7 +133,7 @@ public class ClientApi
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
-		//applyConfigOverrides();
+		applyConfigOverrides();
 
 		// clear any out of date objects
 		MC.clearFrameObjectCache();
@@ -268,11 +268,6 @@ public class ClientApi
 			MC.sendChatMessage(ModInfo.READABLE_NAME + " experimental build " + ModInfo.VERSION);
 			MC.sendChatMessage("You are running an unsupported version of the mod!");
 			MC.sendChatMessage("Here be dragons!");
-			MC.sendChatMessage("======================");
-			MC.sendChatMessage("====   REMINDER   ====");
-			MC.sendChatMessage("======================");
-			MC.sendChatMessage("Remember to DISABLE this in CLientApi.applyConfigOverrides()");
-			MC.sendChatMessage("For the offical release!");
 			
 			configOverrideReminderPrinted = true;
 			CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
