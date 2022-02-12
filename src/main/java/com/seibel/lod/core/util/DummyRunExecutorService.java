@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -29,7 +30,7 @@ public class DummyRunExecutorService implements ExecutorService {
 	public List<Runnable> shutdownNow()
 	{
 		shutdownCalled = true;
-		return List.of();
+		return new ArrayList<Runnable>();
 	}
 
 	@Override
@@ -57,10 +58,8 @@ public class DummyRunExecutorService implements ExecutorService {
 		try
 		{
 			return CompletableFuture.completedFuture(task.call());
-		}
-		catch (Throwable e)
-		{
-			return CompletableFuture.failedFuture(e);
+		} catch (Throwable e) {
+			return CompletableFuture.supplyAsync( () -> {throw new CompletionException(e);}, Runnable::run);
 		}
 	}
 
@@ -74,7 +73,7 @@ public class DummyRunExecutorService implements ExecutorService {
 		}
 		catch (Throwable e)
 		{
-			return CompletableFuture.failedFuture(e);
+			return CompletableFuture.supplyAsync( () -> {throw new CompletionException(e);}, Runnable::run);
 		}
 	}
 
@@ -88,7 +87,7 @@ public class DummyRunExecutorService implements ExecutorService {
 		}
 		catch (Throwable e)
 		{
-			return CompletableFuture.<Void>failedFuture(e);
+			return CompletableFuture.supplyAsync( () -> {throw new CompletionException(e);}, Runnable::run);
 		}
 	}
 
