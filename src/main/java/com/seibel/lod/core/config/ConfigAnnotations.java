@@ -19,6 +19,16 @@ public class ConfigAnnotations {
     public @interface Entry
     {
         String name() default "";
+        
+        @Deprecated
+        int width() default 150;
+
+        @Deprecated
+        double minValue() default Double.MIN_NORMAL;
+
+        @Deprecated
+        double maxValue() default Double.MAX_VALUE;
+
     }
 
     /** For making categories */
@@ -46,5 +56,16 @@ public class ConfigAnnotations {
     public @interface FileComment
     {
 
+    }
+
+    /** DONT USE AS IT WILL BE REMOVED IN THE REWORK OF THE CONFIG */
+    @Deprecated
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface ScreenEntry
+    {
+        String name() default "";
+
+        int width() default 100;
     }
 }
