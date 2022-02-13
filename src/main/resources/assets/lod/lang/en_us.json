@@ -32,11 +32,11 @@
   "DistantHorizons.config.client.graphics.quality.horizontalQuality":
 	"Horizontal quality",
   "DistantHorizons.config.client.graphics.quality.horizontalQuality.@tooltip":
-	"How far appart drops in quality are.\n\nHigher settings will increase the distance between drops\nbut will increase memory and GPU usage.",
+	"How far apart drops in quality are.\n\nHigher settings will increase the distance between drops\nbut will increase memory and GPU usage.",
   "DistantHorizons.config.client.graphics.quality.dropoffQuality":
 	"Dropoff quality",
   "DistantHorizons.config.client.graphics.quality.dropoffQuality.@tooltip":
-	"How detail dropoff is calculated.\n\nHigher settings will make the dropoff less noticable\nbut will increase how often the geometry has to be rebuilt,\nincreasing CPU usage and the chance of stuttering.",
+	"How detail dropoff is calculated.\n\nHigher settings will make the drop-off less noticeable\nbut will increase how often the geometry has to be rebuilt,\nincreasing CPU usage and the chance of stuttering.",
   "DistantHorizons.config.client.graphics.fogQuality":
 	"Fog options",
   "DistantHorizons.config.client.graphics.fogQuality.fogDistance":
@@ -76,7 +76,7 @@
   "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane":
 	"Use extended near clip plane",
   "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane.@tooltip":
-	"Will prevent some overdraw issues,\nbut may cause nearby fake chunks to render incorrectly, especially when near fancy leaves.\nLess noticable with a longer vanilla render distance.",
+	"Will prevent some overdraw issues,\nbut may cause nearby fake chunks to render incorrectly, especially when near fancy leaves.\nLess noticeable with a longer vanilla render distance.",
   "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange":
 	"Backside Culling Range",
   "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange.@tooltip":
@@ -124,7 +124,7 @@
   "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod":
 	"GPU upload method",
   "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod.@tooltip":
-	"The method for uploading geometry to the GPU.\n\nIf you experience stuttering while your CPU and GPU usage is low, try changing this setting.\nNote: if you are in a wold you may have to leaving and rejoin to see the full effect.",
+	"The method for uploading geometry to the GPU.\n\nIf you experience stuttering while your CPU and GPU usage is low, try changing this setting.\nNote: if you are in a world you may have to leaving and rejoin to see the full effect.",
   "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds":
 	"GPU upload speed (milliseconds)",
   "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds.@tooltip":
