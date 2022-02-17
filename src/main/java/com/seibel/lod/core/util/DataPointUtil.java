@@ -623,10 +623,10 @@ public class DataPointUtil
 						{
 							numberOfChildren++;
 							allVoid = false;
-							tempAlpha += getAlpha(data);
-							tempRed += getRed(data);
-							tempGreen += getGreen(data);
-							tempBlue += getBlue(data);
+							tempAlpha += getAlpha(data) * getAlpha(data);
+							tempRed += getRed(data) * getRed(data);
+							tempGreen += getGreen(data) * getGreen(data);
+							tempBlue += getBlue(data) * getBlue(data);
 							tempLightBlock += getLightBlock(data);
 							tempLightSky += getLightSky(data);
 						}
@@ -656,7 +656,7 @@ public class DataPointUtil
 					//{
 					//	add simplification at the end due to color
 					//}
-					dataPoint[j] = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, genMode, false);
+					dataPoint[j] = createDataPoint((int) Math.sqrt(tempAlpha), (int) Math.sqrt(tempRed), (int) Math.sqrt(tempGreen), (int) Math.sqrt(tempBlue), height, depth, tempLightSky, tempLightBlock, genMode, false);
 				}
 			}
 		}
