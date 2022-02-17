@@ -1,14 +1,9 @@
 #version 150 core
 
 in vec4 vertexColor;
-in vec4 vertexWorldPos;
-
-
+in float dist;
 
 out vec4 fragColor;
-
-
-uniform vec3 cameraPos;
 
 uniform bool fogEnabled;
 uniform bool nearFogEnabled;
@@ -44,7 +39,6 @@ void main()
 	{
 		// add fog
 		
-		float dist = distance(vertexWorldPos, vec4(cameraPos,1));
 		// no fog by default
 		float fogAlpha = 0;
 		

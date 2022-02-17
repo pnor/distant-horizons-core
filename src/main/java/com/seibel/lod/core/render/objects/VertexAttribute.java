@@ -34,6 +34,10 @@ public abstract class VertexAttribute {
 			this.normalized = normalized;
 			this.byteSize = byteSize;
 		}
+		private static int _align(int bytes) {
+			return (-Math.floorDiv(-bytes, 4))*4;
+		}
+		
 		public static VertexPointer addFloatPointer(boolean normalized) {
 			return new VertexPointer(1, GL32.GL_FLOAT, normalized, 4);
 		}
@@ -50,7 +54,10 @@ public abstract class VertexAttribute {
 			return new VertexPointer(1, GL32.GL_UNSIGNED_BYTE, normalized, 4); // Always aligned to 4 bytes
 		}
 		public static VertexPointer addUnsignedBytesPointer(int elementCount, boolean normalized) {
-			return new VertexPointer(elementCount, GL32.GL_UNSIGNED_BYTE, normalized, (-Math.floorDiv(-elementCount, 4))*4); // aligned to 4 bytes
+			return new VertexPointer(elementCount, GL32.GL_UNSIGNED_BYTE, normalized, _align(elementCount)); // aligned to 4 bytes
+		}
+		public static VertexPointer addUnsignedShortsPointer(int elementCount, boolean normalized) {
+			return new VertexPointer(elementCount, GL32.GL_UNSIGNED_SHORT, normalized, _align(elementCount*2));
 		}
 		public static VertexPointer addIntPointer(boolean normalized) {
 			return new VertexPointer(1, GL32.GL_INT, normalized, 4);

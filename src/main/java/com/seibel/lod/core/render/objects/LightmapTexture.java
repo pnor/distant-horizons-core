@@ -48,8 +48,8 @@ public class LightmapTexture {
 			MC.sendChatMessage(same + " " + badIndex);
 		*/
 		// comment this line out to prevent uploading the new lightmap
-		GL32.glTexImage2D(GL32.GL_TEXTURE_2D, 0, GL32.GL_RGBA, lightMapWidth,
-				lightMapHeight, 0, GL32.GL_RGBA, GL32.GL_UNSIGNED_BYTE, pixels);
+		GL32.glTexImage2D(GL32.GL_TEXTURE_2D, 0, GL32.GL_RGBA, lightMapWidth*lightMapHeight,
+				1, 0, GL32.GL_RGBA, GL32.GL_UNSIGNED_BYTE, pixels);
 		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_WRAP_S, GL32.GL_CLAMP_TO_BORDER);
 		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_WRAP_T, GL32.GL_CLAMP_TO_BORDER);
 		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_NEAREST);

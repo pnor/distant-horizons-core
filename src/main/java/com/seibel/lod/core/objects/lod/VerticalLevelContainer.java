@@ -26,8 +26,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-import com.seibel.lod.core.dataFormat.*;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -186,6 +184,15 @@ public class VerticalLevelContainer implements LevelContainer
 	public long getSingleData(int posX, int posZ)
 	{
 		return dataContainer[posX * size * verticalSize + posZ * verticalSize];
+	}
+	
+	@Override
+	public long[] getAllData(int posX, int posZ)
+	{
+		long[] result = new long[verticalSize];
+		int index = posX * size * verticalSize + posZ * verticalSize;
+		System.arraycopy(dataContainer, index, result, 0, verticalSize);
+		return result;
 	}
 	
 	@Override

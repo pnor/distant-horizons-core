@@ -1,13 +1,10 @@
 #version 150 core
 
-in vec3 vPosition;
+in vec4 vPosition;
 in vec4 color;
-in vec2 light;
 
 out vec4 vertexColor;
-out vec4 vertexWorldPos;
-out float depth;
-
+out float dist;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -21,31 +18,18 @@ uniform sampler2D lightMap;
  * 
  * author: James Seibel
  * version: 12-8-2021
+ *
+ * updated: TomTheFurry
+ * version: 15-2-2022
  */
 void main()
 {
-	float blockSkyLight = light[0];
-	float blockLight = light[1];
+	vec4 worldSpacePos = modelViewMatrix * vec4(vPosition.xyz,1);
+	float light = (vPosition.a+0.5) / 256.0;
 
-	// just skylight
-	// good for sanity checks; but will cause OpenGL errors since we are binding unused data
-//	vertexColor = vec4(color.xyz * worldSkyLight / 16.0, color.w);
+	vertexColor = color * texture(lightMap, vec2(light,0.5));
 	
-	float blockLightTex = blockLight / 16.0;
-	float skyLightTex = blockSkyLight / 16.0;
+	dist = length(worldSpacePos.xyz);
 	
-	// we don't really need alpha in the lightmap
-//	vertexColor = color * vec4(texture(lightMap, vec2(skyLightTex, blockLightTex)).xyz, 1);
-	vertexColor = color * texture(lightMap, vec2(skyLightTex, blockLightTex));
-	
-	
-	
-	// TODO: add a simple white texture to support Optifine shaders
-	//textureCoord = textureCoord;
-	
-	vertexWorldPos = vec4(vPosition, 1);
-	
-	// the vPosition needs to be converted to a vec4 so it can be multiplied
-	// by the 4x4 matrices
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1);
+    gl_Position = projectionMatrix * worldSpacePos;
 }

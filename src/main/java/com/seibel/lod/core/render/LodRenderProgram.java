@@ -24,7 +24,6 @@ import java.awt.Color;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.math.Mat4f;
-import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.render.objects.ShaderProgram;
 import com.seibel.lod.core.render.objects.VertexAttribute;
 import com.seibel.lod.core.render.objects.VertexAttributePostGL43;
@@ -40,11 +39,11 @@ public class LodRenderProgram extends ShaderProgram {
 	// Attributes
 	public final int posAttrib;
 	public final int colAttrib;
-	public final int lightAttrib; //Sky light then block light
+	//public final int lightAttrib; //Sky light then block light
 	// Uniforms
 	public final int mvmUniform;
 	public final int projUniform;
-	public final int cameraUniform;
+	//public final int cameraUniform;
 	public final int fogColorUniform;
 	// public final int skyLightUniform; worldSkyLight is currently not used
 	public final int lightMapUniform;
@@ -63,11 +62,11 @@ public class LodRenderProgram extends ShaderProgram {
 		
         posAttrib = getAttributeLocation("vPosition");
         colAttrib = getAttributeLocation("color");
-        lightAttrib = getAttributeLocation("light");
+        //lightAttrib = getAttributeLocation("light");
         
         mvmUniform = getUniformLocation("modelViewMatrix");
 		projUniform = getUniformLocation("projectionMatrix");
-		cameraUniform = getUniformLocation("cameraPos");
+		//cameraUniform = getUniformLocation("cameraPos");
 		fogColorUniform = getUniformLocation("fogColor");
 		// skyLightUniform = getUniformLocation("worldSkyLight");
 		lightMapUniform = getUniformLocation("lightMap");
@@ -90,9 +89,11 @@ public class LodRenderProgram extends ShaderProgram {
 		else
 			vao = new VertexAttributePreGL43(); // also binds VertexAttribute
 		//vao.bind();
-		vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false)); // 4+4+4
+		// Now a pos+light.
+		vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addUnsignedShortsPointer(4, false)); // 2+2+2+2
+		//vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false)); // 4+4+4
 		vao.setVertexAttribute(0, colAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true)); // +4
-		vao.setVertexAttribute(0, lightAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(2, false)); // +4 due to how it aligns
+		//vao.setVertexAttribute(0, lightAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(2, false)); // +4 due to how it aligns
 		try {
 		vao.completeAndCheck(vertexByteCount);
 		} catch (RuntimeException e) {
@@ -126,15 +127,18 @@ public class LodRenderProgram extends ShaderProgram {
 		vao.unbindBuffersFromAllBindingPoint();
 	}
 	
-	public void fillUniformData(Mat4f modelViewMatrix, Mat4f projectionMatrix, Vec3f cameraPos, Color fogColor, int skyLight, int lightmapBindPoint) {
+	public void fillUniformData(Mat4f projectionMatrix, Color fogColor, int skyLight, int lightmapBindPoint) {
         super.bind();
 		// uniforms
-        setUniform(mvmUniform, modelViewMatrix);
 		setUniform(projUniform, projectionMatrix);
-		setUniform(cameraUniform, cameraPos);
 		setUniform(fogColorUniform, fogColor);
 		// setUniform(skyLightUniform, skyLight);
 		setUniform(lightMapUniform, lightmapBindPoint);
+	}
+	
+	public void fillUniformModelMatrix(Mat4f modelViewMatrix) {
+		super.bind();
+        setUniform(mvmUniform, modelViewMatrix);
 	}
 	
 	public void fillUniformDataForFog(LodFogConfig fogSettings, boolean allFogMode) {
