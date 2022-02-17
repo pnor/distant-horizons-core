@@ -68,6 +68,14 @@ public interface LevelContainer
 	 * @return the data in long array format
 	 */
 	long getData(int posX, int posZ, int index);
+
+	/**
+	 * With this you can get data from the level container
+	 * @param posX x position in the detail level
+	 * @param posZ z position in the detail level
+	 * @return the data in long array format
+	 */
+	long[] getAllData(int posX, int posZ);
 	
 	/**
 	 * With this you can get data from the level container

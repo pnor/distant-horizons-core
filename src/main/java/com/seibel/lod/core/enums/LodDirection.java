@@ -23,7 +23,20 @@ public enum LodDirection
 	SOUTH(3, 2, 0, "south", LodDirection.AxisDirection.POSITIVE, LodDirection.Axis.Z, new Vec3i(0, 0, 1)),
 	WEST(4, 5, 1, "west", LodDirection.AxisDirection.NEGATIVE, LodDirection.Axis.X, new Vec3i(-1, 0, 0)),
 	EAST(5, 4, 3, "east", LodDirection.AxisDirection.POSITIVE, LodDirection.Axis.X, new Vec3i(1, 0, 0));
-
+	public static final LodDirection[] DIRECTIONS = new LodDirection[] {
+			LodDirection.UP,
+			LodDirection.DOWN,
+			LodDirection.WEST,
+			LodDirection.EAST,
+			LodDirection.NORTH,
+			LodDirection.SOUTH };
+	
+	/** North, South, East, West */
+	public static final LodDirection[] ADJ_DIRECTIONS = new LodDirection[] {
+			LodDirection.EAST,
+			LodDirection.WEST,
+			LodDirection.SOUTH,
+			LodDirection.NORTH };
 //	private final int data3d;
 //	private final int oppositeIndex;
 //	private final int data2d;

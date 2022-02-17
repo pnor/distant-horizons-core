@@ -190,6 +190,18 @@ public class LodRegion {
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainer[detailLevel].getData(posX, posZ, verticalIndex);
 	}
+	
+	/**
+	 * Get the dataPoint at the given relative position.
+	 * 
+	 * @return the data at the relative pos and detail level, 0 if the data doesn't
+	 *         exist.
+	 */
+	public long[] getAllData(byte detailLevel, int posX, int posZ) {
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
+		return dataContainer[detailLevel].getAllData(posX, posZ);
+	}
 
 	/**
 	 * Get the dataPoint at the given relative position.

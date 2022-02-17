@@ -29,6 +29,7 @@ import org.lwjgl.opengl.GL32;
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
@@ -38,8 +39,10 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
+import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
@@ -145,7 +148,7 @@ public class LodRenderer
 	 * @param mcProjectionMatrix 
 	 * @param partialTicks how far into the current tick this method was called.
 	 */
-	public void drawLODs(LodDimension lodDim, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfilerWrapper profiler)
+	public void drawLODs(LodDimension lodDim, Mat4f baseModelViewMatrix, Mat4f baseProjectionMatrix, float partialTicks, IProfilerWrapper profiler)
 	{
 		//=================================//
 		// determine if LODs should render //
@@ -216,11 +219,11 @@ public class LodRenderer
 		}
 		swapBuffer.end("SwapBuffer");
 		// Get the front buffers to draw
-		MovableGridList<LodVertexBuffer[]> vbos = lodBufferBuilderFactory.getFrontBuffers();
+		MovableGridList<RenderRegion> regions = lodBufferBuilderFactory.getFrontBuffers();
 		int vbosCenterX = lodBufferBuilderFactory.getFrontBuffersCenterX();
 		int vbosCenterZ = lodBufferBuilderFactory.getFrontBuffersCenterZ();
 		
-		if (vbos == null) {
+		if (regions == null) {
 			// There is no vbos, which means nothing needs to be drawn. So skip rendering
 			return;
 		}
@@ -282,7 +285,6 @@ public class LodRenderer
 		
 		/*---------Get required data--------*/
 		// Get the matrixs for rendering
-		Mat4f modelViewMatrix = translateModelViewMatrix(mcModelViewMatrix, partialTicks, vbosCenterX, vbosCenterZ);
 		int vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
 		int farPlaneBlockDistance;
 		// required for setupFog and setupProjectionMatrix
@@ -290,15 +292,16 @@ public class LodRenderer
 			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
-		Mat4f projectionMatrix = createProjectionMatrix(mcProjectionMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
 		LodFogConfig fogSettings = new LodFogConfig(CONFIG, REFLECTION_HANDLER, farPlaneBlockDistance, vanillaBlockRenderedDistance);
 		drawCalculateParams.end("drawCalculateParams");
+		Mat4f projectionMatrix = createProjectionMatrix(baseProjectionMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
 		
 		/*---------Fill uniform data--------*/
 		LagSpikeCatcher drawFillData = new LagSpikeCatcher();
 		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
-		shaderProgram.fillUniformData(modelViewMatrix, projectionMatrix, getTranslatedCameraPos(vbosCenterX, vbosCenterZ),
-				MC_RENDER.isFogStateSpecial() ? getSpecialFogColor(partialTicks) : getFogColor(partialTicks), (int) (MC.getSkyDarken(partialTicks) * 15), 0);
+		shaderProgram.fillUniformData(projectionMatrix,
+				MC_RENDER.isFogStateSpecial() ? getSpecialFogColor(partialTicks) : getFogColor(partialTicks),
+						(int) (MC.getSkyDarken(partialTicks) * 15), 0);
 		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
 		shaderProgram.fillUniformDataForFog(fogSettings, MC_RENDER.isFogStateSpecial());
 		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
@@ -317,16 +320,28 @@ public class LodRenderer
 		
 		// where the center of the buffers is (needed when culling regions)
 		// render each of the buffers
-		int lowRegionX = vbos.getCenterX() - vbos.gridCentreToEdge;
-		int lowRegionZ = vbos.getCenterY() - vbos.gridCentreToEdge;
+		int lowRegionX = regions.getCenterX() - regions.gridCentreToEdge;
+		int lowRegionZ = regions.getCenterY() - regions.gridCentreToEdge;
 		int drawCall = 0;
 		int vCount0 = 0;
-		for (int regionX=lowRegionX; regionX<lowRegionX+vbos.gridSize; regionX++) {
-			for (int regionZ=lowRegionZ; regionZ<lowRegionZ+vbos.gridSize; regionZ++) {
-				if (vbos.get(regionX, regionZ) == null) continue;
+		for (int regionX=lowRegionX; regionX<lowRegionX+regions.gridSize; regionX++) {
+			for (int regionZ=lowRegionZ; regionZ<lowRegionZ+regions.gridSize; regionZ++) {
+				if (regions.get(regionX, regionZ) == null) continue;
+				
 				if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
 						MC_RENDER.getLookAtVector(), regionX, regionZ)) {
-					for (LodVertexBuffer vbo : vbos.get(regionX, regionZ)) {
+					RenderRegion region = regions.get(regionX, regionZ);
+					//TODO improve this
+					Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
+					
+					Mat4f localModelViewMatrix = baseModelViewMatrix.copy();
+					localModelViewMatrix.multiplyTranslationMatrix(
+							(regionX * LodUtil.REGION_WIDTH) - cameraPos.x,
+							LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y,
+							(regionZ * LodUtil.REGION_WIDTH) - cameraPos.z);
+					shaderProgram.fillUniformModelMatrix(localModelViewMatrix);
+					
+					for (LodVertexBuffer vbo : region.debugGetBuffers()) {
 						if (vbo == null) continue;
 						if (vbo.vertexCount == 0) {
 							vCount0++;
@@ -418,42 +433,6 @@ public class LodRenderer
 	private Color getSpecialFogColor(float partialTicks)
 	{
 		return MC_RENDER.getSpecialFogColor(partialTicks);
-	}
-	
-	/**
-	 * Translate the camera relative to the LodDimension's center,
-	 * this is done since all LOD buffers are created in world space
-	 * instead of object space.
-	 * (since AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
-	 * accuracy vs the model view matrix, which only uses floats)
-	 */
-	private Mat4f translateModelViewMatrix(Mat4f mcModelViewMatrix, float partialTicks, int vbosCenterX, int vbosCenterZ)
-	{
-		// get all relevant camera info
-		Vec3d projectedView = MC_RENDER.getCameraExactPosition();
-		
-		// translate the camera relative to the regions' center
-		// (AxisAlignedBoundingBoxes (LODs) use doubles and thus have a higher
-		// accuracy vs the model view matrix, which only uses floats)
-		//int bufferPosX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
-		//int bufferPosZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
-		double xDiff = projectedView.x - vbosCenterX;
-		double zDiff = projectedView.z - vbosCenterZ;
-		mcModelViewMatrix.multiplyTranslationMatrix(-xDiff, -projectedView.y, -zDiff);
-		
-		return mcModelViewMatrix;
-	}
-	
-	/** 
-	 * Similar to translateModelViewMatrix (above),
-	 * but for the camera position
-	 */
-	private Vec3f getTranslatedCameraPos(int vbosCenterX, int vbosCenterZ)
-	{
-		//int worldCenterX = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterX, LodUtil.BLOCK_DETAIL_LEVEL);
-		//int worldCenterZ = LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, vbosCenterZ, LodUtil.BLOCK_DETAIL_LEVEL);
-		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
-		return new Vec3f((float)cameraPos.x - vbosCenterX, (float)cameraPos.y, (float)cameraPos.z - vbosCenterZ);
 	}
 
 	/**

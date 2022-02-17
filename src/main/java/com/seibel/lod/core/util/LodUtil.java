@@ -27,7 +27,6 @@ import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.handlers.IReflectionHandler;
-import com.seibel.lod.core.objects.VertexOptimizer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
@@ -398,10 +397,10 @@ public class LodUtil
 			return false;
 		int tempX;
 		int tempZ;
-		for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
+		for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS)
 		{
-			tempX = x + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).x;
-			tempZ = z + VertexOptimizer.DIRECTION_NORMAL_MAP.get(lodDirection).z;
+			tempX = x + lodDirection.getNormal().x;
+			tempZ = z + lodDirection.getNormal().z;
 			if (vanillaRenderedChunks[x][z] || (!(tempX < 0 || tempZ < 0 || tempX >= vanillaRenderedChunks.length || tempZ >= vanillaRenderedChunks[0].length)
 				&& !vanillaRenderedChunks[tempX][tempZ]))
 				return true;
@@ -410,7 +409,7 @@ public class LodUtil
 	}
 	public static boolean isBorderChunk(MovableGridList<Boolean> vanillaRenderedChunks, int chunkX, int chunkZ)
 	{
-		for (LodDirection lodDirection : VertexOptimizer.ADJ_DIRECTIONS)
+		for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS)
 		{
 			int tempX = chunkX + lodDirection.getNormal().x;
 			int tempZ = chunkZ + lodDirection.getNormal().z;

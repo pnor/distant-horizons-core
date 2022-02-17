@@ -397,6 +397,7 @@ public class Mat4f
 	/** 
 	 * TODO: what kind of translation is this? 
 	 * and how is this different from "multiplyTranslationMatrix"?
+	 * Answer: This is faster and direct (but only if this is pure translation matrix without rotate)
 	 */
 	public void translate(Vec3f vec)
 	{
