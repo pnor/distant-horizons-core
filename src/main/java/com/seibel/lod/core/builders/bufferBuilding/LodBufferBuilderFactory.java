@@ -19,10 +19,8 @@
 
 package com.seibel.lod.core.builders.bufferBuilding;
 
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -33,9 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL44;
-
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
@@ -43,12 +38,11 @@ import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.objects.PosToRenderContainer;
+import com.seibel.lod.core.objects.RenderRegion;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder;
-import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
-import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -58,7 +52,7 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.SpamReducedLogger;
-import com.seibel.lod.core.util.UnitBytes;
+import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -143,14 +137,8 @@ public class LodBufferBuilderFactory {
 
 	/** Used when building new VBOs */
 	public volatile MovableGridList<RenderRegion> buildableVbos;
-	public volatile int buildableCenterBlockX;
-	public volatile int buildableCenterBlockY;
-	public volatile int buildableCenterBlockZ;
 	/** VBOs that are sent over to the LodNodeRenderer */
 	public volatile MovableGridList<RenderRegion> drawableVbos;
-	public volatile int drawableCenterBlockX;
-	public volatile int drawableCenterBlockY;
-	public volatile int drawableCenterBlockZ;
 	/**
 	 * if this is true the LOD buffers need to be reset and the Renderer should call
 	 * the lodGenBuffers nomatter it should have been a full or partial regen or not
@@ -185,9 +173,6 @@ public class LodBufferBuilderFactory {
 	private final ReentrantLock bufferLock = new ReentrantLock();
 
 	private MovableGridList<PosToRenderContainer> setsToRender;
-
-	private int lastX = 0;
-	private int lastZ = 0;
 
 	public LodBufferBuilderFactory() {
 
@@ -246,14 +231,8 @@ public class LodBufferBuilderFactory {
 			int playerRegionX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL, playerX, LodUtil.REGION_DETAIL_LEVEL);
 			int playerRegionZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL, playerZ, LodUtil.REGION_DETAIL_LEVEL);
 			int renderRange;
-			int vboX;
-			int vboY;
-			int vboZ;
 
-			boolean tooFar = Math.abs(buildableCenterBlockX - playerX)
-					+ Math.abs(buildableCenterBlockZ - playerZ) > 100_000;
-
-			if (fullRegen || tooFar || buildableVbos == null || setsToRender == null) {
+			if (fullRegen || buildableVbos == null || setsToRender == null) {
 				if (buildableVbos != null) {
 					buildableVbos.clear(RenderRegion::close);
 				}
@@ -261,20 +240,8 @@ public class LodBufferBuilderFactory {
 				renderRange = lodDim.getWidth() / 2; // get lodDim half width
 				buildableVbos = new MovableGridList<RenderRegion>(renderRange, playerRegionX, playerRegionZ);
 				setsToRender = new MovableGridList<PosToRenderContainer>(renderRange, playerRegionX, playerRegionZ);
-				// this will be the center of the VBOs once they have been built
-				// FIXME: Currently this will drift apart from player pos if there has not been
-				// a fullRegen for a while
-				buildableCenterBlockX = playerX;
-				buildableCenterBlockY = playerY;
-				buildableCenterBlockZ = playerZ;
-				vboX = playerX;
-				vboY = playerY;
-				vboZ = playerZ;
 			} else {
 				renderRange = buildableVbos.gridCentreToEdge;
-				vboX = buildableCenterBlockX;
-				vboY = buildableCenterBlockY;
-				vboZ = buildableCenterBlockZ;
 				buildableVbos.move(playerRegionX, playerRegionZ, RenderRegion::close);
 				setsToRender.move(playerRegionX, playerRegionZ);
 			}
@@ -292,8 +259,6 @@ public class LodBufferBuilderFactory {
 			// minCullingRange);
 			// int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)),
 			// minCullingRange);
-			lastX = playerX;
-			lastZ = playerZ;
 			List<CompletableFuture<?>> futuresBuffer = new LinkedList<CompletableFuture<?>>();
 			for (int indexX = 0; indexX < buildableVbos.gridSize; indexX++) {
 				for (int indexZ = 0; indexZ < buildableVbos.gridSize; indexZ++) {
@@ -324,19 +289,11 @@ public class LodBufferBuilderFactory {
 							this.quadBuilder = quadBuilder;
 							this.regionPos = regionPos;
 						}
-
-						LodQuadBuilder quadBuilder() {
-							return quadBuilder;
-						}
-
-						RegionPos regionPos() {
-							return regionPos;
-						}
 					}
 
 					CompletableFuture<ResultPair> future = CompletableFuture.supplyAsync(() -> {
 						LodQuadBuilder quadBuilder = new LodQuadBuilder(6);
-						makeLodRenderData(quadBuilder, lodDim, regionPos, pX, pZ, vboX, vboZ, minDetail);
+						makeLodRenderData(quadBuilder, lodDim, regionPos, pX, pZ, minDetail);
 						return new ResultPair(quadBuilder, regionPos);
 					}, bufferUploadThread).whenCompleteAsync((result, e) -> {
 						if (e != null)
@@ -400,7 +357,7 @@ public class LodBufferBuilderFactory {
 	}
 
 	private RegionPos makeLodRenderData(LodQuadBuilder quadBuilder, LodDimension lodDim, RegionPos regPos, int playerX,
-			int playerZ, int vboX, int vboZ, byte minDetail) {// , int cullingRangeX, int cullingRangeZ) {
+			int playerZ, byte minDetail) {// , int cullingRangeX, int cullingRangeZ) {
 
 		// Variable initialization
 		int playerChunkX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL, playerX, LodUtil.CHUNK_DETAIL_LEVEL);
@@ -523,29 +480,15 @@ public class LodBufferBuilderFactory {
 		if (!ramLogger.canMaybeLog())
 			return;
 		ramLogger.info("Dumping Ram Usage for buffer usage...");
-		long bufferCount = 0;
-		long fullBufferCount = 0;
-		long totalUsage = 0;
-		int maxLength = MAX_TRIANGLES_PER_BUFFER * (LodUtil.LOD_VERTEX_FORMAT.getByteSize() * 3);
+		StatsMap statsMap = new StatsMap();
+		
 		if (buildableVbos == null) {
 			ramLogger.info("Buildable VBOs are null!");
 		} else
 			for (RenderRegion buffers : buildableVbos) {
 				if (buffers == null)
 					continue;
-				LodVertexBuffer[] bs = buffers.debugGetBuffers().clone();
-				for (LodVertexBuffer b : bs) {
-					if (b == null)
-						continue;
-					bufferCount++;
-					if (b.size == maxLength) {
-						fullBufferCount++;
-					} else if (b.size > maxLength) {
-						ramLogger.info("BUFFER OVERSIZED: {} (max size is {})", new UnitBytes(b.size),
-								new UnitBytes(maxLength));
-					}
-					totalUsage += b.size;
-				}
+				buffers.debugDumpStats(statsMap);
 			}
 		if (drawableVbos == null) {
 			ramLogger.info("Drawable VBOs are null!");
@@ -553,23 +496,10 @@ public class LodBufferBuilderFactory {
 			for (RenderRegion buffers : drawableVbos) {
 				if (buffers == null)
 					continue;
-				LodVertexBuffer[] bs = buffers.debugGetBuffers().clone();
-				for (LodVertexBuffer b : bs) {
-					if (b == null)
-						continue;
-					bufferCount++;
-					if (b.size == maxLength) {
-						fullBufferCount++;
-					} else if (b.size > maxLength) {
-						ramLogger.info("BUFFER OVERSIZED: {} (max size is {})", new UnitBytes(b.size),
-								new UnitBytes(maxLength));
-					}
-					totalUsage += b.size;
-				}
+				buffers.debugDumpStats(statsMap);
 			}
 		ramLogger.info("================================================");
-		ramLogger.info("Buffers: [{}], Full-sized Buffers: [{}], Total: [{}]", bufferCount, fullBufferCount,
-				new UnitBytes(totalUsage));
+		ramLogger.info("Stats: {}", statsMap);
 		ramLogger.info("================================================");
 		ramLogger.incLogTries();
 	}
@@ -621,162 +551,20 @@ public class LodBufferBuilderFactory {
 			// determine the upload method
 			GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod();
 
-			// determine the upload timeout
-			long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds(); // MB -> B =
-																										// 1/1,000,000.
-																										// MS -> NS =
-																										// 1,000,000.
-																										// So, MBPerMS =
-																										// BPerNS.
-			long remainingNS = 0; // We don't want to pause for like 0.1 ms... so we store those tiny MS.
-			long totalBytes = 0;
-			int vbosNeeded = quadBuilder.getCurrentNeededVertexBuffers();
-
 			// Setup the VBO array
 			LagSpikeCatcher vboSetup = new LagSpikeCatcher();
 			RenderRegion renderRegion = buildableVbos.get(p.x, p.z);
-			if (renderRegion == null)
-				renderRegion = buildableVbos.setAndGet(p.x, p.z, new RenderRegion(vbosNeeded));
-			else
-				renderRegion.resize(vbosNeeded);
+			RenderRegion newRenderRegion = RenderRegion.updateStatus(renderRegion, quadBuilder, p);
+			if (newRenderRegion != null) {
+				renderRegion = buildableVbos.setAndGet(p.x, p.z, newRenderRegion);
+			}
 			vboSetup.end("vboSetup");
 
-			// Start the upload
-			Iterator<ByteBuffer> iter = quadBuilder.makeVertexBuffers();
-			int i = 0;
-			while (iter.hasNext()) {
-				ByteBuffer bb = iter.next();
-				LagSpikeCatcher vboU = new LagSpikeCatcher();
-				vboUpload(p, i++, bb, uploadMethod);
-				vboU.end("vboUpload");
-
-				// upload buffers over an extended period of time
-				// to hopefully prevent stuttering.
-				totalBytes += bb.limit();
-				remainingNS += bb.limit() * BPerNS;
-				if (remainingNS >= TimeUnit.NANOSECONDS.convert(1000 / 60, TimeUnit.MILLISECONDS)) {
-					if (remainingNS > MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS)
-						remainingNS = MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS;
-					try {
-						Thread.sleep(remainingNS / 1000000, (int) (remainingNS % 1000000));
-					} catch (InterruptedException e) {
-					}
-					remainingNS = 0;
-				}
-			}
-			if (ENABLE_BUFFER_UPLOAD_LOGGING)
-				ClientApi.LOGGER.info("Uploaded {} sub buffers for {} with total of {}", i, p,
-						new UnitBytes(totalBytes));
+			renderRegion.uploadBuffers(quadBuilder, uploadMethod);
 		} finally {
 			glProxy.setGlContext(oldContext);
 		}
 	}
-
-	/** Uploads the uploadBuffer so the GPU can use it. */
-	private void vboUpload(RegionPos regPos, int iIndex, ByteBuffer uploadBuffer, GpuUploadMethod uploadMethod) {
-		int maxLength = MAX_TRIANGLES_PER_BUFFER * (LodUtil.LOD_VERTEX_FORMAT.getByteSize() * 3);
-		boolean useBuffStorage = uploadMethod == GpuUploadMethod.BUFFER_STORAGE;
-		RenderRegion region = buildableVbos.get(regPos.x, regPos.z);
-		LodVertexBuffer vbo = region.getOrMakeVbo(iIndex, useBuffStorage);
-
-		// this is how many points will be rendered
-		vbo.vertexCount = (uploadBuffer.limit() / LodUtil.LOD_VERTEX_FORMAT.getByteSize());
-
-		// If size is zero, just ignore it.
-		if (uploadBuffer.limit() == 0)
-			return;
-		LagSpikeCatcher bindBuff = new LagSpikeCatcher();
-		bindBuff.end("glBindBuffer vbo.id");
-
-		try {
-			// if possible use the faster buffer storage route
-			if (uploadMethod == GpuUploadMethod.BUFFER_STORAGE) {
-				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-				long size = vbo.size;
-				if (size < uploadBuffer.limit()
-						|| size > uploadBuffer.limit() * BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER) {
-					int newSize = (int) (uploadBuffer.limit() * BUFFER_EXPANSION_MULTIPLIER);
-					if (newSize > maxLength)
-						newSize = maxLength;
-					LagSpikeCatcher buffResizeRegen = new LagSpikeCatcher();
-					GL32.glDeleteBuffers(vbo.id);
-					vbo.id = GL32.glGenBuffers();
-					buffResizeRegen.end("glDeleteBuffers BuffStorage resize");
-					LagSpikeCatcher buffResize = new LagSpikeCatcher();
-					GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-					GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, newSize, GL44.GL_DYNAMIC_STORAGE_BIT);
-					vbo.size = newSize;
-					buffResize.end("glBufferStorage BuffStorage resize");
-				}
-				LagSpikeCatcher buffSubData = new LagSpikeCatcher();
-				GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
-				buffSubData.end("glBufferSubData BuffStorage");
-			} else if (uploadMethod == GpuUploadMethod.BUFFER_MAPPING) {
-				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-				// no stuttering but high GPU usage
-				// stores everything in system memory instead of GPU memory
-				// making rendering much slower.
-				// Unless the user is running integrated graphics,
-				// in that case this will actually work better than SUB_DATA.
-				long size = vbo.size;
-				if (size < uploadBuffer.limit()
-						|| size > uploadBuffer.limit() * BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER) {
-					int newSize = (int) (uploadBuffer.limit() * BUFFER_EXPANSION_MULTIPLIER);
-					if (newSize > maxLength)
-						newSize = maxLength;
-					LagSpikeCatcher buffResize = new LagSpikeCatcher();
-					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
-					vbo.size = newSize;
-					buffResize.end("glBufferData BuffMapping resize");
-				}
-				ByteBuffer vboBuffer;
-				// map buffer range is better since it can be explicitly unsynchronized
-				LagSpikeCatcher buffMap = new LagSpikeCatcher();
-				vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer.limit(),
-						GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
-				buffMap.end("glMapBufferRange BuffMapping");
-				LagSpikeCatcher buffWrite = new LagSpikeCatcher();
-				vboBuffer.put(uploadBuffer);
-				LagSpikeCatcher buffUnmap = new LagSpikeCatcher();
-				GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
-				buffUnmap.end("glUnmapBuffer");
-
-				buffWrite.end("WriteData BuffMapping");
-			} else if (uploadMethod == GpuUploadMethod.DATA) {
-				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-				// TODO: Check this nonsense comment!
-				// hybrid bufferData //
-				// high stutter, low GPU usage
-				// But simplest/most compatible
-				LagSpikeCatcher buffData = new LagSpikeCatcher();
-				GL32.glBufferData(GL32.GL_ARRAY_BUFFER, uploadBuffer, GL32.GL_STATIC_DRAW);
-				vbo.size = uploadBuffer.limit();
-				buffData.end("glBufferData Data");
-			} else {
-				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-				// TODO: Check this nonsense comment!
-				// hybrid subData/bufferData //
-				// less stutter, low GPU usage
-				long size = vbo.size;
-				if (size < uploadBuffer.limit()
-						|| size > uploadBuffer.limit() * BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER) {
-					int newSize = (int) (uploadBuffer.limit() * BUFFER_EXPANSION_MULTIPLIER);
-					if (newSize > maxLength)
-						newSize = maxLength;
-					LagSpikeCatcher buffResize = new LagSpikeCatcher();
-					GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
-					vbo.size = newSize;
-					buffResize.end("glBufferData SubData resize");
-				}
-				LagSpikeCatcher buffSubData = new LagSpikeCatcher();
-				GL32.glBufferSubData(GL32.GL_ARRAY_BUFFER, 0, uploadBuffer);
-				buffSubData.end("glBufferSubData SubData");
-			}
-		} catch (Exception e) {
-			ClientApi.LOGGER.error("vboUpload failed: " + e.getClass().getSimpleName());
-			e.printStackTrace();
-		}
-	}// vboUpload
 
 	private boolean swapBuffers() {
 		bufferLock.lock();
@@ -790,16 +578,6 @@ public class LodBufferBuilderFactory {
 				buildableVbos = tmpVbo;
 
 				// ClientApi.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
-
-				int tempX = drawableCenterBlockX;
-				int tempY = drawableCenterBlockY;
-				int tempZ = drawableCenterBlockZ;
-				drawableCenterBlockX = buildableCenterBlockX;
-				drawableCenterBlockY = buildableCenterBlockY;
-				drawableCenterBlockZ = buildableCenterBlockZ;
-				buildableCenterBlockX = tempX;
-				buildableCenterBlockY = tempY;
-				buildableCenterBlockZ = tempZ;
 				// the vbos have been swapped
 				switchVbos = false;
 
@@ -822,14 +600,6 @@ public class LodBufferBuilderFactory {
 	/** Get the newly created VBOs */
 	public MovableGridList<RenderRegion> getFrontBuffers() {
 		return shouldDrawFrontBuffer() ? drawableVbos : null;
-	}
-
-	public int getFrontBuffersCenterX() {
-		return drawableCenterBlockX;
-	}
-
-	public int getFrontBuffersCenterZ() {
-		return drawableCenterBlockZ;
 	}
 
 	public void triggerReset() {

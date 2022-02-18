@@ -159,7 +159,7 @@ public class GLProxy
 	{
 		
 		// boolean enableDebugLogging = CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL;
-		boolean enableDebugLogging = false;
+		boolean enableDebugLogging = true;
         // this must be created on minecraft's render context to work correctly
 		
 		ClientApi.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");

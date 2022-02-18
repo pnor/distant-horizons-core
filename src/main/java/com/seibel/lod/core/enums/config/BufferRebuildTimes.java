@@ -31,6 +31,8 @@ package com.seibel.lod.core.enums.config;
  */
 public enum BufferRebuildTimes
 {
+	CONSTANT(0, 0, 0, 1),
+	
 	FREQUENT(1000, 500, 2500, 1),
 	
 	NORMAL(2000, 1000, 5000, 4),

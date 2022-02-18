@@ -6,6 +6,8 @@ public class UnitBytes
 	public UnitBytes(long value) {
 		this.value = value;
 	}
+	public long value() {return value;}
+	
 	public static long byteToGB(long v) {
 		return v/1073741824;
 	}

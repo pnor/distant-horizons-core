@@ -33,7 +33,6 @@ import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
@@ -235,10 +234,13 @@ public class ClientApi
 						ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
 					} catch (RuntimeException e) {
 						rendererDisabledBecauseOfExceptions = true;
+						ClientApi.LOGGER.error("Renderer thrown an uncaught exception: ",e);
 						try {
-							//ClientApi.renderer.ma  ();
-						} catch (RuntimeException welpLookLikeWeWillLeakResource) {}
-						throw e;
+							MC.sendChatMessage("\u00A74\u00A7l\u00A7uERROR: Distant Horizons"
+									+ " renderer has encountered an exception!");
+							MC.sendChatMessage("\u00A74Renderer is now disabled to prevent futher issues.");
+							MC.sendChatMessage("\u00A74Exception detail: "+e.toString());
+						} catch (RuntimeException noMessagesThen) {}
 					}
 				}
 				profiler.pop(); // end LOD
@@ -254,8 +256,7 @@ public class ClientApi
 		}
 		catch (Exception e)
 		{
-			ClientApi.LOGGER.error("client proxy: " + e.getMessage());
-			e.printStackTrace();
+			ClientApi.LOGGER.error("client proxy uncaught exception: ", e);
 		}
 	}
 	

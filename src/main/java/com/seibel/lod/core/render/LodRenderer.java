@@ -34,15 +34,12 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.handlers.IReflectionHandler;
+import com.seibel.lod.core.objects.RenderRegion;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
-import com.seibel.lod.core.objects.math.Vec3f;
-import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
-import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
@@ -220,8 +217,6 @@ public class LodRenderer
 		swapBuffer.end("SwapBuffer");
 		// Get the front buffers to draw
 		MovableGridList<RenderRegion> regions = lodBufferBuilderFactory.getFrontBuffers();
-		int vbosCenterX = lodBufferBuilderFactory.getFrontBuffersCenterX();
-		int vbosCenterZ = lodBufferBuilderFactory.getFrontBuffersCenterZ();
 		
 		if (regions == null) {
 			// There is no vbos, which means nothing needs to be drawn. So skip rendering
@@ -317,43 +312,26 @@ public class LodRenderer
 		LagSpikeCatcher draw = new LagSpikeCatcher();
 		
 		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
+		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		
 		// where the center of the buffers is (needed when culling regions)
 		// render each of the buffers
 		int lowRegionX = regions.getCenterX() - regions.gridCentreToEdge;
 		int lowRegionZ = regions.getCenterY() - regions.gridCentreToEdge;
-		int drawCall = 0;
-		int vCount0 = 0;
 		for (int regionX=lowRegionX; regionX<lowRegionX+regions.gridSize; regionX++) {
 			for (int regionZ=lowRegionZ; regionZ<lowRegionZ+regions.gridSize; regionZ++) {
-				if (regions.get(regionX, regionZ) == null) continue;
+				RenderRegion region = regions.get(regionX, regionZ);
+				if (region == null) continue;
+				if (!region.shouldRender(MC_RENDER, !cullingDisabled)) continue;
 				
-				if (cullingDisabled || RenderUtil.isRegionInViewFrustum(MC_RENDER.getCameraBlockPosition(),
-						MC_RENDER.getLookAtVector(), regionX, regionZ)) {
-					RenderRegion region = regions.get(regionX, regionZ);
-					//TODO improve this
-					Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
-					
-					Mat4f localModelViewMatrix = baseModelViewMatrix.copy();
-					localModelViewMatrix.multiplyTranslationMatrix(
-							(regionX * LodUtil.REGION_WIDTH) - cameraPos.x,
-							LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y,
-							(regionZ * LodUtil.REGION_WIDTH) - cameraPos.z);
-					shaderProgram.fillUniformModelMatrix(localModelViewMatrix);
-					
-					for (LodVertexBuffer vbo : region.debugGetBuffers()) {
-						if (vbo == null) continue;
-						if (vbo.vertexCount == 0) {
-							vCount0++;
-							continue;
-						}
-						GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-						shaderProgram.bindVertexBuffer(vbo.id);
-						drawCall++;
-						GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbo.vertexCount);
-					}
-					
-				}
+				Mat4f localModelViewMatrix = baseModelViewMatrix.copy();
+				localModelViewMatrix.multiplyTranslationMatrix(
+						(regionX * LodUtil.REGION_WIDTH) - cameraPos.x,
+						LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y,
+						(regionZ * LodUtil.REGION_WIDTH) - cameraPos.z);
+				shaderProgram.fillUniformModelMatrix(localModelViewMatrix);
+				
+				region.render(shaderProgram);
 			}
 			
 		}
