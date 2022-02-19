@@ -257,13 +257,17 @@ public class LodDimensionFileHandler
 							+ ". File will be loaded and updated to new format in next save.");
 					// this is old, but readable version
 					// read and add the data to our region
-					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), fileVersion, tempDetailLevel));
+					DataInputStream dataStream = new DataInputStream(inputStream);
+					region.addLevelContainer(new VerticalLevelContainer(dataStream, fileVersion, tempDetailLevel));
+					dataStream.close();
 					inputStream.close();
 				} else
 				{
 					// this file is a readable version,
 					// read and add the data to our region
-					region.addLevelContainer(new VerticalLevelContainer(new DataInputStream(inputStream), LOD_SAVE_FILE_VERSION, tempDetailLevel));
+					DataInputStream dataStream = new DataInputStream(inputStream);
+					region.addLevelContainer(new VerticalLevelContainer(dataStream, LOD_SAVE_FILE_VERSION, tempDetailLevel));
+					dataStream.close();
 					inputStream.close();
 				}
 			}
@@ -306,7 +310,9 @@ public class LodDimensionFileHandler
 			// add the version of this file
 			outputStream.write(LOD_SAVE_FILE_VERSION);
 			// add each LodChunk to the file
-			dataContainer.writeData(new DataOutputStream(outputStream));
+			DataOutputStream dataStream = new DataOutputStream(outputStream);
+			dataContainer.writeData(dataStream);
+			dataStream.close();
 			outputStream.close();
 		}
 		catch (IOException e)
@@ -532,7 +538,9 @@ public class LodDimensionFileHandler
 				// add the version of this file
 				outputStream.write(LOD_SAVE_FILE_VERSION);
 				// add each LodChunk to the file
-				boolean isNewDataFullyGened = region.getLevel(detailLevel).writeData(new DataOutputStream(outputStream));
+				DataOutputStream dataStream = new DataOutputStream(outputStream);
+				boolean isNewDataFullyGened = region.getLevel(detailLevel).writeData(dataStream);
+				dataStream.close();
 				outputStream.close();
 				
 				if (!isNewDataFullyGened && isFileFullyGened)
