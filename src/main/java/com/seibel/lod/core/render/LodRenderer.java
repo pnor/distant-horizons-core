@@ -36,6 +36,7 @@ import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.objects.RenderRegion;
 import com.seibel.lod.core.objects.lod.LodDimension;
+import com.seibel.lod.core.objects.lod.LodDimension.PosComsumer;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.render.objects.LightmapTexture;
@@ -249,11 +250,9 @@ public class LodRenderer
 			GL32.glEnable(GL32.GL_CULL_FACE);
 		}
 		drawSetPolygon.end("drawSetPolygon");
-		LagSpikeCatcher drawEnableCull = new LagSpikeCatcher();
-		GL32.glEnable(GL32.GL_CULL_FACE);
-		drawEnableCull.end("drawEnableCull");
 		LagSpikeCatcher drawEnableDepth = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_DEPTH_TEST);
+		//GL32.glDisable(GL32.GL_DEPTH_TEST);
 		drawEnableDepth.end("drawEnableDepth");
 		drawGLSetup.end("drawGLSetup");
 		// enable transparent rendering
@@ -313,27 +312,39 @@ public class LodRenderer
 		
 		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
-		
-		// where the center of the buffers is (needed when culling regions)
-		// render each of the buffers
-		int lowRegionX = regions.getCenterX() - regions.gridCentreToEdge;
-		int lowRegionZ = regions.getCenterY() - regions.gridCentreToEdge;
-		for (int regionX=lowRegionX; regionX<lowRegionX+regions.gridSize; regionX++) {
-			for (int regionZ=lowRegionZ; regionZ<lowRegionZ+regions.gridSize; regionZ++) {
-				RenderRegion region = regions.get(regionX, regionZ);
-				if (region == null) continue;
-				if (!region.shouldRender(MC_RENDER, !cullingDisabled)) continue;
-				
-				Mat4f localModelViewMatrix = baseModelViewMatrix.copy();
-				localModelViewMatrix.multiplyTranslationMatrix(
-						(regionX * LodUtil.REGION_WIDTH) - cameraPos.x,
-						LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y,
-						(regionZ * LodUtil.REGION_WIDTH) - cameraPos.z);
-				shaderProgram.fillUniformModelMatrix(localModelViewMatrix);
-				
-				region.render(shaderProgram);
-			}
-			
+
+		{
+			int ox,oy,dx,dy;
+		    ox = oy = dx = 0;
+		    dy = -1;
+		    int len = regions.gridSize;
+		    int maxI = len*len;
+		    int halfLen = len/2;
+		    for(int i =0; i < maxI; i++){
+		        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
+		        	int regionX = ox+regions.getCenterX();
+		        	int regionZ = oy+regions.getCenterY();
+		        	{
+						RenderRegion region = regions.get(regionX, regionZ);
+						if (region != null && region.shouldRender(MC_RENDER, !cullingDisabled)) {
+							Mat4f localModelViewMatrix = baseModelViewMatrix.copy();
+							localModelViewMatrix.multiplyTranslationMatrix(
+									(regionX * LodUtil.REGION_WIDTH) - cameraPos.x,
+									LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y,
+									(regionZ * LodUtil.REGION_WIDTH) - cameraPos.z);
+							shaderProgram.fillUniformModelMatrix(localModelViewMatrix);
+							region.render(shaderProgram);
+						}
+		        	}
+		        }
+		        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
+		            int temp = dx;
+		            dx = -dy;
+		            dy = temp;
+		        }
+		        ox += dx;
+		        oy += dy;
+		    }
 		}
 		//if (drawCall==0)
 		//	ClientApi.LOGGER.info("DrawCall Count: "+drawCall+"("+vCount0+")");
@@ -367,6 +378,7 @@ public class LodRenderer
 		
 		// clear the depth buffer so everything is drawn over the LODs
 		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
+		GL32.glEnable(GL32.GL_DEPTH_TEST);
 		drawCleanup.end("LodDrawCleanup");
 		// end of internal LOD profiling
 		profiler.pop();

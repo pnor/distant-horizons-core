@@ -24,6 +24,7 @@ public class LodQuadBuilder {
 		final byte skylight;
 		final byte blocklight;
 		final LodDirection dir;
+		double distance = 0d;
 
 		Quad(short x, short y, short z, short w0, short w1, int color, byte skylight, byte blocklight,
 				LodDirection dir) {
@@ -36,6 +37,13 @@ public class LodQuadBuilder {
 			this.skylight = skylight;
 			this.blocklight = blocklight;
 			this.dir = dir;
+		}
+		
+		private static double pow(double d) {return d*d;}
+		
+		// NOTE: This is only a rough but fast calculation!
+		void calculateDistance(double relativeX, double relativeY, double relativeZ) {
+			distance = pow(relativeX-x) + pow(relativeY-y) + pow(relativeZ-z);
 		}
 	}
 
@@ -141,6 +149,11 @@ public class LodQuadBuilder {
 			throw new RuntimeException();
 		bb.rewind();
 		return bb;
+	}
+	
+	public void sort(double dPlayerPosX, double dPlayerPosY, double dPlayerPosZ) {
+		quads.forEach(p -> p.calculateDistance(dPlayerPosX, dPlayerPosY, dPlayerPosZ));
+		quads.sort((a, b) -> Double.compare(a.distance, b.distance));
 	}
 
 	public Iterator<ByteBuffer> makeVertexBuffers() {

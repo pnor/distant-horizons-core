@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
@@ -53,6 +54,8 @@ import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.StatsMap;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -544,6 +547,12 @@ public class LodBufferBuilderFactory {
 	 * context
 	 */
 	private void uploadBuffers(LodQuadBuilder quadBuilder, RegionPos p) {
+		AbstractBlockPosWrapper playerPos = MC.getPlayerBlockPos();
+		double relPosX = playerPos.getX() - p.x*LodUtil.REGION_WIDTH;
+		double relPosY = playerPos.getY() - LodBuilder.MIN_WORLD_HEIGHT;
+		double relPosZ = playerPos.getX() - p.z*LodUtil.REGION_WIDTH;
+		quadBuilder.sort(relPosX, relPosY, relPosZ);
+		
 		GLProxy glProxy = GLProxy.getInstance();
 		GLProxyContext oldContext = glProxy.getGlContext();
 		glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
