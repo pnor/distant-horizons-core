@@ -26,9 +26,9 @@ public class LodBox {
 																										// == 255;
 
 		if (!skipTop)
-			builder.addQuadUp(x, maxY, z, xSize, zSize, color, skyLightTop, blockLight);
+			builder.addQuadUp(x, maxY, z, xSize, zSize, ColorUtil.applyShade(color, MC.getShade(LodDirection.UP)), skyLightTop, blockLight);
 		if (!skipBot)
-			builder.addQuadDown(x, y, z, xSize, zSize, color, skyLightBot, blockLight);
+			builder.addQuadDown(x, y, z, xSize, zSize, ColorUtil.applyShade(color, MC.getShade(LodDirection.DOWN)), skyLightBot, blockLight);
 		makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2], LodDirection.NORTH, x, y, z, xSize, ySize,
 				color, skyLightTop, blockLight);
 		makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2], LodDirection.SOUTH, x, y, maxZ, xSize, ySize,
