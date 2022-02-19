@@ -341,9 +341,8 @@ public class LodBuilder
 			int color = generateLodColor(chunk, config, x, y, z);
 			int lightBlock = light & 0b1111;
 			int lightSky = (light >> 4) & 0b1111;
-			boolean isDefault = ((light >> 8)) == 1;
 			dataToMerge[count] = DataPointUtil.createDataPoint(height-chunk.getMinBuildHeight(), depth-chunk.getMinBuildHeight(),
-					color, lightSky, lightBlock, generation, isDefault);
+					color, lightSky, lightBlock, generation);
 			topBlock = false;
 			y = depth - 1;
 			count++;

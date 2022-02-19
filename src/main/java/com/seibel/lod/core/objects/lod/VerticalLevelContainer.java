@@ -219,6 +219,7 @@ public class VerticalLevelContainer implements LevelContainer
 		inputData.readFully(data);
 		long[] result = new long[x];
 		bb.asLongBuffer().get(result);
+		patchVersion9Reorder(result);
 		patchHeightAndDepth(result,-minHeight);
 		return result;
 	}
@@ -229,11 +230,27 @@ public class VerticalLevelContainer implements LevelContainer
 		inputData.readFully(data);
 		long[] result = new long[x];
 		bb.asLongBuffer().get(result);
+		patchVersion9Reorder(result);
 		patchHeightAndDepth(result, 64 - minHeight);
 		return result;
 	}
 
 	private long[] readDataVersion8(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+		int x = size * size * tempMaxVerticalData;
+		byte[] data = new byte[x * Long.BYTES];
+		short tempMinHeight = Short.reverseBytes(inputData.readShort());
+		ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+		inputData.readFully(data);
+		long[] result = new long[x];
+		bb.asLongBuffer().get(result);
+		patchVersion9Reorder(result);
+		if (tempMinHeight != minHeight) {
+			patchHeightAndDepth(result,tempMinHeight - minHeight);
+		}
+		return result;
+	}
+	
+	private long[] readDataVersion9(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
 		int x = size * size * tempMaxVerticalData;
 		byte[] data = new byte[x * Long.BYTES];
 		short tempMinHeight = Short.reverseBytes(inputData.readShort());
@@ -250,6 +267,12 @@ public class VerticalLevelContainer implements LevelContainer
 	private static void patchHeightAndDepth(long[] data, int offset) {
 		for (int i=0; i<data.length; i++) {
 			data[i] = DataPointUtil.shiftHeightAndDepth(data[i], (short)offset);
+		}
+	}
+	
+	private static void patchVersion9Reorder(long[] data) {
+		for (int i=0; i<data.length; i++) {
+			data[i] = DataPointUtil.version9Reorder(data[i]);
 		}
 	}
 	
@@ -273,6 +296,9 @@ public class VerticalLevelContainer implements LevelContainer
 			break;
 		case 8:
 			tempDataContainer = readDataVersion8(inputData, fileMaxVerticalData);
+			break;
+		case 9:
+			tempDataContainer = readDataVersion9(inputData, fileMaxVerticalData);
 			break;
 		default:
 			assert false;

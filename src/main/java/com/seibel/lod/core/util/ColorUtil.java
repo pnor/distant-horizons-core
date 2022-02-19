@@ -88,9 +88,9 @@ public class ColorUtil
 	public static int applyLightValue(int color, int skyLight, int blockLight)
 	{
 		int lightColor = MC.getColorIntFromLightMap(blockLight, skyLight);
-		int red = ColorUtil.getBlue(lightColor);
+		int red = ColorUtil.getRed(lightColor);
 		int green = ColorUtil.getGreen(lightColor);
-		int blue = ColorUtil.getRed(lightColor);
+		int blue = ColorUtil.getBlue(lightColor);
 		
 		return ColorUtil.multiplyRGBcolors(color, ColorUtil.rgbToInt(red, green, blue));
 	}
