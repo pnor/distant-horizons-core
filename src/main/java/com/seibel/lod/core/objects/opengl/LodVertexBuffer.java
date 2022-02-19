@@ -70,55 +70,17 @@ public class LodVertexBuffer implements AutoCloseable
 			GLProxy.getInstance().recordOpenGlCall(() -> GL32.glDeleteBuffers(id));
 		}
 		this.id = -1;
+		size = 0;
+		vertexCount = 0;
 		count--;
 	}
 	
-	private void _uploadBufferStorage(ByteBuffer bb, int maxExpensionSize) {
-		if (!isBufferStorage) throw new IllegalStateException("Buffer isn't bufferStorage but its trying to use BufferStorage upload method!");
-		int bbSize = bb.limit() - bb.position();
-		if (size < bbSize || size > bbSize * BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER) {
-			int newSize = (int) (bbSize * BUFFER_EXPANSION_MULTIPLIER);
-			if (newSize > maxExpensionSize) newSize = maxExpensionSize;
-			GL32.glDeleteBuffers(id);
-			id = GL32.glGenBuffers();
-			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, id);
-			GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, newSize, GL44.GL_MAP_WRITE_BIT);
-			size = newSize;
-		} else {
-			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, id);
-		}
-		
-		// map buffer range is better since it can be explicitly unsynchronized
-		ByteBuffer vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, bbSize,
-				GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
-		if (vboBuffer == null) {
-			ClientApi.LOGGER.error("MapBufferRange Failed: bbSize: {}, maxSize: {}, size: {}", bbSize, maxExpensionSize, size);
-		}
-		vboBuffer.put(bb);
-		GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
-	}
-
-	// no stuttering but high GPU usage
-	// stores everything in system memory instead of GPU memory
-	// making rendering much slower.
-	// Unless the user is running integrated graphics,
-	// in that case this will actually work better than SUB_DATA.
-	private void _uploadBufferMapping(ByteBuffer bb, int maxExpensionSize) {
-		if (isBufferStorage) throw new IllegalStateException("Buffer is bufferStorage but its trying to use BufferMapping upload method!");
-		int bbSize = bb.limit() - bb.position();
+	private void _uploadBufferStorage(ByteBuffer bb) {
+		if (!isBufferStorage) throw new IllegalStateException("Buffer is not bufferStorage but its trying to use bufferStorage upload method!");
+		GL32.glDeleteBuffers(id);
+		id = GL32.glGenBuffers();
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, id);
-		if (size < bbSize || size > bbSize * BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER) {
-			int newSize = (int) (bbSize * BUFFER_EXPANSION_MULTIPLIER);
-			if (newSize > maxExpensionSize) newSize = maxExpensionSize;
-			GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
-			size = newSize;
-		}
-		
-		// map buffer range is better since it can be explicitly unsynchronized
-		ByteBuffer vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, bbSize,
-				GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
-		vboBuffer.put(bb);
-		GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
+		GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, bb, 0);
 	}
 
 	// bufferData
@@ -148,13 +110,15 @@ public class LodVertexBuffer implements AutoCloseable
 	
 	public void uploadBuffer(ByteBuffer bb, int vertCount, GpuUploadMethod uploadMethod, int maxExpensionSize) {
 		if (vertCount < 0) throw new IllegalArgumentException("VertCount is negative!");
+		if (uploadMethod.useEarlyMapping)
+			throw new IllegalArgumentException("UploadMethod signal that this should use Mapping instead of uploadBuffer!");
 		vertexCount = vertCount;
 		int bbSize = bb.limit()-bb.position();
 		if (bbSize > maxExpensionSize)
 			throw new IllegalArgumentException("maxExpensionSize is "+maxExpensionSize+" but buffer size is "+bbSize+"!");
 		// If size is zero, just ignore it.
 		if (bbSize == 0) return;
-		boolean useBuffStorage = uploadMethod == GpuUploadMethod.BUFFER_STORAGE;
+		boolean useBuffStorage = uploadMethod.useBufferStorage;
 		if (useBuffStorage != isBufferStorage) {
 			_destroy();
 			_create(useBuffStorage);
@@ -163,11 +127,8 @@ public class LodVertexBuffer implements AutoCloseable
 			switch (uploadMethod) {
 			case AUTO:
 				throw new IllegalArgumentException("GpuUploadMethod AUTO must be resolved before call to uploadBuffer()!");
-			case BUFFER_MAPPING:
-				_uploadBufferMapping(bb, maxExpensionSize);
-				break;
 			case BUFFER_STORAGE:
-				_uploadBufferStorage(bb, maxExpensionSize);
+				_uploadBufferStorage(bb);
 				break;
 			case DATA:
 				_uploadData(bb);
@@ -197,5 +158,50 @@ public class LodVertexBuffer implements AutoCloseable
 			ClientApi.LOGGER.error("LodVertexBuffer double close!");
 			
 		}
+	}
+	private boolean isMapped = false;
+
+	public ByteBuffer mapBuffer(int targetSize, GpuUploadMethod uploadMethod, int maxExpensionSize)
+	{
+		if (targetSize == 0) throw new IllegalArgumentException("MapBuffer targetSize is 0!");
+		if (!uploadMethod.useEarlyMapping) throw new IllegalStateException("Upload method must be one that use mappings in order to call mapBuffer!");
+		if (isMapped) throw new IllegalStateException("Map Buffer called but buffer is already mapped!");
+		boolean useBuffStorage = uploadMethod.useBufferStorage;
+		if (useBuffStorage != isBufferStorage) {
+			_destroy();
+			_create(useBuffStorage);
+		}
+		
+		ByteBuffer vboBuffer;
+
+		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, id);
+
+		if (size < targetSize || size > targetSize * BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER) {
+			int newSize = (int) (targetSize * BUFFER_EXPANSION_MULTIPLIER);
+			if (newSize > maxExpensionSize) newSize = maxExpensionSize;
+			size = newSize;
+			if (uploadMethod.useBufferStorage) {
+				GL32.glDeleteBuffers(id);
+				id = GL32.glGenBuffers();
+				GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, id);
+				GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, newSize, GL44.GL_MAP_WRITE_BIT);
+			} else {
+				GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, GL32.GL_STATIC_DRAW);
+			}
+		}
+		
+		vboBuffer = GL32.glMapBufferRange(GL32.GL_ARRAY_BUFFER, 0, targetSize,
+				GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
+		isMapped = true;
+		return vboBuffer;
+	}
+
+	public void unmapBuffer(GpuUploadMethod uploadMethod)
+	{
+		if (!uploadMethod.useEarlyMapping) throw new IllegalStateException("Upload method must be one that use mappings in order to call unmapBuffer!");
+		if (!isMapped) throw new IllegalStateException("Unmap Buffer called but buffer is already not mapped!");
+		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, id);
+		GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
+		isMapped = false;
 	}
 }

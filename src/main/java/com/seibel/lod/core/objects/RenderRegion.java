@@ -28,7 +28,7 @@ public abstract class RenderRegion implements AutoCloseable
 		}
 		return null;
 	}
-	
+
 	public abstract void uploadBuffers(LodQuadBuilder builder, GpuUploadMethod uploadMethod);
 	public abstract boolean shouldRender(IMinecraftRenderWrapper renderer, boolean enableDirectionalCulling);
 	public abstract void render(LodRenderProgram shaderProgram);

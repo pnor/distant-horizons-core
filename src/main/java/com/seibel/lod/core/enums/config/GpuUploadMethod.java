@@ -20,7 +20,7 @@
 package com.seibel.lod.core.enums.config;
 
 /**
- * Auto, Buffer_Storage, Sub_Data, Buffer_Mapping, Data
+ * Auto, BUFFER_STORAGE_MAPPING, Buffer_Storage, Sub_Data, Buffer_Mapping, Data
  * 
  * @author James Seibel
  * @version 12-1-2021
@@ -28,19 +28,23 @@ package com.seibel.lod.core.enums.config;
 public enum GpuUploadMethod
 {
 	/** Picks the best option based on the GPU the user has. */
-	AUTO,
+	AUTO(false, false),
+
+	/*
+	 */
+	BUFFER_STORAGE_MAPPING(true, true),
 	
 	/**
 	 * Default for NVIDIA if OpenGL 4.5 is supported. <br>
 	 * Fast rendering, no stuttering.
 	 */
-	BUFFER_STORAGE,
+	BUFFER_STORAGE(false, true),
 	
 	/**
 	 * Backup option for NVIDIA. <br>
 	 * Fast rendering but may stutter when uploading.
 	 */
-	SUB_DATA,
+	SUB_DATA(false, false),
 
 	/** 
 	 * Default option for AMD/Intel. <br>
@@ -48,12 +52,19 @@ public enum GpuUploadMethod
 	 * Fast rending if in GPU memory, slow if in system memory, <br>
 	 * but won't stutter when uploading. 
 	 */
-	BUFFER_MAPPING,
+	BUFFER_MAPPING(true, false),
 
 	/** 
 	 * Backup option for AMD/Intel. <br>
 	 * Fast rendering but may stutter when uploading. 
 	 */
-	DATA,
+	DATA(false, false);
+	
+	public final boolean useEarlyMapping;
+	public final boolean useBufferStorage;
+	GpuUploadMethod(boolean useEarlyMapping, boolean useBufferStorage) {
+		this.useEarlyMapping = useEarlyMapping;
+		this.useBufferStorage = useBufferStorage;
+	}
 	
 }

@@ -10,6 +10,7 @@ import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.objects.RenderRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.opengl.LodQuadBuilder.BufferFiller;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.render.RenderUtil;
 import com.seibel.lod.core.util.LodUtil;
@@ -68,19 +69,35 @@ public class SimpleRenderRegion extends RenderRegion {
 		}
 		return vbos[iIndex];
 	}
+	
+	private void uploadBuffersViaMapping(LodQuadBuilder builder, GpuUploadMethod uploadMethod)
+	{
+		resize(builder.getCurrentNeededVertexBuffers());
+		for (int i=0; i<vbos.length; i++) {
+			if (vbos[i]==null) vbos[i] = new LodVertexBuffer(uploadMethod.useBufferStorage);
+		}
+		
+		BufferFiller func = builder.makeBufferFiller(uploadMethod);
+		int i = 0;
+		while (i < vbos.length && func.fill(vbos[i++])) {}
+	}
 
 	@Override
 	public void uploadBuffers(LodQuadBuilder builder, GpuUploadMethod uploadMethod)
 	{
+		if (uploadMethod.useEarlyMapping) {
+			uploadBuffersViaMapping(builder, uploadMethod);
+			return;
+		}
 		resize(builder.getCurrentNeededVertexBuffers());
 		long remainingNS = 0;
 		long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
-		 
+		
 		int i = 0;
 		Iterator<ByteBuffer> iter = builder.makeVertexBuffers();
 		while (iter.hasNext()) {
 			ByteBuffer bb = iter.next();
-			LodVertexBuffer vbo = getOrMakeVbo(i++, uploadMethod==GpuUploadMethod.BUFFER_STORAGE);
+			LodVertexBuffer vbo = getOrMakeVbo(i++, uploadMethod.useBufferStorage);
 			int size = bb.limit() - bb.position();
 			vbo.uploadBuffer(bb, size/LodUtil.LOD_VERTEX_FORMAT.getByteSize(), uploadMethod, FULL_SIZED_BUFFERS);
 			// upload buffers over an extended period of time

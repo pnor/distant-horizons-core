@@ -4,9 +4,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.function.Function;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
+import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.util.ColorUtil;
 
 public class LodQuadBuilder {
@@ -174,6 +176,33 @@ public class LodQuadBuilder {
 					return null;
 				}
 				return writeVertexData(bb, MAX_QUADS_PER_BUFFER * counter++, MAX_QUADS_PER_BUFFER);
+			}
+		};
+	}
+	
+	public interface BufferFiller {
+		boolean fill(LodVertexBuffer vbo); // If true: means more data is needed to be filled
+	}
+
+	public BufferFiller makeBufferFiller(GpuUploadMethod method) {
+		int numOfBuffers = getCurrentNeededVertexBuffers();
+		return new BufferFiller() {
+			int counter = 0;
+			public boolean fill(LodVertexBuffer vbo) {
+				if (counter >= numOfBuffers) {
+					return false;
+				}
+				int numOfQuads = MAX_QUADS_PER_BUFFER;
+				if (quads.size()-(counter*MAX_QUADS_PER_BUFFER) < MAX_QUADS_PER_BUFFER)
+					numOfQuads = quads.size()-(counter*MAX_QUADS_PER_BUFFER);
+				if (numOfQuads != 0) {
+					ByteBuffer bb = vbo.mapBuffer(numOfQuads*QUAD_BYTE_SIZE, method, MAX_QUADS_PER_BUFFER * QUAD_BYTE_SIZE);
+					if (bb == null) throw new NullPointerException("mapBuffer returned null");
+					writeVertexData(bb, MAX_QUADS_PER_BUFFER * counter++, numOfQuads).rewind();
+					vbo.unmapBuffer(method);
+				}
+				vbo.vertexCount = numOfQuads*6;
+				return counter < numOfBuffers;
 			}
 		};
 	}
