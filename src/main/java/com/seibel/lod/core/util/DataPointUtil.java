@@ -87,7 +87,7 @@ public class DataPointUtil
 	public final static long VOID_SETTER = HEIGHT_SHIFTED_MASK | DEPTH_SHIFTED_MASK;
 	
 	
-	public static long createVoidDataPoint(int generationMode)
+	public static long createVoidDataPoint(byte generationMode)
 	{
 		return (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
 	}
@@ -138,7 +138,7 @@ public class DataPointUtil
 		long height = (dataPoint >>> 26) & 0x3FF;
 		long depth = (dataPoint >>> 16) & 0x3FF;
 		if (height == depth || (dataPoint & 0b10)==0b10) {
-			return createVoidDataPoint((int) ((dataPoint >>> 2) & 0b111) + 1);
+			return createVoidDataPoint((byte) (((dataPoint >>> 2) & 0b111) + 1));
 		}
 		return ((dataPoint >>> 60) & 0xF) << ALPHA_SHIFT
 				| ((dataPoint >>> 52) & 0xFF) << RED_SHIFT
@@ -372,7 +372,7 @@ public class DataPointUtil
 			tMaxVerticalData.set(dataPoint);
 		} else Arrays.fill(dataPoint, 0);
 		
-		int genMode = getGenerationMode(dataToMerge[0]);
+		byte genMode = getGenerationMode(dataToMerge[0]);
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		boolean limited = false;

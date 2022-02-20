@@ -172,7 +172,7 @@ public class LodRegion {
 					);*/
 			
 		}
-		if (!doesDataExist(detailLevel, posX, posZ, DistanceGenerationMode.values()[DataPointUtil.getGenerationMode(data[0])])) {
+		if (!doesDataExist(detailLevel, posX, posZ, DistanceGenerationMode.values()[DataPointUtil.getGenerationMode(data[0]) - 1])) { //fixme -1 casue NONE has value of 1 but slot of 0
 			throw new RuntimeException("Data still doesn't exist after addChunkOfData!");
 		}
 		

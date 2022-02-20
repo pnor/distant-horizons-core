@@ -35,7 +35,6 @@ package com.seibel.lod.core.enums.config;
  */
 public enum DistanceGenerationMode
 {
-	NULL((byte) 0),
 	/**
 	 * Don't generate anything except just load in already existing chunks
 	 */

@@ -313,7 +313,7 @@ public class LodBuilder
 		
 		boolean hasCeiling = MC.getWrappedClientWorld().getDimensionType().hasCeiling();
 		boolean hasSkyLight = MC.getWrappedClientWorld().getDimensionType().hasSkyLight();
-		int generation = config.distanceGenerationMode.complexity;
+		byte generation = config.distanceGenerationMode.complexity;
 		int count = 0;
 		// FIXME: This yAbs is just messy!
 		int x = chunk.getMinX() + chunkSubPosX;
