@@ -70,6 +70,20 @@ public class ConfigEntry<T> {
     }
 
 
+    /** Should not be needed for anything other than the gui/file handling */
+    public String getCategory() {
+        return this.category;
+    }
+    /** Should not be needed for anything other than the gui/file handling */
+    public String getName() {
+        return this.name;
+    }
+    /** Should not be needed for anything other than the gui/file handling */
+    public String getNameWCategory() {
+        return (this.category.isEmpty() ? "" : this.category + ".") + this.name;
+    }
+
+
     /**
      * Checks if the option is valid
      *
