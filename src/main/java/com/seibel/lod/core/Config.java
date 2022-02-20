@@ -10,7 +10,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
  * @author coolGi2007
  * @version 02-07-2022
  */
-public class Config extends ConfigBase
+public class Config
 {
     // CONFIG STRUCTURE
     // 	-> Client

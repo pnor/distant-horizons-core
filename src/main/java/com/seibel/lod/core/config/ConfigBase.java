@@ -23,6 +23,11 @@ public class ConfigBase {
         initNestedClass(config, ""); // Init root category
 
         // File handling (load from file)
+
+
+        // Temporary to see stuff
+        System.out.println(entries);
+        System.out.println(categories);
     }
 
     private static void initNestedClass(Class<?> config, String category) {
@@ -31,7 +36,9 @@ public class ConfigBase {
         for (Field field : config.getFields())
 		{
             if (ConfigEntry.class.isAssignableFrom(field.getType())) { // If item is type ConfigEntry
-//                entries.add(field);
+//                entries.add(ConfigEntry.class.cast(field));
+//                entries.get(entries.size() - 1).category = (category.isEmpty() ? "" : category + ".");
+//                entries.get(entries.size() - 1).category = field.getName();
             }
 
 			if (field.isAnnotationPresent(ConfigAnnotations.Category.class)) { // If it's a category then init the stuff inside it and put it in the category list
