@@ -89,10 +89,7 @@ public class DataPointUtil
 	
 	public static long createVoidDataPoint(int generationMode)
 	{
-		long dataPoint = 0;
-		dataPoint |= (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
-		dataPoint |= VOID_SETTER;
-		return dataPoint;
+		return (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
 	}
 	
 	public static long createDataPoint(int height, int depth, int color, int lightSky, int lightBlock, int generationMode)
@@ -140,8 +137,8 @@ public class DataPointUtil
 		
 		long height = (dataPoint >>> 26) & 0x3FF;
 		long depth = (dataPoint >>> 16) & 0x3FF;
-		if (height == depth || (dataPoint & 0b10)==1) {
-			return createVoidDataPoint((int) ((dataPoint >>> 2) & 0xFF));
+		if (height == depth || (dataPoint & 0b10)==0b10) {
+			return createVoidDataPoint((int) ((dataPoint >>> 2) & 0b111) + 1);
 		}
 		return ((dataPoint >>> 60) & 0xF) << ALPHA_SHIFT
 				| ((dataPoint >>> 52) & 0xFF) << RED_SHIFT
@@ -150,7 +147,7 @@ public class DataPointUtil
 				| ((dataPoint >>> 26) & 0x3FF) << HEIGHT_SHIFT
 				| ((dataPoint >>> 16) & 0x3FF) << DEPTH_SHIFT
 				| ((dataPoint >>> 8) & 0xFF) << SKY_LIGHT_SHIFT
-				| ((dataPoint >>> 2) & 0xFF) << GEN_TYPE_SHIFT;
+				| (((dataPoint >>> 2) & 0xFF) + 1) << GEN_TYPE_SHIFT;
 	}
 	
 	public static short getHeight(long dataPoint)
@@ -202,7 +199,7 @@ public class DataPointUtil
 	
 	public static boolean isVoid(long dataPoint)
 	{
-		return getHeight(dataPoint) == getDepth(dataPoint);
+		return (((dataPoint >>> DEPTH_SHIFT) & HEIGHT_DEPTH_MASK) == 0);
 	}
 	
 	public static boolean doesItExist(long dataPoint)

@@ -38,7 +38,7 @@ public enum DistanceGenerationMode
 	/**
 	 * Don't generate anything except just load in already existing chunks
 	 */
-	NONE((byte) 0),
+	NONE((byte) 1),
 	
 	/**
 	 * Only generate the biomes and use biome
@@ -47,7 +47,7 @@ public enum DistanceGenerationMode
 	 * Doesn't generate height, everything is shown at sea level.
 	 * Multithreaded - Fastest (2-5 ms)
 	 */
-	BIOME_ONLY((byte) 1),
+	BIOME_ONLY((byte) 2),
 	
 	/**
 	 * Same as BIOME_ONLY, except instead
@@ -55,7 +55,7 @@ public enum DistanceGenerationMode
 	 * different biome types (mountain, ocean, forest, etc.)
 	 * use predetermined heights to simulate having height data.
 	 */
-	BIOME_ONLY_SIMULATE_HEIGHT((byte) 2),
+	BIOME_ONLY_SIMULATE_HEIGHT((byte) 3),
 	
 	/**
 	 * Generate the world surface,
@@ -63,7 +63,7 @@ public enum DistanceGenerationMode
 	 * or structures.
 	 * Multithreaded - Faster (10-20 ms)
 	 */
-	SURFACE((byte) 3),
+	SURFACE((byte) 4),
 	
 	/**
 	 * Generate everything except structures.
@@ -71,7 +71,7 @@ public enum DistanceGenerationMode
 	 * since some features cause concurrentModification exceptions.
 	 * Multithreaded - Fast (15-20 ms)
 	 */
-	FEATURES((byte) 4),
+	FEATURES((byte) 5),
 	
 	/**
 	 * Ask the server to generate/load each chunk.
@@ -80,7 +80,7 @@ public enum DistanceGenerationMode
 	 * are adding the mod on a pre-existing world.
 	 * Singlethreaded - Slow (15-50 ms, with spikes up to 200 ms)
 	 */
-	FULL((byte) 5);
+	FULL((byte) 6);
 	
 	public static DistanceGenerationMode RENDERABLE = DistanceGenerationMode.BIOME_ONLY;
 	
