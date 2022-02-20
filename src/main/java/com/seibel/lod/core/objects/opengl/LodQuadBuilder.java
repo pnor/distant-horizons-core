@@ -4,8 +4,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.function.Function;
+import java.util.ListIterator;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
@@ -15,14 +16,15 @@ public class LodQuadBuilder {
 	static final int MAX_BUFFER_SIZE = (1024 * 1024 * 1);
 	static final int QUAD_BYTE_SIZE = (12 * 6);
 	static final int MAX_QUADS_PER_BUFFER = MAX_BUFFER_SIZE / QUAD_BYTE_SIZE;
+	static final int MAX_MERGED_QUAD_SIZE = 64;
 
 	static class Quad {
 		final short x;
 		final short y;
 		final short z;
-		final short w0;
-		final short w1;
-		final int color;
+		short w0;
+		short w1;
+		int color;
 		final byte skylight;
 		final byte blocklight;
 		final LodDirection dir;
@@ -47,12 +49,181 @@ public class LodQuadBuilder {
 		void calculateDistance(double relativeX, double relativeY, double relativeZ) {
 			distance = pow(relativeX-x) + pow(relativeY-y) + pow(relativeZ-z);
 		}
+		
+		private static int _compondCompare(short a0, short b0, short c0, short a1, short b1, short c1) {
+			if (a0 != a1) return a0-a1;
+			if (b0 != b1) return b0-b1;
+			return c0-c1;
+		}
+		
+		public int compareTo1(Quad o) {
+			if (dir != o.dir) return dir.compareTo(o.dir);
+			switch (dir.getAxis()) {
+			case X:
+				return _compondCompare(x, y, z, o.x, o.y, o.z);
+			case Y:
+				return _compondCompare(y, z, x, o.y, o.z, o.x);
+			case Z:
+				return _compondCompare(z, y, x, o.z, o.y, o.x);
+			default:
+				throw new IllegalArgumentException("Invalid Axis enum: " + dir.getAxis());
+			}
+		}
+		public int compareTo2(Quad o) {
+			if (dir != o.dir) return dir.compareTo(o.dir);
+			switch (dir.getAxis()) {
+			case X:
+				return _compondCompare(x, z, y, o.x, o.z, o.y);
+			case Y:
+				return _compondCompare(y, x, z, o.y, o.x, o.z);
+			case Z:
+				return _compondCompare(z, x, y, o.z, o.x, o.y);
+			default:
+				throw new IllegalArgumentException("Invalid Axis enum: " + dir.getAxis());
+			}
+		}
+		
+		public boolean tryMergeWith1(Quad o)
+		{
+			if (dir != o.dir)
+				return false;
+			if (w0 >= MAX_MERGED_QUAD_SIZE) return false;
+			switch (dir.getAxis())
+			{
+			case X:
+				if (x != o.x ||
+						y != o.y ||
+						z + w0 < o.z)
+					return false;
+				if (z + w0 > o.z)
+				{
+					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					o.color = ColorUtil.rgbToInt(255, 0, 0);
+					return false;
+				}
+				if (w1 != o.w1 ||
+						color != o.color ||
+						skylight != o.skylight ||
+						blocklight != o.blocklight)
+					return false;
+				
+				w0 += o.w0;
+				return true;
+			case Y:
+				if (y != o.y ||
+						z != o.z ||
+						x + w0 < o.x)
+					return false;
+				if (x + w0 > o.x)
+				{
+					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					o.color = ColorUtil.rgbToInt(255, 0, 0);
+					return false;
+				}
+				if (w1 != o.w1 ||
+						color != o.color ||
+						skylight != o.skylight ||
+						blocklight != o.blocklight)
+					return false;
+				
+				w0 += o.w0;
+				return true;
+			case Z:
+				if (z != o.z ||
+						y != o.y ||
+						x + w0 < o.x)
+					return false;
+				if (x + w0 > o.x)
+				{
+					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					o.color = ColorUtil.rgbToInt(255, 0, 0);
+					return false;
+				}
+				if (w1 != o.w1 ||
+						color != o.color ||
+						skylight != o.skylight ||
+						blocklight != o.blocklight)
+					return false;
+				
+				w0 += o.w0;
+				return true;
+			default:
+				throw new IllegalArgumentException("Invalid Axis enum: " + dir.getAxis());
+			}
+		}
+
+		public boolean tryMergeWith2(Quad o)
+		{
+			if (dir != o.dir)
+				return false;
+			if (w1 >= MAX_MERGED_QUAD_SIZE) return false;
+			switch (dir.getAxis())
+			{
+			case X:
+				if (x != o.x ||
+						z != o.z ||
+						y + w1 < o.y)
+					return false;
+				if (y + w1 > o.y)
+				{
+					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					o.color = ColorUtil.rgbToInt(255, 0, 0);
+					return false;
+				}
+				if (w0 != o.w0 ||
+						color != o.color ||
+						skylight != o.skylight ||
+						blocklight != o.blocklight)
+					return false;
+				w1 += o.w1;
+				return true;
+			case Y:
+				if (y != o.y ||
+						x != o.x ||
+						z + w1 < o.z)
+					return false;
+				if (z + w1 > o.z)
+				{
+					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					o.color = ColorUtil.rgbToInt(255, 0, 0);
+					return false;
+				}
+				if (w0 != o.w0 ||
+						color != o.color ||
+						skylight != o.skylight ||
+						blocklight != o.blocklight)
+					return false;
+				w1 += o.w1;
+				return true;
+			case Z:
+				if (z != o.z ||
+						x != o.x ||
+						y + w1 < o.y)
+					return false;
+				if (y + w1 > o.y)
+				{
+					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					o.color = ColorUtil.rgbToInt(255, 0, 0);
+					return false;
+				}
+				if (w0 != o.w0 ||
+						color != o.color ||
+						skylight != o.skylight ||
+						blocklight != o.blocklight)
+					return false;
+				w1 += o.w1;
+				return true;
+			default:
+				throw new IllegalArgumentException("Invalid Axis enum: " + dir.getAxis());
+			}
+		}
+		
 	}
 
 	final ArrayList<Quad> quads;
 
 	public LodQuadBuilder(int initialSize) {
-		quads = new ArrayList<Quad>(initialSize);
+		quads = new ArrayList<Quad>();
 	}
 
 	public void addQuadAdj(LodDirection dir, short x, short y, short z, short w0, short wy, int color, byte skylight,
@@ -157,7 +328,56 @@ public class LodQuadBuilder {
 		quads.forEach(p -> p.calculateDistance(dPlayerPosX, dPlayerPosY, dPlayerPosZ));
 		quads.sort((a, b) -> Double.compare(a.distance, b.distance));
 	}
+	private long merggeQuadsPass1() {
+		quads.sort(Quad::compareTo1);
+		ListIterator<Quad> iter = quads.listIterator();
+		long mergeCount = 0;
+		Quad currentQuad = iter.next();
+		while (iter.hasNext()) {
+			Quad nextQuad = iter.next();
+			if (currentQuad.tryMergeWith1(nextQuad)) {
+				mergeCount++;
+				iter.set(null);
+			} else {
+				currentQuad = nextQuad;
+			}
+		}
+		quads.removeIf(o -> o==null);
+		return mergeCount;
+	}
+	
+	private long merggeQuadsPass2() {
+		quads.sort(Quad::compareTo2);
+		ListIterator<Quad> iter = quads.listIterator();
+		long mergeCount = 0;
+		Quad currentQuad = iter.next();
+		while (iter.hasNext()) {
+			Quad nextQuad = iter.next();
+			if (currentQuad.tryMergeWith2(nextQuad)) {
+				mergeCount++;
+				iter.set(null);
+			} else {
+				currentQuad = nextQuad;
+			}
+		}
+		quads.removeIf(o -> o==null);
+		return mergeCount;
+	}
+	
+	
 
+	public void mergeQuads() {
+		if (quads.size()<=1) return;
+		
+		long mergeCount = 0;
+		long preQuadsCount = quads.size();
+		mergeCount += merggeQuadsPass1();
+		mergeCount += merggeQuadsPass2();
+		long postQuadsCount = quads.size();
+		//if (mergeCount != 0)
+			//ClientApi.LOGGER.info("Merged {} out of {} quads, to now {} quads.", mergeCount, preQuadsCount, postQuadsCount);
+	}
+	
 	public Iterator<ByteBuffer> makeVertexBuffers() {
 		int numOfBuffers = getCurrentNeededVertexBuffers();
 		return new Iterator<ByteBuffer>() {

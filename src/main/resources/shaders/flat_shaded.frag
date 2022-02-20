@@ -1,7 +1,7 @@
 #version 150 core
 
 in vec4 vertexColor;
-in float dist;
+in vec3 vertexWorldPos;
 
 out vec4 fragColor;
 
@@ -42,6 +42,8 @@ void main()
 		// no fog by default
 		float fogAlpha = 0;
 		
+		float dist = length(vertexWorldPos);
+
 		// less than because nearFogStart is farther away than nearFogEnd
 		if (nearFogEnabled && dist < nearFogStart)
 		{

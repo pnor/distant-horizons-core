@@ -457,6 +457,7 @@ public class LodBufferBuilderFactory {
 
 		} // for pos to in list to render
 			// the thread executed successfully
+		quadBuilder.mergeQuads();
 		return regPos;
 	}
 

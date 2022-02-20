@@ -4,7 +4,7 @@ in vec4 vPosition;
 in vec4 color;
 
 out vec4 vertexColor;
-out float dist;
+out vec3 vertexWorldPos;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -29,7 +29,7 @@ void main()
 
 	vertexColor = color * texture(lightMap, vec2(light,0.5));
 	
-	dist = length(worldSpacePos.xyz);
+	vertexWorldPos = worldSpacePos.xyz;
 	
     gl_Position = projectionMatrix * worldSpacePos;
 }
