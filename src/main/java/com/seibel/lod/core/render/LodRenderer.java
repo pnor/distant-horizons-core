@@ -243,7 +243,7 @@ public class LodRenderer
 			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_GENMODE_WIREFRAME
 			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_WIREFRAME) {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
-			GL32.glDisable(GL32.GL_CULL_FACE);
+			//GL32.glDisable(GL32.GL_CULL_FACE);
 		}
 		else {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
