@@ -32,47 +32,41 @@ import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 public class DataPointUtil
 {
 	/*
-	|a  |a  |a  |a  |r  |r  |r  |r  |
-	|r  |r  |r  |r  |g  |g  |g  |g  |
-	|g  |g  |g  |g  |b  |b  |b  |b  |
-	|b  |b  |b  |b  |h  |h  |h  |h  |
+	
+	|_  |g  |g  |g  |a  |a  |a  |a  |
+	|r  |r  |r  |r  |r  |r  |r  |r  |
+	|g  |g  |g  |g  |g  |g  |g  |g  |
+	|b  |b  |b  |b  |b  |b  |b  |b  |
+	
 	|h  |h  |h  |h  |h  |h  |h  |h  |
+	|h  |h  |h  |h  |d  |d  |d  |d  |
 	|d  |d  |d  |d  |d  |d  |d  |d  |
-	|d  |d  |d  |d  |bl |bl |bl |bl |
-	|sl |sl |sl |sl |g  |g  |g  |e  |
-	 */
+	|bl |bl |bl |bl |sl |sl |sl |sl |
+	
+	*/
 	
 	// Reminder: bytes have range of [-128, 127].
 	// When converting to or from an int a 128 should be added or removed.
 	// If there is a bug with color then it's probably caused by this.
 	
-	//To be used in the future for negative value
-	//public final static int MIN_DEPTH = -64;
-	//public final static int MIN_HEIGHT = -64;
 	public final static int EMPTY_DATA = 0;
-	//public static final short VERTICAL_OFFSET = -64;
 	public static int WORLD_HEIGHT = 4096;
 	
 	public final static int ALPHA_DOWNSIZE_SHIFT = 4;
 	
-	//public final static int BLUE_COLOR_SHIFT = 0;
-	//public final static int GREEN_COLOR_SHIFT = 8;
-	//public final static int RED_COLOR_SHIFT = 16;
-	//public final static int ALPHA_COLOR_SHIFT = 24;
-	
-	public final static int BLUE_SHIFT = 36;
+
+	public final static int GEN_TYPE_SHIFT = 60;
+
+	public final static int COLOR_SHIFT = 32;
+	public final static int BLUE_SHIFT = COLOR_SHIFT;
 	public final static int GREEN_SHIFT = BLUE_SHIFT + 8;
-	public final static int RED_SHIFT = BLUE_SHIFT + 16;
-	public final static int ALPHA_SHIFT = BLUE_SHIFT + 24;
+	public final static int RED_SHIFT = GREEN_SHIFT + 8;
+	public final static int ALPHA_SHIFT = RED_SHIFT + 8;
 	
-	public final static int COLOR_SHIFT = 36;
-	
-	public final static int HEIGHT_SHIFT = 24;
-	public final static int DEPTH_SHIFT = 12;
-	public final static int BLOCK_LIGHT_SHIFT = 8;
-	public final static int SKY_LIGHT_SHIFT = 4;
-	public final static int GEN_TYPE_SHIFT = 1;
-	public final static int EXISTENCE_SHIFT = 0;
+	public final static int HEIGHT_SHIFT = 20;
+	public final static int DEPTH_SHIFT = 8;
+	public final static int BLOCK_LIGHT_SHIFT = 4;
+	public final static int SKY_LIGHT_SHIFT = 0;
 	
 	public final static long ALPHA_MASK = 0xF;
 	public final static long RED_MASK = 0xFF;
@@ -85,17 +79,19 @@ public class DataPointUtil
 	public final static long BLOCK_LIGHT_MASK = 0xF;
 	public final static long SKY_LIGHT_MASK = 0xF;
 	public final static long GEN_TYPE_MASK = 0b111;
-	public final static long EXISTENCE_MASK = 1;
+	public final static long COMPARE_SHIFT = GEN_TYPE_SHIFT;
 	
 	public final static long HEIGHT_SHIFTED_MASK = HEIGHT_MASK << HEIGHT_SHIFT;
 	public final static long DEPTH_SHIFTED_MASK = DEPTH_MASK << DEPTH_SHIFT;
+	
+	public final static long VOID_SETTER = HEIGHT_SHIFTED_MASK | DEPTH_SHIFTED_MASK;
 	
 	
 	public static long createVoidDataPoint(int generationMode)
 	{
 		long dataPoint = 0;
 		dataPoint |= (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
-		dataPoint |= EXISTENCE_MASK << EXISTENCE_SHIFT;
+		dataPoint |= VOID_SETTER;
 		return dataPoint;
 	}
 	
@@ -120,12 +116,12 @@ public class DataPointUtil
 			| (lightBlock & BLOCK_LIGHT_MASK) << BLOCK_LIGHT_SHIFT
 			| (lightSky & SKY_LIGHT_MASK) << SKY_LIGHT_SHIFT
 			| (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT
-			| EXISTENCE_MASK << EXISTENCE_SHIFT;
+			;
 	}
 	
 	public static long shiftHeightAndDepth(long dataPoint, short offset) {
 		long height = (dataPoint + ((long) offset << HEIGHT_SHIFT)) & HEIGHT_SHIFTED_MASK;
-		long depth =  (dataPoint + (offset << DEPTH_SHIFT)) & DEPTH_SHIFTED_MASK;
+		long depth = (dataPoint + (offset << DEPTH_SHIFT)) & DEPTH_SHIFTED_MASK;
 		return dataPoint & ~(HEIGHT_SHIFTED_MASK | DEPTH_SHIFTED_MASK) | height | depth;
 	}
 	
@@ -140,15 +136,21 @@ public class DataPointUtil
 		|bl |bl |bl |bl |sl |sl |sl |sl |
 		|l  |l  |f  |g  |g  |g  |v  |e  |
 		*/
-		return //((dataPoint >>> 60) & 0xF) << ALPHA_SHIFT
-				//| ((dataPoint >>> 52) & 0xFF) << RED_SHIFT
-				//| ((dataPoint >>> 44) & 0xFF) << GREEN_SHIFT
-				((dataPoint >>> 36) & 0xFFFFFFF) << BLUE_SHIFT
+		if ((dataPoint & 1) == 0) return 0;
+		
+		long height = (dataPoint >>> 26) & 0x3FF;
+		long depth = (dataPoint >>> 16) & 0x3FF;
+		if (height == depth || (dataPoint & 0b10)==1) {
+			return createVoidDataPoint((int) ((dataPoint >>> 2) & 0xFF));
+		}
+		return ((dataPoint >>> 60) & 0xF) << ALPHA_SHIFT
+				| ((dataPoint >>> 52) & 0xFF) << RED_SHIFT
+				| ((dataPoint >>> 44) & 0xFF) << GREEN_SHIFT
+				| ((dataPoint >>> 36) & 0xFF) << BLUE_SHIFT
 				| ((dataPoint >>> 26) & 0x3FF) << HEIGHT_SHIFT
 				| ((dataPoint >>> 16) & 0x3FF) << DEPTH_SHIFT
 				| ((dataPoint >>> 8) & 0xFF) << SKY_LIGHT_SHIFT
-				| ((dataPoint >>> 2) & 0xFF) << GEN_TYPE_SHIFT
-				| dataPoint & 0x1;
+				| ((dataPoint >>> 2) & 0xFF) << GEN_TYPE_SHIFT;
 	}
 	
 	public static short getHeight(long dataPoint)
@@ -200,18 +202,18 @@ public class DataPointUtil
 	
 	public static boolean isVoid(long dataPoint)
 	{
-		return (((dataPoint >>> DEPTH_SHIFT) & HEIGHT_DEPTH_MASK) == 0);
+		return getHeight(dataPoint) == getDepth(dataPoint);
 	}
 	
 	public static boolean doesItExist(long dataPoint)
 	{
-		return (((dataPoint >>> EXISTENCE_SHIFT) & EXISTENCE_MASK) == 1);
+		return dataPoint!=0;
 	}
 	
 	public static int getColor(long dataPoint)
 	{
-		// TODO re-add transparency by replacing the color 255 with what is in comment
-		return (int) (((dataPoint >>> COLOR_SHIFT) & COLOR_MASK) | ((((dataPoint >>> ALPHA_SHIFT) & ALPHA_MASK) << ALPHA_DOWNSIZE_SHIFT) | 0xF) << 24);
+		long alpha = getAlpha(dataPoint);
+		return (int) (((dataPoint >>> COLOR_SHIFT) & COLOR_MASK) | (alpha << (ALPHA_SHIFT-COLOR_SHIFT)));
 	}
 	
 	/** This is used to convert a dataPoint to string (useful for the print function) */
@@ -258,13 +260,7 @@ public class DataPointUtil
 	
 	/** Return (>0) if dataA should replace dataB, (0) if equal, (<0) if dataB should replace dataA */
 	public static int compareDatapointPriority(long dataA, long dataB) {
-		if (!doesItExist(dataA) || !doesItExist(dataB)) {
-			if (doesItExist(dataA)) return Integer.MAX_VALUE;
-			if (doesItExist(dataB)) return Integer.MIN_VALUE;
-		}
-		int genA = (int)getGenerationMode(dataA);
-		int genB = (int)getGenerationMode(dataB);
-		return genA-genB;
+		return (int) ((dataA >> COMPARE_SHIFT) - (dataB >> COMPARE_SHIFT));
 	}
 	
 	// Merge the newData data into the target data by comparing the Datapoint Priority.
