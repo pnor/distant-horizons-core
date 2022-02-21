@@ -22,6 +22,7 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.BlocksToAvoid;
@@ -132,7 +133,7 @@ public class LodBuilder
 			}
 			catch (RuntimeException e)
 			{
-				ClientApi.LOGGER.error("LodBuilder Thread Uncaught Exception: ", e);
+				ApiShared.LOGGER.error("LodBuilder Thread Uncaught Exception: ", e);
 			//	// if the world changes while LODs are being generated
 			//	// they will throw errors as they try to access things that no longer
 			//	// exist.
@@ -176,7 +177,7 @@ public class LodBuilder
 					int subZ = i%16;
 					writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
 					//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
-					//	ClientApi.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
+					//	ApiShared.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
 					if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
 						throw new RuntimeException("writeVerticalData result: Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
 					if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
@@ -197,7 +198,7 @@ public class LodBuilder
 				return writePartialLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
 			}
 		} catch (RuntimeException e) {
-			ClientApi.LOGGER.error("LodBuilder encountered an error on building lod: ", e);
+			ApiShared.LOGGER.error("LodBuilder encountered an error on building lod: ", e);
 			return false;
 		}
 		
@@ -210,7 +211,7 @@ public class LodBuilder
 		try {
 			if (region.getMinDetailLevel()!= 0) {
 				if (!LodUtil.checkRamUsage(0.05, 16)) {
-					ClientApi.LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
+					ApiShared.LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
 					return false;
 				}
 				
@@ -218,7 +219,7 @@ public class LodBuilder
 				if (region!=newRegion)
 					throw new RuntimeException();
 			}
-			//ClientApi.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
+			//ApiShared.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
 			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
 			region.addChunkOfData((byte)0, chunkX*16, chunkZ*16, 16, 16, data, data.length/16/16, override);
 			region.regenerateLodFromArea((byte)0, chunkX*16, chunkZ*16, 16, 16);
@@ -266,7 +267,7 @@ public class LodBuilder
 			for (int i=0; i<data.length; i+=vertQual) {
 				if (!DataPointUtil.doesItExist(data[i]) ||
 						DataPointUtil.getGenerationMode(data[i]) != config.distanceGenerationMode.complexity) {
-					ClientApi.LOGGER.error("NULL data at {}, detail {}, vertQual {}, lodCount {}, chunkPos [{},{}]\n"
+					ApiShared.LOGGER.error("NULL data at {}, detail {}, vertQual {}, lodCount {}, chunkPos [{},{}]\n"
 							+ "Data: {}",
 							i, targetLevel, vertQual, lodCount, chunkX, chunkZ, DataPointUtil.toString(data[i]));
 					throw new RuntimeException("Null data!");
@@ -274,7 +275,7 @@ public class LodBuilder
 			}
 			
 			
-			//ClientApi.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
+			//ApiShared.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
 			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
 			region.addChunkOfData(targetLevel,
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
@@ -292,7 +293,7 @@ public class LodBuilder
 					config.distanceGenerationMode))
 				throw new RuntimeException("data at detail "+ targetLevel+" is still null after writes to it!");
 		} catch (Exception e) {
-			ClientApi.LOGGER.error("LodBuilder encountered an error on writePartialLodNodeData: ", e);
+			ApiShared.LOGGER.error("LodBuilder encountered an error on writePartialLodNodeData: ", e);
 		} finally {
 			region.isWriting.decrementAndGet();
 		}
