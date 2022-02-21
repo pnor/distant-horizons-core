@@ -28,11 +28,14 @@ package com.seibel.lod.core;
  * Pretty much all of the mod stems from there.
  * 
  * @author James Seibel
+ * @author Ran
  * @version 11-29-2021
  */
 public final class ModInfo
 {
 	public static final String ID = "lod";
+	/** The internal protocol version used for networking */
+	public static final int PROTOCOL_VERSION = 1;
 	/** The internal mod name */
 	public static final String NAME = "DistantHorizons";
 	/** Human readable version of NAME */
