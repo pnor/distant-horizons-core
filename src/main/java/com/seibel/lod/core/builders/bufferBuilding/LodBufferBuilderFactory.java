@@ -320,7 +320,7 @@ public class LodBufferBuilderFactory {
 			CompletableFuture<Void> allFutures = CompletableFuture
 					.allOf(futuresBuffer.toArray(new CompletableFuture[futuresBuffer.size()]));
 			try {
-				allFutures.get(60, TimeUnit.SECONDS);
+				allFutures.get(5, TimeUnit.MINUTES);
 			} catch (TimeoutException te) {
 				ClientApi.LOGGER.error("LodBufferBuilder timed out: ", te);
 				bufferBuilderThreadFactory.dumpAllThreadStacks();

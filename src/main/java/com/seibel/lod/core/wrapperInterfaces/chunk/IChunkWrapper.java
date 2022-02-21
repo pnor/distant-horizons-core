@@ -19,9 +19,14 @@
 
 package com.seibel.lod.core.wrapperInterfaces.chunk;
 
-import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
-import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
+import org.jetbrains.annotations.Nullable;
+
+import com.seibel.lod.core.wrapperInterfaces.block.BlockDetail;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author James Seibel
@@ -38,8 +43,8 @@ public interface IChunkWrapper
 	int getHeightMapValue(int xRel, int zRel);
 	
 	IBiomeWrapper getBiome(int x, int y, int z);
-	IBlockColorWrapper getBlockColorWrapper(int x, int y, int z);
-	IBlockShapeWrapper getBlockShapeWrapper(int x, int y, int z);
+	
+	BlockDetail getBlockDetail(int x, int y, int z);
 	
 	int getChunkPosX();
 	int getChunkPosZ();
@@ -68,4 +73,6 @@ public interface IChunkWrapper
 				&& y>=getMinBuildHeight() && y<getMaxBuildHeight()
 				&& z>=getMinZ() && z<=getMaxZ());
 	}
+	
+	boolean doesNearbyChunksExist();
 }

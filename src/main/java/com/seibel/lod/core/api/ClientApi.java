@@ -185,7 +185,8 @@ public class ClientApi
 					toBeLoaded.remove(pos);
 					continue;
 				}
-				//if (!chunk.isLightCorrect()) continue;
+				if (!chunk.isLightCorrect()) continue;
+				if (!chunk.doesNearbyChunksExist()) continue;
 				toBeLoaded.remove(pos);
 				generating.add(pos);
 				//ClientApi.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
