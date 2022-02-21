@@ -1,6 +1,7 @@
 package com.seibel.lod.core.objects;
 
-import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
+/*
+import com.seibel.lod.core.wrapperInterfaces.block.BlockDetail;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 
 import java.util.Objects;
@@ -9,15 +10,15 @@ import java.util.concurrent.ConcurrentMap;
 
 public class BlockBiomeCouple
 {
-	public static final ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
-	public static ConcurrentMap<IBiomeWrapper, ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple>> withBiomeIstanceCache = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<BlockDetail, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
+	public static ConcurrentMap<IBiomeWrapper, ConcurrentMap<BlockDetail, BlockBiomeCouple>> withBiomeIstanceCache = new ConcurrentHashMap<>();
 	
 	String blockName;
 	String biomeName;
 	String coupleName;
 	
 	IBiomeWrapper biomeColor;
-	IBlockColorWrapper blockColor;
+	BlockDetail blockColor;
 	
 	public static void addBlockBiomeToCache(IBlockColorWrapper blockColor){
 	}
@@ -101,3 +102,4 @@ public class BlockBiomeCouple
 	
 	
 }
+*/

@@ -22,27 +22,23 @@ package com.seibel.lod.core.builders.lodBuilding;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.LodWorld;
-import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorSingletonWrapper;
-import com.seibel.lod.core.wrapperInterfaces.block.IBlockColorWrapper;
-import com.seibel.lod.core.wrapperInterfaces.block.IBlockShapeWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.BlockDetail;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
@@ -58,7 +54,6 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class LodBuilder
 {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
-	private static final IBlockColorSingletonWrapper BLOCK_COLOR = SingletonHandler.get(IBlockColorSingletonWrapper.class);
 	
 	
 	/** This cannot be final! Different world have different height, and in menu, this causes Null Exceptions*/
@@ -137,7 +132,7 @@ public class LodBuilder
 			}
 			catch (RuntimeException e)
 			{
-				e.printStackTrace();
+				ClientApi.LOGGER.error("LodBuilder Thread Uncaught Exception: ", e);
 			//	// if the world changes while LODs are being generated
 			//	// they will throw errors as they try to access things that no longer
 			//	// exist.
@@ -167,6 +162,7 @@ public class LodBuilder
 			if (MC.getWrappedClientWorld() == null)
 				return false;
 			if (!chunk.isLightCorrect()) return false;
+			if (!chunk.doesNearbyChunksExist()) return false;
 			
 	
 			// generate the LODs
@@ -180,7 +176,7 @@ public class LodBuilder
 					int subZ = i%16;
 					writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
 					//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
-					//	ApiShared.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
+					//	ClientApi.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
 					if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
 						throw new RuntimeException("writeVerticalData result: Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
 					if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
@@ -193,6 +189,7 @@ public class LodBuilder
 				}
 			}
 			if (!chunk.isLightCorrect()) return false;
+			if (!chunk.doesNearbyChunksExist()) return false;
 			
 			if (genAll) {
 				return writeAllLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
@@ -200,7 +197,7 @@ public class LodBuilder
 				return writePartialLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
 			}
 		} catch (RuntimeException e) {
-			ApiShared.LOGGER.error("LodBuilder encountered an error on building lod for chunk {}: {}", chunk ,e);
+			ClientApi.LOGGER.error("LodBuilder encountered an error on building lod: ", e);
 			return false;
 		}
 		
@@ -213,7 +210,7 @@ public class LodBuilder
 		try {
 			if (region.getMinDetailLevel()!= 0) {
 				if (!LodUtil.checkRamUsage(0.05, 16)) {
-					ApiShared.LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
+					ClientApi.LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
 					return false;
 				}
 				
@@ -221,7 +218,7 @@ public class LodBuilder
 				if (region!=newRegion)
 					throw new RuntimeException();
 			}
-			//ApiShared.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
+			//ClientApi.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
 			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
 			region.addChunkOfData((byte)0, chunkX*16, chunkZ*16, 16, 16, data, data.length/16/16, override);
 			region.regenerateLodFromArea((byte)0, chunkX*16, chunkZ*16, 16, 16);
@@ -269,7 +266,7 @@ public class LodBuilder
 			for (int i=0; i<data.length; i+=vertQual) {
 				if (!DataPointUtil.doesItExist(data[i]) ||
 						DataPointUtil.getGenerationMode(data[i]) != config.distanceGenerationMode.complexity) {
-					ApiShared.LOGGER.error("NULL data at {}, detail {}, vertQual {}, lodCount {}, chunkPos [{},{}]\n"
+					ClientApi.LOGGER.error("NULL data at {}, detail {}, vertQual {}, lodCount {}, chunkPos [{},{}]\n"
 							+ "Data: {}",
 							i, targetLevel, vertQual, lodCount, chunkX, chunkZ, DataPointUtil.toString(data[i]));
 					throw new RuntimeException("Null data!");
@@ -277,7 +274,7 @@ public class LodBuilder
 			}
 			
 			
-			//ApiShared.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
+			//ClientApi.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
 			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
 			region.addChunkOfData(targetLevel,
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
@@ -295,7 +292,7 @@ public class LodBuilder
 					config.distanceGenerationMode))
 				throw new RuntimeException("data at detail "+ targetLevel+" is still null after writes to it!");
 		} catch (Exception e) {
-			e.printStackTrace();
+			ClientApi.LOGGER.error("LodBuilder encountered an error on writePartialLodNodeData: ", e);
 		} finally {
 			region.isWriting.decrementAndGet();
 		}
@@ -367,8 +364,8 @@ public class LodBuilder
 			int cy = y+dir.getNormal().y;
 			int cz = z+dir.getNormal().z;
 			if (!chunk.blockPosInsideChunk(cx, cy, cz)) return true;
-			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(cx, cy, cz);
-			if (block == null || block.hasNoCollision() || block.isToAvoid() || block.isNonFull() || block.hasNoCollision())
+			BlockDetail block = chunk.getBlockDetail(cx, cy, cz);
+			if (block == null || !block.isFullBlock)
 				return true;
 		}
 		return false;
@@ -378,27 +375,24 @@ public class LodBuilder
 	 * Find the lowest valid point from the bottom.
 	 * Used when creating a vertical LOD.
 	 */
-	private int determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig config, int xAbs, int yAbs, int zAbs, boolean strictEdge)
+	private int determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig builderConfig, int xAbs, int yAbs, int zAbs, boolean strictEdge)
 	{
 		int depth = chunk.getMinBuildHeight();
 		int colorOfBlock = 0;
 		if (strictEdge)
 		{
-			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(xAbs, yAbs + 1, zAbs);
-			if (block != null && !block.isToAvoid()
-					&& ((this.config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
-					|| (this.config.client().worldGenerator().getBlocksToAvoid().noCollision && block.hasNoCollision())))
-			{
-				colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs + 1, zAbs).getColor();
+			BlockDetail blockAbove = chunk.getBlockDetail(xAbs, yAbs + 1, zAbs);
+			if (blockAbove != null && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
+			{ // The above block is skipped. Lets use its skipped color for currrent block
+				colorOfBlock = blockAbove.color;
 			}
-			if (colorOfBlock == 0)
-				colorOfBlock = chunk.getBlockColorWrapper(xAbs, yAbs, zAbs).getColor();
+			if (colorOfBlock == 0) colorOfBlock = chunk.getBlockDetail(xAbs, yAbs, zAbs).color;
 		}
 		
 		for (int y = yAbs - 1; y >= chunk.getMinBuildHeight(); y--)
 		{
 			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs)
-				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs) && colorOfBlock != chunk.getBlockColorWrapper(xAbs, y, zAbs).getColor()))
+				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs) && colorOfBlock != chunk.getBlockDetail(xAbs, y, zAbs).color))
 			{
 				depth = (short) (y + 1);
 				break;
@@ -444,16 +438,20 @@ public class LodBuilder
 		}
 		else
 		{
-			colorInt = getColorForBlock(chunk, x, y, z);
+			BlockDetail detail = chunk.getBlockDetail(x, y, z);
+			colorInt = detail == null ? 0 : detail.color;
 			
 			// if we are skipping non-full and non-solid blocks that means we ignore
 			// snow, flowers, etc. Get the above block so we can still get the color
 			// of the snow, flower, etc. that may be above this block
 			int aboveColorInt = 0;
-			IBlockShapeWrapper block = chunk.getBlockShapeWrapper(x, y + 1, z);
-			if (block != null && ((config.client().worldGenerator().getBlocksToAvoid().nonFull && block.isNonFull())
-					|| (config.client().worldGenerator().getBlocksToAvoid().noCollision && block.hasNoCollision())))
-				aboveColorInt = getColorForBlock(chunk, x, y + 1, z);
+			if (chunk.blockPosInsideChunk(x, y+1, z)) {
+				BlockDetail blockAbove = chunk.getBlockDetail(x, y+1, z);
+				if (blockAbove != null && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
+				{  // The above block is skipped. Lets use its skipped color for currrent block
+					aboveColorInt = blockAbove.color;
+				}
+			}
 			
 			//if (colorInt == 0 && yAbs > 0)
 			// if this block is invisible, check the block below it
@@ -545,65 +543,11 @@ public class LodBuilder
 		return blockLight + (skyLight << 4);
 	}
 	
-	/** Returns a color int for the given block. */
-	private int getColorForBlock(IChunkWrapper chunk, int x, int y, int z)
-	{
-		int colorOfBlock;
-		int colorInt;
-		
-		IBlockShapeWrapper blockShapeWrapper = chunk.getBlockShapeWrapper(x, y, z);
-		
-		if (blockShapeWrapper == null || blockShapeWrapper.isToAvoid())
-			return 0;
-		
-		IBlockColorWrapper blockColorWrapper;
-		
-		if (chunk.isWaterLogged(x, y, z))
-			blockColorWrapper = BLOCK_COLOR.getWaterColor();
-		else
-			blockColorWrapper = chunk.getBlockColorWrapper(x, y, z);
-		
-		
-		
-		colorOfBlock = blockColorWrapper.getColor();
-		
-		
-		if (blockColorWrapper.hasTint())
-		{
-			IBiomeWrapper biome = chunk.getBiome(x, y, z);
-			int tintValue;
-			if (blockColorWrapper.hasGrassTint())
-				// grass and green plants
-				tintValue = biome.getGrassTint(0,0);
-			else if (blockColorWrapper.hasFolliageTint())
-				tintValue = biome.getFolliageTint();
-			else
-				//we can reintroduce this with the wrappers
-				tintValue = biome.getWaterTint();
-			
-			colorInt = ColorUtil.multiplyRGBcolors(tintValue | 0xFF000000, colorOfBlock);
-		}
-		else
-			colorInt = colorOfBlock;
-		return colorInt;
-	}
-	
-	
 	/** Is the block at the given blockPos a valid LOD point? */
 	private boolean isLayerValidLodPoint(IChunkWrapper chunk, int x, int y, int z)
 	{
-		if (chunk.isWaterLogged(x, y, z))
-			return true;
-		
-		boolean nonFullAvoidance = config.client().worldGenerator().getBlocksToAvoid().nonFull;
-		boolean noCollisionAvoidance = config.client().worldGenerator().getBlocksToAvoid().noCollision;
-		
-		IBlockShapeWrapper block = chunk.getBlockShapeWrapper(x, y, z);
-		
-		return block != null
-					&& !block.isToAvoid()
-					&& !(nonFullAvoidance && block.isNonFull())
-					&& !(noCollisionAvoidance && block.hasNoCollision());
-		
+		BlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
+		BlockDetail block = chunk.getBlockDetail(x, y, z);
+		return block != null && block.shouldRender(avoid);
 	}
 }

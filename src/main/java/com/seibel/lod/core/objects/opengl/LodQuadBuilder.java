@@ -17,7 +17,7 @@ public class LodQuadBuilder {
 	static final int MAX_BUFFER_SIZE = (1024 * 1024 * 1);
 	static final int QUAD_BYTE_SIZE = (12 * 6);
 	static final int MAX_QUADS_PER_BUFFER = MAX_BUFFER_SIZE / QUAD_BYTE_SIZE;
-	static final int MAX_MERGED_QUAD_SIZE = 64;
+	//static final int MAX_MERGED_QUAD_SIZE = 64;
 
 	static class Quad {
 		final short x;
@@ -88,7 +88,7 @@ public class LodQuadBuilder {
 		{
 			if (dir != o.dir)
 				return false;
-			if (w0 >= MAX_MERGED_QUAD_SIZE) return false;
+			//if (w0 >= MAX_MERGED_QUAD_SIZE) return false;
 			switch (dir.getAxis())
 			{
 			case X:
@@ -157,7 +157,7 @@ public class LodQuadBuilder {
 		{
 			if (dir != o.dir)
 				return false;
-			if (w1 >= MAX_MERGED_QUAD_SIZE) return false;
+			//if (w1 >= MAX_MERGED_QUAD_SIZE) return false;
 			switch (dir.getAxis())
 			{
 			case X:
