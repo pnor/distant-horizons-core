@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.api.ApiShared;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -99,7 +100,7 @@ public class LodDimensionOldFileStructureHandler
 					// the file we are reading is too old.
 					// close the reader and delete the file.
 					inputStream.close();
-					ClientApi.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
+					ApiShared.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". this region file will not be read and merged into the new save structure.");
@@ -111,7 +112,7 @@ public class LodDimensionOldFileStructureHandler
 					// close the reader and ignore the file, we don't
 					// want to accidentally delete anything the user may want.
 					inputStream.close();
-					ClientApi.LOGGER.info("Unexpected newer LOD region file for region: (" + regionX + "," + regionZ + ")"
+					ApiShared.LOGGER.info("Unexpected newer LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ " this region file will not be read and merged into the new save structure.");
@@ -119,7 +120,7 @@ public class LodDimensionOldFileStructureHandler
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
 				{
-					ClientApi.LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
+					ApiShared.LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". this region file be read, updated, and merged into the new save structure.");
@@ -134,7 +135,7 @@ public class LodDimensionOldFileStructureHandler
 			}
 			catch (IOException ioEx)
 			{
-				ClientApi.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "] error [" + ioEx.getMessage() + "]: ");
+				ApiShared.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "] error [" + ioEx.getMessage() + "]: ");
 				ioEx.printStackTrace();
 			}
 		}
@@ -149,18 +150,18 @@ public class LodDimensionOldFileStructureHandler
 	
 	private void loadAndMergeAndSaveRegion(VerticalQuality verticalQuality, RegionPos regionPos)
 	{
-		ClientApi.LOGGER.info("Merging region "+regionPos+" at "+verticalQuality+"...");
+		ApiShared.LOGGER.info("Merging region "+regionPos+" at "+verticalQuality+"...");
 		TempLodRegion region = new TempLodRegion(verticalQuality, regionPos);
-		ClientApi.LOGGER.info("Reading data...");
+		ApiShared.LOGGER.info("Reading data...");
 		loadGenModeToRegion(region, OldDistanceGenerationMode.FULL);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.FEATURES);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.SURFACE);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.BIOME_ONLY);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.NONE);
-		ClientApi.LOGGER.info("Writing data...");
+		ApiShared.LOGGER.info("Writing data...");
 		saveRegion(region);
-		ClientApi.LOGGER.info("region "+regionPos+" at "+verticalQuality+" merged");
+		ApiShared.LOGGER.info("region "+regionPos+" at "+verticalQuality+" merged");
 	}
 	
 	
@@ -245,7 +246,7 @@ public class LodDimensionOldFileStructureHandler
 		try {
 			return dimensionDataSaveFolder.getCanonicalPath() + File.separatorChar;
 		} catch (IOException e) {
-			ClientApi.LOGGER.warn("Unable to get the base save file path. One possible cause is that"
+			ApiShared.LOGGER.warn("Unable to get the base save file path. One possible cause is that"
 					+ " the process failed to read the current path location due to security configs.");
 			throw new RuntimeException("DistantHorizons Get Save File Path Failure");
 		}

@@ -63,7 +63,6 @@ public class ClientApi
 		= Collections.synchronizedList(new LinkedList<WeakReference<SpamReducedLogger>>());
 	
 	public static final ClientApi INSTANCE = new ClientApi();
-	public static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME);
 	
 	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
 	
@@ -86,7 +85,7 @@ public class ClientApi
 			if (!ENABLE_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
 			if (timer > LAG_SPIKE_THRESOLD_NS) {
-				ClientApi.LOGGER.info("LagSpikeCatcher: "+source+" took "+Duration.ofNanos(timer)+"!");
+				ApiShared.LOGGER.info("LagSpikeCatcher: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 		}
 	}
@@ -122,7 +121,7 @@ public class ClientApi
 	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
 	{
 		LagSpikeCatcher clientChunkLoad = new LagSpikeCatcher();
-		//ClientApi.LOGGER.info("Lod Generating add: "+chunk.getLongChunkPos());
+		//ApiShared.LOGGER.info("Lod Generating add: "+chunk.getLongChunkPos());
 		toBeLoaded.add(chunk.getLongChunkPos());
 		clientChunkLoad.end("clientChunkLoad");
 	}
@@ -177,7 +176,7 @@ public class ClientApi
 			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();
 			for (long pos : toBeLoaded) {
 				if (generating.size() >= 8) {
-					//ClientApi.LOGGER.info("Lod Generating Full! Remining: "+toBeLoaded.size());
+					//ApiShared.LOGGER.info("Lod Generating Full! Remining: "+toBeLoaded.size());
 					break;
 				}
 				IChunkWrapper chunk = world.tryGetChunk(FACTORY.createChunkPos(pos));
@@ -188,10 +187,10 @@ public class ClientApi
 				//if (!chunk.isLightCorrect()) continue;
 				toBeLoaded.remove(pos);
 				generating.add(pos);
-				//ClientApi.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
+				//ApiShared.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
 				ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld,
 						world.getDimensionType(), DistanceGenerationMode.FULL, true, true, () -> {
-							//ClientApi.LOGGER.info("Lod Generation for "+pos+" done. Remining: " +toBeLoaded.size());
+							//ApiShared.LOGGER.info("Lod Generation for "+pos+" done. Remining: " +toBeLoaded.size());
 							generating.remove(pos);
 						}, () -> {
 							generating.remove(pos);
@@ -234,7 +233,7 @@ public class ClientApi
 						ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
 					} catch (RuntimeException e) {
 						rendererDisabledBecauseOfExceptions = true;
-						ClientApi.LOGGER.error("Renderer thrown an uncaught exception: ",e);
+						ApiShared.LOGGER.error("Renderer thrown an uncaught exception: ",e);
 						try {
 							MC.sendChatMessage("\u00A74\u00A7l\u00A7uERROR: Distant Horizons"
 									+ " renderer has encountered an exception!");
@@ -256,7 +255,7 @@ public class ClientApi
 		}
 		catch (Exception e)
 		{
-			ClientApi.LOGGER.error("client proxy uncaught exception: ", e);
+			ApiShared.LOGGER.error("client proxy uncaught exception: ", e);
 		}
 	}
 	

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
@@ -97,7 +98,7 @@ public class LodQuadBuilder {
 					return false;
 				if (z + w0 > o.z)
 				{
-					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					ApiShared.LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -116,7 +117,7 @@ public class LodQuadBuilder {
 					return false;
 				if (x + w0 > o.x)
 				{
-					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					ApiShared.LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -135,7 +136,7 @@ public class LodQuadBuilder {
 					return false;
 				if (x + w0 > o.x)
 				{
-					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					ApiShared.LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -166,7 +167,7 @@ public class LodQuadBuilder {
 					return false;
 				if (y + w1 > o.y)
 				{
-					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					ApiShared.LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -184,7 +185,7 @@ public class LodQuadBuilder {
 					return false;
 				if (z + w1 > o.z)
 				{
-					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					ApiShared.LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -202,7 +203,7 @@ public class LodQuadBuilder {
 					return false;
 				if (y + w1 > o.y)
 				{
-					ClientApi.LOGGER.warn("Overlapping quads detected!");
+					ApiShared.LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -375,7 +376,7 @@ public class LodQuadBuilder {
 		mergeCount += merggeQuadsPass2();
 		long postQuadsCount = quads.size();
 		//if (mergeCount != 0)
-			//ClientApi.LOGGER.info("Merged {} out of {} quads, to now {} quads.", mergeCount, preQuadsCount, postQuadsCount);
+			//ApiShared.LOGGER.info("Merged {} out of {} quads, to now {} quads.", mergeCount, preQuadsCount, postQuadsCount);
 	}
 	
 	public Iterator<ByteBuffer> makeVertexBuffers() {

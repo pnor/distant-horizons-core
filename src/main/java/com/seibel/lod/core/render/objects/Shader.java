@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ClientApi;
@@ -50,7 +51,7 @@ public class Shader
 	 */
 	public Shader(int type, String path, boolean absoluteFilePath)
 	{
-		ClientApi.LOGGER.info("Loading shader at "+path);
+		ApiShared.LOGGER.info("Loading shader at "+path);
 		// Create an empty shader object
 		id = GL32.glCreateShader(type);
 		StringBuilder source = loadFile(path, absoluteFilePath);
@@ -64,7 +65,7 @@ public class Shader
 			free(); // important!
 			throw new RuntimeException(message);
 		}
-		ClientApi.LOGGER.info("Shader at "+path+" loaded sucessfully.");
+		ApiShared.LOGGER.info("Shader at "+path+" loaded sucessfully.");
 	}
 
 	// REMEMBER to always free the resource!

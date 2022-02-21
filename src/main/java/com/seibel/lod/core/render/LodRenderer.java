@@ -72,7 +72,7 @@ public class LodRenderer
 			if (!ENABLE_DRAW_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
 			if (timer> DRAW_LAG_SPIKE_THRESOLD_NS) { //4 ms
-				ClientApi.LOGGER.info("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
+				ApiShared.LOGGER.info("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 			
 		}
@@ -347,7 +347,7 @@ public class LodRenderer
 		    }
 		}
 		//if (drawCall==0)
-		//	ClientApi.LOGGER.info("DrawCall Count: "+drawCall+"("+vCount0+")");
+		//	ApiShared.LOGGER.info("DrawCall Count: "+drawCall+"("+vCount0+")");
 		
 		//================//
 		// render cleanup //
@@ -391,11 +391,11 @@ public class LodRenderer
 	/** Setup all render objects - REQUIRES to be in render thread */
 	private void setup() {
 		if (isSetupComplete) {
-			ClientApi.LOGGER.warn("Renderer setup called but it has already completed setup!");
+			ApiShared.LOGGER.warn("Renderer setup called but it has already completed setup!");
 			return;
 		}
 		if (!GLProxy.hasInstance()) {
-			ClientApi.LOGGER.warn("Renderer setup called but GLProxy has not yet been setup!");
+			ApiShared.LOGGER.warn("Renderer setup called but GLProxy has not yet been setup!");
 			return;
 		}
 		
@@ -451,17 +451,17 @@ public class LodRenderer
 	 *  (Many objects are Native, outside of JVM, and need manual cleanup)  */ 
 	private void cleanup() {
 		if (!isSetupComplete) {
-			ClientApi.LOGGER.warn("Renderer cleanup called but Renderer has not completed setup!");
+			ApiShared.LOGGER.warn("Renderer cleanup called but Renderer has not completed setup!");
 			return;
 		}
 		if (!GLProxy.hasInstance()) {
-			ClientApi.LOGGER.warn("Renderer Cleanup called but the GLProxy has never been inited!");
+			ApiShared.LOGGER.warn("Renderer Cleanup called but the GLProxy has never been inited!");
 			return;
 		}
 		isSetupComplete = false;
-		ClientApi.LOGGER.info("Renderer Cleanup Started");
+		ApiShared.LOGGER.info("Renderer Cleanup Started");
 		shaderProgram.free();
-		ClientApi.LOGGER.info("Renderer Cleanup Complete");
+		ApiShared.LOGGER.info("Renderer Cleanup Complete");
 	}
 
 	/** Calls the BufferBuilder's destroyBuffers method. */

@@ -19,10 +19,13 @@
 
 package com.seibel.lod.core.api;
 
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LodWorld;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This stores objects and variables that
@@ -34,6 +37,7 @@ import com.seibel.lod.core.objects.lod.LodWorld;
 public class ApiShared
 {
 	public ApiShared INSTANCE = new ApiShared();
+	public static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME);
 	
 	public static final LodBufferBuilderFactory lodBufferBuilderFactory = new LodBufferBuilderFactory();
 	public static final LodWorld lodWorld = new LodWorld();

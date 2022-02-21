@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.builders.worldGeneration;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -55,7 +56,7 @@ public class BatchGenerator {
 		targetLodDim = newLodDimension;
 		generationGroup = FACTORY.createBatchGenerator(newLodBuilder, newLodDimension, world);
 		MC.sendChatMessage("NOTE: You are currently using Distant Horizon's Batch Chunk Pre-Generator.");
-		ClientApi.LOGGER.info("Batch Chunk Generator initialized");
+		ApiShared.LOGGER.info("Batch Chunk Generator initialized");
 	}
 
 	@SuppressWarnings("unused")
@@ -65,7 +66,7 @@ public class BatchGenerator {
 			IWorldWrapper dim = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 			generationGroup = FACTORY.createBatchGenerator(lodBuilder, lodDim, dim);
 			targetLodDim = lodDim;
-			ClientApi.LOGGER.info("1.18 Experimental Chunk Generator reinitialized");
+			ApiShared.LOGGER.info("1.18 Experimental Chunk Generator reinitialized");
 		}
 
 		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
@@ -112,7 +113,7 @@ public class BatchGenerator {
 				estimatedPointsToQueue = newThreadCount * 10;
 		}
 
-		// ClientApi.LOGGER.info("PosToGenerate: {}", posToGenerate);
+		// ApiShared.LOGGER.info("PosToGenerate: {}", posToGenerate);
 
 		// Find the max number of iterations we need to go though.
 		// We are checking one FarPos, and one NearPos per iterations. This ensure we
@@ -142,14 +143,14 @@ public class BatchGenerator {
 		}
 
 		if (ENABLE_GENERATOR_STATS_LOGGING)
-			ClientApi.LOGGER.info("WorldGen. Near:" + posToGenerate.getNumberOfNearPos() + " Far:"
+			ApiShared.LOGGER.info("WorldGen. Near:" + posToGenerate.getNumberOfNearPos() + " Far:"
 					+ posToGenerate.getNumberOfFarPos());
 		if (priority == GenerationPriority.FAR_FIRST || priority == GenerationPriority.BALANCED) {
 
 			int nearCount = posToGenerate.getNumberOfNearPos();
 			int farCount = posToGenerate.getNumberOfFarPos();
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				ClientApi.LOGGER.info("WorldGen. Near:" + nearCount + " Far:" + farCount);
+				ApiShared.LOGGER.info("WorldGen. Near:" + nearCount + " Far:" + farCount);
 			int maxIteration = Math.max(nearCount, farCount);
 			for (int i = 0; i < maxIteration; i++) {
 
@@ -224,11 +225,11 @@ public class BatchGenerator {
 
 		if (targetToGenerate != toGenerate && ENABLE_GENERATOR_STATS_LOGGING) {
 			if (toGenerate <= 0) {
-				ClientApi.LOGGER.info(
+				ApiShared.LOGGER.info(
 						"WorldGenerator: Sampled " + posToGenerate.getNumberOfPos() + " out of " + estimatedSampleNeeded
 								+ " points, started all targeted " + targetToGenerate + " generations.");
 			} else {
-				ClientApi.LOGGER.info("WorldGenerator: Sampled " + posToGenerate.getNumberOfPos() + " out of "
+				ApiShared.LOGGER.info("WorldGenerator: Sampled " + posToGenerate.getNumberOfPos() + " out of "
 						+ estimatedSampleNeeded + " points, started " + (targetToGenerate - toGenerate)
 						+ " out of targeted " + targetToGenerate + " generations.");
 			}
@@ -242,7 +243,7 @@ public class BatchGenerator {
 			if (estimatedSampleNeeded > 32768)
 				estimatedSampleNeeded = 32768;
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				ClientApi.LOGGER.info("WorldGenerator: Increasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
+				ApiShared.LOGGER.info("WorldGenerator: Increasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
 
 		} else if (toGenerate <= 0 && positionGoneThough * 1.5 < posToGenerate.getNumberOfPos()) {
 			// We haven't gone though half of them and it's already enough.
@@ -252,13 +253,13 @@ public class BatchGenerator {
 			if (estimatedSampleNeeded < 4)
 				estimatedSampleNeeded = 4;
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				ClientApi.LOGGER.info("WorldGenerator: Decreasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
+				ApiShared.LOGGER.info("WorldGenerator: Decreasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
 		}
 
 	}
 
 	public void stop(boolean blocking) {
-		ClientApi.LOGGER.info("1.18 Experimental Chunk Generator shutting down...");
+		ApiShared.LOGGER.info("1.18 Experimental Chunk Generator shutting down...");
 		generationGroup.stop(blocking);
 	}
 

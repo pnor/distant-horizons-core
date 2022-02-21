@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadFactory;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 
 /**
@@ -73,7 +74,7 @@ public class LodThreadFactory implements ThreadFactory
 			if (t != null) {
 				StackTraceElement[] stacks = t.getStackTrace();
 				if (stacks.length != 0) {
-					ClientApi.LOGGER.info("===========================================\n"
+					ApiShared.LOGGER.info("===========================================\n"
 							+ "Thread: "+t.getName()+"\n"+StackTraceToString(stacks));
 				}
 			}

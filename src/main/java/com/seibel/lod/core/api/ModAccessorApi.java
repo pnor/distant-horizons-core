@@ -39,7 +39,7 @@ public class ModAccessorApi {
 		{
 			throw new IllegalStateException("The singleton [" + interfaceClass.getSimpleName() + "] doesn't implement the interface [" + interfaceClass.getSimpleName() + "].");
 		}
-		ClientApi.LOGGER.info("DistantHorizon: Registored mod comatibility accessor for "+modAccessor.getModName());
+		ApiShared.LOGGER.info("DistantHorizon: Registored mod comatibility accessor for "+modAccessor.getModName());
 		singletons.put(interfaceClass, modAccessor);
 	}
 

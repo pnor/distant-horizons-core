@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
@@ -179,11 +180,11 @@ public class LodDimension
 	 */
 	public synchronized void move(RegionPos regionOffset)
 	{
-		ClientApi.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
+		ApiShared.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
 		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
 		Pos p = regions.getCenter();
 		regions.move(p.x+regionOffset.x, p.y+regionOffset.z);
-		ClientApi.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
+		ApiShared.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
 	}
 	
 	
@@ -285,7 +286,7 @@ public class LodDimension
 		// don't run the tree cutter multiple times
 		// for the same location
 		Runnable thread = () -> {
-			//ClientApi.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
+			//ApiShared.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
 			totalDirtiedRegions = 0;
 			Pos minPos = regions.getMinInRange();
 			// go over every region in the dimension
@@ -311,7 +312,7 @@ public class LodDimension
 			});
 			if (totalDirtiedRegions > 8) this.saveDirtyRegionsToFile(false);
 			dirtiedRegionsRoughCount = totalDirtiedRegions;
-			//ClientApi.LOGGER.info("LodDim cut Region complete: " + playerPosX + "," + playerPosZ);
+			//ApiShared.LOGGER.info("LodDim cut Region complete: " + playerPosX + "," + playerPosZ);
 			isCutting = false;
 			
 			// See if we need to save and flush some data out.
@@ -327,7 +328,7 @@ public class LodDimension
 		// If we have less than 20% or 128MB ram left. Don't expend.
 		if (expandOrLoadPaused) {
 			if (LodUtil.checkRamUsage(0.2, 128)) {
-				ClientApi.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
+				ApiShared.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
 				expandOrLoadPaused = false;
 			}
 		}
@@ -342,13 +343,13 @@ public class LodDimension
 		// don't run the expander multiple times
 		// for the same location
 		Runnable thread = () -> {
-			//ClientApi.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
+			//ApiShared.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 			Pos minPos = regions.getMinInRange();
 			iterateWithSpiral((int x, int z) -> {
 				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.02, 64)) {
 					Runtime.getRuntime().gc();
 					if (!LodUtil.checkRamUsage(0.2, 128)) {
-						ClientApi.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
+						ApiShared.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
 						// We have less than 10% or 64MB ram left. Don't expend.
 						expandOrLoadPaused = true;
 						saveDirtyRegionsToFile(false);
@@ -379,7 +380,7 @@ public class LodDimension
 					double deltaRPosZ = debugRPosZ - playerPosZ;
 					double debugDistance = Math.sqrt(deltaRPosX*deltaRPosX + deltaRPosZ*deltaRPosZ);
 					if (minDistance > debugDistance || maxDistance < debugDistance || minDistance > maxDistance) {
-						ClientApi.LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
+						ApiShared.LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
 								+ "At center block pos: {} {}, region pos: {}",
 								minDistance, maxDistance, debugDistance, debugRPosX, debugRPosZ, regionPos);
 						return;
@@ -414,7 +415,7 @@ public class LodDimension
 					regenDimensionBuffers = true;
 				}
 			});
-			//ClientApi.LOGGER.info("LodDim expend Region complete: " + playerPosX + "," + playerPosZ);
+			//ApiShared.LOGGER.info("LodDim expend Region complete: " + playerPosX + "," + playerPosZ);
 			isExpanding = false;
 		};
 
@@ -738,7 +739,7 @@ public class LodDimension
 			if (r.isWriting.get() != 0) writingRegionCount++;
 			LevelContainer[] container = r.debugGetDataContainers().clone();
 			if (container == null || container.length != LodUtil.DETAIL_OPTIONS) {
-				ClientApi.LOGGER.warn("DumpRamUsage encountered an invalid region!");
+				ApiShared.LOGGER.warn("DumpRamUsage encountered an invalid region!");
 				continue;
 			}
 			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
@@ -775,9 +776,9 @@ public class LodDimension
 		try {
 			boolean worked = cutAndExpandThread.awaitTermination(5, TimeUnit.SECONDS);
 			if (!worked)
-				ClientApi.LOGGER.error("Cut And Expend threads timed out! May cause crash on game exit due to cleanup failure.");
+				ApiShared.LOGGER.error("Cut And Expend threads timed out! May cause crash on game exit due to cleanup failure.");
 		} catch (InterruptedException e) {
-			ClientApi.LOGGER.error("Cut And Expend threads shutdown is interrupted! May cause crash on game exit due to cleanup failure: ", e);
+			ApiShared.LOGGER.error("Cut And Expend threads shutdown is interrupted! May cause crash on game exit due to cleanup failure: ", e);
 		}
 		
 	}

@@ -74,7 +74,7 @@ public class DetailDistanceUtil
 	{
 		double maxDetailDistance = getDrawDistanceFromDetail(maxDetail-1);
 		if (distance > maxDetailDistance) {
-			//ClientApi.LOGGER.info("DEBUG: Scale as max: {}", distance);
+			//ApiShared.LOGGER.info("DEBUG: Scale as max: {}", distance);
 			return maxDetail-1;
 		}
 		

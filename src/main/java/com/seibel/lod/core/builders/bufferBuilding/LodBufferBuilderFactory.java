@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
@@ -86,7 +87,7 @@ public class LodBufferBuilderFactory {
 				return;
 			timer = System.nanoTime() - timer;
 			if (timer > LAG_SPIKE_THRESOLD_NS) {
-				ClientApi.LOGGER.info("LagSpikeCatcher: " + source + " took " + Duration.ofNanos(timer) + "!");
+				ApiShared.LOGGER.info("LagSpikeCatcher: " + source + " took " + Duration.ofNanos(timer) + "!");
 			}
 		}
 	}
@@ -304,7 +305,7 @@ public class LodBufferBuilderFactory {
 						try {
 							uploadBuffers(result.quadBuilder, result.regionPos);
 						} catch (Exception e3) {
-							ClientApi.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
+							ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
 						}
 					}, bufferUploadThread);
 					futuresBuffer.add(future);
@@ -322,7 +323,7 @@ public class LodBufferBuilderFactory {
 			try {
 				allFutures.get(60, TimeUnit.SECONDS);
 			} catch (TimeoutException te) {
-				ClientApi.LOGGER.error("LodBufferBuilder timed out: ", te);
+				ApiShared.LOGGER.error("LodBufferBuilder timed out: ", te);
 				bufferBuilderThreadFactory.dumpAllThreadStacks();
 				bufferUploadThreadFactory.dumpAllThreadStacks();
 				bufferBuilderThreads.shutdownNow();
@@ -336,7 +337,7 @@ public class LodBufferBuilderFactory {
 				bufferUploadThread = Executors.newSingleThreadExecutor(bufferUploadThreadFactory);
 				return;
 			} catch (Exception e) {
-				ClientApi.LOGGER.error("LodBufferBuilder ran into trouble: ", e);
+				ApiShared.LOGGER.error("LodBufferBuilder ran into trouble: ", e);
 			}
 			long executeEnd = System.currentTimeMillis();
 
@@ -344,13 +345,13 @@ public class LodBufferBuilderFactory {
 			long buildTime = endTime - startTime;
 			long executeTime = executeEnd - executeStart;
 			if (ENABLE_BUFFER_PERF_LOGGING)
-				ClientApi.LOGGER.info("Thread Build&Upload(" + nodeToRenderThreads.size() + "/"
+				ApiShared.LOGGER.info("Thread Build&Upload(" + nodeToRenderThreads.size() + "/"
 						+ (lodDim.getWidth() * lodDim.getWidth()) + (fullRegen ? "FULL" : "") + ") time: " + buildTime
 						+ " ms" + '\n' + "thread execute time: " + executeTime + " ms");
 			// mark that the buildable buffers as ready to swap
 			switchVbos = true;
 		} catch (Exception e) {
-			ClientApi.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
+			ApiShared.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
 		} finally {
 			// regardless of whether we were able to successfully create
 			// the buffers, we are done generating.
@@ -579,7 +580,7 @@ public class LodBufferBuilderFactory {
 	private boolean swapBuffers() {
 		bufferLock.lock();
 		if (ENABLE_BUFFER_SWAP_LOGGING)
-			ClientApi.LOGGER.debug("Lod Swap Buffers");
+			ApiShared.LOGGER.debug("Lod Swap Buffers");
 		{
 			boolean shouldRegenBuff = true;
 			try {
@@ -587,7 +588,7 @@ public class LodBufferBuilderFactory {
 				drawableVbos = buildableVbos;
 				buildableVbos = tmpVbo;
 
-				// ClientApi.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
+				// ApiShared.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
 				// the vbos have been swapped
 				switchVbos = false;
 
@@ -599,7 +600,7 @@ public class LodBufferBuilderFactory {
 				hideBackBuffer = false;
 			} catch (Exception e) {
 				// this shouldn't normally happen, but just in case it sill prevent deadlock
-				ClientApi.LOGGER.error("swapBuffers ran into trouble: " + e.getMessage(), e);
+				ApiShared.LOGGER.error("swapBuffers ran into trouble: " + e.getMessage(), e);
 			} finally {
 				bufferLock.unlock();
 			}

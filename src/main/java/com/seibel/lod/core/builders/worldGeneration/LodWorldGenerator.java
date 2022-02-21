@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -312,7 +313,7 @@ public class LodWorldGenerator {
 		}
 		// catch (Exception e)
 		// {
-		// ClientApi.LOGGER.error(LodWorldGenerator.class.getSimpleName() + ": ran into
+		// ApiShared.LOGGER.error(LodWorldGenerator.class.getSimpleName() + ": ran into
 		// an error: " + e.getMessage());
 		// e.printStackTrace();
 		// }
@@ -338,16 +339,16 @@ public class LodWorldGenerator {
 	public void restartExecutorService() {
 
 		if (genSubThreads != null && !genSubThreads.isShutdown()) {
-			ClientApi.LOGGER.info("Blocking until generator sub threads terminated!!");
+			ApiShared.LOGGER.info("Blocking until generator sub threads terminated!!");
 			try {
 				mainGenThread.shutdownNow();
 				genSubThreads.shutdownNow();
 				boolean worked = genSubThreads.awaitTermination(30, TimeUnit.SECONDS);
 				if (!worked)
-					ClientApi.LOGGER.error(
+					ApiShared.LOGGER.error(
 							"Generator sub threads timed out! May cause crash on game exit due to cleanup failure.");
 			} catch (InterruptedException e) {
-				ClientApi.LOGGER.error(
+				ApiShared.LOGGER.error(
 						"Generator sub threads shutdown is interrupted! May cause crash on game exit due to cleanup failure.");
 				e.printStackTrace();
 			} finally {

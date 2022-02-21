@@ -1,5 +1,6 @@
 package com.seibel.lod.core.render.objects;
 
+import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.opengl.GL43;
 
 import com.seibel.lod.core.api.ClientApi;
@@ -63,11 +64,11 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 	// Requires VertexAttribute binded
 	public void completeAndCheck(int expectedStrideSize) {
 		if (strideSize != expectedStrideSize) {
-			ClientApi.LOGGER.error("Vertex Attribute calculated stride size " + strideSize +
+			ApiShared.LOGGER.error("Vertex Attribute calculated stride size " + strideSize +
 					" does not match the provided expected stride size " + expectedStrideSize + "!");
 			throw new IllegalArgumentException("Vertex Attribute Incorrect Format");
 		}
-		ClientApi.LOGGER.info("Vertex Attribute (GL43+) completed. It contains "+numberOfBindingPoints
+		ApiShared.LOGGER.info("Vertex Attribute (GL43+) completed. It contains "+numberOfBindingPoints
 				+" binding points and a stride size of "+strideSize);
 	}
 

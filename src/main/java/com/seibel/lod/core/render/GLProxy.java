@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -162,9 +163,9 @@ public class GLProxy
 		boolean enableDebugLogging = true;
         // this must be created on minecraft's render context to work correctly
 		
-		ClientApi.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
+		ApiShared.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
 
-		ClientApi.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
+		ApiShared.LOGGER.info("Lod Render OpenGL version [" + GL11.glGetString(GL11.GL_VERSION) + "].");
 		
 		// getting Minecraft's context has to be done on the render thread,
 		// where the GL context is
@@ -191,7 +192,7 @@ public class GLProxy
 					"Additional info:\n"+supportedVersionInfo;
 			MC.crashMinecraft(errorMessage, new UnsupportedOperationException("This GPU doesn't support OpenGL 3.2."));
 		}
-		ClientApi.LOGGER.info("minecraftGlCapabilities:\n"+getVersionInfo(minecraftGlCapabilities));
+		ApiShared.LOGGER.info("minecraftGlCapabilities:\n"+getVersionInfo(minecraftGlCapabilities));
 		
 		// context creation setup
 		GLFW.glfwDefaultWindowHints();
@@ -206,13 +207,13 @@ public class GLProxy
 		lodBuilderGlContext = GLFW.glfwCreateWindow(64, 48, "LOD Builder Window", 0L, minecraftGlContext);
 		GLFW.glfwMakeContextCurrent(lodBuilderGlContext);
 		lodBuilderGlCapabilities = GL.createCapabilities();
-		ClientApi.LOGGER.info("lodBuilderGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
+		ApiShared.LOGGER.info("lodBuilderGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
 		
 		// create the proxyWorker's context
 		proxyWorkerGlContext = GLFW.glfwCreateWindow(64, 48, "LOD proxy worker Window", 0L, minecraftGlContext);
 		GLFW.glfwMakeContextCurrent(proxyWorkerGlContext);
 		proxyWorkerGlCapabilities = GL.createCapabilities();
-		ClientApi.LOGGER.info("proxyWorkerGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
+		ApiShared.LOGGER.info("proxyWorkerGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
 
 		// Check if we can use the make-over version of Vertex Attribute, which is available in GL4.3 or after
 		VertexAttributeBufferBindingSupported = minecraftGlCapabilities.glBindVertexBuffer != 0L; // Nullptr
@@ -251,7 +252,7 @@ public class GLProxy
 		// display the capabilities
 		if (!bufferStorageSupported)
 		{
-			ClientApi.LOGGER.warn("This GPU doesn't support Buffer Storage (OpenGL 4.4), falling back to using other methods.");			
+			ApiShared.LOGGER.warn("This GPU doesn't support Buffer Storage (OpenGL 4.4), falling back to using other methods.");			
 		}
 		
 		String vendor = GL32.glGetString(GL32.GL_VENDOR).toUpperCase(); // example return: "NVIDIA CORPORATION"
@@ -266,7 +267,7 @@ public class GLProxy
 			preferredUploadMethod = GpuUploadMethod.BUFFER_MAPPING;
 		}
 		
-		ClientApi.LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
+		ApiShared.LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
 
 		setGlContext(GLProxyContext.PROXY_WORKER);
 	    File workerLog = new File("OpenGL-Lod-WorkerContext.log");
@@ -292,7 +293,7 @@ public class GLProxy
         setGlContext(GLProxyContext.MINECRAFT);
 		
 		// GLProxy creation success
-		ClientApi.LOGGER.info(GLProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
+		ApiShared.LOGGER.info(GLProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
 	}
 	
 	/**
@@ -409,7 +410,7 @@ public class GLProxy
 		}
 		catch (Exception e)
 		{
-			ClientApi.LOGGER.error(Thread.currentThread().getName() + " ran into a issue: " + e.getMessage());
+			ApiShared.LOGGER.error(Thread.currentThread().getName() + " ran into a issue: " + e.getMessage());
 			e.printStackTrace();
 		}
 		finally
@@ -421,14 +422,14 @@ public class GLProxy
 	
 	public static void ensureAllGLJobCompleted() {
 		if (!hasInstance()) return;
-		ClientApi.LOGGER.info("Blocking until GL jobs finished!");
+		ApiShared.LOGGER.info("Blocking until GL jobs finished!");
 		try {
 			instance.workerThread.shutdown();
 			boolean worked = instance.workerThread.awaitTermination(30, TimeUnit.SECONDS);
 			if (!worked)
-				ClientApi.LOGGER.error("GLWorkerThread shutdown timed out! Game may crash on exit due to cleanup failure!");
+				ApiShared.LOGGER.error("GLWorkerThread shutdown timed out! Game may crash on exit due to cleanup failure!");
 		} catch (InterruptedException e) {
-			ClientApi.LOGGER.error("GLWorkerThread shutdown is interrupted! Game may crash on exit due to cleanup failure!");
+			ApiShared.LOGGER.error("GLWorkerThread shutdown is interrupted! Game may crash on exit due to cleanup failure!");
 			e.printStackTrace();
 		} finally {
 			instance.workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());

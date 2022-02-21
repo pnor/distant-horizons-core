@@ -116,7 +116,7 @@ public class EventApi {
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world) {
 		if (ENABLE_STACK_DUMP_LOGGING)
-			ClientApi.LOGGER.info(
+			ApiShared.LOGGER.info(
 					"WorldLoadEvent called here for "
 							+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"),
 					new RuntimeException());
@@ -143,7 +143,7 @@ public class EventApi {
 	/** This is also called when the user disconnects from a server+ */
 	public void worldUnloadEvent(IWorldWrapper world) {
 		if (ENABLE_STACK_DUMP_LOGGING)
-			ClientApi.LOGGER.info(
+			ApiShared.LOGGER.info(
 					"WorldUnloadEvent called here for "
 							+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"),
 					new RuntimeException());

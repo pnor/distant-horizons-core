@@ -160,13 +160,13 @@ public class LodRegion {
 			throw new RuntimeException("Provided data's verticalSize is different from current storage's verticalSize!");
 		
 		boolean updated = this.dataContainer[detailLevel].addChunkOfData(data, posX, posZ, widthX, widthZ, override);
-		//ClientApi.LOGGER.info("addChunkOfData(region:{}, level:{}, x:{}, z:{}, wx:{}, wz:{}, override:{}, updated:{})",
+		//ApiShared.LOGGER.info("addChunkOfData(region:{}, level:{}, x:{}, z:{}, wx:{}, wz:{}, override:{}, updated:{})",
 		//		getRegionPos(), detailLevel, posX, posZ, widthX, widthZ, override, updated);
 		if (updated) {
 			needRegenBuffer = 2;
 			needSaving = true;
 		} else {
-			/*ClientApi.LOGGER.info("addChunkOfData nothing changed. Datapoint: {}\n Upper Datapoint: {}",
+			/*ApiShared.LOGGER.info("addChunkOfData nothing changed. Datapoint: {}\n Upper Datapoint: {}",
 					DataPointUtil.toString(this.dataContainer[detailLevel].getSingleData(posX, posZ)),
 					DataPointUtil.toString(this.dataContainer[9].getSingleData(0, 0))
 					);*/
@@ -445,7 +445,7 @@ public class LodRegion {
 		if (detailLevel >= LodUtil.REGION_DETAIL_LEVEL) return false;
 		int modPosX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		int modPosZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
-		//ClientApi.LOGGER.info("RegenerateLodFromArea(region:{} level:{}, x:{}, z:{}, wx:{}, wz:{})",
+		//ApiShared.LOGGER.info("RegenerateLodFromArea(region:{} level:{}, x:{}, z:{}, wx:{}, wz:{})",
 		//		getRegionPos(), detailLevel, modPosX, modPosZ, widthX, widthZ);
 		if (detailLevel < minDetailLevel) {
 			byte startLevel = minDetailLevel;
@@ -465,7 +465,7 @@ public class LodRegion {
 			widthX = maxPosX-modPosX;
 			widthZ = maxPosZ-modPosZ;
 			detailLevel++;
-			// ClientApi.LOGGER.info(" - Shink: (level:{}, x:{}, z:{}, wx:{}, wz:{})", detailLevel, modPosX, modPosZ, widthX, widthZ);
+			// ApiShared.LOGGER.info(" - Shink: (level:{}, x:{}, z:{}, wx:{}, wz:{})", detailLevel, modPosX, modPosZ, widthX, widthZ);
 			chunkUpdate(detailLevel, modPosX, modPosZ, widthX, widthZ);
 		} while (detailLevel < LodUtil.REGION_DETAIL_LEVEL);
 		
@@ -480,7 +480,7 @@ public class LodRegion {
 	 * TODO make this return whether any value has changed
 	 */
 	private void update(byte detailLevel, int modPosX, int modPosZ) {
-		//ClientApi.LOGGER.info(" - Update: (level:{}, subLevel:{}, mx:{}, mz:{})", detailLevel, detailLevel-1, modPosX, modPosZ);
+		//ApiShared.LOGGER.info(" - Update: (level:{}, subLevel:{}, mx:{}, mz:{})", detailLevel, detailLevel-1, modPosX, modPosZ);
 		dataContainer[detailLevel].updateData(dataContainer[detailLevel - 1], modPosX, modPosZ);
 	}
 	private void chunkUpdate(byte detailLevel, int modPosX, int modPosZ, int widthX,int widthZ) {

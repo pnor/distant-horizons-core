@@ -22,6 +22,7 @@ package com.seibel.lod.core.objects.lod;
 import java.util.Hashtable;
 import java.util.Map;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 
@@ -142,7 +143,7 @@ public class LodWorld
 		
 		// TODO we should only print this if lods were actually saved to file
 		// but that requires a LodDimension.hasDirtyRegions() method or something similar
-		ClientApi.LOGGER.info("Saving LODs");
+		ApiShared.LOGGER.info("Saving LODs");
 		
 		for (IDimensionTypeWrapper key : lodDimensions.keySet()) {
 			lodDimensions.get(key).saveDirtyRegionsToFile(isBlocking);

@@ -21,6 +21,7 @@ package com.seibel.lod.core.objects.opengl;
 
 import java.nio.ByteBuffer;
 
+import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL44;
 
@@ -142,7 +143,7 @@ public class LodVertexBuffer implements AutoCloseable
 		} catch (IllegalArgumentException e) {
 			throw e;
 		} catch (Exception e) {
-			ClientApi.LOGGER.error("vboUpload failed: ", e);
+			ApiShared.LOGGER.error("vboUpload failed: ", e);
 		}
 	}
 	
@@ -153,9 +154,9 @@ public class LodVertexBuffer implements AutoCloseable
 		if (this.id >= 0)
 		{
 			_destroy();
-			if (count==0) ClientApi.LOGGER.info("All LodVerrtexBuffer is freed.");
+			if (count==0) ApiShared.LOGGER.info("All LodVerrtexBuffer is freed.");
 		} else {
-			ClientApi.LOGGER.error("LodVertexBuffer double close!");
+			ApiShared.LOGGER.error("LodVertexBuffer double close!");
 			
 		}
 	}
