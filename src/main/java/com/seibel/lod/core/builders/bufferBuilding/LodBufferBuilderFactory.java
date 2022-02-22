@@ -298,12 +298,12 @@ public class LodBufferBuilderFactory {
 						LodQuadBuilder quadBuilder = new LodQuadBuilder(6);
 						makeLodRenderData(quadBuilder, lodDim, regionPos, pX, pZ, minDetail);
 						return new ResultPair(quadBuilder, regionPos);
-					}, bufferUploadThread).whenCompleteAsync((result, e) -> {
+					}, bufferBuilderThreads).whenCompleteAsync((result, e) -> {
 						if (e != null)
 							return;
 						try {
 							uploadBuffers(result.quadBuilder, result.regionPos);
-						} catch (Exception e3) {
+						} catch (Throwable e3) {
 							ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
 						}
 					}, bufferUploadThread);
@@ -320,7 +320,7 @@ public class LodBufferBuilderFactory {
 			CompletableFuture<Void> allFutures = CompletableFuture
 					.allOf(futuresBuffer.toArray(new CompletableFuture[futuresBuffer.size()]));
 			try {
-				allFutures.get(5, TimeUnit.MINUTES);
+				allFutures.get(1, TimeUnit.MINUTES);
 			} catch (TimeoutException te) {
 				ApiShared.LOGGER.error("LodBufferBuilder timed out: ", te);
 				bufferBuilderThreadFactory.dumpAllThreadStacks();

@@ -293,6 +293,13 @@ public class LodUtil
 	{
 		return Math.min(max, Math.max(value, min));
 	}
+
+	/**
+	 * Like Math.floorDiv, but reverse in that it is a ceilDiv
+	 */
+	public static int ceilDiv(int value, int divider) {
+		return -Math.floorDiv(-value, divider);
+	}
 	
 	/**
 	 * Get a HashSet of all ChunkPos within the normal render distance

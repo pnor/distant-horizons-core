@@ -31,6 +31,11 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  */
 public class ColorUtil
 {
+	//note: Minecraft color format is: 0xAA BB GG RR
+	//________ DH mod color format is: 0xAA RR GG BB
+	//OpenGL RGBA format native order: 0xRR GG BB AA
+	//_ OpenGL RGBA format Java Order: 0xAA BB GG RR
+	
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
 	public static int rgbToInt(int red, int green, int blue)
@@ -46,7 +51,7 @@ public class ColorUtil
 	/** Returns a value between 0 and 255 */
 	public static int getAlpha(int color)
 	{
-		return (color >> 24) & 0xFF;
+		return (color >>> 24) & 0xFF;
 	}
 	
 	/** Returns a value between 0 and 255 */
@@ -91,7 +96,7 @@ public class ColorUtil
 		int green = ColorUtil.getGreen(lightColor);
 		int blue = ColorUtil.getBlue(lightColor);
 		
-		return ColorUtil.multiplyRGBcolors(color, ColorUtil.rgbToInt(red, green, blue));
+		return ColorUtil.multiplyARGBwithRGB(color, ColorUtil.rgbToInt(red, green, blue));
 	}
 	
 	/** Edit the given color as an HSV (Hue Saturation Value) color */
@@ -104,18 +109,24 @@ public class ColorUtil
 				LodUtil.clamp(0.0f, hsv[2] * brightnessMultiplier, 1.0f)).getRGB();
 	}
 	
+	/** Multiply ARGB with RGB colors */
+	public static int multiplyARGBwithRGB(int argb, int rgb)
+	{
+		return ((getAlpha(argb) << 24) | ((getRed(argb) * getRed(rgb) / 255) << 16)
+				| ((getGreen(argb) * getGreen(rgb) / 255) << 8) | (getBlue(argb) * getBlue(rgb) / 255));
+	}
+	
 	/** Multiply 2 RGB colors */
-	public static int multiplyRGBcolors(int color1, int color2)
+	public static int multiplyARGBwithARGB(int color1, int color2)
 	{
 		return ((getAlpha(color1) * getAlpha(color2) / 255) << 24) | ((getRed(color1) * getRed(color2) / 255) << 16) | ((getGreen(color1) * getGreen(color2) / 255) << 8) | (getBlue(color1) * getBlue(color2) / 255);
 	}
-	
-	@SuppressWarnings("unused")
+
 	public static String toString(int color)
 	{
-		return Integer.toHexString(getAlpha(color)) + " " +
-				Integer.toHexString(getRed(color)) + " " +
-				Integer.toHexString(getGreen(color)) + " " +
+		return "A:"+Integer.toHexString(getAlpha(color)) + ",R:" +
+				Integer.toHexString(getRed(color)) + ",G:" +
+				Integer.toHexString(getGreen(color)) + ",B:" +
 				Integer.toHexString(getBlue(color));
 	}
 }

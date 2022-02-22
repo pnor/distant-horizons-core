@@ -21,6 +21,8 @@ package com.seibel.lod.core.render.objects;
 
 import org.lwjgl.opengl.GL32;
 
+import com.seibel.lod.core.util.LodUtil;
+
 public abstract class VertexAttribute {
 	
 	public static final class VertexPointer {
@@ -35,7 +37,7 @@ public abstract class VertexAttribute {
 			this.byteSize = byteSize;
 		}
 		private static int _align(int bytes) {
-			return (-Math.floorDiv(-bytes, 4))*4;
+			return LodUtil.ceilDiv(bytes, 4)*4;
 		}
 		
 		public static VertexPointer addFloatPointer(boolean normalized) {

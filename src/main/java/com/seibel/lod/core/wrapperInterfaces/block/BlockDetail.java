@@ -3,7 +3,7 @@ package com.seibel.lod.core.wrapperInterfaces.block;
 import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.util.ColorUtil;
 
-public class BlockDetail
+public final class BlockDetail
 {
 	public final int color;
 	public final boolean isFullBlock;

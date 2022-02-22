@@ -7,11 +7,11 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.util.ColorUtil;
+import com.seibel.lod.core.util.LodUtil;
 
 public class LodQuadBuilder {
 	static final int MAX_BUFFER_SIZE = (1024 * 1024 * 1);
@@ -51,14 +51,14 @@ public class LodQuadBuilder {
 			distance = pow(relativeX-x) + pow(relativeY-y) + pow(relativeZ-z);
 		}
 		
-		private static int _compondCompare(short a0, short b0, short c0, short a1, short b1, short c1) {
-			if (a0 != a1) return a0-a1;
-			if (b0 != b1) return b0-b1;
-			return c0-c1;
+		private static int _compondCompare(short a0, short a1, short a2, short b0, short b1, short b2) {
+			long a = (long)a0<<48 | (long)a1<<32 | (long)a2 << 16;
+			long b = (long)b0<<48 | (long)b1<<32 | (long)b2 << 16;
+			return Long.compare(a, b);
 		}
 		
 		public int compareTo1(Quad o) {
-			if (dir != o.dir) return dir.compareTo(o.dir);
+			if (dir != o.dir) throw new IllegalArgumentException("The other quad is not in the same direction: " + o.dir + " vs "+dir);
 			switch (dir.getAxis()) {
 			case X:
 				return _compondCompare(x, y, z, o.x, o.y, o.z);
@@ -71,7 +71,7 @@ public class LodQuadBuilder {
 			}
 		}
 		public int compareTo2(Quad o) {
-			if (dir != o.dir) return dir.compareTo(o.dir);
+			if (dir != o.dir) throw new IllegalArgumentException("The other quad is not in the same direction: " + o.dir + " vs "+dir);
 			switch (dir.getAxis()) {
 			case X:
 				return _compondCompare(x, z, y, o.x, o.z, o.y);
@@ -221,44 +221,45 @@ public class LodQuadBuilder {
 		
 	}
 
-	final ArrayList<Quad> quads;
+	final ArrayList<Quad>[] quads;
 
 	public LodQuadBuilder(int initialSize) {
-		quads = new ArrayList<Quad>();
+		quads = new ArrayList[6];
+		for (int i=0; i<6; i++) quads[i] = new ArrayList<Quad>();
 	}
 
 	public void addQuadAdj(LodDirection dir, short x, short y, short z, short w0, short wy, int color, byte skylight,
 			byte blocklight) {
 		if (dir.ordinal() <= LodDirection.DOWN.ordinal())
 			throw new IllegalArgumentException("addQuadAdj() is only for adj direction! Not UP or Down!");
-		quads.add(new Quad(x, y, z, w0, wy, color, skylight, blocklight, dir));
+		quads[dir.ordinal()].add(new Quad(x, y, z, w0, wy, color, skylight, blocklight, dir));
 	}
 
 	// XZ
 	public void addQuadUp(short x, short y, short z, short wx, short wz, int color, byte skylight, byte blocklight) {
-		quads.add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.UP));
+		quads[LodDirection.UP.ordinal()].add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.UP));
 	}
 
 	public void addQuadDown(short x, short y, short z, short wx, short wz, int color, byte skylight, byte blocklight) {
-		quads.add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.DOWN));
+		quads[LodDirection.DOWN.ordinal()].add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.DOWN));
 	}
 
 	// XY
 	public void addQuadN(short x, short y, short z, short wx, short wy, int color, byte skylight, byte blocklight) {
-		quads.add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.NORTH));
+		quads[LodDirection.NORTH.ordinal()].add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.NORTH));
 	}
 
 	public void addQuadS(short x, short y, short z, short wx, short wy, int color, byte skylight, byte blocklight) {
-		quads.add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.SOUTH));
+		quads[LodDirection.SOUTH.ordinal()].add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.SOUTH));
 	}
 
 	// ZY
 	public void addQuadW(short x, short y, short z, short wz, short wy, int color, byte skylight, byte blocklight) {
-		quads.add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.WEST));
+		quads[LodDirection.WEST.ordinal()].add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.WEST));
 	}
 
 	public void addQuadE(short x, short y, short z, short wz, short wy, int color, byte skylight, byte blocklight) {
-		quads.add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.EAST));
+		quads[LodDirection.EAST.ordinal()].add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.EAST));
 	}
 
 	private static void putVertex(ByteBuffer bb, short x, short y, short z, int color, byte skylight, byte blocklight) {
@@ -268,6 +269,7 @@ public class LodQuadBuilder {
 		bb.putShort(x);
 		bb.putShort(y);
 		bb.putShort(z);
+		
 		bb.putShort((short) (skylight | (blocklight << 4)));
 		byte r = (byte) ColorUtil.getRed(color);
 		byte g = (byte) ColorUtil.getGreen(color);
@@ -308,30 +310,16 @@ public class LodQuadBuilder {
 			putVertex(bb, (short) (quad.x + dx), (short) (quad.y + dy), (short) (quad.z + dz), quad.color,
 					quad.skylight, quad.blocklight);
 		}
-
-	}
-
-	private ByteBuffer writeVertexData(ByteBuffer bb, int quadsStart, int quadsCount) {
-		if (quadsStart + quadsCount > quads.size())
-			quadsCount = quads.size() - quadsStart;
-		bb.clear();
-		bb.limit(quadsCount * QUAD_BYTE_SIZE);
-		for (Quad quad : quads.subList(quadsStart, quadsStart + quadsCount)) {
-			putQuad(bb, quad);
-		}
-		if (bb.hasRemaining())
-			throw new RuntimeException();
-		bb.rewind();
-		return bb;
 	}
 	
 	public void sort(double dPlayerPosX, double dPlayerPosY, double dPlayerPosZ) {
-		quads.forEach(p -> p.calculateDistance(dPlayerPosX, dPlayerPosY, dPlayerPosZ));
-		quads.sort((a, b) -> Double.compare(a.distance, b.distance));
+		
 	}
-	private long merggeQuadsPass1() {
-		quads.sort(Quad::compareTo1);
-		ListIterator<Quad> iter = quads.listIterator();
+
+	private long mergeQuadsPass1(int dir) {
+		if (quads[dir].size()<=1) return 0;
+		quads[dir].sort(Quad::compareTo1);
+		ListIterator<Quad> iter = quads[dir].listIterator();
 		long mergeCount = 0;
 		Quad currentQuad = iter.next();
 		while (iter.hasNext()) {
@@ -343,13 +331,14 @@ public class LodQuadBuilder {
 				currentQuad = nextQuad;
 			}
 		}
-		quads.removeIf(o -> o==null);
+		quads[dir].removeIf(o -> o==null);
 		return mergeCount;
 	}
-	
-	private long merggeQuadsPass2() {
-		quads.sort(Quad::compareTo2);
-		ListIterator<Quad> iter = quads.listIterator();
+
+	private long mergeQuadsPass2(int dir) {
+		if (quads[dir].size()<=1) return 0;
+		quads[dir].sort(Quad::compareTo2);
+		ListIterator<Quad> iter = quads[dir].listIterator();
 		long mergeCount = 0;
 		Quad currentQuad = iter.next();
 		while (iter.hasNext()) {
@@ -361,42 +350,84 @@ public class LodQuadBuilder {
 				currentQuad = nextQuad;
 			}
 		}
-		quads.removeIf(o -> o==null);
+		quads[dir].removeIf(o -> o==null);
 		return mergeCount;
 	}
 	
 	
 
 	public void mergeQuads() {
-		if (quads.size()<=1) return;
-		
 		long mergeCount = 0;
-		long preQuadsCount = quads.size();
-		mergeCount += merggeQuadsPass1();
-		mergeCount += merggeQuadsPass2();
-		long postQuadsCount = quads.size();
+		long preQuadsCount = getCurrentQuadsCount();
+		if (preQuadsCount<=1) return;
+		long skipperMerge = 0;
+		for (int i=0; i<6; i++) {
+			mergeCount += mergeQuadsPass1(i);
+			if (i>=2) {
+				continue;
+				//long pass2 = mergeQuadsPass2(i);
+				//mergeCount += pass2;
+				//skipperMerge += pass2;
+			} else {
+				long pass2 = mergeQuadsPass2(i);
+				mergeCount += pass2;
+			}
+		}
+		long postQuadsCount = getCurrentQuadsCount();
 		//if (mergeCount != 0)
-			//ApiShared.LOGGER.info("Merged {} out of {} quads, to now {} quads.", mergeCount, preQuadsCount, postQuadsCount);
+		//	ApiShared.LOGGER.info("Merged {}/{}({}) quads, skip {}", mergeCount, preQuadsCount, mergeCount/(double)preQuadsCount, skipperMerge);
 	}
 	
 	public Iterator<ByteBuffer> makeVertexBuffers() {
-		int numOfBuffers = getCurrentNeededVertexBuffers();
 		return new Iterator<ByteBuffer>() {
-			int counter = 0;
 			ByteBuffer bb = ByteBuffer.allocateDirect(MAX_QUADS_PER_BUFFER * QUAD_BYTE_SIZE)
 					.order(ByteOrder.nativeOrder());
-
+			int dir = skipEmpty(0);
+			int quad = 0;
+			
+			private int skipEmpty(int d) {
+				while(d<6 && quads[d].isEmpty()) d++;
+				return d;
+			}
+			
 			@Override
 			public boolean hasNext() {
-				return counter < numOfBuffers;
+				return dir < 6;
 			}
 
 			@Override
 			public ByteBuffer next() {
-				if (counter >= numOfBuffers) {
+				if (dir >= 6) {
 					return null;
 				}
-				return writeVertexData(bb, MAX_QUADS_PER_BUFFER * counter++, MAX_QUADS_PER_BUFFER);
+				bb.clear();
+				bb.limit(MAX_QUADS_PER_BUFFER * QUAD_BYTE_SIZE);
+				while (bb.hasRemaining() && dir < 6) {
+					writeData();
+				}
+				bb.limit(bb.position());
+				bb.rewind();
+				return bb;
+			}
+
+			private void writeData() {
+				int startQ = quad;
+				
+				int i = startQ;
+				for (i = startQ; i<quads[dir].size(); i++) {
+					if (!bb.hasRemaining()) {
+						break;
+					}
+					putQuad(bb, quads[dir].get(i));
+				}
+				
+				if (i >= quads[dir].size()) {
+					quad = 0;
+					dir++;
+					dir = skipEmpty(dir);
+				} else {
+					quad = i;
+				}
 			}
 		};
 	}
@@ -406,30 +437,71 @@ public class LodQuadBuilder {
 	}
 
 	public BufferFiller makeBufferFiller(GpuUploadMethod method) {
-		int numOfBuffers = getCurrentNeededVertexBuffers();
 		return new BufferFiller() {
-			int counter = 0;
+			int dir = 0;
+			int quad = 0;
 			public boolean fill(LodVertexBuffer vbo) {
-				if (counter >= numOfBuffers) {
+				if (dir >= 6) {
+					vbo.vertexCount = 0;
 					return false;
 				}
-				int numOfQuads = MAX_QUADS_PER_BUFFER;
-				if (quads.size()-(counter*MAX_QUADS_PER_BUFFER) < MAX_QUADS_PER_BUFFER)
-					numOfQuads = quads.size()-(counter*MAX_QUADS_PER_BUFFER);
-				if (numOfQuads != 0) {
-					ByteBuffer bb = vbo.mapBuffer(numOfQuads*QUAD_BYTE_SIZE, method, MAX_QUADS_PER_BUFFER * QUAD_BYTE_SIZE);
-					if (bb == null) throw new NullPointerException("mapBuffer returned null");
-					writeVertexData(bb, MAX_QUADS_PER_BUFFER * counter++, numOfQuads).rewind();
-					vbo.unmapBuffer(method);
+				
+				int numOfQuads = _countRemainingQuads();
+				if (numOfQuads > MAX_QUADS_PER_BUFFER) numOfQuads = MAX_QUADS_PER_BUFFER;
+				if (numOfQuads == 0) {
+					vbo.vertexCount = 0;
+					return false;
 				}
+				ByteBuffer bb = vbo.mapBuffer(numOfQuads*QUAD_BYTE_SIZE, method, MAX_QUADS_PER_BUFFER * QUAD_BYTE_SIZE);
+				if (bb == null) throw new NullPointerException("mapBuffer returned null");
+				bb.clear();
+				bb.limit(numOfQuads * QUAD_BYTE_SIZE);
+				while (bb.hasRemaining() && dir < 6) {
+					writeData(bb);
+				}
+				bb.rewind();
+				vbo.unmapBuffer(method);
 				vbo.vertexCount = numOfQuads*6;
-				return counter < numOfBuffers;
+				return dir < 6;
+			}
+			private int _countRemainingQuads() {
+				int a = quads[dir].size() - quad;
+				for (int i=dir+1; i<quads.length; i++) {
+					a+=quads[i].size();
+				}
+				return a;
+			}
+			
+			private void writeData(ByteBuffer bb) {
+				int startQ = quad;
+				
+				int i = startQ;
+				for (i = startQ; i<quads[dir].size(); i++) {
+					if (!bb.hasRemaining()) {
+						break;
+					}
+					putQuad(bb, quads[dir].get(i));
+				}
+				
+				if (i >= quads[dir].size()) {
+					quad = 0;
+					dir++;
+					while (dir<6 && quads[dir].isEmpty()) dir++;
+				} else {
+					quad = i;
+				}
 			}
 		};
 	}
+	
+	public int getCurrentQuadsCount() {
+		int i = 0;
+		for (ArrayList<Quad> qs : quads) i+=qs.size();
+		return i;
+	}
 
 	public int getCurrentNeededVertexBuffers() {
-		return quads.size() / MAX_QUADS_PER_BUFFER + 1;
+		return LodUtil.ceilDiv(getCurrentQuadsCount(), MAX_QUADS_PER_BUFFER);
 	}
 
 	public static final int[][][] DIRECTION_VERTEX_QUAD = new int[][][] {
