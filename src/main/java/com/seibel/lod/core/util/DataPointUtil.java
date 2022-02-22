@@ -614,7 +614,7 @@ public class DataPointUtil
 						{
 							numberOfChildren++;
 							allVoid = false;
-							tempAlpha += getAlpha(data) * getAlpha(data);
+							tempAlpha = Math.max(getAlpha(data),tempAlpha);
 							tempRed += getRed(data) * getRed(data);
 							tempGreen += getGreen(data) * getGreen(data);
 							tempBlue += getBlue(data) * getBlue(data);
@@ -635,7 +635,6 @@ public class DataPointUtil
 					//we have at least 1 child
 					if (size != 1)
 					{
-						tempAlpha = tempAlpha / numberOfChildren;
 						tempRed = tempRed / numberOfChildren;
 						tempGreen = tempGreen / numberOfChildren;
 						tempBlue = tempBlue / numberOfChildren;
