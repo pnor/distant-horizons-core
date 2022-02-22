@@ -56,7 +56,6 @@ import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 

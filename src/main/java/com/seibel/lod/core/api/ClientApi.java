@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
+import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -63,8 +64,9 @@ public class ClientApi
 		= Collections.synchronizedList(new LinkedList<WeakReference<SpamReducedLogger>>());
 	
 	public static final ClientApi INSTANCE = new ClientApi();
-	
-	public static LodRenderer renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
+
+	public static final LodBufferBuilderFactory lodBufferBuilderFactory = new LodBufferBuilderFactory();
+	public static LodRenderer renderer = new LodRenderer(lodBufferBuilderFactory);
 	
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
@@ -170,7 +172,7 @@ public class ClientApi
 			}
 			if (prefLoggerEnabled) {
 				lodDim.dumpRamUsage();
-				ApiShared.lodBufferBuilderFactory.dumpBufferMemoryUsage();
+				lodBufferBuilderFactory.dumpBufferMemoryUsage();
 			}
 
 			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();

@@ -36,10 +36,9 @@ import org.apache.logging.log4j.Logger;
  */
 public class ApiShared
 {
-	public ApiShared INSTANCE = new ApiShared();
 	public static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME);
+	public ApiShared INSTANCE = new ApiShared();
 	
-	public static final LodBufferBuilderFactory lodBufferBuilderFactory = new LodBufferBuilderFactory();
 	public static final LodWorld lodWorld = new LodWorld();
 	public static final LodBuilder lodBuilder = new LodBuilder();
 	

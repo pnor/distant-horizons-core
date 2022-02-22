@@ -179,7 +179,7 @@ public class EventApi {
 		ApiShared.previousVertQual = null;
 
 		// TODO: Check if after the refactoring, is this still needed
-		ClientApi.renderer = new LodRenderer(ApiShared.lodBufferBuilderFactory);
+		ClientApi.renderer = new LodRenderer(ClientApi.lodBufferBuilderFactory);
 		ClientApi.INSTANCE.rendererDisabledBecauseOfExceptions = false;
 	}
 

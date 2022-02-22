@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -36,7 +35,6 @@ import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.objects.RenderRegion;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.objects.lod.LodDimension.PosComsumer;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.render.objects.LightmapTexture;
