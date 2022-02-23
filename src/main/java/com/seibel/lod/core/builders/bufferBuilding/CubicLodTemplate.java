@@ -34,7 +34,7 @@ import com.seibel.lod.core.util.LodUtil;
  */
 public class CubicLodTemplate {
 
-	public static void addLodToBuffer(long data, long topData, long botData, long[][] adjData, byte detailLevel,
+	public static void addLodToBuffer(long data, long topData, long botData, long[][][] adjData, byte detailLevel,
 			int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, DebugMode debugging) {
 		short width = (short) (1 << detailLevel);
 		short x = (short) LevelPosUtil.convert(detailLevel, offsetPosX, LodUtil.BLOCK_DETAIL_LEVEL);

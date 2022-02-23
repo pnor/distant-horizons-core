@@ -35,6 +35,7 @@ import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -47,14 +48,7 @@ import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
-import com.seibel.lod.core.util.LodThreadFactory;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovableGridList;
-import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.util.SpamReducedLogger;
-import com.seibel.lod.core.util.StatsMap;
+import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -388,7 +382,7 @@ public class LodBufferBuilderFactory {
 			if (posData == null || posData.length == 0 || !DataPointUtil.doesItExist(posData[0])
 					|| DataPointUtil.isVoid(posData[0]))
 				continue;
-			long[][] adjData = new long[4][];
+			long[][][] adjData = new long[4][1][];
 
 			int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkX;
 			int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkZ;
@@ -419,21 +413,48 @@ public class LodBufferBuilderFactory {
 			for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS) {
 				int xAdj = posX + lodDirection.getNormal().x;
 				int zAdj = posZ + lodDirection.getNormal().z;
+				byte adjDetail = detailLevel;
 				chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkX;
 				chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
 				boolean adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
-
+				
+				double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
+				byte minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+				
+				boolean shouldAdjPosBeRendered = detailLevel == minLevel;
+				boolean shouldLowerAdjPosBeRendered = detailLevel-1 == minLevel;
+				
 				// If the adj block is rendered in the same region and with same detail
 				// and is positioned in a place that is not going to be rendered by vanilla game
 				// then we can set this position as adj
 				// We avoid cases where the adjPosition is in player chunk while the position is
 				// not
 				// to always have a wall underwater
-				if (posToRender.contains(detailLevel, xAdj, zAdj)
-						&& !isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(detailLevel, xAdj),
-								LevelPosUtil.getChunkPos(detailLevel, zAdj))
+				if (shouldAdjPosBeRendered
+						&& !isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj),LevelPosUtil.getChunkPos(adjDetail, zAdj))
 						&& !(posNotInPlayerChunk && adjPosInPlayerChunk)) {
-					adjData[lodDirection.ordinal() - 2] = lodDim.getAllData(detailLevel, xAdj, zAdj);
+					adjData[lodDirection.ordinal() - 2][0] = lodDim.getAllData(adjDetail, xAdj, zAdj);
+				}else{
+					if(shouldLowerAdjPosBeRendered)
+					{
+						xAdj *= 2;
+						zAdj *= 2;
+						adjDetail = (byte) (detailLevel - 1);
+						adjData[lodDirection.ordinal() - 2] = new long[2][];
+						if (!isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj), LevelPosUtil.getChunkPos(adjDetail, zAdj))
+									&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
+						{
+							adjData[lodDirection.ordinal() - 2][0] = lodDim.getAllData(adjDetail, xAdj, zAdj);
+						}
+						
+						xAdj += 1;
+						zAdj += 1;
+						if (!isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj), LevelPosUtil.getChunkPos(adjDetail, zAdj))
+									&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
+						{
+							adjData[lodDirection.ordinal() - 2][1] = lodDim.getAllData(adjDetail, xAdj, zAdj);
+						}
+					}
 				}
 			}
 

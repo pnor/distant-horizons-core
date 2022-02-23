@@ -10,33 +10,73 @@ public class LodBox {
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 
 	public static void addBoxQuadsToBuilder(LodQuadBuilder builder, short xSize, short ySize, short zSize, short x,
-			short y, short z, int color, byte skyLight, byte blockLight, long topData, long botData, long[][] adjData) {
+			short y, short z, int color, byte skyLight, byte blockLight, long topData, long botData, long[][][] adjData)
+	{
 		short maxX = (short) (x + xSize);
 		short maxY = (short) (y + ySize);
 		short maxZ = (short) (z + zSize);
 		byte skyLightTop = skyLight;
 		byte skyLightBot = DataPointUtil.doesItExist(botData) ? DataPointUtil.getLightSky(botData) : 0;
-
+		
 		// Up direction case
 		boolean skipTop = DataPointUtil.doesItExist(topData) && DataPointUtil.getDepth(topData) == maxY;// &&
-																										// DataPointUtil.getAlpha(singleAdjDataPoint)
-																										// == 255;
+		// DataPointUtil.getAlpha(singleAdjDataPoint)
+		// == 255;
 		boolean skipBot = DataPointUtil.doesItExist(botData) && DataPointUtil.getHeight(botData) == y;// &&
-																										// DataPointUtil.getAlpha(singleAdjDataPoint)
-																										// == 255;
-
+		// DataPointUtil.getAlpha(singleAdjDataPoint)
+		// == 255;
+		
 		if (!skipTop)
 			builder.addQuadUp(x, maxY, z, xSize, zSize, ColorUtil.applyShade(color, MC.getShade(LodDirection.UP)), skyLightTop, blockLight);
 		if (!skipBot)
 			builder.addQuadDown(x, y, z, xSize, zSize, ColorUtil.applyShade(color, MC.getShade(LodDirection.DOWN)), skyLightBot, blockLight);
-		makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2], LodDirection.NORTH, x, y, z, xSize, ySize,
-				color, skyLightTop, blockLight);
-		makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2], LodDirection.SOUTH, x, y, maxZ, xSize, ySize,
-				color, skyLightTop, blockLight);
-		makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2], LodDirection.WEST, x, y, z, zSize, ySize, color,
-				skyLightTop, blockLight);
-		makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2], LodDirection.EAST, maxX, y, z, zSize, ySize,
-				color, skyLightTop, blockLight);
+		
+		if (adjData[LodDirection.NORTH.ordinal() - 2].length == 1)
+		{
+			makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2][0], LodDirection.NORTH, x, y, z, xSize, ySize,
+					color, skyLightTop, blockLight);
+		}else {
+			makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2][0], LodDirection.NORTH, x, y, z, (short) (xSize/2), ySize,
+					color, skyLightTop, blockLight);
+			makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2][1], LodDirection.NORTH, (short) (x+xSize/2), y, z, (short) (xSize/2), ySize,
+					color, skyLightTop, blockLight);
+		}
+		
+		if (adjData[LodDirection.SOUTH.ordinal() - 2].length == 1)
+		{
+			makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2][0], LodDirection.SOUTH, x, y, maxZ, xSize, ySize,
+					color, skyLightTop, blockLight);
+		}else {
+			makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2][0], LodDirection.SOUTH, x, y, maxZ, (short) (xSize/2), ySize,
+					color, skyLightTop, blockLight);
+			
+			makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2][1], LodDirection.SOUTH, (short) (x+xSize/2), y, maxZ, (short) (xSize/2), ySize,
+					color, skyLightTop, blockLight);
+		}
+		
+		if (adjData[LodDirection.WEST.ordinal() - 2].length == 1)
+		{
+			makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2][0], LodDirection.WEST, x, y, z, zSize, ySize, color,
+					skyLightTop, blockLight);
+		}else {
+			makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2][0], LodDirection.WEST, x, y, z, (short) (zSize/2), ySize, color,
+					skyLightTop, blockLight);
+			makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2][1], LodDirection.WEST, x, y, (short) (z+zSize/2), (short) (zSize/2), ySize, color,
+					skyLightTop, blockLight);
+			
+		}
+		
+		if (adjData[LodDirection.EAST.ordinal() - 2].length == 1)
+		{
+			makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2][0], LodDirection.EAST, maxX, y, z, zSize, ySize,
+					color, skyLightTop, blockLight);
+		}else {
+			makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2][0], LodDirection.EAST, maxX, y, z, (short) (zSize/2), ySize,
+					color, skyLightTop, blockLight);
+			makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2][1], LodDirection.EAST, maxX, y, (short) (z+zSize/2), (short) (zSize/2), ySize,
+					color, skyLightTop, blockLight);
+			
+		}
 	}
 
 	private static void makeAdjQuads(LodQuadBuilder builder, long[] adjData, LodDirection direction, short x, short y,
