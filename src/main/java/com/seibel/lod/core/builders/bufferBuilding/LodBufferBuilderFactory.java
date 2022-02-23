@@ -418,12 +418,19 @@ public class LodBufferBuilderFactory {
 				chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
 				boolean adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
 				
+				
+				//We check if the adjPos is to be rendered
 				boolean shouldAdjPosBeRendered = posToRender.contains(detailLevel, xAdj, zAdj);
+				//Then we check if the adjPos is to be rendered in a lower detail
 				boolean shouldLowerAdjPosBeRendered = posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
+				
+				//since he system doesn't work for region border we need to check with another system
 				if(!(shouldAdjPosBeRendered || shouldLowerAdjPosBeRendered))
 				{
-					
+					//we compute the distance from the adjPos
 					double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
+					
+					//we compute at which detail that position should be rendered
 					LodRegion adjRegion = lodDim.getRegion(detailLevel, xAdj, zAdj);
 					byte minLevel;
 					if(adjRegion != null)
@@ -434,6 +441,8 @@ public class LodBufferBuilderFactory {
 						
 					}
 					
+					//we check if the detail of the adjPos is equal to the correct one (region border fix)
+					//or if the detail is wrong by 1 value (region+circle border fix)
 					shouldAdjPosBeRendered = detailLevel == minLevel;
 					shouldLowerAdjPosBeRendered = detailLevel-1 == minLevel;
 				}
@@ -446,10 +455,12 @@ public class LodBufferBuilderFactory {
 				if (shouldAdjPosBeRendered
 						&& !isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj),LevelPosUtil.getChunkPos(adjDetail, zAdj))
 						&& !(posNotInPlayerChunk && adjPosInPlayerChunk)) {
+					//The adj data is at same detail and is extracted
 					adjData[lodDirection.ordinal() - 2][0] = lodDim.getAllData(adjDetail, xAdj, zAdj);
 				}else{
 					if(shouldLowerAdjPosBeRendered)
 					{
+						//The adj data is at lower detail and is extracted in two steps
 						xAdj *= 2;
 						zAdj *= 2;
 						adjDetail = (byte) (detailLevel - 1);
