@@ -31,6 +31,8 @@ public class LodBox {
 		if (!skipBot)
 			builder.addQuadDown(x, y, z, xSize, zSize, ColorUtil.applyShade(color, MC.getShade(LodDirection.DOWN)), skyLightBot, blockLight);
 		
+		//If the adj pos is at the same level we cull the faces normally, otherwise we divide the face in two and cull the two part separately
+		//NORTH face vertex creation
 		if (adjData[LodDirection.NORTH.ordinal() - 2].length == 1)
 		{
 			makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2][0], LodDirection.NORTH, x, y, z, xSize, ySize,
@@ -42,6 +44,7 @@ public class LodBox {
 					color, skyLightTop, blockLight);
 		}
 		
+		//SOUTH face vertex creation
 		if (adjData[LodDirection.SOUTH.ordinal() - 2].length == 1)
 		{
 			makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2][0], LodDirection.SOUTH, x, y, maxZ, xSize, ySize,
@@ -54,6 +57,7 @@ public class LodBox {
 					color, skyLightTop, blockLight);
 		}
 		
+		//WEST face vertex creation
 		if (adjData[LodDirection.WEST.ordinal() - 2].length == 1)
 		{
 			makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2][0], LodDirection.WEST, x, y, z, zSize, ySize, color,
@@ -66,6 +70,7 @@ public class LodBox {
 			
 		}
 		
+		//EAST face vertex creation
 		if (adjData[LodDirection.EAST.ordinal() - 2].length == 1)
 		{
 			makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2][0], LodDirection.EAST, maxX, y, z, zSize, ySize,
