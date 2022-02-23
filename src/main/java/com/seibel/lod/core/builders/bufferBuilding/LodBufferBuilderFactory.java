@@ -418,12 +418,25 @@ public class LodBufferBuilderFactory {
 				chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
 				boolean adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
 				
-				double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
-				byte minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-				
-				boolean shouldAdjPosBeRendered = detailLevel == minLevel;
-				boolean shouldLowerAdjPosBeRendered = detailLevel-1 == minLevel;
-				
+				boolean shouldAdjPosBeRendered = posToRender.contains(detailLevel, xAdj, zAdj);
+				boolean shouldLowerAdjPosBeRendered = posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
+				if(!(shouldAdjPosBeRendered || shouldLowerAdjPosBeRendered))
+				{
+					
+					double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
+					LodRegion adjRegion = lodDim.getRegion(detailLevel, xAdj, zAdj);
+					byte minLevel;
+					if(adjRegion != null)
+					{
+						minLevel = (byte) Math.max(lodDim.getRegion(detailLevel, xAdj, zAdj).getMinDetailLevel(),DetailDistanceUtil.getDetailLevelFromDistance(minDistance));
+					}else{
+						minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+						
+					}
+					
+					shouldAdjPosBeRendered = detailLevel == minLevel;
+					shouldLowerAdjPosBeRendered = detailLevel-1 == minLevel;
+				}
 				// If the adj block is rendered in the same region and with same detail
 				// and is positioned in a place that is not going to be rendered by vanilla game
 				// then we can set this position as adj
@@ -447,8 +460,8 @@ public class LodBufferBuilderFactory {
 							adjData[lodDirection.ordinal() - 2][0] = lodDim.getAllData(adjDetail, xAdj, zAdj);
 						}
 						
-						xAdj += 1;
-						zAdj += 1;
+						xAdj += Math.abs(lodDirection.getNormal().x);
+						zAdj += Math.abs(lodDirection.getNormal().z);
 						if (!isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj), LevelPosUtil.getChunkPos(adjDetail, zAdj))
 									&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
 						{
