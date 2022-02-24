@@ -20,10 +20,7 @@
 package com.seibel.lod.core.builders.bufferBuilding;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,25 +28,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.logging.log4j.core.tools.picocli.CommandLine.ExecutionException;
+
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.enums.config.GenerationPriority;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.config.VanillaOverdraw;
-import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.enums.rendering.GLProxyContext;
-import com.seibel.lod.core.objects.PosToRenderContainer;
-import com.seibel.lod.core.objects.RenderRegion;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
-import com.seibel.lod.core.objects.opengl.LodQuadBuilder;
-import com.seibel.lod.core.render.GLProxy;
+import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.*;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.util.LevelPosUtil;
+import com.seibel.lod.core.util.LodThreadFactory;
+import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.MovableGridRingList;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.util.SpamReducedLogger;
+import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -62,9 +54,8 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 public class LodBufferBuilderFactory {
 
 	// TODO: Do some Perf logging of Buffer Building
-	public static final boolean ENABLE_BUFFER_PERF_LOGGING = false;
-	public static final boolean ENABLE_BUFFER_SWAP_LOGGING = true;
-	public static final boolean ENABLE_BUFFER_UPLOAD_LOGGING = false;
+	public static final boolean ENABLE_BUFFER_PERF_LOGGING = true;
+	public static final boolean ENABLE_EVENT_LOGGING = true;
 	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
 	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
 
@@ -103,15 +94,7 @@ public class LodBufferBuilderFactory {
 	private static LodThreadFactory bufferUploadThreadFactory = new LodThreadFactory(
 			LodBufferBuilderFactory.class.getSimpleName() + " - upload", Thread.NORM_PRIORITY - 1);
 	public static ExecutorService bufferUploadThread = Executors.newSingleThreadExecutor(bufferUploadThreadFactory);
-
-	public static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
-
-	/**
-	 * When uploading to a buffer that is too small, recreate it this many times
-	 * bigger than the upload payload
-	 */
-	public static final double BUFFER_EXPANSION_MULTIPLIER = 1.3;
-
+	
 	/**
 	 * When buffers are first created they are allocated to this size (in Bytes).
 	 * This size will be too small, more than likely. The buffers will be expanded
@@ -123,56 +106,19 @@ public class LodBufferBuilderFactory {
 
 	public static int skyLightPlayer = 15;
 
-	/**
-	 * How many buffers there are for the given region. <Br>
-	 * This is done because some regions may require more memory than can be
-	 * directly allocated, so we split the regions into smaller sections. <Br>
-	 * This keeps track of those sections.
-	 */
-	// TODO: Check why this is unused
-	// public volatile int[][] numberOfBuffersPerRegion;
-
-	/** Used when building new VBOs */
-	public volatile MovableGridList<RenderRegion> buildableVbos;
-	/** VBOs that are sent over to the LodNodeRenderer */
-	public volatile MovableGridList<RenderRegion> drawableVbos;
-	/**
-	 * if this is true the LOD buffers need to be reset and the Renderer should call
-	 * the lodGenBuffers nomatter it should have been a full or partial regen or not
-	 */
-	public volatile boolean frontBufferRequireReset = false;
-	public volatile boolean allBuffersRequireReset = false;
-
-	/**
-	 * if this is true the LOD buffers are currently being regenerated.
-	 */
-	public boolean generatingBuffers = false;
-
-	/**
-	 * if this is true new LOD buffers have been generated and are waiting to be
-	 * swapped with the drawable buffers
-	 */
-	private boolean switchVbos = false;
-	// The hideFrontBuffer is for when switching dimensions
-	private volatile boolean hideFrontBuffer = false;
-	private volatile boolean hideBackBuffer = false;
-
+	public MovableGridRingList<RenderRegion> renderRegions = null;
+	
 	/** Size of the buffer builders in bytes last time we created them */
 	public int previousBufferSize = 0;
-
 	/** Width of the dimension in regions last time we created the buffers */
 	public int previousRegionWidth = 0;
 
-	/**
-	 * this is used to prevent multiple threads creating, destroying, or using the
-	 * buffers at the same time
-	 */
-	private final ReentrantLock bufferLock = new ReentrantLock();
-
-	private MovableGridList<PosToRenderContainer> setsToRender;
-
+	private boolean builderThreadRunning = false;
+	
+	public ReentrantLock regionsListLock = new ReentrantLock();
+	
 	public LodBufferBuilderFactory() {
-
+		
 	}
 
 	/**
@@ -185,342 +131,155 @@ public class LodBufferBuilderFactory {
 	 * @return whether it has started a generation task or is blocked
 	 */
 	public boolean updateAndSwapLodBuffersAsync(LodRenderer renderer, LodDimension lodDim, int playerX, int playerY,
-			int playerZ, boolean partialRegen, boolean flushBuffers) {
+			int playerZ, boolean fullRegen) {
 
 		// only allow one generation process to happen at a time
-		if (generatingBuffers)
-			return false;
+		if (builderThreadRunning) return false;
 
 		if (MC.getCurrentLightMap() == null)
 			// the lighting hasn't loaded yet
 			return false;
 
-		allBuffersRequireReset |= flushBuffers;
-
-		boolean fullRegen;
-		if (switchVbos) {
-			fullRegen = swapBuffers();
-		} else {
-			fullRegen = allBuffersRequireReset || frontBufferRequireReset;
-		}
-
-		if (!fullRegen && !partialRegen)
-			return false;
-
-		generatingBuffers = true;
+		builderThreadRunning = true;
 
 		Runnable thread = () -> generateLodBuffersThread(renderer, lodDim, playerX, playerY, playerZ, fullRegen);
-
 		mainGenThread.execute(thread);
 		return true;
 	}
-
+	
+	private void updateRingList(int playerX, int playerZ, int regionWidth) throws InterruptedException {
+		if (renderRegions != null && regionWidth != renderRegions.getSize()) {
+			renderRegions.clear(RenderRegion::close);
+			renderRegions = null;
+		}
+		LodUtil.checkInterrupts();
+		if (renderRegions == null) {
+			renderRegions = new MovableGridRingList<RenderRegion>(regionWidth/2,
+					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerX),
+					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerZ));
+			ApiShared.LOGGER.info("============Render Regions rebuilt============");
+		}
+	}
+	
+	private void resetThreadPools(boolean dumpThread) {
+		if (dumpThread) {
+			bufferBuilderThreadFactory.dumpAllThreadStacks();
+			bufferUploadThreadFactory.dumpAllThreadStacks();
+		}
+		bufferBuilderThreads.shutdownNow();
+		bufferUploadThread.shutdownNow();
+		
+		bufferBuilderThreadFactory = new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY - 2);
+		bufferBuilderThreads = Executors.newFixedThreadPool(
+				CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(),
+				bufferBuilderThreadFactory);
+		
+		bufferUploadThreadFactory = new LodThreadFactory(
+				LodBufferBuilderFactory.class.getSimpleName() + " - upload", Thread.NORM_PRIORITY - 1);
+		bufferUploadThread = Executors.newSingleThreadExecutor(bufferUploadThreadFactory);
+		
+	}
+	
 	private void generateLodBuffersThread(LodRenderer renderer, LodDimension lodDim, int playerX, int playerY,
 			int playerZ, boolean fullRegen) {
-		bufferLock.lock();
-
-		long startTime = System.currentTimeMillis();
-		ArrayList<RegionPos> posToCleanup = new ArrayList<RegionPos>();
-		ArrayList<Callable<Boolean>> nodeToRenderThreads = new ArrayList<Callable<Boolean>>();
-
+		//ArrayList<RenderRegion> regionsToCleanup = new ArrayList<RenderRegion>();
 		try {
-			// round the player's block position down to the nearest chunk BlockPos
-			int playerRegionX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL, playerX, LodUtil.REGION_DETAIL_LEVEL);
-			int playerRegionZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL, playerZ, LodUtil.REGION_DETAIL_LEVEL);
-			int renderRange;
+			regionsListLock.lockInterruptibly();
+			if (ENABLE_EVENT_LOGGING)
+				ApiShared.LOGGER.info("BufferBuilderStarter locked the region lock! LodDim: [{}], RenderRegion: [{}]",
+					lodDim, renderRegions==null ? "NULL" : renderRegions.toString());
+			long startTime = System.currentTimeMillis();
 
-			if (fullRegen || buildableVbos == null || setsToRender == null) {
-				if (buildableVbos != null) {
-					buildableVbos.clear(RenderRegion::close);
-				}
-
-				renderRange = lodDim.getWidth() / 2; // get lodDim half width
-				buildableVbos = new MovableGridList<RenderRegion>(renderRange, playerRegionX, playerRegionZ);
-				setsToRender = new MovableGridList<PosToRenderContainer>(renderRange, playerRegionX, playerRegionZ);
-			} else {
-				renderRange = buildableVbos.gridCentreToEdge;
-				buildableVbos.move(playerRegionX, playerRegionZ, RenderRegion::close);
-				setsToRender.move(playerRegionX, playerRegionZ);
-			}
-			posToCleanup.ensureCapacity(buildableVbos.size());
-			nodeToRenderThreads.ensureCapacity(buildableVbos.size());
-
-			// ================================//
-			// create the nodeToRenderThreads //
-			// ================================//
-
-			skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerX, playerY, playerZ);
-			// int minCullingRange =
-			// SingletonHandler.get(ILodConfigWrapperSingleton.class).client().graphics().advancedGraphics().getBacksideCullingRange();
-			// int cullingRangeX = Math.max((int)(1.5 * Math.abs(lastX - playerX)),
-			// minCullingRange);
-			// int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)),
-			// minCullingRange);
-			List<CompletableFuture<?>> futuresBuffer = new LinkedList<CompletableFuture<?>>();
-			for (int indexX = 0; indexX < buildableVbos.gridSize; indexX++) {
-				for (int indexZ = 0; indexZ < buildableVbos.gridSize; indexZ++) {
-					final int regionX = indexX + buildableVbos.getCenterX() - buildableVbos.gridCentreToEdge;
-					final int regionZ = indexZ + buildableVbos.getCenterY() - buildableVbos.gridCentreToEdge;
-
-					boolean needRegen = lodDim.getAndClearRegionNeedBufferRegen(regionX, regionZ);
-					needRegen |= fullRegen;
-					if (!needRegen)
-						continue;
-
-					LodRegion region = lodDim.getRegion(regionX, regionZ);
-					if (region == null)
-						continue;
-
-					RegionPos regionPos = new RegionPos(regionX, regionZ);
-					posToCleanup.add(regionPos);
-
-					byte minDetail = region.getMinDetailLevel();
-					final int pX = playerX;
-					final int pZ = playerZ;
-
-					class ResultPair {
-						final LodQuadBuilder quadBuilder;
-						final RegionPos regionPos;
-
-						ResultPair(LodQuadBuilder quadBuilder, RegionPos regionPos) {
-							this.quadBuilder = quadBuilder;
-							this.regionPos = regionPos;
-						}
-					}
-
-					CompletableFuture<ResultPair> future = CompletableFuture.supplyAsync(() -> {
-						LodQuadBuilder quadBuilder = new LodQuadBuilder(6);
-						makeLodRenderData(quadBuilder, lodDim, regionPos, pX, pZ, minDetail);
-						return new ResultPair(quadBuilder, regionPos);
-					}, bufferBuilderThreads).whenCompleteAsync((result, e) -> {
-						if (e != null)
-							return;
-						try {
-							uploadBuffers(result.quadBuilder, result.regionPos);
-						} catch (Throwable e3) {
-							ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
-						}
-					}, bufferUploadThread);
-					futuresBuffer.add(future);
-				} // region z
-			} // region z
-
-			// ================================//
-			// execute the nodeToRenderThreads //
-			// ================================//
-
-			long executeStart = System.currentTimeMillis();
-			// wait for all threads to finish
-			CompletableFuture<Void> allFutures = CompletableFuture
-					.allOf(futuresBuffer.toArray(new CompletableFuture[futuresBuffer.size()]));
 			try {
-				allFutures.get(1, TimeUnit.MINUTES);
-			} catch (TimeoutException te) {
-				ApiShared.LOGGER.error("LodBufferBuilder timed out: ", te);
-				bufferBuilderThreadFactory.dumpAllThreadStacks();
-				bufferUploadThreadFactory.dumpAllThreadStacks();
-				bufferBuilderThreads.shutdownNow();
-				bufferUploadThread.shutdownNow();
-				bufferBuilderThreadFactory = new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY - 2);
-				bufferBuilderThreads = Executors.newFixedThreadPool(
-						CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(),
-						bufferBuilderThreadFactory);
-				bufferUploadThreadFactory = new LodThreadFactory(
-						LodBufferBuilderFactory.class.getSimpleName() + " - upload", Thread.NORM_PRIORITY - 1);
-				bufferUploadThread = Executors.newSingleThreadExecutor(bufferUploadThreadFactory);
-				return;
+				updateRingList(playerX, playerZ, lodDim.getWidth());
+
+				// ================================//
+				// create the nodeToRenderThreads //
+				// ================================//
+
+				skyLightPlayer = MC.getWrappedClientWorld().getSkyLight(playerX, playerY, playerZ);
+				// int minCullingRange =
+				// SingletonHandler.get(ILodConfigWrapperSingleton.class).client().graphics().advancedGraphics().getBacksideCullingRange();
+				// int cullingRangeX = Math.max((int)(1.5 * Math.abs(lastX - playerX)),
+				// minCullingRange);
+				// int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)),
+				// minCullingRange);
+				
+				MovableGridRingList.Pos minPos = renderRegions.getMinInRange();
+				MovableGridRingList.Pos maxPos = renderRegions.getMaxInRange();
+				CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+				
+				try {
+					int numOfJobs = 0;
+					for (int regX = minPos.x; regX < maxPos.x; regX++) {
+						for (int regZ = minPos.y; regZ < maxPos.y; regZ++) {
+							RenderRegion r = renderRegions.get(regX, regZ);
+							RegionPos regPos = new RegionPos(regX, regZ);
+							if (r!=null && !r.canRender(lodDim, regPos)) {
+								renderRegions.set(regX, regZ, null);
+								r.close();
+								r = null;
+							}
+							
+							if (r==null) {
+								r = new RenderRegion(regPos, lodDim);
+								renderRegions.set(regX, regZ, r);
+							}
+							
+							CompletableFuture<Void> newFuture =
+									r.updateStatus(bufferUploadThread, bufferBuilderThreads, fullRegen, playerX, playerZ).orElse(null);
+							if (newFuture != null) {
+								future = CompletableFuture.allOf(future, newFuture);
+								numOfJobs++;
+							}
+						}
+					}
+
+					// ================================//
+					//        wait on completion       //
+					// ================================//
+					
+					long executeStart = System.currentTimeMillis();
+					try {
+						future.get(1, TimeUnit.MINUTES);
+					} catch (InterruptedException | TimeoutException ie) {
+						throw ie;
+					} catch (CancellationException ce) {
+						throw new InterruptedException("Future interrupted");
+					} catch (ExecutionException ee) {
+						ApiShared.LOGGER.error("LodBufferBuilder ran into trouble: ", ee.getCause());
+					}
+					long executeEnd = System.currentTimeMillis();
+					
+					long endTime = System.currentTimeMillis();
+					long buildTime = endTime - startTime;
+					long executeTime = executeEnd - executeStart;
+					if (ENABLE_BUFFER_PERF_LOGGING)
+						ApiShared.LOGGER.info("Thread Build&Upload(" + numOfJobs + "/"
+								+ (lodDim.getWidth() * lodDim.getWidth()) + (fullRegen ? "FULL" : "") + ") time: " + buildTime
+								+ " ms" + '\n' + "thread execute time: " + executeTime + " ms");
+				
+				} catch (InterruptedException ie) {
+					resetThreadPools(false);
+					try {
+						future.get();
+					} catch (Throwable t) {}
+					throw ie;
+				} catch (TimeoutException te) {
+					ApiShared.LOGGER.error("LodBufferBuilder timed out: ", te);
+					resetThreadPools(true);
+				}
+			} catch (InterruptedException ie) {
 			} catch (Exception e) {
-				ApiShared.LOGGER.error("LodBufferBuilder ran into trouble: ", e);
+				ApiShared.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
+			} finally {
+				if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("BufferBuilderStarter unlocked the region lock!");
+				regionsListLock.unlock();
 			}
-			long executeEnd = System.currentTimeMillis();
-
-			long endTime = System.currentTimeMillis();
-			long buildTime = endTime - startTime;
-			long executeTime = executeEnd - executeStart;
-			if (ENABLE_BUFFER_PERF_LOGGING)
-				ApiShared.LOGGER.info("Thread Build&Upload(" + nodeToRenderThreads.size() + "/"
-						+ (lodDim.getWidth() * lodDim.getWidth()) + (fullRegen ? "FULL" : "") + ") time: " + buildTime
-						+ " ms" + '\n' + "thread execute time: " + executeTime + " ms");
-			// mark that the buildable buffers as ready to swap
-			switchVbos = true;
-		} catch (Exception e) {
-			ApiShared.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
+		} catch (InterruptedException ie) {
 		} finally {
-			// regardless of whether we were able to successfully create
-			// the buffers, we are done generating.
-			generatingBuffers = false;
-			bufferLock.unlock();
+			builderThreadRunning = false;
 		}
-	}
-
-	private RegionPos makeLodRenderData(LodQuadBuilder quadBuilder, LodDimension lodDim, RegionPos regPos, int playerX,
-			int playerZ, byte minDetail) {// , int cullingRangeX, int cullingRangeZ) {
-
-		// Variable initialization
-		int playerChunkX = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL, playerX, LodUtil.CHUNK_DETAIL_LEVEL);
-		int playerChunkZ = LevelPosUtil.convert(LodUtil.BLOCK_DETAIL_LEVEL, playerZ, LodUtil.CHUNK_DETAIL_LEVEL);
-		DebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
-
-		// We ask the lod dimension which block we have to render given the player
-		// position
-		PosToRenderContainer posToRender = setsToRender.get(regPos.x, regPos.z);
-		// previous setToRender cache
-		if (posToRender == null) {
-			posToRender = setsToRender.setAndGet(regPos.x, regPos.z,
-					new PosToRenderContainer(minDetail, regPos.x, regPos.z));
-		}
-		posToRender.clear(minDetail, regPos.x, regPos.z);
-		lodDim.getPosToRender(posToRender, regPos, playerX, playerZ);
-
-		for (int index = 0; index < posToRender.getNumberOfPos(); index++) {
-
-			byte detailLevel = posToRender.getNthDetailLevel(index);
-			int posX = posToRender.getNthPosX(index);
-			int posZ = posToRender.getNthPosZ(index);
-
-			long[] posData = lodDim.getAllData(detailLevel, posX, posZ);
-			if (posData == null || posData.length == 0 || !DataPointUtil.doesItExist(posData[0])
-					|| DataPointUtil.isVoid(posData[0]))
-				continue;
-			long[][][] adjData = new long[4][1][];
-
-			int chunkXdist = LevelPosUtil.getChunkPos(detailLevel, posX) - playerChunkX;
-			int chunkZdist = LevelPosUtil.getChunkPos(detailLevel, posZ) - playerChunkZ;
-
-			// TODO: In the future, We don't need to ignore rendered chunks! Just build it
-			// and leave it for the renderer to decide!
-			// We don't want to render this fake block if
-			// The block is inside the render distance with, is not bigger than a chunk and
-			// is positioned in a chunk set as vanilla rendered
-
-			// The block is in the player chunk or in a chunk adjacent to the player
-			if (detailLevel <= LodUtil.CHUNK_DETAIL_LEVEL && isThisPositionGoingToBeRendered(
-					LevelPosUtil.getChunkPos(detailLevel, posX), LevelPosUtil.getChunkPos(detailLevel, posZ))) {
-				continue;
-			}
-
-			// we check if the block to render is not in player chunk
-			boolean posNotInPlayerChunk = !(chunkXdist == 0 && chunkZdist == 0);
-
-			// We extract the adj data in the four cardinal direction
-
-			// we first reset the adjShadeDisabled. This is used to disable the shade on the
-			// border when we have transparent block like water or glass
-			// to avoid having a "darker border" underground
-			// Arrays.fill(adjShadeDisabled, false);
-
-			// We check every adj block in each direction
-			for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS) {
-				int xAdj = posX + lodDirection.getNormal().x;
-				int zAdj = posZ + lodDirection.getNormal().z;
-				byte adjDetail = detailLevel;
-				chunkXdist = LevelPosUtil.getChunkPos(detailLevel, xAdj) - playerChunkX;
-				chunkZdist = LevelPosUtil.getChunkPos(detailLevel, zAdj) - playerChunkZ;
-				boolean adjPosInPlayerChunk = (chunkXdist == 0 && chunkZdist == 0);
-				
-				
-				//We check if the adjPos is to be rendered
-				boolean shouldAdjPosBeRendered = posToRender.contains(detailLevel, xAdj, zAdj);
-				//Then we check if the adjPos is to be rendered in a lower detail
-				boolean shouldLowerAdjPosBeRendered = posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
-				
-				//since he system doesn't work for region border we need to check with another system
-				if(!(shouldAdjPosBeRendered || shouldLowerAdjPosBeRendered))
-				{
-					//we compute the distance from the adjPos
-					double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
-					
-					//we compute at which detail that position should be rendered
-					LodRegion adjRegion = lodDim.getRegion(detailLevel, xAdj, zAdj);
-					byte minLevel;
-					if(adjRegion != null)
-					{
-						minLevel = (byte) Math.max(lodDim.getRegion(detailLevel, xAdj, zAdj).getMinDetailLevel(),DetailDistanceUtil.getDetailLevelFromDistance(minDistance));
-					}else{
-						minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-						
-					}
-					
-					//we check if the detail of the adjPos is equal to the correct one (region border fix)
-					//or if the detail is wrong by 1 value (region+circle border fix)
-					shouldAdjPosBeRendered = detailLevel == minLevel;
-					shouldLowerAdjPosBeRendered = detailLevel-1 == minLevel;
-				}
-				// If the adj block is rendered in the same region and with same detail
-				// and is positioned in a place that is not going to be rendered by vanilla game
-				// then we can set this position as adj
-				// We avoid cases where the adjPosition is in player chunk while the position is
-				// not
-				// to always have a wall underwater
-				if (shouldAdjPosBeRendered
-						&& !isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj),LevelPosUtil.getChunkPos(adjDetail, zAdj))
-						&& !(posNotInPlayerChunk && adjPosInPlayerChunk)) {
-					//The adj data is at same detail and is extracted
-					adjData[lodDirection.ordinal() - 2][0] = lodDim.getAllData(adjDetail, xAdj, zAdj);
-				}else{
-					if(shouldLowerAdjPosBeRendered)
-					{
-						//The adj data is at lower detail and is extracted in two steps
-						xAdj *= 2;
-						zAdj *= 2;
-						adjDetail = (byte) (detailLevel - 1);
-						adjData[lodDirection.ordinal() - 2] = new long[2][];
-						if (!isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj), LevelPosUtil.getChunkPos(adjDetail, zAdj))
-									&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
-						{
-							adjData[lodDirection.ordinal() - 2][0] = lodDim.getAllData(adjDetail, xAdj, zAdj);
-						}
-						
-						xAdj += Math.abs(lodDirection.getNormal().x);
-						zAdj += Math.abs(lodDirection.getNormal().z);
-						if (!isThisPositionGoingToBeRendered(LevelPosUtil.getChunkPos(adjDetail, xAdj), LevelPosUtil.getChunkPos(adjDetail, zAdj))
-									&& !(posNotInPlayerChunk && adjPosInPlayerChunk))
-						{
-							adjData[lodDirection.ordinal() - 2][1] = lodDim.getAllData(adjDetail, xAdj, zAdj);
-						}
-					}
-				}
-			}
-
-			// We render every vertical lod present in this position
-			// We only stop when we find a block that is void or non-existing block
-			for (int i = 0; i < posData.length; i++) {
-				long data = posData[i];
-				// If the data is not renderable (Void or non-existing) we stop since there is
-				// no data left in this position
-				if (DataPointUtil.isVoid(data) || !DataPointUtil.doesItExist(data))
-					break;
-
-				long adjDataTop = i - 1 >= 0 ? posData[i - 1] : DataPointUtil.EMPTY_DATA;
-				long adjDataBot = i + 1 < posData.length ? posData[i + 1] : DataPointUtil.EMPTY_DATA;
-
-				// We send the call to create the vertices
-				CubicLodTemplate.addLodToBuffer(data, adjDataTop, adjDataBot, adjData, detailLevel,
-						LevelPosUtil.getRegionModule(detailLevel, posX),
-						LevelPosUtil.getRegionModule(detailLevel, posZ), quadBuilder, debugMode);
-			}
-
-		} // for pos to in list to render
-			// the thread executed successfully
-		quadBuilder.mergeQuads();
-		return regPos;
-	}
-
-	// Will be removed in a1.7
-	@Deprecated
-	private boolean isThisPositionGoingToBeRendered(int chunkX, int chunkZ) {
-		MovableGridList<Boolean> chunkGrid = ClientApi.renderer.vanillaRenderedChunks;
-		Boolean isRendered = chunkGrid.get(chunkX, chunkZ);
-
-		// skip any chunks that Minecraft is going to render
-		if (isRendered == null || !isRendered)
-			return false;
-
-		// check if the chunk is on the border
-		if (CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw() == VanillaOverdraw.BORDER)
-			return !LodUtil.isBorderChunk(ClientApi.renderer.vanillaRenderedChunks, chunkX, chunkZ);
-		else
-			return true;
 	}
 
 	private final SpamReducedLogger ramLogger = new SpamReducedLogger(1);
@@ -531,18 +290,10 @@ public class LodBufferBuilderFactory {
 		ramLogger.info("Dumping Ram Usage for buffer usage...");
 		StatsMap statsMap = new StatsMap();
 		
-		if (buildableVbos == null) {
+		if (renderRegions == null) {
 			ramLogger.info("Buildable VBOs are null!");
 		} else
-			for (RenderRegion buffers : buildableVbos) {
-				if (buffers == null)
-					continue;
-				buffers.debugDumpStats(statsMap);
-			}
-		if (drawableVbos == null) {
-			ramLogger.info("Drawable VBOs are null!");
-		} else
-			for (RenderRegion buffers : drawableVbos) {
+			for (RenderRegion buffers : renderRegions) {
 				if (buffers == null)
 					continue;
 				buffers.debugDumpStats(statsMap);
@@ -565,105 +316,26 @@ public class LodBufferBuilderFactory {
 	 * May have to wait for the bufferLock to open.
 	 */
 	public void destroyBuffers() {
-		MovableGridList<RenderRegion> toBeDeletedBuildableVbos;
-		MovableGridList<RenderRegion> toBeDeletedDrawableVbos;
-		bufferLock.lock();
+		ApiShared.LOGGER.info("LodBufferBuilder Destroy");
+		mainGenThread.shutdownNow();
+		mainGenThread = Executors.newSingleThreadExecutor(mainGenThreadFactory);
+		regionsListLock.lock();
 		try {
-			toBeDeletedBuildableVbos = buildableVbos;
-			toBeDeletedDrawableVbos = drawableVbos;
-			buildableVbos = null;
-			drawableVbos = null;
+			if (renderRegions != null) renderRegions.clear(RenderRegion::close);
+			renderRegions = null;
 		} finally {
-			bufferLock.unlock();
-		}
-		// make sure the buffers are deleted in a openGL context
-		GLProxy.getInstance().recordOpenGlCall(() -> {
-			// destroy the VBOs if they aren't already
-			if (toBeDeletedBuildableVbos != null) {
-				toBeDeletedBuildableVbos.clear(RenderRegion::close);
-			}
-			if (toBeDeletedDrawableVbos != null) {
-				toBeDeletedDrawableVbos.clear(RenderRegion::close);
-			}
-		});
-	}
-
-	/**
-	 * Upload all buildableBuffers to the GPU. We should already be in the builder
-	 * context
-	 */
-	private void uploadBuffers(LodQuadBuilder quadBuilder, RegionPos p) {
-		AbstractBlockPosWrapper playerPos = MC.getPlayerBlockPos();
-		double relPosX = playerPos.getX() - p.x*LodUtil.REGION_WIDTH;
-		double relPosY = playerPos.getY() - LodBuilder.MIN_WORLD_HEIGHT;
-		double relPosZ = playerPos.getX() - p.z*LodUtil.REGION_WIDTH;
-		quadBuilder.sort(relPosX, relPosY, relPosZ);
-		
-		GLProxy glProxy = GLProxy.getInstance();
-		GLProxyContext oldContext = glProxy.getGlContext();
-		glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
-		try {
-			// determine the upload method
-			GpuUploadMethod uploadMethod = glProxy.getGpuUploadMethod();
-
-			// Setup the VBO array
-			LagSpikeCatcher vboSetup = new LagSpikeCatcher();
-			RenderRegion renderRegion = buildableVbos.get(p.x, p.z);
-			RenderRegion newRenderRegion = RenderRegion.updateStatus(renderRegion, quadBuilder, p);
-			if (newRenderRegion != null) {
-				renderRegion = buildableVbos.setAndGet(p.x, p.z, newRenderRegion);
-			}
-			vboSetup.end("vboSetup");
-
-			renderRegion.uploadBuffers(quadBuilder, uploadMethod);
-		} finally {
-			glProxy.setGlContext(oldContext);
+			regionsListLock.unlock();
 		}
 	}
 
-	private boolean swapBuffers() {
-		bufferLock.lock();
-		if (ENABLE_BUFFER_SWAP_LOGGING)
-			ApiShared.LOGGER.debug("Lod Swap Buffers");
-		{
-			boolean shouldRegenBuff = true;
-			try {
-				MovableGridList<RenderRegion> tmpVbo = drawableVbos;
-				drawableVbos = buildableVbos;
-				buildableVbos = tmpVbo;
-
-				// ApiShared.LOGGER.info("Lod Swapped Buffers: "+drawableVbos.toDetailString());
-				// the vbos have been swapped
-				switchVbos = false;
-
-				// FIXME: Race condition on the allBuffersRequireReset boolean
-				shouldRegenBuff = frontBufferRequireReset || allBuffersRequireReset;
-				frontBufferRequireReset = allBuffersRequireReset;
-				allBuffersRequireReset = false;
-				hideFrontBuffer = hideBackBuffer;
-				hideBackBuffer = false;
-			} catch (Exception e) {
-				// this shouldn't normally happen, but just in case it sill prevent deadlock
-				ApiShared.LOGGER.error("swapBuffers ran into trouble: " + e.getMessage(), e);
-			} finally {
-				bufferLock.unlock();
-			}
-			return shouldRegenBuff;
-		}
+	/** Get the newly created VBOs
+	 *  Note: SHOULD NEVER MODIFY THE LIST */
+	public MovableGridRingList<RenderRegion> getRenderRegions() {
+		return renderRegions;
 	}
 
-	/** Get the newly created VBOs */
-	public MovableGridList<RenderRegion> getFrontBuffers() {
-		return shouldDrawFrontBuffer() ? drawableVbos : null;
-	}
-
+	@Deprecated
 	public void triggerReset() {
-		allBuffersRequireReset = true;
-		hideBackBuffer = true;
-		hideFrontBuffer = true;
-	}
-
-	public boolean shouldDrawFrontBuffer() {
-		return !hideFrontBuffer;
+		
 	}
 }

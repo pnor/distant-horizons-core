@@ -147,7 +147,7 @@ public class RenderRegion implements AutoCloseable
 		try {
 			if (renderBufferBack != null) renderBufferBack.onReuse();
 			for (LodDirection dir : LodDirection.ADJ_DIRECTIONS) {
-				adjRegions[dir.ordinal()] = lodDim.getRegion(regionPos.x+dir.getNormal().x, regionPos.z+dir.getNormal().z);
+				adjRegions[dir.ordinal() - 2] = lodDim.getRegion(regionPos.x+dir.getNormal().x, regionPos.z+dir.getNormal().z);
 			}
 		} catch (Throwable t) {
 			region.needRegenBuffer = 2;
@@ -315,11 +315,12 @@ public class RenderRegion implements AutoCloseable
 				
 				//We check if the adjPos is to be rendered
 				boolean renderAdjPos = posToRender.contains(detailLevel, xAdj, zAdj);
-				boolean renderLowerAdjPos = posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
+				boolean doesAdjLowerPosExist = detailLevel==0 ? false : posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
+				boolean renderLowerAdjPos = doesAdjLowerPosExist;
 				LodRegion adjRegion = region;
 				
 				//since he system doesn't work for region border we need to check with another system
-				if(!renderAdjPos && !renderLowerAdjPos)
+				if(!renderAdjPos && (!doesAdjLowerPosExist || detailLevel==0))
 				{
 					//we compute the distance from the adjPos
 					double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
@@ -337,8 +338,9 @@ public class RenderRegion implements AutoCloseable
 					//we check if the detail of the adjPos is equal to the correct one (region border fix)
 					//or if the detail is wrong by 1 value (region+circle border fix)
 					renderAdjPos = detailLevel == minLevel;
-					renderLowerAdjPos = detailLevel-1 == minLevel;
+					renderLowerAdjPos = detailLevel==0 ? false : detailLevel-1 == minLevel;
 				}
+				if (adjRegion == null) continue;
 				if (renderAdjPos && !adjSkip) {
 					//The adj data is at same detail and is extracted
 					adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
@@ -364,7 +366,6 @@ public class RenderRegion implements AutoCloseable
 						adjData[lodDirection.ordinal() - 2][1] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
 					}
 				}
-
 			}
 			
 			// We render every vertical lod present in this position
