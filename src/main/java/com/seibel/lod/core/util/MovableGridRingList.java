@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
-public class MovabeGridRingList<T> extends ArrayList<T> implements List<T> {
+public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	
 	private static final long serialVersionUID = -7743190533384530134L;
 	
@@ -22,7 +22,7 @@ public class MovabeGridRingList<T> extends ArrayList<T> implements List<T> {
 	private final int size;
 	private final ReentrantReadWriteLock moveLock = new ReentrantReadWriteLock();
 
-	public MovabeGridRingList(int halfSize, int centerX, int centerY) {
+	public MovableGridRingList(int halfSize, int centerX, int centerY) {
 		super((halfSize * 2 + 1) * (halfSize * 2 + 1));
 		size = halfSize * 2 + 1;
 		this.halfSize = halfSize;
@@ -188,7 +188,7 @@ public class MovabeGridRingList<T> extends ArrayList<T> implements List<T> {
 			// the total width, just delete the current data
 			// and update the pos
 			if (Math.abs(deltaX) >= size || Math.abs(deltaY) >= size) {
-				clear();
+				clear(d);
 			} else {
 				for (int x = 0; x < size; x++) {
 					for (int y = 0; y < size; y++) {

@@ -447,4 +447,12 @@ public class LodUtil
 		if (freeMem/(double)maxMem < minFreeMemoryPercent) return false;
 		return true;
 	}
+	
+	public static void checkInterrupts() throws InterruptedException {
+		if (Thread.interrupted()) throw new InterruptedException();
+	}
+
+	public static void checkInterruptsUnchecked() {
+		if (Thread.interrupted()) throw new RuntimeException(new InterruptedException());
+	}
 }

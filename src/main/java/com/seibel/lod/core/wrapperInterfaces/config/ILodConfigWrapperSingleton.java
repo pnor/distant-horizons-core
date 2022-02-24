@@ -36,7 +36,9 @@ import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.objects.MinDefaultMax;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
 /**
  * This holds the config defaults, setters/getters
@@ -157,6 +159,14 @@ public interface ILodConfigWrapperSingleton
 						+ "     or "+ DropoffQuality.PERFORMANCE_FOCUSED +" otherwise. \n";
 				DropoffQuality getDropoffQuality();
 				void setDropoffQuality(DropoffQuality newDropoffQuality);
+				default DropoffQuality getResolvedDropoffQuality() {
+					DropoffQuality dropoffQuality = getDropoffQuality();
+					if (dropoffQuality == DropoffQuality.AUTO)
+						dropoffQuality = getLodChunkRenderDistance() < 128 ?
+								DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
+					return dropoffQuality;
+				}
+				
 			}
 			
 			interface IFogQuality
@@ -416,6 +426,14 @@ public interface ILodConfigWrapperSingleton
 					+ " This shouldn't affect performance.";
 			GenerationPriority getGenerationPriority();
 			void setGenerationPriority(GenerationPriority newGenerationPriority);
+			
+			default GenerationPriority getResolvedGenerationPriority() {
+				GenerationPriority priority = getGenerationPriority();
+				IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+				if (priority == GenerationPriority.AUTO)
+					priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.BALANCED;
+				return priority;
+			}
 			
 			BlocksToAvoid BLOCKS_TO_AVOID_DEFAULT = BlocksToAvoid.BOTH;
 			String BLOCKS_TO_AVOID_DESC = ""

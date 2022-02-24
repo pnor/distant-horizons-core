@@ -20,6 +20,17 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 	public final int gridCentreToEdge;
 	public final int gridSize;
 
+	/*
+	 * WARNING: Not yet tested if its atomic. (non Thread safe)
+	 */
+	public MovableGridList(MovableGridList<T> other) {
+		super(other);
+		centerX = other.centerX;
+		centerY = other.centerY;
+		gridCentreToEdge = other.gridCentreToEdge;
+		gridSize = other.gridSize;
+	}
+	
 	public MovableGridList(int gridCentreToEdge, int centerX, int centerY) {
 		super((gridCentreToEdge * 2 + 1) * (gridCentreToEdge * 2 + 1));
 		gridSize = gridCentreToEdge * 2 + 1;

@@ -40,8 +40,8 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovabeGridRingList;
-import com.seibel.lod.core.util.MovabeGridRingList.Pos;
+import com.seibel.lod.core.util.MovableGridRingList;
+import com.seibel.lod.core.util.MovableGridRingList.Pos;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.UnitBytes;
@@ -80,7 +80,7 @@ public class LodDimension
 	// these three variables are private to force use of the getWidth() method
 	// which is a safer way to get the width then directly asking the arrays
 	/** stores all the regions in this dimension */
-	public MovabeGridRingList<LodRegion> regions;
+	public MovableGridRingList<LodRegion> regions;
 	//NOTE: This list pos is relative to center
 	private volatile RegionPos[] iteratorList = null;
 	
@@ -146,7 +146,7 @@ public class LodDimension
 		}
 		
 		
-		regions = new MovabeGridRingList<LodRegion>(halfWidth, 0, 0);
+		regions = new MovableGridRingList<LodRegion>(halfWidth, 0, 0);
 		generateIteratorList();
 	}
 	
@@ -493,29 +493,7 @@ public class LodDimension
 		});
 	return posToGenerate;
 	}
-	
-	/**
-	 * Fills the posToRender with the position to render for the regionPos given in input
-	 */
-	public void getPosToRender(PosToRenderContainer posToRender, RegionPos regionPos, int playerPosX,
-			int playerPosZ)
-	{
-		LodRegion region = getRegion(regionPos.x, regionPos.z);
-		
-		// use FAR_FIRST on local worlds and NEAR_FIRST on servers
-		GenerationPriority generationPriority = CONFIG.client().worldGenerator().getGenerationPriority();
-		if (generationPriority == GenerationPriority.AUTO)
-			generationPriority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.BALANCED;
 
-		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
-		if (dropoffQuality == DropoffQuality.AUTO)
-			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
-					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
-		
-		if (region != null)
-			region.getPosToRender(posToRender, playerPosX, playerPosZ, generationPriority, dropoffQuality);
-	}
-	
 	/**
 	 * Determines how many vertical LODs could be used
 	 * for the given region at the given detail level
@@ -716,7 +694,7 @@ public class LodDimension
 		width = newWidth;
 		halfWidth = width/ 2;
 		Pos p = regions.getCenter();
-		regions = new MovabeGridRingList<LodRegion>(halfWidth, p.x, p.y);
+		regions = new MovableGridRingList<LodRegion>(halfWidth, p.x, p.y);
 		generateIteratorList();
 	}
 	
@@ -764,6 +742,11 @@ public class LodDimension
 	
 	@Override
 	public String toString()
+	{
+		return "[Dim = "+dimension.getDimensionName()+", Region = "+regions+"]";
+	}
+	
+	public String toDetailString()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("Dimension : \n");

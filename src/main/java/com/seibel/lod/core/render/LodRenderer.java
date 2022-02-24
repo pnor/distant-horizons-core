@@ -33,13 +33,15 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.handlers.IReflectionHandler;
-import com.seibel.lod.core.objects.RenderRegion;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
+import com.seibel.lod.core.objects.math.Vec3f;
+import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.MovableGridRingList;
 import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
@@ -206,16 +208,18 @@ public class LodRenderer
 		// 3. we aren't waiting for the build and draw buffers to swap
 		//		(this is to prevent thread conflicts)
 		LagSpikeCatcher swapBuffer = new LagSpikeCatcher();
-		if (lodBufferBuilderFactory.updateAndSwapLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(),
-				MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), partialRegen, fullRegen)) {
-			// the regen process has been started,
-			// it will be done when lodBufferBuilder.newBuffersAvailable() is true
-			fullRegen = false;
-			partialRegen = false;
+		if (partialRegen || fullRegen) {
+			if (lodBufferBuilderFactory.updateAndSwapLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(),
+					MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), fullRegen)) {
+				// the regen process has been started,
+				// it will be done when lodBufferBuilder.newBuffersAvailable() is true
+				fullRegen = false;
+				partialRegen = false;
+			}
 		}
 		swapBuffer.end("SwapBuffer");
 		// Get the front buffers to draw
-		MovableGridList<RenderRegion> regions = lodBufferBuilderFactory.getFrontBuffers();
+		MovableGridRingList<RenderRegion> regions = lodBufferBuilderFactory.getRenderRegions();
 		
 		if (regions == null) {
 			// There is no vbos, which means nothing needs to be drawn. So skip rendering
@@ -310,29 +314,26 @@ public class LodRenderer
 		
 		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
+		AbstractBlockPosWrapper cameraBlockPos = MC_RENDER.getCameraBlockPosition();
+		Vec3f cameraDir = MC_RENDER.getLookAtVector();
 
 		{
 			int ox,oy,dx,dy;
 		    ox = oy = dx = 0;
 		    dy = -1;
-		    int len = regions.gridSize;
+		    int len = regions.getSize();
 		    int maxI = len*len;
 		    int halfLen = len/2;
 		    for(int i =0; i < maxI; i++){
 		        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
-		        	int regionX = ox+regions.getCenterX();
-		        	int regionZ = oy+regions.getCenterY();
+		        	MovableGridRingList.Pos pos = regions.getCenter();
+		        	int regionX = ox+pos.x;
+		        	int regionZ = oy+pos.y;
 		        	{
 						RenderRegion region = regions.get(regionX, regionZ);
-						if (region != null && region.shouldRender(MC_RENDER, !cullingDisabled)) {
-							Mat4f localModelViewMatrix = baseModelViewMatrix.copy();
-							localModelViewMatrix.multiplyTranslationMatrix(
-									(regionX * LodUtil.REGION_WIDTH) - cameraPos.x,
-									LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y,
-									(regionZ * LodUtil.REGION_WIDTH) - cameraPos.z);
-							shaderProgram.fillUniformModelMatrix(localModelViewMatrix);
-							region.render(shaderProgram);
-						}
+						if (region == null) continue;
+						region.render(lodDim, cameraPos, cameraBlockPos, cameraDir,
+								baseModelViewMatrix, !cullingDisabled, shaderProgram);
 		        	}
 		        }
 		        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){

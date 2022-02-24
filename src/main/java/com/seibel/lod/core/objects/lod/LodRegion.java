@@ -32,6 +32,8 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 /**
  * This object holds all loaded LevelContainers acting as a quad tree for a
@@ -46,6 +48,7 @@ import com.seibel.lod.core.util.LodUtil;
  * @version 10-10-2021
  */
 public class LodRegion {
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	/** Number of detail level supported by a region */
 	private static final byte POSSIBLE_LOD = LodUtil.DETAIL_OPTIONS;
 
@@ -281,6 +284,17 @@ public class LodRegion {
 					priority, genMode, shouldSort, needFarPos);
 		}
 	}
+	
+	public void getPosToRender(PosToRenderContainer posToRender, int playerPosX,
+			int playerPosZ)
+	{
+		// use FAR_FIRST on local worlds and NEAR_FIRST on servers
+		GenerationPriority generationPriority = CONFIG.client().worldGenerator().getResolvedGenerationPriority();
+
+		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getResolvedDropoffQuality();
+		
+		getPosToRender(posToRender, playerPosX, playerPosZ, generationPriority, dropoffQuality);
+	}
 
 	/**
 	 * This method will fill the posToRender array with all levelPos that are
@@ -289,7 +303,7 @@ public class LodRegion {
 	 * TODO why don't we return the posToRender, it would make this easier to
 	 * understand
 	 */
-	public void getPosToRender(PosToRenderContainer posToRender, int playerPosX, int playerPosZ,
+	private void getPosToRender(PosToRenderContainer posToRender, int playerPosX, int playerPosZ,
 			 GenerationPriority priority, DropoffQuality dropoffQuality) {
 		double minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
 		byte targetLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
