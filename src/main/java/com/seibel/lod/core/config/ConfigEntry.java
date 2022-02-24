@@ -1,10 +1,11 @@
 package com.seibel.lod.core.config;
 
+import com.seibel.lod.core.config.file.ConfigFileHandling;
+
 /**
  * Use for making the config variables
  *
  * @author coolGi2007
- * @version 02-06-2022
  */
 public class ConfigEntry<T> {
     public String category = "";    // This should only be set once in the init
@@ -105,15 +106,17 @@ public class ConfigEntry<T> {
 
     /** This should normally not be called since set() automatically calls this */
     public void save() {
-        // Call to something to save option
+        ConfigFileHandling.saveEntry(this);
     }
     /** This should normally not be called except for special circumstances */
     public void load() {
-        // Call something to load option
+        ConfigFileHandling.loadEntry(this);
     }
 
     /** Is the value of this equal to another */
     public boolean equals(ConfigEntry<?> obj) {
+        // Can all of this just be "return this.value.equals(obj.value)"?
+
         if (this.value.getClass() != obj.value.getClass())
             return false;
         if (Number.class.isAssignableFrom(this.value.getClass())) {
