@@ -14,9 +14,10 @@ import java.util.List;
  * Indexes and sets everything up for the file handling and gui
  *
  * @author coolGi2007
+ * @author Ran
  */
 public class ConfigBase {
-    public static final List<ConfigEntry> entries = new ArrayList<>();
+    public static final List<ConfigEntry<?>> entries = new ArrayList<ConfigEntry<?>>();
     public static final List<String> categories = new ArrayList<>();
 
     public static void init(Class<?> config) {
@@ -37,9 +38,13 @@ public class ConfigBase {
         for (Field field : config.getFields())
 		{
             if (ConfigEntry.class.isAssignableFrom(field.getType())) { // If item is type ConfigEntry
-//                entries.add(ConfigEntry.class.cast(field));
-//                entries.get(entries.size() - 1).category = (category.isEmpty() ? "" : category + ".");
-//                entries.get(entries.size() - 1).category = field.getName();
+                try {
+                    entries.add((ConfigEntry<?>) field.get(field.getType())); // Add to entries
+                } catch (IllegalAccessException exception) {
+                    exception.printStackTrace();
+                }
+                entries.get(entries.size() - 1).category = (category.isEmpty() ? "" : category + ".");
+                entries.get(entries.size() - 1).category = field.getName();
             }
 
 			if (field.isAnnotationPresent(ConfigAnnotations.Category.class)) { // If it's a category then init the stuff inside it and put it in the category list
