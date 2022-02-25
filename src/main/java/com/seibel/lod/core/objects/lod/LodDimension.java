@@ -34,7 +34,6 @@ import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
-import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
@@ -84,15 +83,6 @@ public class LodDimension
 	//NOTE: This list pos is relative to center
 	private volatile RegionPos[] iteratorList = null;
 	
-	/** stores if the region at the given x and z index needs to be saved to disk */
-	/** stores if the region at the given x and z index needs to be regenerated */
-	// Use int because I need Tri state:
-	
-	/**
-	 * if true that means there are regions in this dimension
-	 * that need to have their buffers rebuilt.
-	 */
-	public volatile boolean regenDimensionBuffers = false;
 	
 	private LodDimensionFileHandler fileHandler;
 	
@@ -305,10 +295,14 @@ public class LodDimension
 					if (region.getMinDetailLevel() < detail) {
 						if (region.needSaving) return; // FIXME: A crude attempt at lowering chance of race condition!
 						region.cutTree(detail);
-						region.needRegenBuffer = 2;
-						regenDimensionBuffers = true;
+						region.needSignalToRegenBuffer = true;
 					}
 				}
+				if (region != null && region.needSignalToRegenBuffer) {
+					region.needSignalToRegenBuffer = false;
+					ClientApi.lodBufferBuilderFactory.setRegionNeedRegen(x+minPos.x, z+minPos.y);
+				}
+				
 			});
 			if (totalDirtiedRegions > 8) this.saveDirtyRegionsToFile(false);
 			dirtiedRegionsRoughCount = totalDirtiedRegions;
@@ -410,9 +404,12 @@ public class LodDimension
 					updated = true;
 				}
 				if (updated) {
-					region.needRegenBuffer = 2;
+					region.needSignalToRegenBuffer = true;
 					region.needRecheckGenPoint = true;
-					regenDimensionBuffers = true;
+				}
+				if (region != null && region.needSignalToRegenBuffer) {
+					region.needSignalToRegenBuffer = false;
+					ClientApi.lodBufferBuilderFactory.setRegionNeedRegen(x+minPos.x, z+minPos.y);
 				}
 			});
 			//ApiShared.LOGGER.info("LodDim expend Region complete: " + playerPosX + "," + playerPosZ);
@@ -438,20 +435,7 @@ public class LodDimension
 			return false;
 		
 		boolean nodeAdded = region.addVerticalData(detailLevel, posX, posZ, data, override);
-		if (nodeAdded) {
-			regenDimensionBuffers = true;
-		}
 		return nodeAdded;
-	}
-	
-	/** marks the region at the given region position to have its buffer rebuilt */
-	public void markRegionBufferToRegen(int xRegion, int zRegion)
-	{
-		LodRegion r = getRegion(xRegion,zRegion);
-		if (r!=null) {
-			r.needRegenBuffer = 2;
-			regenDimensionBuffers = true;
-		}
 	}
 	
 	/**
@@ -569,23 +553,6 @@ public class LodDimension
 	}
 	
 	/**
-	 * Returns if the buffer at the given array index needs
-	 * to have its buffer regenerated. Also decrease the state by 1
-	 */
-	public boolean getAndClearRegionNeedBufferRegen(int regionX, int regionZ)
-	{
-		//FIXME: Use actual atomics on needRegenBuffer
-		LodRegion region = getRegion(regionX, regionZ);
-		if (region == null) return false;
-		int i = region.needRegenBuffer;
-		if (i > 0) {
-			region.needRegenBuffer--;
-			return true;
-		}
-		return false;
-	}
-	
-	/**
 	 * Get the data point at the given LevelPos
 	 * in this dimension.
 	 * <br>
@@ -602,8 +569,6 @@ public class LodDimension
 		LodRegion region = getRegion(xRegion, zRegion);
 		if (region == null) return;
 		region.updateArea(detailLevel, posX, posZ);
-		region.needRegenBuffer = 2;
-		regenDimensionBuffers = true;
 	}
 	
 	/** Returns true if a region exists at the given LevelPos */

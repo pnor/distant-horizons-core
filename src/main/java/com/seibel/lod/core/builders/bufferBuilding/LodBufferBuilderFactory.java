@@ -121,6 +121,14 @@ public class LodBufferBuilderFactory {
 		
 	}
 
+	public void setRegionNeedRegen(int regionX, int regionZ) {
+		MovableGridRingList<RenderRegion> r = renderRegions;
+		if (r==null) return;
+		RenderRegion rr = r.get(regionX, regionZ);
+		if (rr==null) return;
+		rr.setNeedRegen();
+	}
+	
 	/**
 	 * Create a thread to asynchronously generate LOD buffers centered around the
 	 * given camera X and Z. <br>
@@ -158,6 +166,9 @@ public class LodBufferBuilderFactory {
 					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerX),
 					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerZ));
 			ApiShared.LOGGER.info("============Render Regions rebuilt============");
+		} else {
+			renderRegions.move(LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerX),
+					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerZ), RenderRegion::close);
 		}
 	}
 	

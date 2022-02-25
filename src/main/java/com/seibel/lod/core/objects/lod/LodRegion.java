@@ -73,7 +73,8 @@ public class LodRegion {
 	public final int regionPosZ;
 
 	public volatile boolean needRecheckGenPoint = true;
-	public volatile int needRegenBuffer = 2;
+	//public volatile int needRegenBuffer = 2; MOVED TO RENDERREGION!
+	public volatile boolean needSignalToRegenBuffer = true;
 	public volatile boolean needSaving = false;
 	public final AtomicInteger isWriting = new AtomicInteger(0);
 	
@@ -138,7 +139,7 @@ public class LodRegion {
 
 		boolean updated = this.dataContainer[detailLevel].addVerticalData(data, posX, posZ, override);
 		if (updated) {
-			needRegenBuffer = 2;
+			needSignalToRegenBuffer = true;
 			needSaving = true;
 		}
 		return updated;
@@ -166,7 +167,7 @@ public class LodRegion {
 		//ApiShared.LOGGER.info("addChunkOfData(region:{}, level:{}, x:{}, z:{}, wx:{}, wz:{}, override:{}, updated:{})",
 		//		getRegionPos(), detailLevel, posX, posZ, widthX, widthZ, override, updated);
 		if (updated) {
-			needRegenBuffer = 2;
+			needSignalToRegenBuffer = true;
 			needSaving = true;
 		} else {
 			/*ApiShared.LOGGER.info("addChunkOfData nothing changed. Datapoint: {}\n Upper Datapoint: {}",
@@ -453,6 +454,7 @@ public class LodRegion {
 		for (byte up = (byte) (Math.max(detailLevel, minDetailLevel) + 1); up <= LodUtil.REGION_DETAIL_LEVEL; up++) {
 			update(up, LevelPosUtil.convert(detailLevel, posX, up), LevelPosUtil.convert(detailLevel, posZ, up));
 		}
+		needSignalToRegenBuffer = true;
 	}
 	
 	public boolean regenerateLodFromArea(byte detailLevel, int posX, int posZ, int widthX, int widthZ) {
@@ -482,8 +484,8 @@ public class LodRegion {
 			// ApiShared.LOGGER.info(" - Shink: (level:{}, x:{}, z:{}, wx:{}, wz:{})", detailLevel, modPosX, modPosZ, widthX, widthZ);
 			chunkUpdate(detailLevel, modPosX, modPosZ, widthX, widthZ);
 		} while (detailLevel < LodUtil.REGION_DETAIL_LEVEL);
-		
-		needRegenBuffer = 2;
+
+		needSignalToRegenBuffer = true;
 		return true;
 	}
 

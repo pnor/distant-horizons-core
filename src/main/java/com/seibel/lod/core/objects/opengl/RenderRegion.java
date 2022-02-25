@@ -4,6 +4,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -42,6 +43,10 @@ public class RenderRegion implements AutoCloseable
 	public static final boolean ENABLE_VERBOSE_LOGGING = false;
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
+	/** stores if the region at the given x and z index needs to be regenerated */
+	// Use int because I need Tri state:
+	private AtomicInteger needRegen = new AtomicInteger(2);
+	
 	private enum BackState {
 		Unused,
 		Building,
@@ -71,19 +76,25 @@ public class RenderRegion implements AutoCloseable
 		return lodDim == this.lodDim && regPos.equals(regionPos);
 	}
 	
+	public void setNeedRegen() {
+		needRegen.set(2);
+	} 
+	
 	public Optional<CompletableFuture<Void>> updateStatus(Executor bufferUploader, Executor bufferBuilder, boolean alwaysRegen, int playerPosX, int playerPosZ) {
+		if (alwaysRegen) setNeedRegen();
+		
 		BackState state = backState.get();
 		if (state != BackState.Unused) {
 			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: BackState is {}", regionPos, state);
 			return Optional.empty();
 		}
-		
+
 		LodRegion r = lodDim.getRegion(regionPos.x, regionPos.z);
 		if (r==null) {
 			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: Region is null", regionPos);
 			return Optional.empty();
 		}
-		if (!alwaysRegen && r.needRegenBuffer == 0) {
+		if (needRegen.get() == 0) {
 			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: Region doesn't need regen", regionPos);
 			return Optional.empty();
 		}
@@ -92,7 +103,7 @@ public class RenderRegion implements AutoCloseable
 			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: CAS on BackState failed: ", backState.get());
 			return Optional.empty();
 		}
-		r.needRegenBuffer--;
+		needRegen.decrementAndGet();
 		return Optional.of(startBuid(bufferUploader, bufferBuilder, r, lodDim, playerPosX, playerPosZ));
 	}
 	
@@ -150,7 +161,7 @@ public class RenderRegion implements AutoCloseable
 				adjRegions[dir.ordinal() - 2] = lodDim.getRegion(regionPos.x+dir.getNormal().x, regionPos.z+dir.getNormal().z);
 			}
 		} catch (Throwable t) {
-			region.needRegenBuffer = 2;
+			setNeedRegen();
 			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
 				ApiShared.LOGGER.error("\"Lod Builder Starter\""
 					+ " encountered error on catching exceptions and fallback on starting build task: ",
@@ -175,7 +186,9 @@ public class RenderRegion implements AutoCloseable
 				ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to build quads: ", e3);
 				throw e3;
 			}
-		}, bufferBuilder).thenAcceptAsync((builder) -> {
+		}, bufferBuilder)
+				
+				.thenAcceptAsync((builder) -> {
 			try {
 				if (ENABLE_EVENT_STEP_LOGGING) ApiShared.LOGGER.info("RenderRegion start Upload @ {}", regionPos);
 				GLProxy glProxy = GLProxy.getInstance();
@@ -203,7 +216,7 @@ public class RenderRegion implements AutoCloseable
 				ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
 			}
 		}, bufferUploader).exceptionallyCompose((e) -> {
-			region.needRegenBuffer = 2;
+			setNeedRegen();
 			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
 				ApiShared.LOGGER.error("\"LodNodeBufferBuilder\""
 					+ " encountered error on exit: ",
@@ -305,66 +318,71 @@ public class RenderRegion implements AutoCloseable
 			// not
 			// to always have a wall underwater
 			for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS) {
-				int xAdj = posX + lodDirection.getNormal().x;
-				int zAdj = posZ + lodDirection.getNormal().z;
-				byte adjDetail = detailLevel;
-				int chunkXAdj = LevelPosUtil.getChunkPos(detailLevel, xAdj);
-				int chunkZAdj = LevelPosUtil.getChunkPos(detailLevel, zAdj);
-				Boolean isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
-				boolean adjSkip = isRenderedAdj!=null && isRenderedAdj;
-				
-				//We check if the adjPos is to be rendered
-				boolean renderAdjPos = posToRender.contains(detailLevel, xAdj, zAdj);
-				boolean doesAdjLowerPosExist = detailLevel==0 ? false : posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
-				boolean renderLowerAdjPos = doesAdjLowerPosExist;
-				LodRegion adjRegion = region;
-				
-				//since he system doesn't work for region border we need to check with another system
-				if(!renderAdjPos && (!doesAdjLowerPosExist || detailLevel==0))
-				{
-					//we compute the distance from the adjPos
-					double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
-					//we compute at which detail that position should be rendered
-					adjRegion = adjRegions[lodDirection.ordinal()-2];
-					byte minLevel;
-					if(adjRegion != null)
-					{
-						minLevel = (byte) Math.max(adjRegion.getMinDetailLevel(),
-								DetailDistanceUtil.getDetailLevelFromDistance(minDistance));
-					} else{
-						minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-					}
+				try {
+					int xAdj = posX + lodDirection.getNormal().x;
+					int zAdj = posZ + lodDirection.getNormal().z;
+					byte adjDetail = detailLevel;
+					int chunkXAdj = LevelPosUtil.getChunkPos(detailLevel, xAdj);
+					int chunkZAdj = LevelPosUtil.getChunkPos(detailLevel, zAdj);
+					Boolean isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
+					boolean adjSkip = isRenderedAdj!=null && isRenderedAdj;
 					
-					//we check if the detail of the adjPos is equal to the correct one (region border fix)
-					//or if the detail is wrong by 1 value (region+circle border fix)
-					renderAdjPos = detailLevel == minLevel;
-					renderLowerAdjPos = detailLevel==0 ? false : detailLevel-1 == minLevel;
-				}
-				if (adjRegion == null) continue;
-				if (renderAdjPos && !adjSkip) {
-					//The adj data is at same detail and is extracted
-					adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
-				} else if (renderLowerAdjPos)
-				{
-					//The adj data is at lower detail and is extracted in two steps
-					xAdj *= 2;
-					zAdj *= 2;
-					adjDetail = (byte) (detailLevel - 1);
-					adjData[lodDirection.ordinal() - 2] = new long[2][];
-					isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
-					adjSkip = isRenderedAdj!=null && isRenderedAdj;
-					if (!adjSkip) {
+					//We check if the adjPos is to be rendered
+					boolean renderAdjPos = posToRender.contains(detailLevel, xAdj, zAdj);
+					boolean doesAdjLowerPosExist = detailLevel==0 ? false : posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
+					boolean renderLowerAdjPos = doesAdjLowerPosExist;
+					LodRegion adjRegion = region;
+					
+					//since he system doesn't work for region border we need to check with another system
+					if(!renderAdjPos && (!doesAdjLowerPosExist || detailLevel==0))
+					{
+						//we compute the distance from the adjPos
+						double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
+						//we compute at which detail that position should be rendered
+						adjRegion = adjRegions[lodDirection.ordinal()-2];
+						byte minLevel;
+						if(adjRegion != null)
+						{
+							minLevel = (byte) Math.max(adjRegion.getMinDetailLevel(),
+									DetailDistanceUtil.getDetailLevelFromDistance(minDistance));
+						} else{
+							minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+						}
+						
+						//we check if the detail of the adjPos is equal to the correct one (region border fix)
+						//or if the detail is wrong by 1 value (region+circle border fix)
+						renderAdjPos = detailLevel == minLevel;
+						renderLowerAdjPos = detailLevel==0 ? false : detailLevel-1 == minLevel;
+					}
+					if (adjRegion == null) continue;
+					if (renderAdjPos && !adjSkip) {
+						//The adj data is at same detail and is extracted
 						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
-					}
-					
-					xAdj += Math.abs(lodDirection.getNormal().x);
-					zAdj += Math.abs(lodDirection.getNormal().z);
-					isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
-					adjSkip = isRenderedAdj!=null && isRenderedAdj;
-					if (!adjSkip)
+					} else if (renderLowerAdjPos)
 					{
-						adjData[lodDirection.ordinal() - 2][1] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
+						//The adj data is at lower detail and is extracted in two steps
+						xAdj *= 2;
+						zAdj *= 2;
+						adjDetail = (byte) (detailLevel - 1);
+						adjData[lodDirection.ordinal() - 2] = new long[2][];
+						isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
+						adjSkip = isRenderedAdj!=null && isRenderedAdj;
+						if (!adjSkip) {
+							adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
+						}
+						
+						xAdj += Math.abs(lodDirection.getNormal().x);
+						zAdj += Math.abs(lodDirection.getNormal().z);
+						isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
+						adjSkip = isRenderedAdj!=null && isRenderedAdj;
+						if (!adjSkip)
+						{
+							adjData[lodDirection.ordinal() - 2][1] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
+						}
 					}
+				} catch (RuntimeException e) {
+					ApiShared.LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, posX, posZ, lodDirection);
+					ApiShared.LOGGER.warn("Detail exception: ", e);
 				}
 			}
 			

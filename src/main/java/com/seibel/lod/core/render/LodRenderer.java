@@ -28,7 +28,6 @@ import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
@@ -517,7 +516,7 @@ public class LodRenderer
 			if (oldBool == null || !oldBool)
 			{
 				anyChanged = true;
-				lodDim.markRegionBufferToRegen(pos.getRegionX(), pos.getRegionZ());
+				lodBufferBuilderFactory.setRegionNeedRegen(pos.getRegionX(), pos.getRegionZ());
 			}
 		}
 		if (anyChanged) vanillaRenderedChunks = chunkList;
@@ -580,13 +579,8 @@ public class LodRenderer
 		
 		if (tryFullGen) {
 			fullRegen = true;
-			lodDim.regenDimensionBuffers = false;
 		} else if (tryPartialGen) {
-			if (lodDim.regenDimensionBuffers)
-			{
-				partialRegen = true;
-				lodDim.regenDimensionBuffers = false;
-			}
+			partialRegen = true;
 		}
 	}
 

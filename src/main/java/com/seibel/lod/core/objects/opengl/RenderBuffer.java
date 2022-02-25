@@ -37,22 +37,29 @@ public abstract class RenderBuffer implements AutoCloseable
 	
 	final public void build(Runnable r) {
 		_lockThread(State.Building);
-		r.run();
-		_unlockThread(State.Building);
+		try {
+			r.run();
+		} finally {
+			_unlockThread(State.Building);
+		}
 	}
 
 	/* Return false if current renderMethod is not suited for current builder
 	 * This will auto close the object if returning false. */
 	final public boolean tryUploadBuffers(LodQuadBuilder builder, GpuUploadMethod uploadMethod) {
 		_lockThread(State.Uploading);
-		boolean successful = uploadBuffers(builder, uploadMethod);
-		if (!successful) {
-			_unlockThreadTo(State.Uploading, State.Closed);
-			close();
-			return false;
+		boolean successful = false;
+		try {
+			successful = uploadBuffers(builder, uploadMethod);
+			return successful;
+		} finally {
+			if (!successful) {
+				_unlockThreadTo(State.Uploading, State.Closed);
+				close();
+			} else { 
+				_unlockThread(State.Uploading);
+			}
 		}
-		_unlockThread(State.Uploading);
-		return true;
 	}
 
 	// ======================================================================

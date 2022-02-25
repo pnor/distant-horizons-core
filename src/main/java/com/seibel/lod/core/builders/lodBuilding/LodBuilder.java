@@ -223,7 +223,6 @@ public class LodBuilder
 			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
 			region.addChunkOfData((byte)0, chunkX*16, chunkZ*16, 16, 16, data, data.length/16/16, override);
 			region.regenerateLodFromArea((byte)0, chunkX*16, chunkZ*16, 16, 16);
-			lodDim.regenDimensionBuffers = true;
 			
 			if (!region.doesDataExist((byte)0, chunkX*16, chunkZ*16, config.distanceGenerationMode))
 				throw new RuntimeException("data at detail 0 is still null after writes to it!");
@@ -285,7 +284,6 @@ public class LodBuilder
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkZ, targetLevel),
 					lodCount, lodCount);
-			lodDim.regenDimensionBuffers = true;
 			
 			if (!region.doesDataExist(targetLevel,
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
