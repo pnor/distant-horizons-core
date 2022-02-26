@@ -35,6 +35,10 @@ public class ConfigEntry<T> {
         this.value = new_value;
         save();
     }
+    /** Sets the value without saving */
+    public void setWTSave(T new_value) {
+        this.value = new_value;
+    }
 
     /** Gets the min value */
     public T getMin() {

@@ -2,6 +2,7 @@ package com.seibel.lod.core.config.file;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.ModInfo;
+import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.ConfigEntry;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -29,15 +30,31 @@ public class ConfigFileHandling {
             }
         loadConfig(config);
 
+        for (ConfigEntry<?> entry : ConfigBase.entries) {
+            createComment(entry, config);
+            saveEntry(entry, config);
+        }
+
         config.close();
     }
 
     public static void loadFromFile() {
         try {
-            config.load();
+            if (Files.exists(ConfigPath))
+                config.load();
+            else {
+                saveToFile();
+                return;
+            }
         } catch (Exception e) {
             saveToFile();
             return;
+        }
+
+        for (ConfigEntry<?> entry : ConfigBase.entries) {
+            createComment(entry, config);
+            loadEntry(entry, config);
+            System.out.println(entry.get());
         }
 
         config.close();
@@ -49,7 +66,7 @@ public class ConfigFileHandling {
         config.close();
     }
     public static void saveEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
-
+        workConfig.set(entry.getNameWCategory(), entry.get());
     }
     public static void loadEntry(ConfigEntry<?> entry) {
         loadConfig(config);
@@ -58,7 +75,25 @@ public class ConfigFileHandling {
 
     }
     public static void loadEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
+        if (workConfig.contains(entry.getNameWCategory())) {
+            if (entry.get().getClass().isEnum())
+                entry.setWTSave(workConfig.getEnum(entry.getNameWCategory(), entry.get().getClass()));
+            else
+                entry.setWTSave(workConfig.get(entry.getNameWCategory()));
+            System.out.println(workConfig.get(entry.getNameWCategory()).getClass().toString());
+//            entry.setWTSave(workConfig.get(entry.getNameWCategory()));
+        } else {
+            saveEntry(entry, workConfig);
+        }
+    }
 
+    public static void createComment(ConfigEntry<?> entry) {
+        loadConfig(config);
+        createComment(entry, config);
+        config.close();
+    }
+    public static void createComment(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
+        workConfig.setComment(entry.getNameWCategory(), entry.getComment());
     }
 
     public static void loadConfig(CommentedFileConfig config) {

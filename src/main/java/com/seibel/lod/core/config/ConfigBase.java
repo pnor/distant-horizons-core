@@ -43,8 +43,8 @@ public class ConfigBase {
                 } catch (IllegalAccessException exception) {
                     exception.printStackTrace();
                 }
-                entries.get(entries.size() - 1).category = (category.isEmpty() ? "" : category + ".");
-                entries.get(entries.size() - 1).category = field.getName();
+                entries.get(entries.size() - 1).category = category;
+                entries.get(entries.size() - 1).name = field.getName();
             }
 
 			if (field.isAnnotationPresent(ConfigAnnotations.Category.class)) { // If it's a category then init the stuff inside it and put it in the category list
