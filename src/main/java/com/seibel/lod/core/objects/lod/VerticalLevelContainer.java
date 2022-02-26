@@ -355,6 +355,7 @@ public class VerticalLevelContainer implements LevelContainer
 		if ((!DataPointUtil.doesItExist(data[0])) && anyDataExist)
 			throw new RuntimeException("Update data called but higher level datapoint doesn't exist even though child data does exist!");
 
+		//FIXME: Disabled check if genMode for old data is already invalid due to having genMode 0.
 		if (DataPointUtil.getGenerationMode(data[0]) != DataPointUtil.getGenerationMode(lowerLevelContainer.getSingleData(posX*2, posZ*2)))
 			throw new RuntimeException("Update data called but higher level datapoint does not have the same GenerationMode as the top left corner child datapoint!");
 		

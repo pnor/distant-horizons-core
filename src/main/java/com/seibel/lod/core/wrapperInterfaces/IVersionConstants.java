@@ -33,5 +33,7 @@ public interface IVersionConstants {
 	default int getWorldGenerationCountPerThread() {
 		return 8;
 	}
+	
+	boolean isVanillaRenderedChunkSquare();
 
 }

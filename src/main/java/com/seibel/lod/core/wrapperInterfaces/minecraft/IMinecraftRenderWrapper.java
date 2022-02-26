@@ -27,6 +27,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.util.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
@@ -41,6 +42,8 @@ import com.seibel.lod.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
  */
 public interface IMinecraftRenderWrapper
 {
+	static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
+	
 	Vec3f getLookAtVector();
 	
 	AbstractBlockPosWrapper getCameraBlockPosition();
@@ -90,22 +93,26 @@ public interface IMinecraftRenderWrapper
 		IMinecraftWrapper mcWrapper = SingletonHandler.get(IMinecraftWrapper.class);
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
 		
-		int chunkRenderDist = this.getRenderDistance();
+		int chunkDist = this.getRenderDistance();
 		
 		AbstractChunkPosWrapper centerChunkPos = mcWrapper.getPlayerChunkPos();
-		int startChunkX = centerChunkPos.getX() - chunkRenderDist;
-		int startChunkZ = centerChunkPos.getZ() - chunkRenderDist;
+		int centerChunkX = centerChunkPos.getX();
+		int centerChunkZ = centerChunkPos.getZ();
+		int chunkDist2 = chunkDist*chunkDist;
 		
 		// add every position within render distance
 		HashSet<AbstractChunkPosWrapper> renderedPos = new HashSet<AbstractChunkPosWrapper>();
-		for (int chunkX = 0; chunkX < (chunkRenderDist * 2+1); chunkX++)
+		for (int deltaChunkX = -chunkDist; deltaChunkX <= chunkDist; deltaChunkX++)
 		{
-			for(int chunkZ = 0; chunkZ < (chunkRenderDist * 2+1); chunkZ++)
+			for(int deltaChunkZ = -chunkDist; deltaChunkZ <= chunkDist; deltaChunkZ++)
 			{
-				renderedPos.add(factory.createChunkPos(startChunkX + chunkX, startChunkZ + chunkZ));
+				if (!VERSION_CONSTANTS.isVanillaRenderedChunkSquare() &&
+						deltaChunkX*deltaChunkX+deltaChunkZ*deltaChunkZ>chunkDist2) {
+					continue;
+				}
+				renderedPos.add(factory.createChunkPos(centerChunkX + deltaChunkX, centerChunkZ + deltaChunkZ));
 			}
 		}
-		
 		return renderedPos;	
 	}
 	

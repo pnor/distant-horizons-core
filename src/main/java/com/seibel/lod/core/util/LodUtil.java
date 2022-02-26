@@ -31,6 +31,7 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
+import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
@@ -53,6 +54,7 @@ public class LodUtil
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
+	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
 	/**
 	 * Vanilla render distances less than or equal to this will not allow partial
@@ -308,7 +310,6 @@ public class LodUtil
 	public static HashSet<AbstractChunkPosWrapper> getNearbyLodChunkPosToSkip(LodDimension lodDim, AbstractBlockPosWrapper blockPosWrapper)
 	{
 		int chunkRenderDist = MC_RENDER.getRenderDistance();
-		AbstractChunkPosWrapper centerChunk = FACTORY.createChunkPos(blockPosWrapper);
 		
 		int skipRadius;
 		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
@@ -381,10 +382,25 @@ public class LodUtil
 		// if the skipRadius is being used
 		if (skipRadius != 0)
 		{
-			posToSkip.removeIf((pos) -> {
-				return (pos.getX() < centerChunk.getX() - skipRadius || pos.getX() > centerChunk.getX() + skipRadius
-						|| pos.getZ() < centerChunk.getZ() - skipRadius || pos.getZ() > centerChunk.getZ() + skipRadius);
-			});
+			int centerCX = LevelPosUtil.getChunkPos(BLOCK_DETAIL_LEVEL, blockPosWrapper.getX());
+			int centerCZ = LevelPosUtil.getChunkPos(BLOCK_DETAIL_LEVEL, blockPosWrapper.getZ());
+			
+			if (VERSION_CONSTANTS.isVanillaRenderedChunkSquare()) {
+				int minX = centerCX-skipRadius;
+				int maxX = centerCX+skipRadius+1;
+				int minZ = centerCZ-skipRadius;
+				int maxZ = centerCZ+skipRadius+1;
+				posToSkip.removeIf((pos) -> {
+					return (pos.getX() < minX || pos.getX() > maxX || pos.getZ() < minZ || pos.getZ() > maxZ);
+				});
+			} else {
+				int skipRadius2 = skipRadius*skipRadius;
+				posToSkip.removeIf((pos) -> {
+					int dx = pos.getX()-centerCX;
+					int dz = pos.getZ()-centerCZ;
+					return (dx*dx + dz*dz > skipRadius2);
+				});
+			}
 		}
 		return posToSkip;
 	}

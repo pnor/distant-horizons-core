@@ -20,6 +20,7 @@
 package com.seibel.lod.core.objects.lod;
 
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -176,7 +177,7 @@ public class LodRegion {
 					);*/
 			
 		}
-		if (!doesDataExist(detailLevel, posX, posZ, DistanceGenerationMode.values()[DataPointUtil.getGenerationMode(data[0]) - 1])) { //fixme -1 casue NONE has value of 1 but slot of 0
+		if (!doesDataExist(detailLevel, posX, posZ, DistanceGenerationMode.values()[DataPointUtil.getGenerationMode(data[0]) - 1])) { //FIXME: -1 casue NONE has value of 1 but slot of 0
 			throw new RuntimeException("Data still doesn't exist after addChunkOfData!");
 		}
 		
@@ -429,6 +430,55 @@ public class LodRegion {
 		}
 	}
 
+	
+	public static final class LevelPos {
+		public final byte detail;
+		public final int posX;
+		public final int posZ;
+		LevelPos(byte d, int x, int z) {
+			detail = d;
+			posX = x;
+			posZ = z;
+		}
+	}
+	
+	public Iterator<LevelPos> posToRenderIterator() {
+		return new Iterator<LevelPos>() {
+			final byte minDetail = minDetailLevel;
+			int offsetX = 0;
+			int offsetZ = 0;
+			final int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - minDetail);
+			
+			private void advance() {
+				
+				
+			}
+			
+			@Override
+			public boolean hasNext()
+			{
+				
+				
+				return (offsetZ >= size);
+			}
+
+			@Override
+			public LevelPos next()
+			{
+				
+				
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+		};
+		
+		
+	}
+	
+	
+	
+	
 	/**
 	 * Updates all children.
 	 * <p>

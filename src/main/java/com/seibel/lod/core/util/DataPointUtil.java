@@ -21,6 +21,7 @@ package com.seibel.lod.core.util;
 
 import java.util.Arrays;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 
 
@@ -89,6 +90,8 @@ public class DataPointUtil
 	
 	public static long createVoidDataPoint(byte generationMode)
 	{
+		if (generationMode == 0)
+			throw new IllegalArgumentException("Trying to create void datapoint with genMode 0, which is NOT allowed in DataPoint version 10!");
 		return (generationMode & GEN_TYPE_MASK) << GEN_TYPE_SHIFT;
 	}
 	
@@ -104,6 +107,8 @@ public class DataPointUtil
 	
 	public static long createDataPoint(int alpha, int red, int green, int blue, int height, int depth, int lightSky, int lightBlock, int generationMode)
 	{
+		if (generationMode == 0)
+			throw new IllegalArgumentException("Trying to create datapoint with genMode 0, which is NOT allowed in DataPoint version 10!");
 		return (long) (alpha >>> ALPHA_DOWNSIZE_SHIFT) << ALPHA_SHIFT
 			| (red & RED_MASK) << RED_SHIFT
 			| (green & GREEN_MASK) << GREEN_SHIFT
@@ -193,7 +198,13 @@ public class DataPointUtil
 	
 	public static byte getGenerationMode(long dataPoint)
 	{
-		return (byte) ((dataPoint >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
+		byte genMode = (byte) ((dataPoint >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
+		if (doesItExist(dataPoint) && genMode==0) {
+			ApiShared.LOGGER.warn("Existing datapoint with genMode 0 detected! This is invalid in DataPoint version 10!"
+					+ " This may be caused by old data that has not been updated correctly.");
+			return 1;
+		}
+		return genMode == 0 ? 1 : genMode;
 	}
 	
 	
@@ -373,6 +384,7 @@ public class DataPointUtil
 		} else Arrays.fill(dataPoint, 0);
 		
 		byte genMode = getGenerationMode(dataToMerge[0]);
+		if (genMode == 0) genMode = 1; // FIXME: Hack to make the version 10 genMode never be 0.
 		boolean allEmpty = true;
 		boolean allVoid = true;
 		boolean limited = false;
@@ -604,7 +616,7 @@ public class DataPointUtil
 					if (!doesItExist(data))
 					{
 						singleData = dataToMerge[index * inputVerticalData];
-						data = createVoidDataPoint(getGenerationMode(singleData));
+						data = createVoidDataPoint(genMode);
 					}
 					
 					if (doesItExist(data))

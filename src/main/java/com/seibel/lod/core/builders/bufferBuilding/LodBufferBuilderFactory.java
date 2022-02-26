@@ -54,8 +54,8 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 public class LodBufferBuilderFactory {
 
 	// TODO: Do some Perf logging of Buffer Building
-	public static final boolean ENABLE_BUFFER_PERF_LOGGING = true;
-	public static final boolean ENABLE_EVENT_LOGGING = true;
+	public static final boolean ENABLE_BUFFER_PERF_LOGGING = false;
+	public static final boolean ENABLE_EVENT_LOGGING = false;
 	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
 	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
 
