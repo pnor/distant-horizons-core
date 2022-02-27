@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.lwjgl.opengl.GL32;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder.BufferFiller;
@@ -96,7 +97,13 @@ public class SimpleRenderBuffer extends RenderBuffer
 			ByteBuffer bb = iter.next();
 			LodVertexBuffer vbo = getOrMakeVbo(i++, method.useBufferStorage);
 			int size = bb.limit() - bb.position();
-			vbo.uploadBuffer(bb, size/LodUtil.LOD_VERTEX_FORMAT.getByteSize(), method, FULL_SIZED_BUFFERS);
+			try {
+				vbo.uploadBuffer(bb, size/LodUtil.LOD_VERTEX_FORMAT.getByteSize(), method, FULL_SIZED_BUFFERS);
+			} catch (Exception e) {
+				vbos[i-1] = null;
+				vbo.close();
+				ApiShared.LOGGER.error("Failed to upload buffer: ", e);
+			}
 			if (BPerNS<=0) continue;
 			// upload buffers over an extended period of time
 			// to hopefully prevent stuttering.

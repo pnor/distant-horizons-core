@@ -21,9 +21,6 @@ package com.seibel.lod.core.util;
 
 import java.util.Arrays;
 
-import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-
 
 /**
  * 
@@ -196,11 +193,13 @@ public class DataPointUtil
 	}
 	
 	
+	private static SpamReducedLogger warnLogger = new SpamReducedLogger(1);
+	
 	public static byte getGenerationMode(long dataPoint)
 	{
 		byte genMode = (byte) ((dataPoint >>> GEN_TYPE_SHIFT) & GEN_TYPE_MASK);
-		if (doesItExist(dataPoint) && genMode==0) {
-			ApiShared.LOGGER.warn("Existing datapoint with genMode 0 detected! This is invalid in DataPoint version 10!"
+		if (warnLogger.canMaybeLog() && doesItExist(dataPoint) && genMode==0) {
+			warnLogger.warnInc("Existing datapoint with genMode 0 detected! This is invalid in DataPoint version 10!"
 					+ " This may be caused by old data that has not been updated correctly.");
 			return 1;
 		}

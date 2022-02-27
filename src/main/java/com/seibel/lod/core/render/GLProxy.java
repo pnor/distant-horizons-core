@@ -19,9 +19,7 @@
 
 package com.seibel.lod.core.render;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,10 +35,10 @@ import org.lwjgl.opengl.GLUtil;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.util.GLMessage;
+import com.seibel.lod.core.util.GLMessageOutputStream;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
@@ -64,6 +62,12 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  */
 public class GLProxy
 {
+	
+	
+	
+	
+	
+	
 	
 	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
 	
@@ -102,6 +106,9 @@ public class GLProxy
 	public final boolean mapBufferRangeSupported = true;
 	
 	private final GpuUploadMethod preferredUploadMethod;
+	
+	public final GLMessage.Builder lodBuilderDebugMessageBuilder;
+	public final GLMessage.Builder proxyWorkerDebugMessageBuilder;
 	
 	
 	private String getFailedVersionInfo(GLCapabilities c) {
@@ -150,6 +157,31 @@ public class GLProxy
 				"4.6: " + c.OpenGL46 + "\n";
 	}
 	
+	private static void logMessage(GLMessage msg) {
+		GLMessage.Severity s = msg.severity;
+		if (msg.type == GLMessage.Type.ERROR ||
+			msg.type == GLMessage.Type.UNDEFINED_BEHAVIOR) {
+			ApiShared.LOGGER.error("GL ERROR {} from {}: {}", msg.id, msg.source, msg.message);
+			throw new RuntimeException("GL ERROR: "+msg.toString());
+		}
+		RuntimeException e = new RuntimeException("GL MESSAGE: "+msg.toString());
+		switch (s) {
+		case HIGH:
+			ApiShared.LOGGER.error(e);
+			break;
+		case MEDIUM:
+			ApiShared.LOGGER.warn(e);
+			break;
+		case LOW:
+			ApiShared.LOGGER.info(e);
+			break;
+		case NOTIFICATION:
+			ApiShared.LOGGER.debug(e);
+			break;
+		}
+		
+	}
+	
 	
 	/** 
 	 * @throws IllegalStateException 
@@ -158,9 +190,35 @@ public class GLProxy
 	 */
 	private GLProxy()
 	{
+		lodBuilderDebugMessageBuilder = new GLMessage.Builder(
+				(type) -> {
+					if (type == GLMessage.Type.POP_GROUP) return false;
+					if (type == GLMessage.Type.PUSH_GROUP) return false;
+					if (type == GLMessage.Type.MARKER) return false;
+					// if (type == GLMessage.Type.PERFORMANCE) return false;
+					return true;
+				}
+				,(severity) -> {
+					if (severity == GLMessage.Severity.NOTIFICATION) return false;
+					return true;
+				},null
+				);
+		proxyWorkerDebugMessageBuilder = new GLMessage.Builder(
+				(type) -> {
+					if (type == GLMessage.Type.POP_GROUP) return false;
+					if (type == GLMessage.Type.PUSH_GROUP) return false;
+					if (type == GLMessage.Type.MARKER) return false;
+					// if (type == GLMessage.Type.PERFORMANCE) return false;
+					return true;
+				}
+				,(severity) -> {
+					if (severity == GLMessage.Severity.NOTIFICATION) return false;
+					return true;
+				},null
+				);
 		
-		// boolean enableDebugLogging = CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL;
-		boolean enableDebugLogging = true;
+		
+		
         // this must be created on minecraft's render context to work correctly
 		
 		ApiShared.LOGGER.info("Creating " + GLProxy.class.getSimpleName() + "... If this is the last message you see in the log there must have been a OpenGL error.");
@@ -194,6 +252,8 @@ public class GLProxy
 		}
 		ApiShared.LOGGER.info("minecraftGlCapabilities:\n"+getVersionInfo(minecraftGlCapabilities));
 		
+		GLFW.glfwMakeContextCurrent(0L);
+		
 		// context creation setup
 		GLFW.glfwDefaultWindowHints();
 		// make the context window invisible
@@ -203,17 +263,34 @@ public class GLProxy
 //		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
 //		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
 		
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
+		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
+		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
+		
 		// create the LodBuilder context
 		lodBuilderGlContext = GLFW.glfwCreateWindow(64, 48, "LOD Builder Window", 0L, minecraftGlContext);
+		if (lodBuilderGlContext == 0) {
+			ApiShared.LOGGER.error("ERROR: Failed to create GLFW context for OpenGL 3.2 with"
+					+ " Forward Compat Core Profile! Your OS may have not been able to support it!");
+			throw new UnsupportedOperationException("Forward Compat Core Profile 3.2 creation failure");
+		}
 		GLFW.glfwMakeContextCurrent(lodBuilderGlContext);
 		lodBuilderGlCapabilities = GL.createCapabilities();
 		ApiShared.LOGGER.info("lodBuilderGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
+		GLFW.glfwMakeContextCurrent(0L);
 		
 		// create the proxyWorker's context
 		proxyWorkerGlContext = GLFW.glfwCreateWindow(64, 48, "LOD proxy worker Window", 0L, minecraftGlContext);
+		if (proxyWorkerGlContext == 0) {
+			ApiShared.LOGGER.error("ERROR: Failed to create GLFW context for OpenGL 3.2 with"
+					+ " Forward Compat Core Profile! Your OS may have not been able to support it!");
+			throw new UnsupportedOperationException("Forward Compat Core Profile 3.2 creation failure");
+		}
 		GLFW.glfwMakeContextCurrent(proxyWorkerGlContext);
 		proxyWorkerGlCapabilities = GL.createCapabilities();
 		ApiShared.LOGGER.info("proxyWorkerGlCapabilities:\n"+getVersionInfo(lodBuilderGlCapabilities));
+		GLFW.glfwMakeContextCurrent(0L);
 
 		// Check if we can use the make-over version of Vertex Attribute, which is available in GL4.3 or after
 		VertexAttributeBufferBindingSupported = minecraftGlCapabilities.glBindVertexBuffer != 0L; // Nullptr
@@ -228,22 +305,10 @@ public class GLProxy
 		//==================================//
 		
 		setGlContext(GLProxyContext.LOD_BUILDER);
-		// TODO: Enable this but disable INFO logging
 
-	    File proxyLog = new File("OpenGL-Lod-ProxyContext.log");
-	    try {
-			proxyLog.createNewFile();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    if (enableDebugLogging)
-			try {
-				GLUtil.setupDebugMessageCallback(new PrintStream(proxyLog));
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		GLUtil.setupDebugMessageCallback(new PrintStream(new GLMessageOutputStream((msg) -> {
+			logMessage(msg);
+		}, lodBuilderDebugMessageBuilder), true));
 		
 		// get specific capabilities
 		// Check if we can use the Buffer Storage, which is available in GL4.4 or after
@@ -270,20 +335,10 @@ public class GLProxy
 		ApiShared.LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
 
 		setGlContext(GLProxyContext.PROXY_WORKER);
-	    File workerLog = new File("OpenGL-Lod-WorkerContext.log");
-	    try {
-			workerLog.createNewFile();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    if (enableDebugLogging)
-			try {
-				GLUtil.setupDebugMessageCallback(new PrintStream(workerLog));
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		
+		GLUtil.setupDebugMessageCallback(new PrintStream(new GLMessageOutputStream((msg) -> {
+			logMessage(msg);
+		}, proxyWorkerDebugMessageBuilder), true));
 		
 		//==========//
 		// clean up //

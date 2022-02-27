@@ -274,8 +274,7 @@ public class LodDimensionFileHandler
 			}
 			catch (IOException ioEx)
 			{
-				ApiShared.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "] error [" + ioEx.getMessage() + "]: ");
-				ioEx.printStackTrace();
+				ApiShared.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "]: ",ioEx);
 				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 			}
 		}// for each detail level
@@ -301,8 +300,7 @@ public class LodDimensionFileHandler
 		try {
 			file.createNewFile();
 		} catch (IOException e) {
-			ApiShared.LOGGER.error("LOD file write error. Unable to create parent directory for [" + file + "] error [" + e.getMessage() + "]: ");
-			e.printStackTrace();
+			ApiShared.LOGGER.error("LOD file write error. Unable to create parent directory for [" + file + "]: ", e);
 			return;
 		}
 		try (FileOutputStream fileOutStream = new FileOutputStream(file))
@@ -318,8 +316,7 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException e)
 		{
-			ApiShared.LOGGER.error("LOD file write error. Unable to write to temp file [" + file + "] error [" + e.getMessage() + "]: ");
-			e.printStackTrace();
+			ApiShared.LOGGER.error("LOD file write error. Unable to write to temp file [" + file + "]: ", e);
 		}
 	}
 	
@@ -395,8 +392,7 @@ public class LodDimensionFileHandler
 				if (!worked)
 					ApiShared.LOGGER.error("File writing timed out! File data may not be saved correctly and may cause corruptions!!!");
 			} catch (InterruptedException e) {
-				ApiShared.LOGGER.error("File writing wait is interrupted! File data may not be saved correctly and may cause corruptions!!!");
-				e.printStackTrace();
+				ApiShared.LOGGER.error("File writing wait is interrupted! File data may not be saved correctly and may cause corruptions!!!: ", e);
 			} finally {
 				fileWritingThreadPool = Executors.newSingleThreadExecutor(new LodThreadFactory(this.getClass().getSimpleName(), Thread.NORM_PRIORITY+1));
 			}
@@ -449,7 +445,7 @@ public class LodDimensionFileHandler
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					ApiShared.LOGGER.error("Lod: UNCAUGHT exception when saving region "+r.getRegionPos()+": ", e);
 				} finally {
 					r.isWriting.decrementAndGet();
 				}
@@ -560,8 +556,7 @@ public class LodDimensionFileHandler
 			}
 			catch (IOException e)
 			{
-				ApiShared.LOGGER.error("LOD file write error. Unable to write to temp file [" + tempFile + "] error [" + e.getMessage() + "]: ");
-				e.printStackTrace();
+				ApiShared.LOGGER.error("LOD file write error. Unable to write to temp file [" + tempFile + "]: ", e);
 				continue;
 			}
 			
@@ -569,8 +564,7 @@ public class LodDimensionFileHandler
 			try {
 				Files.move(tempFile.toPath(), oldFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
-				ApiShared.LOGGER.error("LOD file write error. Unable to update file [" + oldFile + "] error [" + e.getMessage() + "]: ");
-				e.printStackTrace();
+				ApiShared.LOGGER.error("LOD file write error. Unable to update file [" + oldFile + "]: ", e);
 			}
 		}
 	}

@@ -124,26 +124,20 @@ public class LodVertexBuffer implements AutoCloseable
 			_destroy();
 			_create(useBuffStorage);
 		}
-		try {
-			switch (uploadMethod) {
-			case AUTO:
-				throw new IllegalArgumentException("GpuUploadMethod AUTO must be resolved before call to uploadBuffer()!");
-			case BUFFER_STORAGE:
-				_uploadBufferStorage(bb);
-				break;
-			case DATA:
-				_uploadData(bb);
-				break;
-			case SUB_DATA:
-				_uploadSubData(bb, maxExpensionSize);
-				break;
-			default:
-				throw new IllegalArgumentException("Invalid GpuUploadMethod enum");
-			}
-		} catch (IllegalArgumentException e) {
-			throw e;
-		} catch (Exception e) {
-			ApiShared.LOGGER.error("vboUpload failed: ", e);
+		switch (uploadMethod) {
+		case AUTO:
+			throw new IllegalArgumentException("GpuUploadMethod AUTO must be resolved before call to uploadBuffer()!");
+		case BUFFER_STORAGE:
+			_uploadBufferStorage(bb);
+			break;
+		case DATA:
+			_uploadData(bb);
+			break;
+		case SUB_DATA:
+			_uploadSubData(bb, maxExpensionSize);
+			break;
+		default:
+			throw new IllegalArgumentException("Invalid GpuUploadMethod enum");
 		}
 	}
 	
