@@ -39,13 +39,9 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 
 /**
- * This holds the config defaults, setters/getters
- * that should be hooked into the host mod loader (Fabric, Forge, etc.), and
- * the options that should be implemented in a configWrapperSingleton.
- * 
- * @author James Seibel
- * @version 12-14-2021
+ * Will be removed
  */
+@Deprecated
 public interface ILodConfigWrapperSingleton
 {
 	IClient client();

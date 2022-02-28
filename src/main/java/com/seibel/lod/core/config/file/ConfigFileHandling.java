@@ -76,10 +76,11 @@ public class ConfigFileHandling {
     }
     public static void loadEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
         if (workConfig.contains(entry.getNameWCategory())) {
-            if (entry.get().getClass().isEnum())
-                entry.setWTSave(workConfig.getEnum(entry.getNameWCategory(), entry.get().getClass()));
-            else
+            if (entry.get().getClass().isEnum()) {
+//                entry.setWTSave(workConfig.getEnum(entry.getNameWCategory(), entry.get().getClass())); // FIXME[config] LEETOM, FIX THIS
+            } else {
                 entry.setWTSave(workConfig.get(entry.getNameWCategory()));
+            }
             System.out.println(workConfig.get(entry.getNameWCategory()).getClass().toString());
 //            entry.setWTSave(workConfig.get(entry.getNameWCategory()));
         } else {
