@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.core.tools.picocli.CommandLine.ExecutionException;
 
 import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
@@ -39,7 +40,6 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.MovableGridRingList;
-import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;

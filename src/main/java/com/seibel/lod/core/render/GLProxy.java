@@ -37,9 +37,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.util.GLMessage;
 import com.seibel.lod.core.util.GLMessageOutputStream;
-import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 

@@ -22,11 +22,11 @@ package com.seibel.lod.core.wrapperInterfaces.minecraft;
 import java.awt.Color;
 import java.util.HashSet;
 
-import com.seibel.lod.core.api.ModAccessorApi;
+import com.seibel.lod.core.handlers.dependencyInjection.ModAccessorHandler;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
-import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
@@ -80,7 +80,7 @@ public interface IMinecraftRenderWrapper
 	 */
 	default HashSet<AbstractChunkPosWrapper> getVanillaRenderedChunks()
 	{
-		ISodiumAccessor sodium = ModAccessorApi.get(ISodiumAccessor.class);
+		ISodiumAccessor sodium = ModAccessorHandler.get(ISodiumAccessor.class);
 		return sodium==null ? getMaximumRenderedChunks() : sodium.getNormalRenderedChunks();
 	}
 	

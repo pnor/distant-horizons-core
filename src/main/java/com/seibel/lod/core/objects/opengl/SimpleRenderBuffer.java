@@ -9,11 +9,11 @@ import org.lwjgl.opengl.GL32;
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder.BufferFiller;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 

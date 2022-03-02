@@ -21,6 +21,7 @@ package com.seibel.lod.core.util;
 
 import java.awt.Color;
 
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
 /**
