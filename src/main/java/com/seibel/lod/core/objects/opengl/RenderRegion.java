@@ -222,7 +222,7 @@ public class RenderRegion implements AutoCloseable
 					+ " encountered error on exit: ",
 					new ConcurrentModificationException("RenderRegion Illegal State"));
 			}
-			return CompletableFuture.failedStage(e);
+			return CompletableFuture.failedStage(e);	// FIXME LeeTom can you make this with java8
 		});
 	}
 

@@ -116,7 +116,7 @@ public final class GLMessage {
 		}
 		
 		public GLMessage add(String str) {
-			str = str.strip();
+			str = str.replaceAll("^[ \t]+|[ \t]+$", ""); // TODO: Check this as String.strip() dosnt exist in java 8
 			if (str.isEmpty()) return null;
 			boolean b = runStage(str);
 			if (b && stage >= 16) {
