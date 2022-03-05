@@ -24,7 +24,7 @@ package com.seibel.lod.core.handlers.dependencyInjection;
  * for singletons.
  * 
  * @author James Seibel
- * @version 3-1-2022
+ * @version 3-5-2022
  */
 public class SingletonHandler
 {
@@ -67,6 +67,24 @@ public class SingletonHandler
 		}
 		
 		return foundObject;
+	}
+	
+	
+	/**
+	 * Should only be called after all Binds have been done.
+	 * Calls the delayedSetup method for each dependency. <br> <br>
+	 * 
+	 * This is done so we can have circular dependencies.
+	 */
+	public static void finishBinding()
+	{
+		dependencyHandler.finishBinding();
+	}
+	
+	/** returns whether the finishBinding method has been called */
+	public static boolean getBindingFinished() 
+	{
+		return dependencyHandler.getBindingFinished();
 	}
 	
 }

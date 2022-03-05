@@ -19,11 +19,13 @@
 
 package com.seibel.lod.core.wrapperInterfaces.world;
 
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+
 /**
  * @author James Seibel
- * @version 11-15-2021
+ * @version 3-5-2022
  */
-public interface IBiomeWrapper
+public interface IBiomeWrapper extends IBindable
 {
 	/** Returns a color int for the given biome. */
 	int getColorForBiome(int x, int z);

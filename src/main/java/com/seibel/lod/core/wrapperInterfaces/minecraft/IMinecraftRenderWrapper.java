@@ -22,6 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.minecraft;
 import java.awt.Color;
 import java.util.HashSet;
 
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.handlers.dependencyInjection.ModAccessorHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -38,12 +39,10 @@ import com.seibel.lod.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
  * rendering in Minecraft.
  * 
  * @author James Seibel
- * @version 12-14-2021
+ * @version 3-5-2022
  */
-public interface IMinecraftRenderWrapper
+public interface IMinecraftRenderWrapper extends IBindable
 {
-	static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
-	
 	Vec3f getLookAtVector();
 	
 	AbstractBlockPosWrapper getCameraBlockPosition();
@@ -92,6 +91,7 @@ public interface IMinecraftRenderWrapper
 	{
 		IMinecraftWrapper mcWrapper = SingletonHandler.get(IMinecraftWrapper.class);
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
+		IVersionConstants versionConstants = SingletonHandler.get(IVersionConstants.class);
 		
 		int chunkDist = this.getRenderDistance();
 		
@@ -106,8 +106,8 @@ public interface IMinecraftRenderWrapper
 		{
 			for(int deltaChunkZ = -chunkDist; deltaChunkZ <= chunkDist; deltaChunkZ++)
 			{
-				if (!VERSION_CONSTANTS.isVanillaRenderedChunkSquare() &&
-						deltaChunkX*deltaChunkX+deltaChunkZ*deltaChunkZ>chunkDist2) {
+				if (!versionConstants.isVanillaRenderedChunkSquare() &&
+						deltaChunkX*deltaChunkX+deltaChunkZ*deltaChunkZ > chunkDist2) {
 					continue;
 				}
 				renderedPos.add(factory.createChunkPos(centerChunkX + deltaChunkX, centerChunkZ + deltaChunkZ));

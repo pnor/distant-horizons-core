@@ -19,20 +19,15 @@
 
 package com.seibel.lod.core.wrapperInterfaces.chunk;
 
-import org.jetbrains.annotations.Nullable;
-
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.wrapperInterfaces.block.BlockDetail;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author James Seibel
  * @version 11-17-2021
  */
-public interface IChunkWrapper
+public interface IChunkWrapper extends IBindable
 {
 	default int getHeight() {
 		return getMaxBuildHeight()-getMinBuildHeight();

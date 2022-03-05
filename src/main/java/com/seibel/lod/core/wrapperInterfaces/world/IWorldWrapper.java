@@ -22,6 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.world;
 import java.io.File;
 
 import com.seibel.lod.core.enums.WorldType;
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 
@@ -29,9 +30,9 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
  * Can be either a Server world or a Client world.
  * 
  * @author James Seibel
- * @version 11-20-2021
+ * @version 3-5-2022
  */
-public interface IWorldWrapper
+public interface IWorldWrapper extends IBindable
 {
 	IDimensionTypeWrapper getDimensionType();
 	

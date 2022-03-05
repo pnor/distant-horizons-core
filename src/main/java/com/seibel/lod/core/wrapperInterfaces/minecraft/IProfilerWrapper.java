@@ -19,11 +19,13 @@
 
 package com.seibel.lod.core.wrapperInterfaces.minecraft;
 
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+
 /**
  * @author James Seibel
  * @version 11-20-2021
  */
-public interface IProfilerWrapper
+public interface IProfilerWrapper extends IBindable
 {
 	void push(String newSection);
 	

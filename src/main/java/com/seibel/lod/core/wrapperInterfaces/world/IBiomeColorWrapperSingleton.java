@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.wrapperInterfaces.world;
 
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 
 
@@ -26,9 +27,9 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
  * Contains everything related to biome colors.
  * 
  * @author James Seibel
- * @version 11-15-2021
+ * @version 3-5-2022
  */
-public interface IBiomeColorWrapperSingleton
+public interface IBiomeColorWrapperSingleton extends IBindable
 {
 	IBiomeColorWrapperSingleton getInstance();
 	

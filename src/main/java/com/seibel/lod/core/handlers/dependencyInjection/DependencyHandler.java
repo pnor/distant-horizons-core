@@ -23,15 +23,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class takes care of dependency injection
- * for dependencies.
+ * This class takes care of tracking objects used in dependency injection.
  * 
  * @author James Seibel
- * @version 3-1-2022
+ * @version 3-4-2022
  */
 public class DependencyHandler
 {
-	private static final Map<Class<?>, Object> dependencies = new HashMap<Class<?>, Object>();
+	private final Map<Class<?>, Object> dependencies = new HashMap<Class<?>, Object>();
+	private boolean bindingFinished = false;
 	
 
 	/**
@@ -44,6 +44,13 @@ public class DependencyHandler
 	 */
 	public void bind(Class<?> depenencyInterface, Object dependencyImplementation) throws IllegalStateException
 	{
+		// only allow binding before the finishBinding method is called
+		if (bindingFinished)
+		{
+			throw new IllegalStateException("The dependency [" + depenencyInterface.getSimpleName() + "] cannot be bound, Binding is finished for [" + this.getClass().getSimpleName() + "]. Make sure your bindings are happening before the [bindingFinished] method is being called.");
+		}
+		
+		
 		// make sure we haven't already bound this dependency
 		if (dependencies.containsKey(depenencyInterface))
 		{
@@ -51,24 +58,60 @@ public class DependencyHandler
 		}
 		
 		
-		// make sure the given dependency implements the interface
-		boolean dependencyImplementsInterface = false;
-		for (Class<?> implementationInterface : dependencyImplementation.getClass().getInterfaces())
-		{
-			if (implementationInterface.equals(depenencyInterface))
-			{
-				dependencyImplementsInterface = true;
-				break;
-			}
-		}
-		if (!dependencyImplementsInterface)
+		// make sure the given dependency implements the necessary interfaces
+		boolean implementsInterface = checkIfClassImplements(dependencyImplementation.getClass(), depenencyInterface);
+		boolean implementsBindable = checkIfClassImplements(dependencyImplementation.getClass(), IBindable.class);
+		
+		// display any errors
+		if (!implementsInterface)
 		{
 			throw new IllegalStateException("The dependency [" + dependencyImplementation.getClass().getSimpleName() + "] doesn't implement the interface [" + depenencyInterface.getSimpleName() + "].");
+		}
+		if (!implementsBindable)
+		{
+			throw new IllegalStateException("The dependency [" + dependencyImplementation.getClass().getSimpleName() + "] doesn't implement the interface [" + IBindable.class.getSimpleName() + "].");
 		}
 		
 		
 		dependencies.put(depenencyInterface, dependencyImplementation);
 	}
+	/**
+	 * Checks if classToTest (or one of its ancestors)
+	 * implements the given interface.
+	 */
+	private boolean checkIfClassImplements(Class<?> classToTest, Class<?> interfaceToLookFor)
+	{
+		// check the parent class (if applicable)
+		if (classToTest.getSuperclass() != Object.class && classToTest.getSuperclass() != null)
+		{
+			if (checkIfClassImplements(classToTest.getSuperclass(), interfaceToLookFor))
+			{
+				return true;
+			}
+		}
+		
+		
+		// check interfaces
+		for (Class<?> implementationInterface : classToTest.getInterfaces())
+		{
+			// recurse to check interface parents if necessary
+			if (implementationInterface.getInterfaces().length != 0)
+			{
+				if (checkIfClassImplements(implementationInterface, interfaceToLookFor))
+				{
+					return true;
+				}
+			}
+			
+			if (implementationInterface.equals(interfaceToLookFor))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 
 	/**
 	 * Returns a dependency of type T if one has been bound.
@@ -82,9 +125,40 @@ public class DependencyHandler
 	 *                            (this shouldn't normally happen, unless the bound object changed somehow)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T get(Class<T> interfaceClass) throws ClassCastException
+	public <T extends IBindable> T get(Class<?> interfaceClass) throws ClassCastException
 	{
+		// getting dependencies should only happen after everything has been bound
+		if (!bindingFinished)
+		{
+			throw new IllegalStateException("Binding hasn't been finished for [" + this.getClass().getSimpleName() + "]. Make sure you are calling the [bindingFinished] method before calling [get].");
+		}
+		
 		return (T) dependencies.get(interfaceClass);
 	}
 	
+	
+	/**
+	 * Should only be called after all Binds have been done.
+	 * Calls the delayedSetup method for each dependency. <br> <br>
+	 * 
+	 * This is done so we can have circular dependencies.
+	 */
+	public void finishBinding()
+	{
+		// (yes technically the binding isn't finished,
+		// but this needs to be set to "true" so we can use "get")
+		bindingFinished = true;
+		
+		for (Class<?> interfaceKey : dependencies.keySet())
+		{
+			IBindable concreteObject = get(interfaceKey);
+			concreteObject.finishDelayedSetup();
+		}
+	}
+	
+	/** returns whether the finishBinding method has been called */
+	public boolean getBindingFinished()
+	{
+		return bindingFinished;
+	}
 }

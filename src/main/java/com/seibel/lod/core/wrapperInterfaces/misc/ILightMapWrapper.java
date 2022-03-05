@@ -19,11 +19,13 @@
 
 package com.seibel.lod.core.wrapperInterfaces.misc;
 
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+
 /**
  * @author James Seibel
- * @version 11-20-2021
+ * @version 3-5-2022
  */
-public interface ILightMapWrapper
+public interface ILightMapWrapper extends IBindable
 {
 	int getLightValue(int skyLight, int blockLight);
 }

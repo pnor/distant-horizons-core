@@ -70,4 +70,22 @@ public class ModAccessorHandler
 		return dependencyHandler.get(objectClass);
 	}
 	
+	
+	/**
+	 * Should only be called after all Binds have been done.
+	 * Calls the delayedSetup method for each dependency. <br> <br>
+	 * 
+	 * This is done so we can have circular dependencies.
+	 */
+	public static void finishBinding()
+	{
+		dependencyHandler.finishBinding();
+	}
+	
+	/** returns whether the finishBinding method has been called */
+	public static boolean bindingFinished() 
+	{
+		return dependencyHandler.getBindingFinished();
+	}
+	
 }

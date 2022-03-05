@@ -34,6 +34,7 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.MinDefaultMax;
 import com.seibel.lod.core.util.LodUtil;
@@ -46,9 +47,9 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 12-14-2021
+ * @version 3-5-2022
  */
-public interface ILodConfigWrapperSingleton
+public interface ILodConfigWrapperSingleton extends IBindable
 {
 	IClient client();
 	

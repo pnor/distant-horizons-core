@@ -19,11 +19,13 @@
 
 package com.seibel.lod.core.wrapperInterfaces.world;
 
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+
 /**
  * @author James Seibel
- * @version 11-15-2021
+ * @version 3-5-2022
  */
-public interface IDimensionTypeWrapper
+public interface IDimensionTypeWrapper extends IBindable
 {
 	String getDimensionName();
 	

@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
@@ -36,7 +37,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * @author James Seibel
  * @version 12-8-2021
  */
-public interface IMinecraftWrapper
+public interface IMinecraftWrapper extends IBindable
 {
 	//================//
 	// helper methods //

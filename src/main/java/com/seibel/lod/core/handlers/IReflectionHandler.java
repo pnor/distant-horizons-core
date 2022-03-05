@@ -20,6 +20,7 @@
 package com.seibel.lod.core.handlers;
 
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 
 /**
  * A singleton used to get variables from methods
@@ -34,9 +35,9 @@ import com.seibel.lod.core.enums.rendering.FogDrawMode;
  * different MC versions.
  * 
  * @author James Seibel
- * @version 12-14-2021
+ * @version 3-5-2022
  */
-public interface IReflectionHandler
+public interface IReflectionHandler extends IBindable
 {
 	/** @returns Whether Optifine is set to render fog or not. */
 	FogDrawMode getFogDrawMode();
