@@ -35,9 +35,9 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * Contains everything related to the Minecraft object.
  * 
  * @author James Seibel
- * @version 12-8-2021
+ * @version 3-5-2022
  */
-public interface IMinecraftWrapper extends IBindable
+public interface IMinecraftClientWrapper extends IBindable
 {
 	//================//
 	// helper methods //

@@ -39,7 +39,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.MinDefaultMax;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 /**
  * This holds the config defaults, setters/getters
@@ -430,7 +430,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			
 			default GenerationPriority getResolvedGenerationPriority() {
 				GenerationPriority priority = getGenerationPriority();
-				IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+				IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 				if (priority == GenerationPriority.AUTO)
 					priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.BALANCED;
 				return priority;

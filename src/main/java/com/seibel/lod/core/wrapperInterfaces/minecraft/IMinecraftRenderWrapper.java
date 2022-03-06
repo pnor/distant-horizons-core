@@ -89,7 +89,7 @@ public interface IMinecraftRenderWrapper extends IBindable
 	 */
 	default HashSet<AbstractChunkPosWrapper> getMaximumRenderedChunks()
 	{
-		IMinecraftWrapper mcWrapper = SingletonHandler.get(IMinecraftWrapper.class);
+		IMinecraftClientWrapper mcWrapper = SingletonHandler.get(IMinecraftClientWrapper.class);
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
 		IVersionConstants versionConstants = SingletonHandler.get(IVersionConstants.class);
 		

@@ -22,7 +22,7 @@ package com.seibel.lod.core.util;
 import java.awt.Color;
 
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 /**
  * 
@@ -37,7 +37,7 @@ public class ColorUtil
 	//OpenGL RGBA format native order: 0xRR GG BB AA
 	//_ OpenGL RGBA format Java Order: 0xAA BB GG RR
 	
-	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	
 	public static int rgbToInt(int red, int green, int blue)
 	{

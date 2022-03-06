@@ -45,7 +45,7 @@ import com.seibel.lod.core.util.MovableGridRingList.Pos;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.UnitBytes;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
@@ -67,7 +67,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class LodDimension
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	
 	public final IDimensionTypeWrapper dimension;
 	

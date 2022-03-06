@@ -36,7 +36,7 @@ import com.seibel.lod.core.util.MovableGridRingList;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 /**
  * This object creates the buffers that are rendered by the LodRenderer.
@@ -70,7 +70,7 @@ public class LodBufferBuilderFactory {
 	}
 
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IMinecraftWrapper MC = SingletonHandler.get(IMinecraftWrapper.class);
+	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 
 	/** The thread used to generate new LODs off the main thread. */
 	private static LodThreadFactory mainGenThreadFactory = new LodThreadFactory(
