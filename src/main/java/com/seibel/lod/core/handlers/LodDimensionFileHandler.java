@@ -458,8 +458,10 @@ public class LodDimensionFileHandler
 		
 		if (!isStarted)
 			throw new ConcurrentModificationException("WriterMain Triggered but the thead state is not started!?");
+		
 		if (ENABLE_SAVE_THREAD_LOGGING)
 			ApiShared.LOGGER.info("Lod File Writer started. To-be-written-regions: " + regionToSave.size());
+		
 		Instant start = Instant.now();
 		// Note: Since regionToSave is a ConcurrentHashMap, and the .values() return one that support concurrency,
 		//       this for loop should be safe and loop until all values are gone.
@@ -496,8 +498,10 @@ public class LodDimensionFileHandler
 			}
 		}
 		Instant end = Instant.now();
+		
 		if (ENABLE_SAVE_THREAD_LOGGING)
 			ApiShared.LOGGER.info("Lod File Writer completed. Took " + Duration.between(start, end));
+		
 		// Use Memory order Release to release any memory changes on setting this boolean
 		// (Corresponding call is the this::saveRegions(...)::...compareAndExchangeAcquire(false, true);)
 		// isFileWritingThreadRunning.setRelease(false);
@@ -530,6 +534,7 @@ public class LodDimensionFileHandler
 				// create it and the folder if need be
 				if (!oldFile.getParentFile().exists())
 					oldFile.getParentFile().mkdirs();
+				
 				try
 				{
 					oldFile.createNewFile();
@@ -627,16 +632,11 @@ public class LodDimensionFileHandler
 	//================//
 	
 	/**
-	 * Return the name of the file that should contain the
-	 * region at the given x and z. <br>
-	 * Returns null if this object isn't available to read and write. <br><br>
-	 * <p>
-	 * example: "lod.0.0.txt" <br>
-	 * <p>
-	 * Returns null if there is an IO or security Exception.
+	 * Returns the save folder used for this dimension.
+	 * 
+	 * @throws RuntimeException if there was an error getting the folder
 	 */
-	
-	private String getFileBasePath()
+	private String getFileBasePath() throws RuntimeException
 	{
 		try
 		{
@@ -650,6 +650,15 @@ public class LodDimensionFileHandler
 		}
 	}
 	
+	/**
+	 * Return the name of the file that should contain the
+	 * region at the given x and z. <br>
+	 * Returns null if this object isn't available to read and write. <br><br>
+	 * <p>
+	 * example: "lod.0.0.txt" <br>
+	 * <p>
+	 * Returns null if there is an IO or security Exception.
+	 */
 	private File getRegionFile(int regionX, int regionZ, byte detail, VerticalQuality vertQuality)
 	{
 		return new File(getFileBasePath() + vertQuality + File.separatorChar +
@@ -657,7 +666,7 @@ public class LodDimensionFileHandler
 				FILE_NAME_PREFIX + "." + regionX + "." + regionZ + FILE_EXTENSION);
 	}
 	
-	// Return null if no file found
+	/** Returns null if no file is found */
 	private File getBestMatchingRegionFile(byte detailLevel, int regionX, int regionZ, VerticalQuality targetVertQuality)
 	{
 		// Search from least vertQuality to max vertQuality
@@ -666,9 +675,11 @@ public class LodDimensionFileHandler
 			File file = getRegionFile(regionX, regionZ, detailLevel, targetVertQuality);
 			if (file.exists())
 				return file; // Found target file.
+			
 			targetVertQuality = VerticalQuality.next(targetVertQuality);
 		}
 		while (targetVertQuality != null);
+		
 		return null;
 	}
 	
