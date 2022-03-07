@@ -128,21 +128,23 @@ public class LodDimensionFileHandler
 		{
 			if (!vertQualFile.isDirectory())
 				continue;
-			if (vertQualFile.getName().equals("HIGH") ||
-					vertQualFile.getName().equals("MEDIUM") ||
-					vertQualFile.getName().equals("LOW"))
+			
+			if (vertQualFile.getName().equals(VerticalQuality.HIGH.toString()) ||
+					vertQualFile.getName().equals(VerticalQuality.MEDIUM.toString()) ||
+					vertQualFile.getName().equals(VerticalQuality.LOW.toString()))
 			{
 				File[] subFiles = vertQualFile.listFiles();
 				for (File subFile : subFiles)
 				{
 					if (!subFile.isDirectory())
 						continue;
-					if (subFile.getName().equals("FULL") ||
-							subFile.getName().equals("FEATURES") ||
-							subFile.getName().equals("SURFACE") ||
-							subFile.getName().equals("BIOME_ONLY_SIMULATE_HEIGHT") ||
-							subFile.getName().equals("BIOME_ONLY") ||
-							subFile.getName().equals("NONE"))
+					
+					if (subFile.getName().equals(DistanceGenerationMode.FULL.toString()) ||
+							subFile.getName().equals(DistanceGenerationMode.FEATURES.toString()) ||
+							subFile.getName().equals(DistanceGenerationMode.SURFACE.toString()) ||
+							subFile.getName().equals(DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT.toString()) ||
+							subFile.getName().equals(DistanceGenerationMode.BIOME_ONLY.toString()) ||
+							subFile.getName().equals(DistanceGenerationMode.NONE.toString()))
 					{
 						ApiShared.LOGGER.info("Noticed old save structure files. Starting merge process...");
 						LodDimensionOldFileStructureHandler oldFileStructHandler = new LodDimensionOldFileStructureHandler(this);
