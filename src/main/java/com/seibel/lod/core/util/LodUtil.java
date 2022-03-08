@@ -25,9 +25,11 @@ import java.util.HashSet;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
+import com.seibel.lod.core.enums.config.ServerFolderNameMode;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.ParsedIp;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
@@ -46,7 +48,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * This class holds methods and constants that may be used in multiple places.
  * 
  * @author James Seibel
- * @version 12-14-2021
+ * @version 3-7-2022
  */
 public class LodUtil
 {
@@ -208,7 +210,7 @@ public class LodUtil
 		}
 		else
 		{
-			return getServerId();
+			return getServerFolderName();
 		}
 	}
 	
@@ -236,18 +238,63 @@ public class LodUtil
 		}
 		else
 		{
-			return getServerId() + File.separatorChar + "dim_" + world.getDimensionType().getDimensionName() + File.separatorChar;
+			return getServerFolderName() + File.separatorChar + "dim_" + world.getDimensionType().getDimensionName() + File.separatorChar;
 		}
 	}
 	
 	/** returns the server name, IP and game version. */
-	public static String getServerId()
+	public static String getServerFolderName()
 	{
+		// parse the current server's IP
+		ParsedIp parsedIp = new ParsedIp(MC.getCurrentServerIp());
+		String serverIpCleaned = parsedIp.ip.replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
+		String serverPortCleaned = parsedIp.port != null ? parsedIp.port.replaceAll(INVALID_FILE_CHARACTERS_REGEX, "") : "";
+		
+		
+		// determine the format of the folder name
+		ServerFolderNameMode folderNameMode = CONFIG.client().multiplayer().getServerFolderNameMode();
+		if (folderNameMode == ServerFolderNameMode.AUTO)
+		{
+			if (parsedIp.isLan())
+			{
+				// LAN
+				folderNameMode = ServerFolderNameMode.NAME_IP;
+			}
+			else
+			{
+				// normal multiplayer
+				folderNameMode = ServerFolderNameMode.NAME_IP_PORT;
+			}
+		}
+			
+		
 		String serverName = MC.getCurrentServerName().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
-		String serverIp = MC.getCurrentServerIp().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
 		String serverMcVersion = MC.getCurrentServerVersion().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
 		
-		return serverName + ", IP " + serverIp + ", GameVersion " + serverMcVersion;
+		// generate the folder name
+		String folderName = "";
+		switch (folderNameMode)
+		{
+		// default and auto shouldn't be used 
+		// and are just here to make the compiler happy
+		default:
+		case AUTO:
+		case NAME_ONLY:
+			folderName = serverName;
+			break;
+		
+		case NAME_IP:
+			folderName = serverName + ", IP " + serverIpCleaned;
+			break;
+		case NAME_IP_PORT:
+			folderName = serverName + ", IP " + serverIpCleaned + (serverPortCleaned.length() != 0 ? (":" + serverPortCleaned) : "");
+			break;
+		case NAME_IP_PORT_MC_VERSION:
+			folderName = serverName + ", IP " + serverIpCleaned + (serverPortCleaned.length() != 0 ? (":" + serverPortCleaned) : "") + ", GameVersion " + serverMcVersion;
+			break;
+		}
+		
+		return folderName;
 	}
 	
 	

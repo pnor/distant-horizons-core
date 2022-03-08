@@ -28,6 +28,7 @@ import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.config.HorizontalQuality;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.enums.config.LightGenerationMode;
+import com.seibel.lod.core.enums.config.ServerFolderNameMode;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -47,7 +48,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 3-5-2022
+ * @version 3-7-2022
  */
 public interface ILodConfigWrapperSingleton extends IBindable
 {
@@ -58,6 +59,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 	{
 		IGraphics graphics();
 		IWorldGenerator worldGenerator();
+		IMultiplayer multiplayer();
 		IAdvanced advanced();
 
 
@@ -310,6 +312,30 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane);
 			}
 		}
+		
+		
+		
+		
+		//=====================//
+		// Multiplayer Configs //
+		//=====================//
+		interface IMultiplayer
+		{
+			String DESC = "These settings control how different systems work when connected to a multiplayer world.";
+			
+			ServerFolderNameMode SERVER_FOLDER_NAME_MODE_DEFAULT = ServerFolderNameMode.AUTO;
+			String SERVER_FOLDER_NAME_MODE_DESC = ""
+					+ " What multiplayer save folders should be named. \n"
+					+ "\n"
+					+ " " + ServerFolderNameMode.AUTO.toString() + ": " + ServerFolderNameMode.NAME_IP.toString() + " for LAN connections, " + ServerFolderNameMode.NAME_IP_PORT.toString() + " for all others. \n"
+					+ " " + ServerFolderNameMode.NAME_ONLY.toString() + ": Example: \"Minecraft Server\" \n"
+					+ " " + ServerFolderNameMode.NAME_IP.toString() + ": Example: \"Minecraft Server IP 192.168.1.40\" \n"
+					+ " " + ServerFolderNameMode.NAME_IP_PORT.toString() + ": Example: \"Minecraft Server IP 192.168.1.40:25565\" \n"
+					+ "\n";
+			ServerFolderNameMode getServerFolderNameMode();
+			void setServerFolderNameMode(ServerFolderNameMode newServerFolderNameMode);
+		}
+		
 		
 		
 		
