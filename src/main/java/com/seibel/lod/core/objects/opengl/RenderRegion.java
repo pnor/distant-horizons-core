@@ -209,20 +209,26 @@ public class RenderRegion implements AutoCloseable
 					glProxy.setGlContext(oldContext);
 				}
 				if (ENABLE_EVENT_STEP_LOGGING) ApiShared.LOGGER.info("RenderRegion end Upload @ {}", regionPos);
-				if (!backState.compareAndSet(BackState.Building, BackState.Complete)) {
-					throw new ConcurrentModificationException("RenderRegion Illegal State");
-				}
 			} catch (Throwable e3) {
 				ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
+				throw e3;
 			}
-		}, bufferUploader).exceptionallyCompose((e) -> {
-			setNeedRegen();
-			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
-				ApiShared.LOGGER.error("\"LodNodeBufferBuilder\""
-					+ " encountered error on exit: ",
-					new ConcurrentModificationException("RenderRegion Illegal State"));
+		}, bufferUploader).handle((v, e) -> {
+			if (e != null) {
+				setNeedRegen();
+				if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
+					ApiShared.LOGGER.error("\"LodNodeBufferBuilder\""
+						+ " encountered error on exit: ",
+						new ConcurrentModificationException("RenderRegion Illegal State"));
+				}
+			} else {
+				if (!backState.compareAndSet(BackState.Building, BackState.Complete)) {
+					ApiShared.LOGGER.error("\"LodNodeBufferBuilder\""
+							+ " encountered error on exit: ",
+							new ConcurrentModificationException("RenderRegion Illegal State"));
+				}
 			}
-			return CompletableFuture.failedStage(e);	// FIXME LeeTom can you make this with java8
+			return (Void) null;
 		});
 	}
 
