@@ -20,7 +20,7 @@
 package com.seibel.lod.core.wrapperInterfaces.chunk;
 
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
-import com.seibel.lod.core.wrapperInterfaces.block.BlockDetail;
+import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 
 /**
@@ -39,7 +39,7 @@ public interface IChunkWrapper extends IBindable
 	
 	IBiomeWrapper getBiome(int x, int y, int z);
 	
-	BlockDetail getBlockDetail(int x, int y, int z);
+	IBlockDetailWrapper getBlockDetail(int x, int y, int z);
 	
 	int getChunkPosX();
 	int getChunkPosZ();

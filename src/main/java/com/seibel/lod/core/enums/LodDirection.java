@@ -31,6 +31,13 @@ public enum LodDirection
 			LodDirection.NORTH,
 			LodDirection.SOUTH };
 	
+	public static final LodDirection[] OPPOSITE_DIRECTIONS = new LodDirection[] {
+			LodDirection.UP,
+			LodDirection.DOWN,
+			LodDirection.SOUTH,
+			LodDirection.NORTH,
+			LodDirection.EAST,
+			LodDirection.WEST };
 	/** North, South, East, West */
 	public static final LodDirection[] ADJ_DIRECTIONS = new LodDirection[] {
 			LodDirection.EAST,

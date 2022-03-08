@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -36,7 +35,8 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperInterfaces.block.BlockDetail;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
@@ -55,6 +55,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class LodBuilder
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	
 	/** This cannot be final! Different world have different height, and in menu, this causes Null Exceptions*/
@@ -363,8 +364,8 @@ public class LodBuilder
 			int cy = y+dir.getNormal().y;
 			int cz = z+dir.getNormal().z;
 			if (!chunk.blockPosInsideChunk(cx, cy, cz)) return true;
-			BlockDetail block = chunk.getBlockDetail(cx, cy, cz);
-			if (block == null || !block.isFullBlock)
+			IBlockDetailWrapper block = chunk.getBlockDetail(cx, cy, cz);
+			if (block == null || !block.hasFaceCullingFor(LodDirection.OPPOSITE_DIRECTIONS[dir.ordinal()]))
 				return true;
 		}
 		return false;
@@ -377,21 +378,22 @@ public class LodBuilder
 	private int determineBottomPointFrom(IChunkWrapper chunk, LodBuilderConfig builderConfig, int xAbs, int yAbs, int zAbs, boolean strictEdge)
 	{
 		int depth = chunk.getMinBuildHeight();
-		int colorOfBlock = 0;
+		IBlockDetailWrapper currentBlockDetail = null;
 		if (strictEdge)
 		{
-			BlockDetail blockAbove = chunk.getBlockDetail(xAbs, yAbs + 1, zAbs);
+			IBlockDetailWrapper blockAbove = chunk.getBlockDetail(xAbs, yAbs + 1, zAbs);
 			if (blockAbove != null && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
 			{ // The above block is skipped. Lets use its skipped color for currrent block
-				colorOfBlock = blockAbove.color;
+				currentBlockDetail = blockAbove;
 			}
-			if (colorOfBlock == 0) colorOfBlock = chunk.getBlockDetail(xAbs, yAbs, zAbs).color;
+			if (currentBlockDetail == null) currentBlockDetail = chunk.getBlockDetail(xAbs, yAbs, zAbs);
 		}
 		
 		for (int y = yAbs - 1; y >= chunk.getMinBuildHeight(); y--)
 		{
-			if (!isLayerValidLodPoint(chunk, xAbs, y, zAbs)
-				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs) && colorOfBlock != chunk.getBlockDetail(xAbs, y, zAbs).color))
+			IBlockDetailWrapper nextBlock = chunk.getBlockDetail(xAbs, y, zAbs);
+			if (!isLayerValidLodPoint(nextBlock)
+				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs) && !currentBlockDetail.equals(nextBlock)) )
 			{
 				depth = (short) (y + 1);
 				break;
@@ -437,29 +439,24 @@ public class LodBuilder
 		}
 		else
 		{
-			BlockDetail detail = chunk.getBlockDetail(x, y, z);
-			colorInt = detail == null ? 0 : detail.color;
-			
 			// if we are skipping non-full and non-solid blocks that means we ignore
 			// snow, flowers, etc. Get the above block so we can still get the color
 			// of the snow, flower, etc. that may be above this block
-			int aboveColorInt = 0;
+			colorInt = 0;
 			if (chunk.blockPosInsideChunk(x, y+1, z)) {
-				BlockDetail blockAbove = chunk.getBlockDetail(x, y+1, z);
+				IBlockDetailWrapper blockAbove = chunk.getBlockDetail(x, y+1, z);
 				if (blockAbove != null && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
 				{  // The above block is skipped. Lets use its skipped color for currrent block
-					aboveColorInt = blockAbove.color;
+					colorInt = blockAbove.getAndResolveFaceColor(null, chunk, FACTORY.createBlockPos(x, y+1, z));
 				}
 			}
 			
-			//if (colorInt == 0 && yAbs > 0)
-			// if this block is invisible, check the block below it
-			//	colorInt = generateLodColor(chunk, config, xRel, yAbs - 1, zRel, blockPos);
-			
 			// override this block's color if there was a block above this
 			// and we were avoiding non-full/non-solid blocks
-			if (aboveColorInt != 0)
-				colorInt = aboveColorInt;
+			if (colorInt == 0) {
+				IBlockDetailWrapper detail = chunk.getBlockDetail(x, y, z);
+				colorInt = detail.getAndResolveFaceColor(null, chunk, FACTORY.createBlockPos(x, y, z));
+			}
 		}
 		
 		return colorInt;
@@ -541,12 +538,19 @@ public class LodBuilder
 		blockLight = LodUtil.clamp(0, Math.max(blockLight, blockBrightness), DEFAULT_MAX_LIGHT);
 		return blockLight + (skyLight << 4);
 	}
+
+	/** Is the block at the given blockPos a valid LOD point? */
+	private boolean isLayerValidLodPoint(IBlockDetailWrapper blockDetail)
+	{
+		BlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
+		return blockDetail != null && blockDetail.shouldRender(avoid);
+	}
 	
 	/** Is the block at the given blockPos a valid LOD point? */
 	private boolean isLayerValidLodPoint(IChunkWrapper chunk, int x, int y, int z)
 	{
 		BlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
-		BlockDetail block = chunk.getBlockDetail(x, y, z);
+		IBlockDetailWrapper block = chunk.getBlockDetail(x, y, z);
 		return block != null && block.shouldRender(avoid);
 	}
 }
