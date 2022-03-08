@@ -74,10 +74,16 @@ public class ConfigFileHandling {
         config.close();
 
     }
-    public static void loadEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
+    
+    @SuppressWarnings("unchecked") // Suppress due to its always safe. (I think. See reasons below.)
+	public static <T> void loadEntry(ConfigEntry<T> entry, CommentedFileConfig workConfig) {
         if (workConfig.contains(entry.getNameWCategory())) {
             if (entry.get().getClass().isEnum()) {
-//                entry.setWTSave(workConfig.getEnum(entry.getNameWCategory(), entry.get().getClass())); // FIXME[config] LEETOM, FIX THIS
+            	// Safe cast due to above checking that <T> is indeed a Enum
+            	// And the second cast back to <T> is safe due to the template
+                entry.setWTSave((T)(
+                		workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.get().getClass())
+                	));
             } else {
                 entry.setWTSave(workConfig.get(entry.getNameWCategory()));
             }
