@@ -169,7 +169,19 @@ public interface ILodConfigWrapperSingleton extends IBindable
 								DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
 					return dropoffQuality;
 				}
-				
+
+				MinDefaultMax<Integer> LOD_BIOME_BLENDING_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0,0,7);
+				String LOD_BIOME_BLENDING_DESC = ""
+						+ " This is the same as vanilla Biome Blending settings for Lod area. \n" +
+						"     Note that anything other than '0' will greatly effect Lod building time \n" +
+						"     and increase triangle count. The cost on chunk generation speed is also \n" +
+						"     quite large if set to too high.\n" +
+						"\n" +
+						"     '0' equals to Vanilla Biome Blending of '1x1', \n" +
+						"     '1' equals to Vanilla Biome Blending of '3x3', \n" +
+						"     '2' equals to Vanilla Biome Blending of '5x5'... \n";
+				int getLodBiomeBlending();
+				void setLodBiomeBlending(int newLodBiomeBlending);
 			}
 			
 			interface IFogQuality
@@ -310,26 +322,6 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " This setting shouldn't affect performance. \n";
 				boolean getUseExtendedNearClipPlane();
 				void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane);
-				
-				double BRIGHTNESS_MULTIPLIER_DEFAULT = 1.0;
-				String BRIGHTNESS_MULTIPLIER_DESC = ""
-						+ " How bright fake chunk colors are. \n"
-						+ "\n"
-						+ " 0 = black \n"
-						+ " 1 = normal \n"
-						+ " 2 = near white \n";
-				double getBrightnessMultiplier();
-				void setBrightnessMultiplier(double newBrightnessMultiplier);
-				
-				double SATURATION_MULTIPLIER_DEFAULT = 1.0;
-				String SATURATION_MULTIPLIER_DESC = ""
-						+ " How saturated fake chunk colors are. \n"
-						+ "\n"
-						+ " 0 = black and white \n"
-                		+ " 1 = normal \n"
-                		+ " 2 = very saturated \n";
-				double getSaturationMultiplier();
-				void setSaturationMultiplier(double newSaturationMultiplier);
 			}
 		}
 		
