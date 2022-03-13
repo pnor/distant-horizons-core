@@ -170,14 +170,14 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					return dropoffQuality;
 				}
 
-				MinDefaultMax<Integer> LOD_BIOME_BLENDING_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0,0,7);
+				MinDefaultMax<Integer> LOD_BIOME_BLENDING_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0,1,7);
 				String LOD_BIOME_BLENDING_DESC = ""
 						+ " This is the same as vanilla Biome Blending settings for Lod area. \n" +
 						"     Note that anything other than '0' will greatly effect Lod building time \n" +
 						"     and increase triangle count. The cost on chunk generation speed is also \n" +
-						"     quite large if set to too high.\n" +
+						"     quite large if set too high.\n" +
 						"\n" +
-						"     '0' equals to Vanilla Biome Blending of '1x1', \n" +
+						"     '0' equals to Vanilla Biome Blending of '1x1' or 'OFF', \n" +
 						"     '1' equals to Vanilla Biome Blending of '3x3', \n" +
 						"     '2' equals to Vanilla Biome Blending of '5x5'... \n";
 				int getLodBiomeBlending();
