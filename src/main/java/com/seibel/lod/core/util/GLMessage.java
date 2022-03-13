@@ -1,5 +1,7 @@
 package com.seibel.lod.core.util;
 
+import org.lwjgl.system.CallbackI;
+
 import java.util.HashMap;
 import java.util.function.Function;
 
@@ -10,6 +12,32 @@ public final class GLMessage {
 	public final GLMessage.Source source;
 	public final String id;
 	public final String message;
+
+	// This is needed since gl callback will not have the correct class loader set, and causes issues.
+	static void initLoadClass() {
+		Builder dummy = new Builder();
+		dummy.add(GLMessage.HEADER);
+		dummy.add("ID");
+		dummy.add(":");
+		dummy.add("dummyId");
+		dummy.add("Source");
+		dummy.add(":");
+		dummy.add(Source.API.str);
+		dummy.add("Type");
+		dummy.add(":");
+		dummy.add(Type.OTHER.str);
+		dummy.add("Severity");
+		dummy.add(":");
+		dummy.add(Severity.LOW.str);
+		dummy.add("Message");
+		dummy.add(":");
+		dummy.add("dummyMessage");
+	}
+
+	static {
+		initLoadClass();
+	}
+
 	GLMessage(GLMessage.Type t, GLMessage.Severity s, GLMessage.Source sr, String id, String ms) {
 		this.type = t;
 		this.source = sr;
@@ -21,8 +49,7 @@ public final class GLMessage {
 	public String toString() {
 		return "[level:"+severity+", type:"+type+", source:"+source+", id:"+id+", msg:{"+message+"}]";
 	}
-	
-	
+
 	public enum Type {
 		ERROR,
 		DEPRECATED_BEHAVIOR,
@@ -34,7 +61,7 @@ public final class GLMessage {
 		POP_GROUP,
 		OTHER;
 		public final String str;
-		private Type() {
+		Type() {
 			str = super.toString().toUpperCase();
 		}
 		@Override
@@ -93,6 +120,9 @@ public final class GLMessage {
 	}
 	
 	public static class Builder {
+		static {
+			initLoadClass();
+		}
 		GLMessage.Type type;
 		GLMessage.Severity severity;
 		GLMessage.Source source;

@@ -33,6 +33,7 @@ import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
+import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
  * Contains everything related to
@@ -82,7 +83,13 @@ public interface IMinecraftRenderWrapper extends IBindable
 		ISodiumAccessor sodium = ModAccessorHandler.get(ISodiumAccessor.class);
 		return sodium==null ? getMaximumRenderedChunks() : sodium.getNormalRenderedChunks();
 	}
-	
+
+	private static boolean correctedCheckRadius(int dx, int dz, int radius2Mul4) {
+		dx = dx*2;// + (dx < 0 ? -1 : 1);
+		dz = dz*2;// + (dz < 0 ? -1 : 1);
+		return (dx*dx + dz*dz <= radius2Mul4);
+	}
+
 	/**
 	 * <strong>Doesn't need to be implemented.</strong> <br>
 	 * Returns every chunk position within the vanilla render distance.
@@ -92,13 +99,15 @@ public interface IMinecraftRenderWrapper extends IBindable
 		IMinecraftClientWrapper mcWrapper = SingletonHandler.get(IMinecraftClientWrapper.class);
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
 		IVersionConstants versionConstants = SingletonHandler.get(IVersionConstants.class);
-		
-		int chunkDist = this.getRenderDistance();
+		IMinecraftClientWrapper minecraft = SingletonHandler.get(IMinecraftClientWrapper.class);
+		IWorldWrapper clientWorld = minecraft.getWrappedClientWorld();
+
+		int chunkDist = this.getRenderDistance() + 1; // For some reason having '+1' is actually closer to real value
 		
 		AbstractChunkPosWrapper centerChunkPos = mcWrapper.getPlayerChunkPos();
 		int centerChunkX = centerChunkPos.getX();
 		int centerChunkZ = centerChunkPos.getZ();
-		int chunkDist2 = chunkDist*chunkDist;
+		int chunkDist2Mul4 = chunkDist*chunkDist*4;
 		
 		// add every position within render distance
 		HashSet<AbstractChunkPosWrapper> renderedPos = new HashSet<AbstractChunkPosWrapper>();
@@ -107,9 +116,10 @@ public interface IMinecraftRenderWrapper extends IBindable
 			for(int deltaChunkZ = -chunkDist; deltaChunkZ <= chunkDist; deltaChunkZ++)
 			{
 				if (!versionConstants.isVanillaRenderedChunkSquare() &&
-						deltaChunkX*deltaChunkX+deltaChunkZ*deltaChunkZ > chunkDist2) {
+						!correctedCheckRadius(deltaChunkX,deltaChunkZ,chunkDist2Mul4)) {
 					continue;
 				}
+				if (!clientWorld.hasChunkLoaded(centerChunkX + deltaChunkX, centerChunkZ + deltaChunkZ)) continue;
 				renderedPos.add(factory.createChunkPos(centerChunkX + deltaChunkX, centerChunkZ + deltaChunkZ));
 			}
 		}
