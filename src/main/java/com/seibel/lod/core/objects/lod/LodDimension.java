@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
@@ -44,6 +45,9 @@ import com.seibel.lod.core.util.MovableGridRingList;
 import com.seibel.lod.core.util.MovableGridRingList.Pos;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.UnitBytes;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
@@ -68,6 +72,7 @@ public class LodDimension
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	public final IDimensionTypeWrapper dimension;
 	
@@ -92,7 +97,7 @@ public class LodDimension
 	private boolean isExpanding = false;
 	
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(
-			new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand", Thread.NORM_PRIORITY-1));
+			new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand", Thread.NORM_PRIORITY - 1));
 	
 	
 	/**
@@ -140,20 +145,24 @@ public class LodDimension
 		generateIteratorList();
 	}
 	
-	private void generateIteratorList() {
+	private void generateIteratorList()
+	{
 		iteratorList = null;
-		RegionPos[] list = new RegionPos[width*width];
+		RegionPos[] list = new RegionPos[width * width];
 		
 		int i = 0;
-		for (int ix=-halfWidth; ix<=halfWidth; ix++) {
-			for (int iz=-halfWidth; iz<=halfWidth; iz++) {
+		for (int ix = -halfWidth; ix <= halfWidth; ix++)
+		{
+			for (int iz = -halfWidth; iz <= halfWidth; iz++)
+			{
 				list[i] = new RegionPos(ix, iz);
 				i++;
 			}
 		}
-		Arrays.sort(list, (a, b) -> {
-			double disSqrA = a.x* a.x+ a.z* a.z;
-			double disSqrB = b.x* b.x+ b.z* b.z;
+		Arrays.sort(list, (a, b) ->
+		{
+			double disSqrA = a.x * a.x + a.z * a.z;
+			double disSqrB = b.x * b.x + b.z * b.z;
 			return Double.compare(disSqrA, disSqrB);
 		});
 		iteratorList = list;
@@ -170,11 +179,11 @@ public class LodDimension
 	 */
 	public synchronized void move(RegionPos regionOffset)
 	{
-		ApiShared.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
+		ApiShared.LOGGER.info("LodDim MOVE. Offset: " + regionOffset);
 		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
 		Pos p = regions.getCenter();
-		regions.move(p.x+regionOffset.x, p.y+regionOffset.z);
-		ApiShared.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
+		regions.move(p.x + regionOffset.x, p.y + regionOffset.z);
+		ApiShared.LOGGER.info("LodDim MOVE complete. Offset: " + regionOffset);
 	}
 	
 	
@@ -213,7 +222,7 @@ public class LodDimension
 	public LodRegion getRegionByArrayIndex(int xIndex, int zIndex)
 	{
 		Pos p = regions.getMinInRange();
-		return regions.get(p.x+xIndex, p.y+zIndex);
+		return regions.get(p.x + xIndex, p.y + zIndex);
 	}
 	
 	/**
@@ -228,36 +237,45 @@ public class LodDimension
 		regions[xIndex][zIndex] = newRegion;
 	}*/
 	
-	public interface PosComsumer {
+	public interface PosComsumer
+	{
 		void run(int x, int z);
 	}
 	
-	public void iterateWithSpiral(PosComsumer r) {
-		int ox,oy,dx,dy;
-	    ox = oy = dx = 0;
-	    dy = -1;
-	    int len = regions.getSize();
-	    int maxI = len*len;
-	    int halfLen = len/2;
-	    for(int i =0; i < maxI; i++){
-	        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
-	        	int x = ox+halfLen;
-	        	int z = oy+halfLen;
-	        	r.run(x, z);
-	        }
-	        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
-	            int temp = dx;
-	            dx = -dy;
-	            dy = temp;
-	        }
-	        ox += dx;
-	        oy += dy;
-	    }
+	public void iterateWithSpiral(PosComsumer r)
+	{
+		int ox, oy, dx, dy;
+		ox = oy = dx = 0;
+		dy = -1;
+		int len = regions.getSize();
+		int maxI = len * len;
+		int halfLen = len / 2;
+		for (int i = 0; i < maxI; i++)
+		{
+			if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen))
+			{
+				int x = ox + halfLen;
+				int z = oy + halfLen;
+				r.run(x, z);
+			}
+			if ((ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1 - oy)))
+			{
+				int temp = dx;
+				dx = -dy;
+				dy = temp;
+			}
+			ox += dx;
+			oy += dy;
+		}
 	}
-	public void iterateByDistance(PosComsumer r) {
-		if (iteratorList==null) return;
-		for (RegionPos relativePos : iteratorList) {
-			r.run(relativePos.x+halfWidth, relativePos.z+halfWidth);
+	
+	public void iterateByDistance(PosComsumer r)
+	{
+		if (iteratorList == null)
+			return;
+		for (RegionPos relativePos : iteratorList)
+		{
+			r.run(relativePos.x + halfWidth, relativePos.z + halfWidth);
 		}
 		
 	}
@@ -271,40 +289,49 @@ public class LodDimension
 	
 	public void cutRegionNodesAsync(int playerPosX, int playerPosZ)
 	{
-		if (isCutting) return;
+		if (isCutting)
+			return;
 		isCutting = true;
 		// don't run the tree cutter multiple times
 		// for the same location
-		Runnable thread = () -> {
+		Runnable thread = () ->
+		{
 			//ApiShared.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
 			totalDirtiedRegions = 0;
 			Pos minPos = regions.getMinInRange();
 			// go over every region in the dimension
-			iterateWithSpiral((int x, int z) -> {
+			iterateWithSpiral((int x, int z) ->
+			{
 				double minDistance;
 				byte detail;
 				
-				LodRegion region = regions.get(x+minPos.x, z+minPos.y);
-				if (region != null && region.needSaving) totalDirtiedRegions++;
-				if (region != null && !region.needSaving && region.isWriting.get()==0) {
+				LodRegion region = regions.get(x + minPos.x, z + minPos.y);
+				if (region != null && region.needSaving)
+					totalDirtiedRegions++;
+				if (region != null && !region.needSaving && region.isWriting.get() == 0)
+				{
 					// check what detail level this region should be
 					// and cut it if it is higher then that
-					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, x+minPos.x, z+minPos.y,
+					minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, x + minPos.x, z + minPos.y,
 							playerPosX, playerPosZ);
 					detail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-					if (region.getMinDetailLevel() < detail) {
-						if (region.needSaving) return; // FIXME: A crude attempt at lowering chance of race condition!
+					if (region.getMinDetailLevel() < detail)
+					{
+						if (region.needSaving)
+							return; // FIXME: A crude attempt at lowering chance of race condition!
 						region.cutTree(detail);
 						region.needSignalToRegenBuffer = true;
 					}
 				}
-				if (region != null && region.needSignalToRegenBuffer) {
+				if (region != null && region.needSignalToRegenBuffer)
+				{
 					region.needSignalToRegenBuffer = false;
-					ClientApi.lodBufferBuilderFactory.setRegionNeedRegen(x+minPos.x, z+minPos.y);
+					ClientApi.lodBufferBuilderFactory.setRegionNeedRegen(x + minPos.x, z + minPos.y);
 				}
 				
 			});
-			if (totalDirtiedRegions > 8) this.saveDirtyRegionsToFile(false);
+			if (totalDirtiedRegions > 8)
+				this.saveDirtyRegionsToFile(false);
 			dirtiedRegionsRoughCount = totalDirtiedRegions;
 			//ApiShared.LOGGER.info("LodDim cut Region complete: " + playerPosX + "," + playerPosZ);
 			isCutting = false;
@@ -313,15 +340,20 @@ public class LodDimension
 		};
 		cutAndExpandThread.execute(thread);
 	}
-
+	
 	private boolean expandOrLoadPaused = false;
+	
 	/** Either expands or loads all regions in the rendered LOD area */
-	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ) {
-
-		if (isExpanding) return;
+	public void expandOrLoadRegionsAsync(int playerPosX, int playerPosZ)
+	{
+		
+		if (isExpanding)
+			return;
 		// If we have less than 20% or 128MB ram left. Don't expend.
-		if (expandOrLoadPaused) {
-			if (LodUtil.checkRamUsage(0.2, 128)) {
+		if (expandOrLoadPaused)
+		{
+			if (LodUtil.checkRamUsage(0.2, 128))
+			{
 				ApiShared.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
 				expandOrLoadPaused = false;
 			}
@@ -331,18 +363,21 @@ public class LodDimension
 		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
 		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
 		if (dropoffQuality == DropoffQuality.AUTO)
-			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
-					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
+			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ? DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
 		int dropoffSwitch = dropoffQuality.fastModeSwitch;
 		// don't run the expander multiple times
 		// for the same location
-		Runnable thread = () -> {
+		Runnable thread = () ->
+		{
 			//ApiShared.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 			Pos minPos = regions.getMinInRange();
-			iterateWithSpiral((int x, int z) -> {
-				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.02, 64)) {
+			iterateWithSpiral((int x, int z) ->
+			{
+				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.02, 64))
+				{
 					Runtime.getRuntime().gc();
-					if (!LodUtil.checkRamUsage(0.2, 128)) {
+					if (!LodUtil.checkRamUsage(0.2, 128))
+					{
 						ApiShared.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
 						// We have less than 10% or 64MB ram left. Don't expend.
 						expandOrLoadPaused = true;
@@ -361,19 +396,21 @@ public class LodDimension
 				regionZ = z + minPos.y;
 				final RegionPos regionPos = new RegionPos(regionX, regionZ);
 				region = regions.get(regionX, regionZ);
-				if (region != null && region.isWriting.get()!=0) return; // FIXME: A crude attempt at lowering chance of race condition!
-
+				if (region != null && region.isWriting.get() != 0)
+					return; // FIXME: A crude attempt at lowering chance of race condition!
+					
 				minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
 						playerPosZ);
 				maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionX, regionZ, playerPosX,
 						playerPosZ);
 				{
-					double debugRPosX = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, regionX, (byte) 0) + LodUtil.REGION_WIDTH/2;
-					double debugRPosZ = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, regionZ, (byte) 0) + LodUtil.REGION_WIDTH/2;
+					double debugRPosX = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, regionX, (byte) 0) + LodUtil.REGION_WIDTH / 2;
+					double debugRPosZ = LevelPosUtil.convert(LodUtil.REGION_DETAIL_LEVEL, regionZ, (byte) 0) + LodUtil.REGION_WIDTH / 2;
 					double deltaRPosX = debugRPosX - playerPosX;
 					double deltaRPosZ = debugRPosZ - playerPosZ;
-					double debugDistance = Math.sqrt(deltaRPosX*deltaRPosX + deltaRPosZ*deltaRPosZ);
-					if (minDistance > debugDistance || maxDistance < debugDistance || minDistance > maxDistance) {
+					double debugDistance = Math.sqrt(deltaRPosX * deltaRPosX + deltaRPosZ * deltaRPosZ);
+					if (minDistance > debugDistance || maxDistance < debugDistance || minDistance > maxDistance)
+					{
 						ApiShared.LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
 								+ "At center block pos: {} {}, region pos: {}",
 								minDistance, maxDistance, debugDistance, debugRPosX, debugRPosZ, regionPos);
@@ -383,39 +420,50 @@ public class LodDimension
 				minDetail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 				maxDetail = DetailDistanceUtil.getDetailLevelFromDistance(maxDistance);
 				boolean updated = false;
-				if (region == null) {
-					if ((!expandOrLoadPaused)) {
+				if (region == null)
+				{
+					if ((!expandOrLoadPaused))
+					{
 						region = getRegionFromFile(regionPos, minDetail, verticalQuality);
 						regions.set(regionX, regionZ, region);
 						updated = true;
 					}
-				} else if (region.getVerticalQuality() != verticalQuality ||
-						region.getMinDetailLevel() > minDetail) {
+				}
+				else if (region.getVerticalQuality() != verticalQuality ||
+						region.getMinDetailLevel() > minDetail)
+				{
 					// The 'getRegionFromFile' will flush and save the region if it returns a new one
-					if ((!expandOrLoadPaused)) {
+					if ((!expandOrLoadPaused))
+					{
 						region = getRegionFromFile(region, minDetail, verticalQuality);
 						regions.set(regionX, regionZ, region);
 						updated = true;
 					}
-				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != maxDetail) {
+				}
+				else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != maxDetail)
+				{
 					region.lastMaxDetailLevel = maxDetail;
 					updated = true;
-				} else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != region.getMinDetailLevel()) {
+				}
+				else if (minDetail <= dropoffSwitch && region.lastMaxDetailLevel != region.getMinDetailLevel())
+				{
 					updated = true;
 				}
-				if (updated) {
+				if (updated)
+				{
 					region.needSignalToRegenBuffer = true;
 					region.needRecheckGenPoint = true;
 				}
-				if (region != null && region.needSignalToRegenBuffer) {
+				if (region != null && region.needSignalToRegenBuffer)
+				{
 					region.needSignalToRegenBuffer = false;
-					ClientApi.lodBufferBuilderFactory.setRegionNeedRegen(x+minPos.x, z+minPos.y);
+					ClientApi.lodBufferBuilderFactory.setRegionNeedRegen(x + minPos.x, z + minPos.y);
 				}
 			});
 			//ApiShared.LOGGER.info("LodDim expend Region complete: " + playerPosX + "," + playerPosZ);
 			isExpanding = false;
 		};
-
+		
 		cutAndExpandThread.execute(thread);
 	}
 	
@@ -450,34 +498,39 @@ public class LodDimension
 		
 		// This ensures that we don't spawn way too much regions without finish flushing them first.
 		//if (dirtiedRegionsRoughCount > 16) return posToGenerate;
-		GenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? GenerationPriority.NEAR_FIRST : priority;
+		GenerationPriority allowedPriority = dirtiedRegionsRoughCount > 12 ? GenerationPriority.NEAR_FIRST : priority;
 		Pos minPos = regions.getMinInRange();
-		iterateByDistance((int x, int z) -> {
-			boolean isCloseRange = (Math.abs(x-halfWidth)+Math.abs(z-halfWidth)<=2);
+		iterateByDistance((int x, int z) ->
+		{
+			boolean isCloseRange = (Math.abs(x - halfWidth) + Math.abs(z - halfWidth) <= 2);
 			//boolean isCloseRange = true;
 			//All of this is handled directly by the region, which scan every pos from top to bottom of the quad tree
-			LodRegion lodRegion = regions.get(minPos.x+x, minPos.y+z);
+			LodRegion lodRegion = regions.get(minPos.x + x, minPos.y + z);
 			
 			
-			if (lodRegion != null && lodRegion.needRecheckGenPoint) {
+			if (lodRegion != null && lodRegion.needRecheckGenPoint)
+			{
 				int nearCount = posToGenerate.getNumberOfNearPos();
 				int farCount = posToGenerate.getNumberOfFarPos();
 				boolean checkForFlag = (nearCount < posToGenerate.getMaxNumberOfNearPos() && farCount < posToGenerate.getMaxNumberOfFarPos());
-				if (checkForFlag) {
+				if (checkForFlag)
+				{
 					lodRegion.needRecheckGenPoint = false;
 				}
 				lodRegion.getPosToGenerate(posToGenerate, playerBlockPosX, playerBlockPosZ, allowedPriority, genMode,
 						isCloseRange);
-				if (checkForFlag) {
-					if (nearCount != posToGenerate.getNumberOfNearPos() || farCount != posToGenerate.getNumberOfFarPos()) {
+				if (checkForFlag)
+				{
+					if (nearCount != posToGenerate.getNumberOfNearPos() || farCount != posToGenerate.getNumberOfFarPos())
+					{
 						lodRegion.needRecheckGenPoint = true;
 					}
 				}
 			}
 		});
-	return posToGenerate;
+		return posToGenerate;
 	}
-
+	
 	/**
 	 * Determines how many vertical LODs could be used
 	 * for the given region at the given detail level
@@ -563,11 +616,12 @@ public class LodDimension
 	{
 		if (detailLevel > LodUtil.REGION_DETAIL_LEVEL)
 			throw new IllegalArgumentException("getLodFromCoordinates given a level of \"" + detailLevel + "\" when \"" + LodUtil.REGION_DETAIL_LEVEL + "\" is the max.");
-
+		
 		int xRegion = LevelPosUtil.getRegion(detailLevel, posX);
 		int zRegion = LevelPosUtil.getRegion(detailLevel, posZ);
 		LodRegion region = getRegion(xRegion, zRegion);
-		if (region == null) return;
+		if (region == null)
+			return;
 		region.updateArea(detailLevel, posX, posZ);
 	}
 	
@@ -584,23 +638,23 @@ public class LodDimension
 	 */
 	public LodRegion getRegionFromFile(RegionPos regionPos, byte detailLevel, VerticalQuality verticalQuality)
 	{
-		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, verticalQuality) : 
-			new LodRegion(detailLevel, regionPos, verticalQuality);
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, verticalQuality) : new LodRegion(detailLevel, regionPos, verticalQuality);
 	}
+	
 	/**
 	 * Loads the region at the given region from file,
 	 * if a file exists for that region.
 	 */
 	public LodRegion getRegionFromFile(LodRegion existingRegion, byte detailLevel, VerticalQuality verticalQuality)
 	{
-		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, existingRegion, verticalQuality) : 
-			new LodRegion(detailLevel, existingRegion.getRegionPos(), verticalQuality);
+		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, existingRegion, verticalQuality) : new LodRegion(detailLevel, existingRegion.getRegionPos(), verticalQuality);
 	}
 	
 	/** Save all dirty regions in this LodDimension to file. */
 	public void saveDirtyRegionsToFile(boolean blockUntilFinished)
 	{
-		if (fileHandler == null) return;
+		if (fileHandler == null)
+			return;
 		fileHandler.saveDirtyRegionsToFile(blockUntilFinished);
 	}
 	
@@ -639,7 +693,8 @@ public class LodDimension
 		return regions.getCenter().y;
 	}
 	
-	public RegionPos getCenterRegionPos() {
+	public RegionPos getCenterRegionPos()
+	{
 		Pos p = regions.getCenter();
 		return new RegionPos(p.x, p.y);
 	}
@@ -657,17 +712,19 @@ public class LodDimension
 	public void setRegionWidth(int newWidth)
 	{
 		width = newWidth;
-		halfWidth = width/ 2;
+		halfWidth = width / 2;
 		Pos p = regions.getCenter();
 		regions = new MovableGridRingList<LodRegion>(halfWidth, p.x, p.y);
 		generateIteratorList();
 	}
 	
 	private final SpamReducedLogger ramLogger = new SpamReducedLogger(1);
+	
 	public void dumpRamUsage()
 	{
-		if (!ramLogger.canMaybeLog()) return;
-		int regionCount = width*width;
+		if (!ramLogger.canMaybeLog())
+			return;
+		int regionCount = width * width;
 		ramLogger.info("Dumping Ram Usage for LodDim in {} with {} regions...", dimension.getDimensionName(), regionCount);
 		int nonNullRegionCount = 0;
 		int dirtiedRegionCount = 0;
@@ -675,18 +732,25 @@ public class LodDimension
 		long totalUsage = 0;
 		int[] detailCount = new int[LodUtil.DETAIL_OPTIONS];
 		long[] detailUsage = new long[LodUtil.DETAIL_OPTIONS];
-		for (LodRegion r : regions) {
-			if (r==null) continue;
+		for (LodRegion r : regions)
+		{
+			if (r == null)
+				continue;
 			nonNullRegionCount++;
-			if (r.needSaving) dirtiedRegionCount++;
-			if (r.isWriting.get() != 0) writingRegionCount++;
+			if (r.needSaving)
+				dirtiedRegionCount++;
+			if (r.isWriting.get() != 0)
+				writingRegionCount++;
 			LevelContainer[] container = r.debugGetDataContainers().clone();
-			if (container == null || container.length != LodUtil.DETAIL_OPTIONS) {
+			if (container == null || container.length != LodUtil.DETAIL_OPTIONS)
+			{
 				ApiShared.LOGGER.warn("DumpRamUsage encountered an invalid region!");
 				continue;
 			}
-			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
-				if (container[i] == null) continue;
+			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++)
+			{
+				if (container[i] == null)
+					continue;
 				detailCount[i]++;
 				long byteUsage = container[i].getRoughRamUsage();
 				detailUsage[i] += byteUsage;
@@ -697,7 +761,8 @@ public class LodDimension
 		ramLogger.info("Non Null Regions: [{}], Dirtied Regions: [{}], Writing Regions: [{}], Bytes: [{}]",
 				nonNullRegionCount, dirtiedRegionCount, writingRegionCount, new UnitBytes(totalUsage));
 		ramLogger.info("------------------------------------------------");
-		for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
+		for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++)
+		{
 			ramLogger.info("DETAIL {}: Containers: [{}], Bytes: [{}]", i, detailCount[i], new UnitBytes(detailUsage[i]));
 		}
 		ramLogger.info("================================================");
@@ -708,7 +773,7 @@ public class LodDimension
 	@Override
 	public String toString()
 	{
-		return "[Dim = "+dimension.getDimensionName()+", Region = "+regions+"]";
+		return "[Dim = " + dimension.getDimensionName() + ", Region = " + regions + "]";
 	}
 	
 	public String toDetailString()
@@ -718,14 +783,18 @@ public class LodDimension
 		stringBuilder.append(regions.toDetailString());
 		return stringBuilder.toString();
 	}
-
-	public void shutdown() {
+	
+	public void shutdown()
+	{
 		cutAndExpandThread.shutdown();
-		try {
+		try
+		{
 			boolean worked = cutAndExpandThread.awaitTermination(5, TimeUnit.SECONDS);
 			if (!worked)
 				ApiShared.LOGGER.error("Cut And Expend threads timed out! May cause crash on game exit due to cleanup failure.");
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e)
+		{
 			ApiShared.LOGGER.error("Cut And Expend threads shutdown is interrupted! May cause crash on game exit due to cleanup failure: ", e);
 		}
 		
