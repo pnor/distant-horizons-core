@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.wrapperInterfaces.chunk;
 
+import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
@@ -40,6 +41,9 @@ public interface IChunkWrapper extends IBindable
 	IBiomeWrapper getBiome(int x, int y, int z);
 	
 	IBlockDetailWrapper getBlockDetail(int x, int y, int z);
+
+	// Returns null if block doesn't exist. Note that this can cross chunk boundaries.
+	IBlockDetailWrapper getBlockDetailAtFace(int x, int y, int z, LodDirection dir);
 	
 	int getChunkPosX();
 	int getChunkPosZ();
