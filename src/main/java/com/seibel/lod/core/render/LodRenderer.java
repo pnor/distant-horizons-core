@@ -141,8 +141,8 @@ public class LodRenderer
 	 * Besides drawing the LODs this method also starts
 	 * the async process of generating the Buffers that hold those LODs.
 	 * @param lodDim The dimension to draw, if null doesn't replace the current dimension.
-	 * @param mcModelViewMatrix This matrix stack should come straight from MC's renderChunkLayer (or future equivalent) method
-	 * @param mcProjectionMatrix 
+	 * @param baseModelViewMatrix This matrix stack should come straight from MC's renderChunkLayer (or future equivalent) method
+	 * @param baseProjectionMatrix
 	 * @param partialTicks how far into the current tick this method was called.
 	 */
 	public void drawLODs(LodDimension lodDim, Mat4f baseModelViewMatrix, Mat4f baseProjectionMatrix, float partialTicks, IProfilerWrapper profiler)
