@@ -31,10 +31,7 @@ import com.seibel.lod.core.enums.config.LightGenerationMode;
 import com.seibel.lod.core.enums.config.ServerFolderNameMode;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.config.VerticalQuality;
-import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.MinDefaultMax;
@@ -195,7 +192,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " This setting shouldn't affect performance.";
 				FogDistance getFogDistance();
 				void setFogDistance(FogDistance newFogDistance);
-				
+
 				FogDrawMode FOG_DRAW_MODE_DEFAULT = FogDrawMode.FOG_ENABLED;
 				String FOG_DRAW_MODE_DESC = ""
 						+ " When should fog be drawn? \n"
@@ -227,6 +224,166 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " Experimental! Mod support is not guarantee.";
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
+
+				IAdvancedFog advancedFog();
+
+				interface IAdvancedFog {
+					String DESC = "Advanced settings for fog rendering. Has no effect if Far Fog is not drawn \n"
+							+ "See https://www.desmos.com/calculator/drzzlfmur9 for how setting effect the curve.";
+
+					MinDefaultMax<Double> FOG_RANGE = new MinDefaultMax<>(0.0,1.0, Math.sqrt(2.0));
+
+					MinDefaultMax<Double> FAR_FOG_START_MIN_DEFAULT_MAX = new MinDefaultMax<>(FOG_RANGE.minValue,0.0, FOG_RANGE.maxValue);
+					String FAR_FOG_START_DESC = ""
+							+ " Where should the far fog start? \n"
+							+ "\n"
+							+ "   '0.0': Fog start at player's position.\n"
+							+ "   '1.0': The fog-start's circle fit just in the lod render distance square.\n"
+							+ " '1.414': The lod render distance square fit just in the fog-start's circle.\n";
+					double getFarFogStart();
+					void setFarFogStart(double newFarFogStart);
+
+					MinDefaultMax<Double> FAR_FOG_END_MIN_DEFAULT_MAX = new MinDefaultMax<>(FOG_RANGE.minValue,1.0, FOG_RANGE.maxValue);
+					String FAR_FOG_END_DESC = ""
+							+ " Where should the far fog end? \n"
+							+ "\n"
+							+ "   '0.0': Fog end at player's position.\n"
+							+ "   '1.0': The fog-end's circle fit just in the lod render distance square.\n"
+							+ " '1.414': The lod render distance square fit just in the fog-end's circle.\n";
+					double getFarFogEnd();
+					void setFarFogEnd(double newFarFogEnd);
+
+					MinDefaultMax<Double> FAR_FOG_MIN_MIN_DEFAULT_MAX = new MinDefaultMax<>(-5.0,0.0, FOG_RANGE.maxValue);
+					String FAR_FOG_MIN_DESC = ""
+							+ " What is the minimum fog thickness? \n"
+							+ "\n"
+							+ "   '0.0': No fog at all.\n"
+							+ "   '1.0': Fully fog color.\n";
+					double getFarFogMin();
+					void setFarFogMin(double newFarFogMin);
+
+					MinDefaultMax<Double> FAR_FOG_MAX_MIN_DEFAULT_MAX = new MinDefaultMax<>(FOG_RANGE.minValue,1.0, 5.0);
+					String FAR_FOG_MAX_DESC = ""
+							+ " What is the maximum fog thickness? \n"
+							+ "\n"
+							+ "   '0.0': No fog at all.\n"
+							+ "   '1.0': Fully fog color.\n";
+					double getFarFogMax();
+					void setFarFogMax(double newFarFogMax);
+
+					FogSetting.Type FAR_FOG_TYPE_DEFAULT = FogSetting.Type.EXPONENTIAL_SQUARED;
+					String FAR_FOG_TYPE_DESC = ""
+							+ " How the fog thickness should be calculated from distance? \n"
+							+ "\n"
+							+ " "+ FogSetting.Type.LINEAR + ": Linear based on distance (will ignore 'density')\n"
+							+ " "+ FogSetting.Type.EXPONENTIAL + ": 1/(e^(distance*density)) \n"
+							+ " "+ FogSetting.Type.EXPONENTIAL_SQUARED + ": 1/(e^((distance*density)^2) \n";
+							//+ " "+ FogSetting.Type.TEXTURE_BASED + ": Use a provided 1D texture mapping (will ignore 'density', 'min', and 'max')\n";
+					FogSetting.Type getFarFogType();
+					void setFarFogType(FogSetting.Type newFarFogType);
+
+					MinDefaultMax<Double> FAR_FOG_DENSITY_MIN_DEFAULT_MAX = new MinDefaultMax<>(0.01,2.5, 50.0);
+					String FAR_FOG_DENSITY_DESC = ""
+							+ " What is the fog density? \n";
+					double getFarFogDensity();
+					void setFarFogDensity(double newFarFogDensity);
+
+					IHeightFog heightFog();
+					interface IHeightFog {
+						String DESC = "Advanced settings for how far fog interacts with height. Has no effect if Far Fog is not drawn \n"
+								+ "See https://www.desmos.com/calculator/drzzlfmur9 for how setting effect the curve.";
+
+						HeightFogMode HEIGHT_FOG_MODE_DEFAULT = HeightFogMode.BASIC;
+						String HEIGHT_FOG_MODE_DESC = ""
+								+ " How the height should effect the fog thickness combined with the normal function? \n"
+								+ "\n"
+								+ " " + HeightFogMode.BASIC + ": No special height fog effect. Fog is calculated based on camera distance \n"
+								+ " " + HeightFogMode.IGNORE_HEIGHT + ": Ignore height completely. Fog is calculated based on horizontal distance \n"
+								+ " " + HeightFogMode.ADDITION + ": The calculated Height Fog thickness is added to Horizontal Fog thickness \n"
+								+ " " + HeightFogMode.MAX + ": Use the max of Height Fog thickness and Horizontal Fog thickness \n"
+								+ " " + HeightFogMode.SQUARED_ADDITION + ": Height Fog thickness and Horizontal Fog thickness is added via squared scaling \n"
+								+ "\n"
+								+ " Note that for 'BASIC' mode and 'IGNORE_HEIGHT' mode, fog settings for height fog has no effect.\n";
+						HeightFogMode getHeightFogMode();
+						void setHeightFogType(HeightFogMode newHeightFogMode);
+
+						MinDefaultMax<Double> HEIGHT_FOG_START_MIN_DEFAULT_MAX = new MinDefaultMax<>(FOG_RANGE.minValue, 0.0, FOG_RANGE.maxValue);
+						String HEIGHT_FOG_START_DESC = ""
+								+ " Where should the far fog start? \n"
+								+ "\n"
+								+ "   '0.0': Fog start at player's position.\n"
+								+ "   '1.0': The fog-start's circle fit just in the lod render distance square.\n"
+								+ " '1.414': The lod render distance square fit just in the fog-start's circle.\n";
+						double getHeightFogStart();
+						void setHeightFogStart(double newHeightFogStart);
+
+						MinDefaultMax<Double> HEIGHT_FOG_END_MIN_DEFAULT_MAX = new MinDefaultMax<>(FOG_RANGE.minValue, 1.0, FOG_RANGE.maxValue);
+						String HEIGHT_FOG_END_DESC = ""
+								+ " Where should the far fog end? \n"
+								+ "\n"
+								+ "   '0.0': Fog end at player's position.\n"
+								+ "   '1.0': The fog-end's circle fit just in the lod render distance square.\n"
+								+ " '1.414': The lod render distance square fit just in the fog-end's circle.\n";
+						double getHeightFogEnd();
+						void setHeightFogEnd(double newHeightFogEnd);
+
+						MinDefaultMax<Double> HEIGHT_FOG_MIN_MIN_DEFAULT_MAX = new MinDefaultMax<>(-5.0, 0.0, FOG_RANGE.maxValue);
+						String HEIGHT_FOG_MIN_DESC = ""
+								+ " What is the minimum fog thickness? \n"
+								+ "\n"
+								+ "   '0.0': No fog at all.\n"
+								+ "   '1.0': Fully fog color.\n";
+						double getHeightFogMin();
+						void setHeightFogMin(double newHeightFogMin);
+
+						MinDefaultMax<Double> HEIGHT_FOG_MAX_MIN_DEFAULT_MAX = new MinDefaultMax<>(FOG_RANGE.minValue, 1.0, 5.0);
+						String HEIGHT_FOG_MAX_DESC = ""
+								+ " What is the maximum fog thickness? \n"
+								+ "\n"
+								+ "   '0.0': No fog at all.\n"
+								+ "   '1.0': Fully fog color.\n";
+						double getHeightFogMax();
+						void setHeightFogMax(double newHeightFogMax);
+
+						FogSetting.Type HEIGHT_FOG_TYPE_DEFAULT = FogSetting.Type.EXPONENTIAL_SQUARED;
+						String HEIGHT_FOG_TYPE_DESC = ""
+								+ " How the fog thickness should be calculated from height? \n"
+								+ "\n"
+								+ " " + FogSetting.Type.LINEAR + ": Linear based on height (will ignore 'density')\n"
+								+ " " + FogSetting.Type.EXPONENTIAL + ": 1/(e^(height*density)) \n"
+								+ " " + FogSetting.Type.EXPONENTIAL_SQUARED + ": 1/(e^((height*density)^2) \n";
+						//+ " "+ FogSetting.Type.TEXTURE_BASED + ": Use a provided 1D texture mapping (will ignore 'density', 'min', and 'max')\n";
+						FogSetting.Type getHeightFogType();
+						void setHeightFogType(FogSetting.Type newFarFogType);
+
+						MinDefaultMax<Double> HEIGHT_FOG_DENSITY_MIN_DEFAULT_MAX = new MinDefaultMax<>(0.01, 2.5, 50.0);
+						String HEIGHT_FOG_DENSITY_DESC = ""
+								+ " What is the fog density? \n";
+						double getHeightFogDensity();
+						void setHeightFogDensity(double newHeightFogDensity);
+
+						default FogSetting computeHeightFogSetting() {
+							return new FogSetting(
+									getHeightFogStart(),
+									getHeightFogEnd(),
+									getHeightFogMin(),
+									getHeightFogMax(),
+									getHeightFogDensity(),
+									getHeightFogType()
+							);
+						}
+					}
+					default FogSetting computeFarFogSetting() {
+						return new FogSetting(
+								getFarFogStart(),
+								getFarFogEnd(),
+								getFarFogMin(),
+								getFarFogMax(),
+								getFarFogDensity(),
+								getFarFogType()
+						);
+					}
+				}
 			}
 
 			/*
