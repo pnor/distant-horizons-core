@@ -61,7 +61,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 			shaderProgram.bindVertexBuffer(vbo.id);
 			GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbo.vertexCount);
-			LodRenderer.tickLogger.info("Vertex buffer: {}", vbo);
+			//LodRenderer.tickLogger.info("Vertex buffer: {}", vbo);
 		}
 		return hasRendered;
 	}

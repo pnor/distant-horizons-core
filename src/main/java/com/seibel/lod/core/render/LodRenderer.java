@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.util.*;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -141,7 +140,7 @@ public class LodRenderer
 		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
 		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
 		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
-		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER);
+		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
 		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
 		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
 		tickLogger.info(str + ": [Prog:{}, VAO:{}, VBO:{}, Text:{}, FBO:{}, blend:{}, dpFunc:{}]",
@@ -186,7 +185,7 @@ public class LodRenderer
 		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
 		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
 		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
-		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER);
+		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
 		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
 		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
 		dumpGLState("PRE_LOD-DRAW");
@@ -253,6 +252,7 @@ public class LodRenderer
 		// Make sure to unbind current VBO so we don't mess up vanilla settings
 		LagSpikeCatcher drawGLSetup = new LagSpikeCatcher();
 		LagSpikeCatcher drawBindBuff = new LagSpikeCatcher();
+		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, MC_RENDER.getTargetFrameBuffer());
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
@@ -271,14 +271,14 @@ public class LodRenderer
 		LagSpikeCatcher drawEnableDepth = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_DEPTH_TEST);
 		// GL32.glDisable(GL32.GL_DEPTH_TEST);
-		GL32.glDepthFunc(GL32.GL_LEQUAL);
+		GL32.glDepthFunc(GL32.GL_LESS);
 		drawEnableDepth.end("drawEnableDepth");
 		drawGLSetup.end("drawGLSetup");
 		// enable transparent rendering
 		// GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
 		// GL32.glEnable(GL32.GL_BLEND);
 		GL32.glDisable(GL32.GL_BLEND);
-		// GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
+		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
 
 		/*---------Bind required objects--------*/
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
@@ -390,8 +390,10 @@ public class LodRenderer
 		// if this cleanup isn't done MC will crash
 		// when trying to render its own terrain
 		// And may causes mod compat issue
+		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, currentFrameBuffer);
 		GL32.glUseProgram(currentProgram);
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, currentVBO);
+		GL32.glDepthFunc(currentDepthFunc);
 		GL32.glBindVertexArray(currentVAO);
 		GL32.glActiveTexture(currentActiveText);
 		

@@ -71,6 +71,8 @@ public interface IMinecraftRenderWrapper extends IBindable
 	
 	int getScreenWidth();
 	int getScreenHeight();
+
+	int getTargetFrameBuffer();
 	
 	/**
 	 * This method returns the ChunkPos of all chunks that Minecraft
