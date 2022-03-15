@@ -24,6 +24,8 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.util.*;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -39,10 +41,6 @@ import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.objects.LightmapTexture;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovableGridRingList;
-import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -136,7 +134,22 @@ public class LodRenderer
 	{
 		lodBufferBuilderFactory = newLodNodeBufferBuilder;
 	}
-	
+	public static SpamReducedLogger tickLogger = new SpamReducedLogger(1);
+
+	public static void dumpGLState(String str) {
+		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
+		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
+		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
+		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
+		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER);
+		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
+		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
+		tickLogger.info(str + ": [Prog:{}, VAO:{}, VBO:{}, Text:{}, FBO:{}, blend:{}, dpFunc:{}]",
+				currentProgram, currentVAO, currentVBO, currentActiveText, currentFrameBuffer,
+				currentBlend, currentDepthFunc);
+	}
+
+
 	/**
 	 * Besides drawing the LODs this method also starts
 	 * the async process of generating the Buffers that hold those LODs.
@@ -173,9 +186,13 @@ public class LodRenderer
 		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
 		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
 		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
+		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER);
 		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
+		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
+		dumpGLState("PRE_LOD-DRAW");
+
 		drawSaveGLState.end("drawSaveGLState");
-		
+
 		GLProxy glProxy = GLProxy.getInstance();
 		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
 			if (!MC_RENDER.tryDisableVanillaFog())
@@ -253,13 +270,16 @@ public class LodRenderer
 		drawSetPolygon.end("drawSetPolygon");
 		LagSpikeCatcher drawEnableDepth = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_DEPTH_TEST);
-		//GL32.glDisable(GL32.GL_DEPTH_TEST);
+		// GL32.glDisable(GL32.GL_DEPTH_TEST);
+		GL32.glDepthFunc(GL32.GL_LEQUAL);
 		drawEnableDepth.end("drawEnableDepth");
 		drawGLSetup.end("drawGLSetup");
 		// enable transparent rendering
 		// GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
 		// GL32.glEnable(GL32.GL_BLEND);
-		
+		GL32.glDisable(GL32.GL_BLEND);
+		// GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
+
 		/*---------Bind required objects--------*/
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
 		// also binds LightmapTexture, VAO, and ShaderProgram
@@ -315,6 +335,7 @@ public class LodRenderer
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		AbstractBlockPosWrapper cameraBlockPos = MC_RENDER.getCameraBlockPosition();
 		Vec3f cameraDir = MC_RENDER.getLookAtVector();
+		int drawCount = 0;
 
 		{
 			int ox,oy,dx,dy;
@@ -331,8 +352,8 @@ public class LodRenderer
 		        	{
 						RenderRegion region = regions.get(regionX, regionZ);
 						if (region == null) continue;
-						region.render(lodDim, cameraPos, cameraBlockPos, cameraDir,
-								baseModelViewMatrix, !cullingDisabled, shaderProgram);
+						if (region.render(lodDim, cameraPos, cameraBlockPos, cameraDir,
+								baseModelViewMatrix, !cullingDisabled, shaderProgram)) drawCount++;
 		        	}
 		        }
 		        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
@@ -345,7 +366,7 @@ public class LodRenderer
 		    }
 		}
 		//if (drawCall==0)
-		//	ApiShared.LOGGER.info("DrawCall Count: "+drawCall+"("+vCount0+")");
+			tickLogger.info("DrawCall Count: {}", drawCount);
 		
 		//================//
 		// render cleanup //
@@ -380,6 +401,7 @@ public class LodRenderer
 		drawCleanup.end("LodDrawCleanup");
 		// end of internal LOD profiling
 		profiler.pop();
+		tickLogger.incLogTries();
 	}
 	
 	//=================//

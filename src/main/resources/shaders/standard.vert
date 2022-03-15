@@ -30,6 +30,12 @@ void main()
 	vertexColor = color * texture(lightMap, vec2(light,0.5));
 	
 	vertexWorldPos = worldSpacePos.xyz;
-	
+
+	// vec4 pos = projectionMatrix * worldSpacePos;
     gl_Position = projectionMatrix * worldSpacePos;
+    /*pos.a = 1.0;
+    if (pos.x>0) pos.x=-1; else pos.x=1;
+    if (pos.y>0) pos.y=-1; else pos.y=1;
+    pos.z = 0.5;
+    gl_Position = pos;*/
 }

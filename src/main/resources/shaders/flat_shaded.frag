@@ -62,9 +62,8 @@ void main()
 		returnColor = vertexColor;
 	}
 	
-	
-	
-	fragColor = returnColor;
+	//fragColor = vec4(0.7,0.6,0.5,1.0);
+	fragColor = vec4(returnColor.rgb,1.0);
 }
 
 

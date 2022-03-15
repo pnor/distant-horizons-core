@@ -199,4 +199,10 @@ public class LodVertexBuffer implements AutoCloseable
 		GL32.glUnmapBuffer(GL32.GL_ARRAY_BUFFER);
 		isMapped = false;
 	}
+
+	@Override
+	public String toString() {
+		return (isBufferStorage ? "VertexBufferStorage" : "BufferStorage")+
+				"[vboId:"+id+", size:"+size+", vertCount:"+vertexCount+(isMapped?", MAPPED" : "")+"]";
+	}
 }
