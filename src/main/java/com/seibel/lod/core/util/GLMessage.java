@@ -1,5 +1,6 @@
 package com.seibel.lod.core.util;
 
+import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.system.CallbackI;
 
 import java.util.HashMap;
@@ -151,10 +152,14 @@ public final class GLMessage {
 			boolean b = runStage(str);
 			if (b && stage >= 16) {
 				stage = 0;
-				return new GLMessage(type, severity, source, id, message);
-			} else {
-				return null;
+				GLMessage msg = new GLMessage(type, severity, source, id, message);
+				if (filterMessage(msg)) {
+					return msg;
+				}
+			} else if (!b) {
+				ApiShared.LOGGER.warn("Failed to parse GLMessage line '{}' at stage {}", str, stage);
 			}
+			return null;
 		}
 		
 		public void setTypeFilter(Function<Type, Boolean> typeFilter) {
@@ -166,7 +171,14 @@ public final class GLMessage {
 		public void setSourceFilter(Function<Source, Boolean> sourceFilter) {
 			this.sourceFilter = sourceFilter;
 		}
-		
+
+		private boolean filterMessage(GLMessage msg) {
+			if (sourceFilter!=null && !sourceFilter.apply(msg.source)) return false;
+			if (typeFilter!=null && !typeFilter.apply(msg.type)) return false;
+			if (severityFilter!=null && !severityFilter.apply(msg.severity)) return false;
+			return true;
+		}
+
 		private boolean runStage(String str) {
 			switch (stage) {
 			case 0:
@@ -185,7 +197,6 @@ public final class GLMessage {
 				return checkAndIncStage(str, ":");
 			case 6:
 				source = Source.get(str);
-				if (sourceFilter!=null && !sourceFilter.apply(source)) stage = -1;
 				stage++;
 				return true;
 			case 7:
@@ -194,7 +205,6 @@ public final class GLMessage {
 				return checkAndIncStage(str, ":");
 			case 9:
 				type = Type.get(str);
-				if (typeFilter!=null && !typeFilter.apply(type)) stage = -1;
 				stage++;
 				return true;
 			case 10:
@@ -203,7 +213,6 @@ public final class GLMessage {
 				return checkAndIncStage(str, ":");
 			case 12:
 				severity = Severity.get(str);
-				if (severityFilter!=null && !severityFilter.apply(severity)) stage = -1;
 				stage++;
 				return true;
 			case 13:

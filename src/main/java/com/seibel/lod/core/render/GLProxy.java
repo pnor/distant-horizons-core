@@ -62,12 +62,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
  */
 public class GLProxy
 {
-	
-	
-	
-	
-	
-	
+	public static final boolean OVERWIDE_VANILLA_GL_LOGGER = true;
 	
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	
@@ -106,7 +101,8 @@ public class GLProxy
 	public final boolean mapBufferRangeSupported = true;
 	
 	private final GpuUploadMethod preferredUploadMethod;
-	
+
+	public final GLMessage.Builder vanillaDebugMessageBuilder;
 	public final GLMessage.Builder lodBuilderDebugMessageBuilder;
 	public final GLMessage.Builder proxyWorkerDebugMessageBuilder;
 	
@@ -216,7 +212,19 @@ public class GLProxy
 					return true;
 				},null
 				);
-		
+		vanillaDebugMessageBuilder = new GLMessage.Builder(
+				(type) -> {
+					if (type == GLMessage.Type.POP_GROUP) return false;
+					if (type == GLMessage.Type.PUSH_GROUP) return false;
+					if (type == GLMessage.Type.MARKER) return false;
+					// if (type == GLMessage.Type.PERFORMANCE) return false;
+					return true;
+				}
+				,(severity) -> {
+			if (severity == GLMessage.Severity.NOTIFICATION) return false;
+			return true;
+		},null
+		);
 		
 		
         // this must be created on minecraft's render context to work correctly
@@ -251,7 +259,12 @@ public class GLProxy
 			MC.crashMinecraft(errorMessage, new UnsupportedOperationException("This GPU doesn't support OpenGL 3.2."));
 		}
 		ApiShared.LOGGER.info("minecraftGlCapabilities:\n"+getVersionInfo(minecraftGlCapabilities));
-		
+
+		if (OVERWIDE_VANILLA_GL_LOGGER)
+		GLUtil.setupDebugMessageCallback(new PrintStream(new GLMessageOutputStream((msg) -> {
+			logMessage(msg);
+		}, vanillaDebugMessageBuilder), true));
+
 		GLFW.glfwMakeContextCurrent(0L);
 		
 		// context creation setup
@@ -362,8 +375,7 @@ public class GLProxy
 		// we don't have to change the context, we are already there.
 		if (currentContext == newContext)
 			return;
-		
-		
+
 		long contextPointer;
 		GLCapabilities newGlCapabilities = null;
 		
