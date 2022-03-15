@@ -143,9 +143,11 @@ public class LodRenderer
 		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
 		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
 		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
-		tickLogger.info(str + ": [Prog:{}, VAO:{}, VBO:{}, Text:{}, FBO:{}, blend:{}, dpFunc:{}]",
+		int[] currentView = new int[4];
+		GL32.glGetIntegerv(GL32.GL_VIEWPORT, currentView);
+		tickLogger.info(str + ": [Prog:{}, VAO:{}, VBO:{}, Text:{}, FBO:{}, blend:{}, dpFunc:{}, view:{}]",
 				currentProgram, currentVAO, currentVBO, currentActiveText, currentFrameBuffer,
-				currentBlend, currentDepthFunc);
+				currentBlend, currentDepthFunc, currentView);
 	}
 
 
@@ -188,6 +190,8 @@ public class LodRenderer
 		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
 		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
 		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
+		int[] currentView = new int[4];
+		GL32.glGetIntegerv(GL32.GL_VIEWPORT, currentView);
 		dumpGLState("PRE_LOD-DRAW");
 
 		drawSaveGLState.end("drawSaveGLState");
@@ -253,6 +257,7 @@ public class LodRenderer
 		LagSpikeCatcher drawGLSetup = new LagSpikeCatcher();
 		LagSpikeCatcher drawBindBuff = new LagSpikeCatcher();
 		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, MC_RENDER.getTargetFrameBuffer());
+		GL32.glViewport(0,0, MC_RENDER.getTargetFrameBufferViewportWidth(), MC_RENDER.getTargetFrameBufferViewportHeight());
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
@@ -365,6 +370,7 @@ public class LodRenderer
 		        oy += dy;
 		    }
 		}
+		dumpGLState("Post Lod Draw Before Cleanup");
 		//if (drawCall==0)
 			tickLogger.info("DrawCall Count: {}", drawCount);
 		
@@ -391,6 +397,7 @@ public class LodRenderer
 		// when trying to render its own terrain
 		// And may causes mod compat issue
 		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, currentFrameBuffer);
+		GL32.glViewport(currentView[0], currentView[1],currentView[2],currentView[3]);
 		GL32.glUseProgram(currentProgram);
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, currentVBO);
 		GL32.glDepthFunc(currentDepthFunc);
