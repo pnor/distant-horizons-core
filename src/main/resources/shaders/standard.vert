@@ -5,9 +5,11 @@ in vec4 color;
 
 out vec4 vertexColor;
 out vec3 vertexWorldPos;
+out float vertexYPos;
 
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
+uniform mat4 combinedMatrix;
+uniform vec3 modelOffset;
+uniform float worldYOffset;
 
 uniform int worldSkyLight;
 uniform sampler2D lightMap;
@@ -24,18 +26,11 @@ uniform sampler2D lightMap;
  */
 void main()
 {
-	vec4 worldSpacePos = modelViewMatrix * vec4(vPosition.xyz,1);
+    vertexWorldPos = vPosition.xyz + modelOffset;
+    vertexYPos = vPosition.y + worldYOffset;
+
 	float light = (vPosition.a+0.5) / 256.0;
-
 	vertexColor = color * texture(lightMap, vec2(light,0.5));
-	
-	vertexWorldPos = worldSpacePos.xyz;
 
-	// vec4 pos = projectionMatrix * worldSpacePos;
-    gl_Position = projectionMatrix * worldSpacePos;
-    /*pos.a = 1.0;
-    if (pos.x>0) pos.x=-1; else pos.x=1;
-    if (pos.y>0) pos.y=-1; else pos.y=1;
-    pos.z = 0.5;
-    gl_Position = pos;*/
+    gl_Position = combinedMatrix * vec4(vertexWorldPos, 1.0);
 }

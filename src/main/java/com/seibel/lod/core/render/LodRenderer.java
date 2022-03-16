@@ -77,7 +77,6 @@ public class LodRenderer
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
 
 	public static final int VANILLA_REFRESH_TIMEOUT = 60;
 	/**
@@ -251,7 +250,6 @@ public class LodRenderer
 		
 		profiler.push("LOD draw setup");
 		LagSpikeCatcher drawSetup = new LagSpikeCatcher();
-
 		/*---------Set GL State--------*/
 		// Make sure to unbind current VBO so we don't mess up vanilla settings
 		LagSpikeCatcher drawGLSetup = new LagSpikeCatcher();
@@ -294,6 +292,11 @@ public class LodRenderer
 			drawObjectSetup.end("drawObjectSetup");
 		} else {
 			LagSpikeCatcher drawShaderBind = new LagSpikeCatcher();
+			LodFogConfig newConfig = shaderProgram.isShaderUsable();
+			if (newConfig != null) {
+				shaderProgram.free();
+				shaderProgram = new LodRenderProgram(newConfig);
+			}
 			shaderProgram.bind();
 			drawShaderBind.end("drawShaderBind");
 		}
@@ -312,18 +315,18 @@ public class LodRenderer
 			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
-		LodFogConfig fogSettings = new LodFogConfig(CONFIG, REFLECTION_HANDLER, farPlaneBlockDistance, vanillaBlockRenderedDistance);
 		drawCalculateParams.end("drawCalculateParams");
-		Mat4f projectionMatrix = createProjectionMatrix(baseProjectionMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
+
+		Mat4f combinedMatrix = createCombinedMatrix(baseProjectionMatrix, baseModelViewMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
 		
 		/*---------Fill uniform data--------*/
 		LagSpikeCatcher drawFillData = new LagSpikeCatcher();
 		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
-		shaderProgram.fillUniformData(projectionMatrix,
+		shaderProgram.fillUniformData(combinedMatrix,
 				MC_RENDER.isFogStateSpecial() ? getSpecialFogColor(partialTicks) : getFogColor(partialTicks),
-						(int) (MC.getSkyDarken(partialTicks) * 15), 0);
-		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
-		shaderProgram.fillUniformDataForFog(fogSettings, MC_RENDER.isFogStateSpecial());
+				0, MC.getWrappedClientWorld().getHeight(), MC.getWrappedClientWorld().getMinHeight(), farPlaneBlockDistance,
+				vanillaBlockRenderedDistance, MC_RENDER.isFogStateSpecial());
+
 		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
 		LagSpikeCatcher drawFillLightmap = new LagSpikeCatcher();
 		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
@@ -358,7 +361,7 @@ public class LodRenderer
 						RenderRegion region = regions.get(regionX, regionZ);
 						if (region == null) continue;
 						if (region.render(lodDim, cameraPos, cameraBlockPos, cameraDir,
-								baseModelViewMatrix, !cullingDisabled, shaderProgram)) drawCount++;
+								!cullingDisabled, shaderProgram)) drawCount++;
 		        	}
 		        }
 		        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
@@ -429,7 +432,7 @@ public class LodRenderer
 		}
 		
 		isSetupComplete = true;
-		shaderProgram = new LodRenderProgram();
+		shaderProgram = new LodRenderProgram(LodFogConfig.generateFogConfig());
 	}
 	
 	/** Create all buffers that will be used. */
@@ -456,18 +459,22 @@ public class LodRenderer
 
 	/**
 	 * create and return a new projection matrix based on MC's projection matrix
-	 * @param currentProjectionMatrix this is Minecraft's current projection matrix
+	 * @param projMat this is Minecraft's current projection matrix
+	 * @param modelMat this is Minecraft's current model matrix
 	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
 	 */
-	private static Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance, int farPlaneBlockDistance)
+	private static Mat4f createCombinedMatrix(Mat4f projMat, Mat4f modelMat, float vanillaBlockRenderedDistance, int farPlaneBlockDistance)
 	{
 		//Create a copy of the current matrix, so the current matrix isn't modified.
-		Mat4f lodProj = currentProjectionMatrix.copy();
+		Mat4f lodProj = projMat.copy();
 
 		//Set new far and near clip plane values.
 		lodProj.setClipPlanes(
-				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ? vanillaBlockRenderedDistance / 5 : 1,
-				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
+				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ?
+						(vanillaBlockRenderedDistance-16) : 16,
+				(float)((farPlaneBlockDistance+LodUtil.REGION_WIDTH) * Math.sqrt(2)));
+
+		lodProj.multiply(modelMat);
 
 		return lodProj;
 	}

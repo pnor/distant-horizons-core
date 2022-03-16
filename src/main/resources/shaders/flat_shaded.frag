@@ -1,25 +1,42 @@
-#version 150 core
 
 in vec4 vertexColor;
 in vec3 vertexWorldPos;
+in float vertexYPos;
 
 out vec4 fragColor;
 
-uniform bool fogEnabled;
-uniform bool nearFogEnabled;
-uniform bool farFogEnabled;
-
+uniform float fogScale;
+uniform float fogVerticalScale;
 uniform float nearFogStart;
-uniform float nearFogEnd;
-uniform float farFogStart;
-uniform float farFogEnd;
+uniform float nearFogLength;
+uniform int fullFogMode;
+
+/* ========MARCO DEFINED BY RUNTIME CODE GEN=========
+
+float farFogStart;
+float farFogLength;
+float farFogMin;
+float farFogRange;
+float farFogDensity;
+
+float heightFogStart;
+float heightFogLength;
+float heightFogMin;
+float heightFogRange;
+float heightFogDensity;
+*/
+
 uniform vec4 fogColor;
 
-
 // method definitions
-float getFogAlpha(float start, float end, float dist);
-
-
+// ==== The below 5 methods will be run-time generated. ====
+float getNearFogThickness(float dist);
+float getFarFogThickness(float dist);
+float getHeightFogThickness(float dist);
+float calculateFarFogDepth(float horizontal, float dist);
+float calculateHeightFogDepth(float vertical, float realY);
+float mixFogThickness(float near, float far, float height);
+// =========================================================
 
 /** 
  * Fragment Shader
@@ -29,55 +46,46 @@ float getFogAlpha(float start, float end, float dist);
  */
 void main()
 {
-	// TODO: add a white texture to support Optifine shaders
-    //vec4 textureColor = texture(texImage, textureCoord);
-    //fragColor = vertexColor * textureColor;
-    
-	
 	vec4 returnColor;
-	if (fogEnabled)
-	{
-		// add fog
-		
-		// no fog by default
-		float fogAlpha = 0;
-		
-		float dist = length(vertexWorldPos);
+    if (fullFogMode != 0) {
+        returnColor = vec4(fogColor.rgb, 1.0);
+    } else {
+        // TODO: add a white texture to support Optifine shaders
+        //vec4 textureColor = texture(texImage, textureCoord);
+        //fragColor = vertexColor * textureColor;
 
-		// less than because nearFogStart is farther away than nearFogEnd
-		if (nearFogEnabled && dist < nearFogStart)
-		{
-			fogAlpha = getFogAlpha(nearFogStart, nearFogEnd, dist);
-		}
-		else if (farFogEnabled)
-		{
-			fogAlpha = getFogAlpha(farFogStart, farFogEnd, dist);
-		}
-		
-		returnColor = mix(vertexColor, vec4(fogColor.xyz, 1), fogAlpha);
+        float horizontalDist = length(vertexWorldPos.xz) * fogScale;
+        float heightDist = calculateHeightFogDepth(
+            vertexWorldPos.y, vertexYPos) * fogVerticalScale;
+        float farDist = calculateFarFogDepth(horizontalDist,
+            length(vertexWorldPos.xyz) * fogScale);
+
+        float nearFogThickness = getNearFogThickness(horizontalDist);
+        float farFogThickness = getFarFogThickness(farDist);
+        float heightFogThickness = getHeightFogThickness(heightDist);
+        float mixedFogThickness = clamp(mixFogThickness(
+            nearFogThickness, farFogThickness, heightFogThickness), 0.0, 1.0);
+
+        returnColor = mix(vertexColor, vec4(fogColor.rgb, 1.0), mixedFogThickness);
+
 	}
-	else
-	{
-		// simple flat color
-		returnColor = vertexColor;
-	}
-	
-	//fragColor = vec4(0.7,0.6,0.5,1.0);
+    //fragColor = vec4(0.7,0.6,0.5,1.0);
 	fragColor = vec4(returnColor.rgb,1.0);
 }
 
-
-
-
-/** 
- * Returns the fog strength for the given fragment.
- * This is the same implementation as legacy OpenGL's Linear fog option.
- * 1 = completely opaque fog
- * 0 = no fog
- */
-float getFogAlpha(float start, float end, float dist)
-{
-	float fogAlpha = 1 - ((end - dist) / (end - start));
-    return clamp(fogAlpha, 0, 1);
+float linearFog(float x, float fogStart, float fogLength, float fogMin, float fogRange) {
+    x = clamp((x-fogStart)/fogLength, 0.0, 1.0);
+    return fogMin + fogRange * x;
 }
 
+float exponentialFog(float x, float fogStart, float fogLength,
+    float fogMin, float fogRange, float fogDensity) {
+    x = max((x-fogStart)/fogLength, 0.0) * fogDensity;
+    return fogMin + fogRange - fogRange/exp(x);
+}
+
+float exponentialSquaredFog(float x, float fogStart, float fogLength,
+    float fogMin, float fogRange, float fogDensity) {
+    x = max((x-fogStart)/fogLength, 0.0) * fogDensity;
+    return fogMin + fogRange - fogRange/exp(x*x);
+}
