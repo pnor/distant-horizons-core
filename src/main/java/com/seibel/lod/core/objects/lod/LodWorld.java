@@ -23,7 +23,6 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 
 /**
