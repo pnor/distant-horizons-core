@@ -1,17 +1,33 @@
 package com.seibel.lod.core.objects.lod.quadtree;
 
-import com.seibel.lod.core.util.DetailDistanceUtil;
 
+/*
+A lod section rappresent a distinct section in a precise level of the quadtree.
+The section holds all the lods information as color (computed with the blockBiome object referenced by the ID), size, light...
+The save and load of a section is handled by the section itself together with a handler class.
+ */
 public class LodSection
 {
+	//level of detail of this section
 	public final int detail;
+	
+	//level position of this section
 	public final int levelPosX;
 	public final int levelPosZ;
+	
+	//horizontal size of this section
 	public final int horizontalSize;
+	//vertical size of this section
 	public final int verticalSize;
+	
+	//how many id we save for each lod
 	public final int idPerLod;
+	
+	//What generation mode should be used for chunk in this section
 	public final byte generationMode;
-	public boolean avoidPregeneratedChunk;
+	
+	//if present in region file, use pregenerated chunk in lod creation
+	public boolean usePregeneratedChunk;
 	
 	//Position data hold information about each level position like generation mode used, number of vertical lods in that area...
 	private byte[] positionData;
@@ -37,7 +53,7 @@ public class LodSection
 		this.horizontalSize = horizontalSize;
 		this.verticalSize = verticalSize;
 		this.generationMode = generationMode;
-		this.avoidPregeneratedChunk = avoidPregeneratedChunk;
+		this.usePregeneratedChunk = avoidPregeneratedChunk;
 		this.idPerLod = idPerLod;
 		//Now we should search if there is a file with this values
 		//if so we load it and end the process
