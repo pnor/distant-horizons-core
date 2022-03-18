@@ -95,6 +95,16 @@ public class LodSection
 	{
 	}
 	
+	public short getPositionData(int posX, int posZ)
+	{
+		return 0;
+	}
+	
+	public long[] getData(int posX, int posZ)
+	{
+		return null;
+	}
+	
 	public void save()
 	{
 	}
