@@ -12,8 +12,8 @@ public class LodSection
 	public final int detail;
 	
 	//level position of this section
-	public final int levelPosX;
-	public final int levelPosZ;
+	public final int sectionPosX;
+	public final int sectionPosZ;
 	
 	//horizontal size of this section
 	public final int horizontalSize;
@@ -59,8 +59,8 @@ public class LodSection
 	public LodSection(int detail, int horizontalSize, int verticalSize, int levelPosX, int levelPosZ, byte generationMode, boolean avoidPregeneratedChunk, int idPerLod)
 	{
 		this.detail = detail;
-		this.levelPosX = levelPosX;
-		this.levelPosZ = levelPosZ;
+		this.sectionPosX = levelPosX;
+		this.sectionPosZ = levelPosZ;
 		this.horizontalSize = horizontalSize;
 		this.verticalSize = verticalSize;
 		this.generationMode = generationMode;
