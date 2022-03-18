@@ -1,7 +1,7 @@
 package com.seibel.lod.core.objects.lod.quadtree;
 
 
-/*
+/**
 A lod section rappresent a distinct section in a precise level of the quadtree.
 The section holds all the lods information as color (computed with the blockBiome object referenced by the ID), size, light...
 The save and load of a section is handled by the section itself together with a handler class.
@@ -45,6 +45,17 @@ public class LodSection
 	//BlockBiomeFrequency for each lod BlockBiomeId
 	private byte[] BlockBiomeFrequency;
 	
+	/**
+	 *
+	 * @param detail
+	 * @param horizontalSize
+	 * @param verticalSize
+	 * @param levelPosX
+	 * @param levelPosZ
+	 * @param generationMode
+	 * @param avoidPregeneratedChunk
+	 * @param idPerLod
+	 */
 	public LodSection(int detail, int horizontalSize, int verticalSize, int levelPosX, int levelPosZ, byte generationMode, boolean avoidPregeneratedChunk, int idPerLod)
 	{
 		this.detail = detail;
@@ -66,6 +77,18 @@ public class LodSection
 		BlockBiomeFrequency = new byte[horizontalSize*horizontalSize*verticalSize*idPerLod];
 	}
 	
+	/**
+	 *
+	 * @param otherSection
+	 * @param inputStartX
+	 * @param inputStartZ
+	 * @param inputEndX
+	 * @param inputEndZ
+	 * @param targetStartX
+	 * @param targetStartZ
+	 * @param targetEndX
+	 * @param targetEndZ
+	 */
 	public void mergeAndAdd(LodSection otherSection,
 			int inputStartX, int inputStartZ, int inputEndX, int inputEndZ,
 			int targetStartX, int targetStartZ, int targetEndX, int targetEndZ)
