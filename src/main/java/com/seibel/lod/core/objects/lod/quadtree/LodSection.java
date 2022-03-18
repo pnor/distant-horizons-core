@@ -49,4 +49,18 @@ public class LodSection
 		BlockBiomeId = new int[horizontalSize*horizontalSize*verticalSize*idPerLod];
 		BlockBiomeFrequency = new byte[horizontalSize*horizontalSize*verticalSize*idPerLod];
 	}
+	
+	public void mergeAndAdd(LodSection otherSection,
+			int inputStartX, int inputStartZ, int inputEndX, int inputEndZ,
+			int targetStartX, int targetStartZ, int targetEndX, int targetEndZ)
+	{
+	}
+	
+	public void save()
+	{
+	}
+	
+	public void tryload()
+	{
+	}
 }
