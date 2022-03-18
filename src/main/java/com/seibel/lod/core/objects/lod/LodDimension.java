@@ -19,39 +19,29 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.DropoffQuality;
+import com.seibel.lod.core.enums.config.GenerationPriority;
+import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.handlers.LodDimensionFileHandler;
+import com.seibel.lod.core.handlers.LodDimensionFileHelper;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.PosToGenerateContainer;
+import com.seibel.lod.core.util.*;
+import com.seibel.lod.core.util.MovableGridRingList.Pos;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.enums.config.DropoffQuality;
-import com.seibel.lod.core.enums.config.GenerationPriority;
-import com.seibel.lod.core.enums.config.VerticalQuality;
-import com.seibel.lod.core.handlers.LodDimensionFileHandler;
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.objects.PosToGenerateContainer;
-import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
-import com.seibel.lod.core.util.LodThreadFactory;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovableGridRingList;
-import com.seibel.lod.core.util.MovableGridRingList.Pos;
-import com.seibel.lod.core.util.SpamReducedLogger;
-import com.seibel.lod.core.util.UnitBytes;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 
 //FIXME: Race condition on lodDim move/resize!
@@ -66,7 +56,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * 
  * @author Leonardo Amato
  * @author James Seibel
- * @version 11-12-2021
+ * @version 3-17-2022
  */
 public class LodDimension
 {
@@ -89,7 +79,8 @@ public class LodDimension
 	private volatile RegionPos[] iteratorList = null;
 	
 	
-	private LodDimensionFileHandler fileHandler;
+	private LodDimensionFileHandler fileHandler = null;
+	public boolean isFileHandlerNull() { return this.fileHandler == null; }
 	
 	public volatile int dirtiedRegionsRoughCount = 0;
 	
@@ -107,43 +98,52 @@ public class LodDimension
 	public LodDimension(IDimensionTypeWrapper newDimension, LodWorld lodWorld, int newWidth)
 	{
 		dimension = newDimension;
-		width = newWidth;
+		width = newWidth;  // FIXME any width besides 1 causes an indexOutOfBounds Exception
 		halfWidth = width / 2;
 		
 		if (newDimension != null && lodWorld != null)
 		{
-			try
-			{
-				// determine the save folder
-				File saveDir;
-				if (MC.hasSinglePlayerServer())
-				{
-					// local world
-					
-					IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(newDimension);
-					saveDir = new File(serverWorld.getSaveFolder().getCanonicalFile().getPath() + File.separatorChar + "lod");
-				}
-				else
-				{
-					// connected to server
-					
-					saveDir = new File(MC.getGameDirectory().getCanonicalFile().getPath() +
-											   File.separatorChar + "Distant_Horizons_server_data" + File.separatorChar + MC.getCurrentDimensionId());
-				}
-				
-				fileHandler = new LodDimensionFileHandler(saveDir, this);
-			}
-			catch (IOException e)
-			{
-				// the file handler wasn't able to be created
-				// we won't be able to read or write any files
-			}
+			attemptToSetWorldFileHandler();
 		}
 		
 		
 		regions = new MovableGridRingList<LodRegion>(halfWidth, 0, 0);
 		generateIteratorList();
 	}
+	
+	/**
+	 * Attempts to determine and set the file handler based on
+	 * the chunk the player is currently in.
+	 * @returns true if the fileHandler has been set, false otherwise
+	 */
+	public boolean attemptToSetWorldFileHandler()
+	{
+		// check if we need to get the file handler
+		if (this.fileHandler != null)
+			return true;
+		
+		try
+		{
+			// attempt to get the file handler
+			File saveDir = LodDimensionFileHelper.determineSaveFolder();
+			if (saveDir == null)
+				return false;
+			
+			this.fileHandler = new LodDimensionFileHandler(saveDir, this);
+			
+			// clear the previous regions so we can load the LODs from file
+			if (this.regions != null)
+				this.regions.clear();
+			return true;
+		}
+		catch(IOException e)
+		{
+			ApiShared.LOGGER.error("Unable to set the dimension file handler for dimension type [" + this.dimension.getDimensionName() + "]. Error: " + e.getMessage(), e);
+			return false;
+		}
+	}
+	
+	
 	
 	private void generateIteratorList()
 	{

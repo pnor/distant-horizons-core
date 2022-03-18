@@ -163,8 +163,8 @@ public class LodBuilder
 			// this happens if a LOD is generated after the user leaves the world.
 			if (MC.getWrappedClientWorld() == null)
 				return false;
-			if (!chunk.isLightCorrect()) return false;
-			if (!chunk.doesNearbyChunksExist()) return false;
+			if (!canGenerateLodFromChunk(chunk))
+				return false;
 			
 	
 			// generate the LODs
@@ -190,8 +190,8 @@ public class LodBuilder
 					data[i*maxVerticalData] = DataPointUtil.createVoidDataPoint(config.distanceGenerationMode.complexity);
 				}
 			}
-			if (!chunk.isLightCorrect()) return false;
-			if (!chunk.doesNearbyChunksExist()) return false;
+			if (!canGenerateLodFromChunk(chunk)) // TODO Why are we calling this again? - James
+				return false;
 			
 			if (genAll) {
 				return writeAllLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
@@ -202,8 +202,12 @@ public class LodBuilder
 			ApiShared.LOGGER.error("LodBuilder encountered an error on building lod: ", e);
 			return false;
 		}
-		
 	}
+	public static boolean canGenerateLodFromChunk(IChunkWrapper chunk)
+	{
+		return chunk != null && chunk.isLightCorrect() && chunk.doesNearbyChunksExist();
+	}
+	
 	
 	private boolean writeAllLodNodeData(LodDimension lodDim, LodRegion region, int chunkX, int chunkZ,
 			long[] data, LodBuilderConfig config, boolean override)

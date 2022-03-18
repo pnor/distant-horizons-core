@@ -20,12 +20,13 @@
 package com.seibel.lod.core.wrapperInterfaces.chunk;
 
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 
 /**
  * @author James Seibel
- * @version 11-17-2021
+ * @version 3-16-2022
  */
 public interface IChunkWrapper extends IBindable
 {
@@ -70,4 +71,23 @@ public interface IChunkWrapper extends IBindable
 	}
 	
 	boolean doesNearbyChunksExist();
+	
+	
+	
+	/** This is a bad hash algorithm, but can be used for rough debugging. */
+	public default int roughHashCode()
+	{
+		int hash = 31;
+		int primeMultiplier = 227;
+		
+		for(int x = 0; x < LodUtil.CHUNK_WIDTH; x++)
+		{
+			for(int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
+			{
+				hash = hash * primeMultiplier + Integer.hashCode(getMaxY(x, z));
+			}
+		}
+		
+		return hash;
+	}
 }

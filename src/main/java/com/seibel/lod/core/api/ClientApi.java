@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
@@ -170,6 +168,12 @@ public class ClientApi
 						ApiShared.lodBuilder.defaultDimensionWidthInRegions);
 				ApiShared.lodWorld.addLodDimension(lodDim);
 			}
+			// if necessary attempt to get the world file handler
+			if (lodDim.isFileHandlerNull())
+			{
+				lodDim.attemptToSetWorldFileHandler();
+			}
+			
 			if (prefLoggerEnabled) {
 				lodDim.dumpRamUsage();
 				lodBufferBuilderFactory.dumpBufferMemoryUsage();

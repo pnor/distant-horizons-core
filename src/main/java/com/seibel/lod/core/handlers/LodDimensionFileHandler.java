@@ -37,7 +37,6 @@ import com.seibel.lod.core.api.ApiShared;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LevelContainer;
@@ -76,6 +75,8 @@ public class LodDimensionFileHandler
 	private static final String FILE_EXTENSION = ".xz";
 	/** detail- */
 	private static final String DETAIL_FOLDER_NAME_PREFIX = "detail-";
+	
+	public static final String MULTIPLAYER_FOLDER_NAME = "Distant_Horizons_server_data";
 	
 	/**
 	 * .tmp <br>
