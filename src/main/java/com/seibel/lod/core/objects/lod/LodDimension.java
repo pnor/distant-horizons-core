@@ -90,6 +90,9 @@ public class LodDimension
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(
 			new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand", Thread.NORM_PRIORITY - 1));
 	
+	/** If true the LodDimensionFileHelper is attempting to determine the folder for this dimension */
+	private boolean determiningWorldFolder = false;
+	
 	
 	/**
 	 * Creates the dimension centered at (0,0)
@@ -116,31 +119,44 @@ public class LodDimension
 	 * the chunk the player is currently in.
 	 * @returns true if the fileHandler has been set, false otherwise
 	 */
-	public boolean attemptToSetWorldFileHandler()
+	public void attemptToSetWorldFileHandler()
 	{
 		// check if we need to get the file handler
 		if (this.fileHandler != null)
-			return true;
+			return;
 		
-		try
+		// prevent multiple threads running at the same time
+		if (this.determiningWorldFolder)
+			return;
+		this.determiningWorldFolder = true;
+		
+		
+		// run asynchronously since this could take a while
+		new Thread(() ->
 		{
-			// attempt to get the file handler
-			File saveDir = LodDimensionFileHelper.determineSaveFolder();
-			if (saveDir == null)
-				return false;
-			
-			this.fileHandler = new LodDimensionFileHandler(saveDir, this);
-			
-			// clear the previous regions so we can load the LODs from file
-			if (this.regions != null)
-				this.regions.clear();
-			return true;
-		}
-		catch(IOException e)
-		{
-			ApiShared.LOGGER.error("Unable to set the dimension file handler for dimension type [" + this.dimension.getDimensionName() + "]. Error: " + e.getMessage(), e);
-			return false;
-		}
+			try
+			{
+				// attempt to get the file handler
+				File saveDir = LodDimensionFileHelper.determineSaveFolder();
+				if (saveDir == null)
+					return;
+				
+				this.fileHandler = new LodDimensionFileHandler(saveDir, this);
+				
+				// clear the previous regions so we can load the LODs from file
+				if (this.regions != null)
+					this.regions.clear();
+			}
+			catch (IOException e)
+			{
+				ApiShared.LOGGER.error("Unable to set the dimension file handler for dimension type [" + this.dimension.getDimensionName() + "]. Error: " + e.getMessage(), e);
+			}
+			finally
+			{
+				// make sure we unlock this method
+				this.determiningWorldFolder = false;
+			}
+		}).start();
 	}
 	
 	
