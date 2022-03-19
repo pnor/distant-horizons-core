@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.builders.worldGeneration;
+package com.seibel.lod.core.enums.worldGeneration;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;

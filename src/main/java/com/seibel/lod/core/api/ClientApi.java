@@ -58,7 +58,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class ClientApi
 {	
 	public static boolean prefLoggerEnabled = false;
-	public static List<WeakReference<SpamReducedLogger>> spamReducedLoggers
+	public static final List<WeakReference<SpamReducedLogger>> spamReducedLoggers
 		= Collections.synchronizedList(new LinkedList<WeakReference<SpamReducedLogger>>());
 	
 	public static final ClientApi INSTANCE = new ClientApi();

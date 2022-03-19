@@ -1,4 +1,4 @@
-package com.seibel.lod.core.util;
+package com.seibel.lod.core.util.gridList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,8 @@ import java.util.function.Consumer;
  * 6,7,8
  */
 
-public class MovableGridList<T> extends ArrayList<T> implements List<T> {
-
-	private static final long serialVersionUID = 5366261085254591277L;
+@Deprecated // Replace with PosArrayGridList<T>
+public class MovableCenteredGridList<T> extends ArrayList<T> implements List<T> {
 
 	private int centerX;
 	private int centerY;
@@ -23,7 +22,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 	/*
 	 * WARNING: Not yet tested if its atomic. (non Thread safe)
 	 */
-	public MovableGridList(MovableGridList<T> other) {
+	public MovableCenteredGridList(MovableCenteredGridList<T> other) {
 		super(other);
 		centerX = other.centerX;
 		centerY = other.centerY;
@@ -31,7 +30,7 @@ public class MovableGridList<T> extends ArrayList<T> implements List<T> {
 		gridSize = other.gridSize;
 	}
 	
-	public MovableGridList(int gridCentreToEdge, int centerX, int centerY) {
+	public MovableCenteredGridList(int gridCentreToEdge, int centerX, int centerY) {
 		super((gridCentreToEdge * 2 + 1) * (gridCentreToEdge * 2 + 1));
 		gridSize = gridCentreToEdge * 2 + 1;
 		this.gridCentreToEdge = gridCentreToEdge;

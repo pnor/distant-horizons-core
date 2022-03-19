@@ -91,8 +91,7 @@ public class VerticalLevelContainer implements LevelContainer
 	private void forceWriteVerticalData(long[] data, int posX, int posZ)
 	{
 		int index = posX * size * verticalSize + posZ * verticalSize;
-		for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
-			dataContainer[index + verticalIndex] = data[verticalIndex];
+		if (verticalSize >= 0) System.arraycopy(data, 0, dataContainer, index + 0, verticalSize);
 	}
 	
 	@Override

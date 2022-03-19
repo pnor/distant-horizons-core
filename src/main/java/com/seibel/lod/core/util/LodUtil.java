@@ -34,6 +34,7 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
+import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
@@ -478,7 +479,7 @@ public class LodUtil
 		}
 		return false;
 	}
-	public static boolean isBorderChunk(MovableGridList<Boolean> vanillaRenderedChunks, int chunkX, int chunkZ)
+	public static boolean isBorderChunk(MovableCenteredGridList<Boolean> vanillaRenderedChunks, int chunkX, int chunkZ)
 	{
 		for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS)
 		{

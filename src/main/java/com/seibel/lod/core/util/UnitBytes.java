@@ -32,15 +32,15 @@ public class UnitBytes
 		long v = value;
 		StringBuilder str = new StringBuilder();
 		long GB = byteToGB(v);
-		if (GB != 0) str.append(GB+ "GB ");
+		if (GB != 0) str.append(GB).append("GB ");
 		v -= GBToByte(GB);
 		long MB = byteToMB(v);
-		if (MB != 0) str.append(MB+ "MB ");
+		if (MB != 0) str.append(MB).append("MB ");
 		v -= MBToByte(MB);
 		long KB = byteToKB(v);
-		if (KB != 0) str.append(KB+ "KB ");
+		if (KB != 0) str.append(KB).append("KB ");
 		v -= KBToByte(KB);
-		str.append(v+"B");
+		str.append(v).append("B");
 		return str.toString();
 	}
 }

@@ -16,19 +16,6 @@ public interface IVersionConstants extends IBindable {
 	int getMinimumWorldHeight();
 
 	/**
-	 * @Returns True if the given DistanceGenerationMode can be run on our own
-	 *          thread. <br>
-	 *          False if the generation must be run on Minecraft's server thread.
-	 */
-	boolean isWorldGeneratorSingleThreaded(DistanceGenerationMode distanceGenerationMode);
-
-	/**
-	 * @Returns True if BatchGeneration is implemented <br>
-	 *          False if it is not supported
-	 */
-	boolean hasBatchGenerationImplementation();
-
-	/**
 	 * @Returns the number of generations call per thread.
 	 */
 	default int getWorldGenerationCountPerThread() {

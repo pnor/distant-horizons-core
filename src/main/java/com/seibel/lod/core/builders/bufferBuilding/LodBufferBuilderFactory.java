@@ -25,16 +25,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.LevelPosUtil;
-import com.seibel.lod.core.util.LodThreadFactory;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovableGridRingList;
-import com.seibel.lod.core.util.SpamReducedLogger;
-import com.seibel.lod.core.util.StatsMap;
+import com.seibel.lod.core.util.*;
+import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
@@ -209,8 +206,8 @@ public class LodBufferBuilderFactory {
 				// int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)),
 				// minCullingRange);
 				
-				MovableGridRingList.Pos minPos = renderRegions.getMinInRange();
-				MovableGridRingList.Pos maxPos = renderRegions.getMaxInRange();
+				Pos2D minPos = renderRegions.getMinInRange();
+				Pos2D maxPos = renderRegions.getMaxInRange();
 				CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
 				
 				try {

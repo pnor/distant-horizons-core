@@ -19,14 +19,10 @@
 
 package com.seibel.lod.core.api;
 
-import org.lwjgl.glfw.GLFW;
-
 import com.seibel.lod.core.api.ClientApi.LagSpikeCatcher;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
-import com.seibel.lod.core.builders.worldGeneration.LodWorldGenerator;
+import com.seibel.lod.core.enums.worldGeneration.BatchGenerator;
 import com.seibel.lod.core.enums.WorldType;
-import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
@@ -84,13 +80,9 @@ public class EventApi {
 
 		if (CONFIG.client().worldGenerator().getEnableDistantGeneration()) {
 			try {
-				if (VERSION_CONSTANTS.hasBatchGenerationImplementation()) {
-					if (batchGenerator == null)
-						batchGenerator = new BatchGenerator(ApiShared.lodBuilder, lodDim);
-					batchGenerator.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
-				} else {
-					LodWorldGenerator.INSTANCE.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
-				}
+				if (batchGenerator == null)
+					batchGenerator = new BatchGenerator(ApiShared.lodBuilder, lodDim);
+				batchGenerator.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
 			} catch (Exception e) {
 				// Exception may happen if world got unloaded unorderly
 				e.printStackTrace();
@@ -160,13 +152,9 @@ public class EventApi {
 		ApiShared.isShuttingDown = true;
 
 		// TODO Better report on when world gen is stuck and timeout
-		if (VERSION_CONSTANTS.hasBatchGenerationImplementation()) {
-			if (batchGenerator != null)
-				batchGenerator.stop(true);
-			batchGenerator = null;
-		} else {
-			LodWorldGenerator.INSTANCE.restartExecutorService();
-		}
+		if (batchGenerator != null)
+			batchGenerator.stop(true);
+		batchGenerator = null;
 
 		ApiShared.lodWorld.deselectWorld(); // This force a save and shutdown lodDim properly
 

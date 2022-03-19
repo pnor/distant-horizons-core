@@ -239,18 +239,15 @@ public class DataPointUtil
 				isVoid(dataPoint) + " " +
 				doesItExist(dataPoint) + '\n';
 	}
-	
+
 	public static void shrinkArray(short[] array, int packetSize, int start, int length, int arraySize)
 	{
 		start *= packetSize;
 		length *= packetSize;
 		arraySize *= packetSize;
-		for (int i = 0; i < arraySize - start; i++)
-		{
-			array[start + i] = array[start + length + i];
-			//remove comment to not leave garbage at the end
-			//array[start + packetSize + i] = 0;
-		}
+		//remove comment to not leave garbage at the end
+		//array[start + packetSize + i] = 0;
+		if (arraySize - start >= 0) System.arraycopy(array, start + length + 0, array, start + 0, arraySize - start);
 	}
 	
 	public static void extendArray(short[] array, int packetSize, int start, int length, int arraySize)
