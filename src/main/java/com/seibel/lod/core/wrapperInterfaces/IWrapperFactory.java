@@ -26,7 +26,6 @@ import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
-import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractWorldGeneratorWrapper;
 
 /**
  * This handles creating abstract wrapper objects.
@@ -44,9 +43,6 @@ public interface IWrapperFactory extends IBindable
 	AbstractChunkPosWrapper createChunkPos(int x, int z);
 	AbstractChunkPosWrapper createChunkPos(AbstractChunkPosWrapper newChunkPos);
 	AbstractChunkPosWrapper createChunkPos(AbstractBlockPosWrapper blockPos);
-
-	AbstractWorldGeneratorWrapper createWorldGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension,
-			IWorldWrapper worldWrapper);
 
 	AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(LodBuilder newLodBuilder,
 			LodDimension newLodDimension, IWorldWrapper worldWrapper);

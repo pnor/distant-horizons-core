@@ -24,7 +24,10 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.util.*;
+import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
+import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -32,7 +35,6 @@ import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -119,7 +121,7 @@ public class LodRenderer
 	 * This HashSet contains every chunk that Vanilla Minecraft
 	 * is going to render
 	 */
-	public MovableGridList<Boolean> vanillaRenderedChunks;
+	public MovableCenteredGridList<Boolean> vanillaRenderedChunks;
 	public int vanillaRenderedChunksCenterX;
 	public int vanillaRenderedChunksCenterZ;
 	public int vanillaRenderedChunksRefreshTimer;
@@ -354,7 +356,7 @@ public class LodRenderer
 		    int halfLen = len/2;
 		    for(int i =0; i < maxI; i++){
 		        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
-		        	MovableGridRingList.Pos pos = regions.getCenter();
+		        	Pos2D pos = regions.getCenter();
 		        	int regionX = ox+pos.x;
 		        	int regionZ = oy+pos.y;
 		        	{
@@ -527,16 +529,16 @@ public class LodRenderer
 		// if the player is high enough, draw all LODs
 		IWorldWrapper world = MC.getWrappedClientWorld();
 		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight()) {
-			vanillaRenderedChunks = new MovableGridList<Boolean>(
+			vanillaRenderedChunks = new MovableCenteredGridList<Boolean>(
 					chunkRenderDistance, chunkX, chunkZ);
 			return true;
 		}
-		MovableGridList<Boolean> chunkList;
+		MovableCenteredGridList<Boolean> chunkList;
 
 		boolean anyChanged = false;
 		if (vanillaRenderedChunks == null || vanillaRenderedChunks.gridCentreToEdge != chunkRenderDistance ||
 				vanillaRenderedChunks.getCenterX()!=chunkX || vanillaRenderedChunks.getCenterY()!=chunkZ) {
-			chunkList = new MovableGridList<Boolean>(chunkRenderDistance, chunkX, chunkZ);
+			chunkList = new MovableCenteredGridList<Boolean>(chunkRenderDistance, chunkX, chunkZ);
 			anyChanged = true;
 		} else {
 			chunkList = vanillaRenderedChunks;

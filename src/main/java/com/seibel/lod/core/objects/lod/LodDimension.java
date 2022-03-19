@@ -34,16 +34,10 @@ import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
-import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LevelPosUtil;
-import com.seibel.lod.core.util.LodThreadFactory;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovableGridRingList;
-import com.seibel.lod.core.util.MovableGridRingList.Pos;
-import com.seibel.lod.core.util.SpamReducedLogger;
-import com.seibel.lod.core.util.UnitBytes;
+import com.seibel.lod.core.util.*;
+import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
@@ -172,7 +166,7 @@ public class LodDimension
 	{
 		ApiShared.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
 		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
-		Pos p = regions.getCenter();
+		Pos2D p = regions.getCenter();
 		regions.move(p.x+regionOffset.x, p.y+regionOffset.z);
 		ApiShared.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
 	}
@@ -212,7 +206,7 @@ public class LodDimension
 	@Deprecated
 	public LodRegion getRegionByArrayIndex(int xIndex, int zIndex)
 	{
-		Pos p = regions.getMinInRange();
+		Pos2D p = regions.getMinInRange();
 		return regions.get(p.x+xIndex, p.y+zIndex);
 	}
 	
@@ -278,7 +272,7 @@ public class LodDimension
 		Runnable thread = () -> {
 			//ApiShared.LOGGER.info("LodDim cut Region: " + playerPosX + "," + playerPosZ);
 			totalDirtiedRegions = 0;
-			Pos minPos = regions.getMinInRange();
+			Pos2D minPos = regions.getMinInRange();
 			// go over every region in the dimension
 			iterateWithSpiral((int x, int z) -> {
 				double minDistance;
@@ -338,7 +332,7 @@ public class LodDimension
 		// for the same location
 		Runnable thread = () -> {
 			//ApiShared.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
-			Pos minPos = regions.getMinInRange();
+			Pos2D minPos = regions.getMinInRange();
 			iterateWithSpiral((int x, int z) -> {
 				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.02, 64)) {
 					Runtime.getRuntime().gc();
@@ -451,7 +445,7 @@ public class LodDimension
 		// This ensures that we don't spawn way too much regions without finish flushing them first.
 		//if (dirtiedRegionsRoughCount > 16) return posToGenerate;
 		GenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? GenerationPriority.NEAR_FIRST : priority;
-		Pos minPos = regions.getMinInRange();
+		Pos2D minPos = regions.getMinInRange();
 		iterateByDistance((int x, int z) -> {
 			boolean isCloseRange = (Math.abs(x-halfWidth)+Math.abs(z-halfWidth)<=2);
 			//boolean isCloseRange = true;
@@ -640,7 +634,7 @@ public class LodDimension
 	}
 	
 	public RegionPos getCenterRegionPos() {
-		Pos p = regions.getCenter();
+		Pos2D p = regions.getCenter();
 		return new RegionPos(p.x, p.y);
 	}
 	
@@ -658,7 +652,7 @@ public class LodDimension
 	{
 		width = newWidth;
 		halfWidth = width/ 2;
-		Pos p = regions.getCenter();
+		Pos2D p = regions.getCenter();
 		regions = new MovableGridRingList<LodRegion>(halfWidth, p.x, p.y);
 		generateIteratorList();
 	}

@@ -1,5 +1,6 @@
 package com.seibel.lod.core.dataFormat;
 
+@Deprecated //Unused
 public class DataMergeUtil
 {
 	public static void shrinkArray(short[] array, int packetSize, int start, int length, int arraySize)

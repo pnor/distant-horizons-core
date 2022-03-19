@@ -21,7 +21,6 @@ import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
-import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.render.GLProxy;
@@ -31,7 +30,7 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovableGridList;
+import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -243,8 +242,8 @@ public class RenderRegion implements AutoCloseable
 			{ 1, 1}
 	};
 	
-	private static MovableGridList<Boolean> shinkGridEdge(MovableGridList<Boolean> target) {
-		MovableGridList<Boolean> result =  new MovableGridList<Boolean>(
+	private static MovableCenteredGridList<Boolean> shinkGridEdge(MovableCenteredGridList<Boolean> target) {
+		MovableCenteredGridList<Boolean> result =  new MovableCenteredGridList<Boolean>(
 				target.gridCentreToEdge-1, target.getCenterX(), target.getCenterY());
 		int chunkGridMinX = target.getCenterX() - target.gridCentreToEdge;
 		int chunkGridMinZ = target.getCenterY() - target.gridCentreToEdge;
@@ -274,7 +273,7 @@ public class RenderRegion implements AutoCloseable
 		// position
 		PosToRenderContainer posToRender = new PosToRenderContainer(minDetail, region.regionPosX, region.regionPosZ);
 		region.getPosToRender(posToRender, playerX, playerZ);
-		MovableGridList<Boolean> chunkGrid = ClientApi.renderer.vanillaRenderedChunks;
+		MovableCenteredGridList<Boolean> chunkGrid = ClientApi.renderer.vanillaRenderedChunks;
 		if (CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw() == VanillaOverdraw.BORDER) {
 			chunkGrid = shinkGridEdge(chunkGrid);
 		}

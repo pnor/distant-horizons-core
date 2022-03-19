@@ -1,4 +1,6 @@
-package com.seibel.lod.core.util;
+package com.seibel.lod.core.util.gridList;
+
+import com.seibel.lod.core.objects.Pos2D;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,15 +10,7 @@ import java.util.function.Consumer;
 
 public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	
-	private static final long serialVersionUID = -7743190533384530134L;
-	
-	public static class Pos {
-		public final int x;
-		public final int y;
-		Pos(int x, int y) {this.x=x; this.y=y;}
-	}
-	
-	private AtomicReference<Pos> pos = new AtomicReference<Pos>();
+	private AtomicReference<Pos2D> pos = new AtomicReference<Pos2D>();
 	
 	private final int halfSize;
 	private final int size;
@@ -26,7 +20,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 		super((halfSize * 2 + 1) * (halfSize * 2 + 1));
 		size = halfSize * 2 + 1;
 		this.halfSize = halfSize;
-		pos.set(new Pos(centerX-halfSize, centerY-halfSize));
+		pos.set(new Pos2D(centerX-halfSize, centerY-halfSize));
 		clear();
 	}
 	
@@ -53,16 +47,16 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 		}
 	}
 	
-	public Pos getCenter() {
-		Pos bottom = pos.get();
-		return new Pos(bottom.x+halfSize, bottom.y+halfSize);
+	public Pos2D getCenter() {
+		Pos2D bottom = pos.get();
+		return new Pos2D(bottom.x+halfSize, bottom.y+halfSize);
 	}
-	public Pos getMinInRange() {
+	public Pos2D getMinInRange() {
 		return pos.get();
 	}
-	public Pos getMaxInRange() {
-		Pos bottom = pos.get();
-		return new Pos(bottom.x+size-1, bottom.y+size-1);
+	public Pos2D getMaxInRange() {
+		Pos2D bottom = pos.get();
+		return new Pos2D(bottom.x+size-1, bottom.y+size-1);
 	}
 	public int getSize() {return size;}
 	public int getHalfSize() {return halfSize;}
@@ -70,10 +64,10 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	// WARNNING! Be careful with race condition!
 	// The grid may get moved after this query!
 	public boolean inRange(int x, int y) {
-		Pos min = pos.get();
+		Pos2D min = pos.get();
 		return (x>=min.x && x<min.x+size && y>=min.y && y<min.y+size);
 	}
-	private boolean _inRangeAquired(int x, int y, Pos min) {
+	private boolean _inRangeAquired(int x, int y, Pos2D min) {
 		return (x>=min.x && x<min.x+size && y>=min.y && y<min.y+size);
 	}
 	private T _getUnsafe(int x, int y) {
@@ -88,11 +82,11 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 
 	// return null if x,y is outside of the grid
 	public T get(int x, int y) {
-		Pos min = pos.get();
+		Pos2D min = pos.get();
 		if (!_inRangeAquired(x, y, min)) return null;
 		moveLock.readLock().lock();
 		try {
-			Pos newMin = pos.get();
+			Pos2D newMin = pos.get();
 			// Use EXECT compare here
 			if (min!=newMin)
 				if (!_inRangeAquired(x, y, newMin)) return null;
@@ -104,11 +98,11 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	
 	// return false if x,y is outside of the grid
 	public boolean set(int x, int y, T t) {
-		Pos min = pos.get();
+		Pos2D min = pos.get();
 		if (!_inRangeAquired(x, y, min)) return false;
 		moveLock.readLock().lock();
 		try {
-			Pos newMin = pos.get();
+			Pos2D newMin = pos.get();
 			// Use EXECT compare here
 			if (min!=newMin)
 				if (!_inRangeAquired(x, y, newMin)) return false;
@@ -121,11 +115,11 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	
 	// return input t if x,y is outside of the grid
 	public T swap(int x, int y, T t) {
-		Pos min = pos.get();
+		Pos2D min = pos.get();
 		if (!_inRangeAquired(x, y, min)) return t;
 		moveLock.readLock().lock();
 		try {
-			Pos newMin = pos.get();
+			Pos2D newMin = pos.get();
 			// Use EXECT compare here
 			if (min!=newMin)
 				if (!_inRangeAquired(x, y, newMin)) return t;
@@ -165,7 +159,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	}
 
 	public boolean move(int newCenterX, int newCenterY, Consumer<? super T> d) {
-		Pos cPos = pos.get();
+		Pos2D cPos = pos.get();
 		int newMinX = newCenterX - halfSize;
 		int newMinY = newCenterY - halfSize;
 		if (cPos.x == newMinX && cPos.y == newMinY)
@@ -193,7 +187,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 					}
 				}
 			}
-			pos.set(new Pos(newMinX, newMinY));
+			pos.set(new Pos2D(newMinX, newMinY));
 			return true;
 		} finally {
 			moveLock.writeLock().unlock();
@@ -202,7 +196,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 
 	@Override
 	public String toString() {
-		Pos p = pos.get();
+		Pos2D p = pos.get();
 		return "MovabeGridRingList[" + p.x+halfSize + "," + p.y+halfSize + "] " + size + "*" + size + "[" + size() + "]";
 	}
 

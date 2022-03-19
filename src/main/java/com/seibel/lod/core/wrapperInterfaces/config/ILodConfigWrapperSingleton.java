@@ -570,32 +570,32 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					+ " Only generate the biomes and use the biome's \n"
 					+ " grass color, water color, or snow color. \n"
 					+ " Doesn't generate height, everything is shown at sea level. \n"
-					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.BIOME_ONLY) + " - Fastest (2-5 ms) \n"
+					+ "  - Fastest (2-5 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT + " \n"
 					+ " Same as " + DistanceGenerationMode.BIOME_ONLY + ", except instead \n"
 					+ " of always using sea level as the LOD height \n"
 					+ " different biome types (mountain, ocean, forest, etc.) \n"
 					+ " use predetermined heights to simulate having height data. \n"
-					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT) + " - Fastest (2-5 ms) \n"
+					+ "  - Fastest (2-5 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.SURFACE + " \n"
 					+ " Generate the world surface, \n"
 					+ " this does NOT include trees, \n"
 					+ " or structures. \n"
-					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.SURFACE) + " - Faster (10-20 ms) \n"
+					+ "  - Faster (10-20 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.FEATURES + " \n"
 					+ " Generate everything except structures. \n"
 					+ " WARNING: This may cause world generation bugs or instability! \n"
-					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.FEATURES) + " - Fast (15-20 ms) \n"
+					+ "  - Fast (15-20 ms) \n"
 					+ "\n"
 					+ " " + DistanceGenerationMode.FULL + " \n"
 					+ " Ask the local server to generate/load each chunk. \n"
 					+ " This will show player made structures, which can \n"
 					+ " be useful if you are adding the mod to a pre-existing world. \n"
 					+ " This is the most compatible, but causes server/simulation lag. \n"
-					+ " " + multiOrSingleThreadText(versionConstants, DistanceGenerationMode.FULL) + " - Slow (15-50 ms, with spikes up to 200 ms) \n"
+					+ "  - Slow (15-50 ms, with spikes up to 200 ms) \n"
 					+ "\n"
 					+ " The multithreaded options may increase CPU load significantly (while generating) \n"
 					+ " depending on how many world generation threads you have allocated. \n";
@@ -670,13 +670,6 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					+ " This wont't affect performance.";
 			BlocksToAvoid getBlocksToAvoid();
 			void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
-			
-			
-			/** description helper method */
-			static String multiOrSingleThreadText(IVersionConstants versionConstants, DistanceGenerationMode distanceGenerationMode) 
-			{
-				return versionConstants.isWorldGeneratorSingleThreaded(distanceGenerationMode) ? "Singlethreaded" : "Multithreaded"; 
-			}
 		}
 		
 		
