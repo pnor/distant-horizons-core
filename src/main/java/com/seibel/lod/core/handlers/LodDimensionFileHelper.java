@@ -12,6 +12,7 @@ import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
@@ -28,15 +29,10 @@ import java.util.UUID;
 public class LodDimensionFileHelper
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/** Increasing this will increase accuracy but increase calculation time */
 	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.LOW;
-	
-	/**
-	 * The minimum percent of identical dataPoints to consider two chunks as the same. <Br>
-	 * 0.9 = 90%
-	 */
-	private static final double minimumSimilarityRequired = 0.9;
 	
 	
 	/**
@@ -129,6 +125,7 @@ public class LodDimensionFileHelper
 		File mostSimilarWorldFolder = null;
 		int mostEqualLines = 0;
 		boolean oneDimensionIsValid = false;
+		double minimumSimilarityRequired = CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity();
 		
 		for (File testDimFolder : dimensionFolder.listFiles())
 		{
@@ -176,10 +173,7 @@ public class LodDimensionFileHelper
 					}
 				}
 			}
-
-//			String message = "test data [" + testDimFolder.getName().substring(0, 6) + "...] " + testChunkData[0][0][0] + " equal lines: " + equalLines + "/" + totalLineCount;
-//			MC.sendChatMessage(message);
-//			ApiShared.LOGGER.info(message);
+			
 			
 			// determine if this world is closer to the newly loaded world
 			double percentEqual = (double) equalLines / (double) totalLineCount;
@@ -188,6 +182,9 @@ public class LodDimensionFileHelper
 				mostEqualLines = equalLines;
 				mostSimilarWorldFolder = testDimFolder;
 			}
+//			String message = "test data [" + testDimFolder.getName().substring(0, 6) + "...] " + testChunkData[0][0][0] + " equal lines: " + equalLines + "/" + totalLineCount + " = " + percentEqual;
+//			MC.sendChatMessage(message);
+//			ApiShared.LOGGER.info(message);
 		}
 		
 		

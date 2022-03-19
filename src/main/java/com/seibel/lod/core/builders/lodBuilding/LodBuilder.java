@@ -135,9 +135,9 @@ public class LodBuilder
 			catch (RuntimeException e)
 			{
 				ApiShared.LOGGER.error("LodBuilder Thread Uncaught Exception: ", e);
-			//	// if the world changes while LODs are being generated
-			//	// they will throw errors as they try to access things that no longer
-			//	// exist.
+				// if the world changes while LODs are being generated
+				// they will throw errors as they try to access things that no longer
+				// exist.
 			} finally {
 				if (!retryNeeded)
 					endCallback.run();

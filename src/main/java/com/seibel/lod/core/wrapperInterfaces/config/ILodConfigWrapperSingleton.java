@@ -354,6 +354,19 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					+ "\n";
 			ServerFolderNameMode getServerFolderNameMode();
 			void setServerFolderNameMode(ServerFolderNameMode newServerFolderNameMode);
+			
+			double MULTI_DIMENSION_REQUIRED_SIMILARITY_DEFAULT = 0.8;
+			String MULTI_DIMENSION_REQUIRED_SIMILARITY_DESC = ""
+					+ " When matching worlds of the same dimension type the \n"
+					+ " chunks tested must be at least this percent the same \n"
+					+ " in order to be considered the same world. \n"
+					+ "\n"
+					+ " 1 (100%) means the chunks must be identical. \n"
+					+ " 0.5 (50%) means the chunks must be half the same. \n"
+					+ " 0 (0%) means almost any world will match. \n"
+					+ "\n";
+			double getMultiDimensionRequiredSimilarity();
+			void setMultiDimensionRequiredSimilarity(double newMultiDimensionMinimumSimilarityPercent);
 		}
 		
 		
