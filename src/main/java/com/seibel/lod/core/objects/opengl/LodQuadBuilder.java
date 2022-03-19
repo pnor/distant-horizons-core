@@ -19,6 +19,8 @@ public class LodQuadBuilder {
 	static final int MAX_QUADS_PER_BUFFER = MAX_BUFFER_SIZE / QUAD_BYTE_SIZE;
 	//static final int MAX_MERGED_QUAD_SIZE = 64;
 
+	public boolean skipSkylight0Quads = true;
+
 	static class Quad {
 		final short x;
 		final short y;
@@ -232,33 +234,40 @@ public class LodQuadBuilder {
 			byte blocklight) {
 		if (dir.ordinal() <= LodDirection.DOWN.ordinal())
 			throw new IllegalArgumentException("addQuadAdj() is only for adj direction! Not UP or Down!");
+		if (skipSkylight0Quads && skylight==0) return;
 		quads[dir.ordinal()].add(new Quad(x, y, z, w0, wy, color, skylight, blocklight, dir));
 	}
 
 	// XZ
 	public void addQuadUp(short x, short y, short z, short wx, short wz, int color, byte skylight, byte blocklight) {
+		if (skipSkylight0Quads && skylight==0) return;
 		quads[LodDirection.UP.ordinal()].add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.UP));
 	}
 
 	public void addQuadDown(short x, short y, short z, short wx, short wz, int color, byte skylight, byte blocklight) {
+		if (skipSkylight0Quads && skylight==0) return;
 		quads[LodDirection.DOWN.ordinal()].add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.DOWN));
 	}
 
 	// XY
 	public void addQuadN(short x, short y, short z, short wx, short wy, int color, byte skylight, byte blocklight) {
+		if (skipSkylight0Quads && skylight==0) return;
 		quads[LodDirection.NORTH.ordinal()].add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.NORTH));
 	}
 
 	public void addQuadS(short x, short y, short z, short wx, short wy, int color, byte skylight, byte blocklight) {
+		if (skipSkylight0Quads && skylight==0) return;
 		quads[LodDirection.SOUTH.ordinal()].add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.SOUTH));
 	}
 
 	// ZY
 	public void addQuadW(short x, short y, short z, short wz, short wy, int color, byte skylight, byte blocklight) {
+		if (skipSkylight0Quads && skylight==0) return;
 		quads[LodDirection.WEST.ordinal()].add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.WEST));
 	}
 
 	public void addQuadE(short x, short y, short z, short wz, short wy, int color, byte skylight, byte blocklight) {
+		if (skipSkylight0Quads && skylight==0) return;
 		quads[LodDirection.EAST.ordinal()].add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.EAST));
 	}
 

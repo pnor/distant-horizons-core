@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.render.LodRenderer;
+import com.seibel.lod.core.util.SpamReducedLogger;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -47,18 +49,21 @@ public class SimpleRenderBuffer extends RenderBuffer
 	
 	// public void onSwapToFront() {}
 	// public void onSwapToBack() {}
-	
+
 	@Override
 	public boolean render(LodRenderProgram shaderProgram)
 	{
+		boolean hasRendered = false;
 		for (LodVertexBuffer vbo : vbos) {
 			if (vbo == null) continue;
 			if (vbo.vertexCount == 0) continue;
+			hasRendered = true;
 			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 			shaderProgram.bindVertexBuffer(vbo.id);
 			GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbo.vertexCount);
+			//LodRenderer.tickLogger.info("Vertex buffer: {}", vbo);
 		}
-		return true;
+		return hasRendered;
 	}
 	
 	@Override

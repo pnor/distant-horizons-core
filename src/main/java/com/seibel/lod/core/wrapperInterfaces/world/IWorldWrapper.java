@@ -60,5 +60,5 @@ public interface IWorldWrapper extends IBindable
 
 	default IChunkWrapper tryGetChunk(AbstractChunkPosWrapper pos) {return null;}
 
-	
+    boolean hasChunkLoaded(int chunkX, int chunkZ);
 }

@@ -32,24 +32,17 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	
 	@Override
 	public void clear() {
-		moveLock.writeLock().lock();
-		try {
-			super.clear();
-			super.ensureCapacity(size*size);
-			for (int i=0; i<size*size; i++) {
-				super.add(null);
-			}
-		} finally {
-			moveLock.writeLock().unlock();
-		}
+		clear(null);
 	}
 	
 	public void clear(Consumer<? super T> d) {
 		moveLock.writeLock().lock();
 		try {
-			super.forEach((t) -> {
-				if (t!=null) d.accept(t);
-			});
+			if (d != null) {
+				super.forEach((t) -> {
+					if (t!=null) d.accept(t);
+				});
+			}
 			super.clear();
 			super.ensureCapacity(size*size);
 			for (int i=0; i<size*size; i++) {

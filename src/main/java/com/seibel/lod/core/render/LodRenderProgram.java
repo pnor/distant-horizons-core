@@ -23,65 +23,66 @@ import java.awt.Color;
 
 import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.math.Mat4f;
-import com.seibel.lod.core.render.objects.ShaderProgram;
-import com.seibel.lod.core.render.objects.VertexAttribute;
-import com.seibel.lod.core.render.objects.VertexAttributePostGL43;
-import com.seibel.lod.core.render.objects.VertexAttributePreGL43;
+import com.seibel.lod.core.objects.math.Vec3f;
+import com.seibel.lod.core.render.objects.*;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 
 public class LodRenderProgram extends ShaderProgram {
 	public static final String VERTEX_SHADER_PATH = "shaders/standard.vert";
 	public static final String FRAGMENT_SHADER_PATH = "shaders/flat_shaded.frag";
+	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
 	public final VertexAttribute vao;
 	
 	// Attributes
 	public final int posAttrib;
 	public final int colAttrib;
-	//public final int lightAttrib; //Sky light then block light
+
 	// Uniforms
-	public final int mvmUniform;
-	public final int projUniform;
-	//public final int cameraUniform;
-	public final int fogColorUniform;
-	// public final int skyLightUniform; worldSkyLight is currently not used
+	public final int combinedMatUniform;
+	public final int modelOffsetUniform;
+	public final int worldYOffsetUniform;
+
 	public final int lightMapUniform;
 	// Fog Uniforms
-	public final int fogEnabledUniform;
-	public final int nearFogEnabledUniform;
-	public final int farFogEnabledUniform;
+	public final int fogColorUniform;
+	public final int fogScaleUniform;
+	public final int fogVerticalScaleUniform;
 	public final int nearFogStartUniform;
-	public final int nearFogEndUniform;
-	public final int farFogStartUniform;
-	public final int farFogEndUniform;
+	public final int nearFogLengthUniform;;
+	public final int fullFogModeUniform;
+
+	public final LodFogConfig fogConfig;
 
 	// This will bind  VertexAttribute
-	public LodRenderProgram() {
-		super(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH, "fragColor");
+	public LodRenderProgram(LodFogConfig fogConfig) {
+		super(() -> Shader.loadFile(VERTEX_SHADER_PATH, false, new StringBuilder()).toString(),
+				() -> fogConfig.loadAndProcessFragShader(FRAGMENT_SHADER_PATH, false).toString(),
+				"fragColor");
+		this.fogConfig = fogConfig;
 		
         posAttrib = getAttributeLocation("vPosition");
-        colAttrib = getAttributeLocation("color");
-        //lightAttrib = getAttributeLocation("light");
-        
-        mvmUniform = getUniformLocation("modelViewMatrix");
-		projUniform = getUniformLocation("projectionMatrix");
-		//cameraUniform = getUniformLocation("cameraPos");
-		fogColorUniform = getUniformLocation("fogColor");
-		// skyLightUniform = getUniformLocation("worldSkyLight");
+        colAttrib = tryGetAttributeLocation("color"); // might be optimized out in some fog settings
+
+		combinedMatUniform = getUniformLocation("combinedMatrix");
+		modelOffsetUniform = getUniformLocation("modelOffset");
+		worldYOffsetUniform = tryGetUniformLocation("worldYOffset");
+
 		lightMapUniform = getUniformLocation("lightMap");
 
 		// Fog uniforms
-		fogEnabledUniform = getUniformLocation("fogEnabled");
-		nearFogEnabledUniform = getUniformLocation("nearFogEnabled");
-		farFogEnabledUniform = getUniformLocation("farFogEnabled");
+		fullFogModeUniform = getUniformLocation("fullFogMode");
+		fogColorUniform = getUniformLocation("fogColor");
+		fogScaleUniform = tryGetUniformLocation("fogScale");
+		fogVerticalScaleUniform = tryGetUniformLocation("fogVerticalScale");
 		// near
-		nearFogStartUniform = getUniformLocation("nearFogStart");
-		nearFogEndUniform = getUniformLocation("nearFogEnd");
-		// far
-		farFogStartUniform = getUniformLocation("farFogStart");
-		farFogEndUniform = getUniformLocation("farFogEnd");
-		
+		nearFogStartUniform = tryGetUniformLocation("nearFogStart");
+		nearFogLengthUniform = tryGetUniformLocation("nearFogLength");
+
 		// TODO: Add better use of the LODFormat thing
 		int vertexByteCount = LodUtil.LOD_VERTEX_FORMAT.getByteSize();
 		if (GLProxy.getInstance().VertexAttributeBufferBindingSupported)
@@ -92,7 +93,7 @@ public class LodRenderProgram extends ShaderProgram {
 		// Now a pos+light.
 		vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addUnsignedShortsPointer(4, false)); // 2+2+2+2
 		//vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false)); // 4+4+4
-		vao.setVertexAttribute(0, colAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true)); // +4
+		vao.setVertexAttribute(0, colAttrib == -1 ? 2 : colAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true)); // +4
 		//vao.setVertexAttribute(0, lightAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(2, false)); // +4 due to how it aligns
 		try {
 		vao.completeAndCheck(vertexByteCount);
@@ -100,6 +101,13 @@ public class LodRenderProgram extends ShaderProgram {
 			System.out.println(LodUtil.LOD_VERTEX_FORMAT);
 			throw e;
 		}
+	}
+
+	// If not usable, return a new LodFogConfig to be constructed
+	public LodFogConfig isShaderUsable() {
+		LodFogConfig newConfig = LodFogConfig.generateFogConfig();
+		if (fogConfig.equals(newConfig)) return null;
+		return newConfig;
 	}
 	
 	// Override ShaderProgram.bind()
@@ -127,41 +135,33 @@ public class LodRenderProgram extends ShaderProgram {
 		vao.unbindBuffersFromAllBindingPoint();
 	}
 	
-	public void fillUniformData(Mat4f projectionMatrix, Color fogColor, int skyLight, int lightmapBindPoint) {
+	public void fillUniformData(Mat4f combinedMatrix, Color fogColor,
+								int lightmapBindPoint, int worldHeight, int worldYOffset, int lodDrawDistance,
+								int vanillaDrawDistance, boolean fullFogMode) {
         super.bind();
+		vanillaDrawDistance += 32; // Give it a 2 chunk boundary for near fog.
 		// uniforms
-		setUniform(projUniform, projectionMatrix);
-		setUniform(fogColorUniform, fogColor);
+		setUniform(combinedMatUniform, combinedMatrix);
+
 		// setUniform(skyLightUniform, skyLight);
 		setUniform(lightMapUniform, lightmapBindPoint);
+
+		if (worldYOffsetUniform != -1) setUniform(worldYOffsetUniform, (float)worldYOffset);
+
+		// Fog
+		setUniform(fullFogModeUniform, fullFogMode ? 1 : 0);
+		setUniform(fogColorUniform, fogColor);
+
+		float nearFogLen = vanillaDrawDistance * 0.2f / lodDrawDistance;
+		float nearFogStart = vanillaDrawDistance * (VERSION_CONSTANTS.isVanillaRenderedChunkSquare() ? (float)Math.sqrt(2.) : 1.f) / lodDrawDistance;
+		if (nearFogStartUniform != -1) setUniform(nearFogStartUniform, nearFogStart);
+		if (nearFogLengthUniform != -1) setUniform(nearFogLengthUniform, nearFogLen);
+		if (fogScaleUniform != -1) setUniform(fogScaleUniform, 1.f/lodDrawDistance);
+		if (fogVerticalScaleUniform != -1) setUniform(fogVerticalScaleUniform, 1.f/worldHeight);
 	}
-	
-	public void fillUniformModelMatrix(Mat4f modelViewMatrix) {
-		super.bind();
-        setUniform(mvmUniform, modelViewMatrix);
-	}
-	
-	public void fillUniformDataForFog(LodFogConfig fogSettings, boolean allFogMode) {
-		super.bind();
-		if (allFogMode) {
-			setUniform(fogEnabledUniform, true);
-			setUniform(nearFogEnabledUniform, false);
-			setUniform(farFogEnabledUniform, true);
-			setUniform(farFogStartUniform, 0.0f);
-			setUniform(farFogEndUniform, 0.0f);
-		} else if (fogSettings.fogDrawMode != FogDrawMode.FOG_DISABLED) {
-			setUniform(fogEnabledUniform, true);
-			setUniform(nearFogEnabledUniform, fogSettings.fogDistance != FogDistance.FAR);
-			setUniform(farFogEnabledUniform, fogSettings.fogDistance != FogDistance.NEAR);
-			// near
-			setUniform(nearFogStartUniform, fogSettings.nearFogStart);
-			setUniform(nearFogEndUniform, fogSettings.nearFogEnd);
-			// far
-			setUniform(farFogStartUniform, fogSettings.farFogStart);
-			setUniform(farFogEndUniform, fogSettings.farFogEnd);
-		} else {
-			setUniform(fogEnabledUniform, false);
-		}
+
+	public void setModelPos(Vec3f modelPos) {
+		setUniform(modelOffsetUniform, modelPos);
 	}
 
 }

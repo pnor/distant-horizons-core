@@ -109,7 +109,7 @@ public class RenderRegion implements AutoCloseable
 	
 	public boolean render(LodDimension renderDim,
 			Vec3d cameraPos, AbstractBlockPosWrapper cameraBlockPos, Vec3f cameraDir,
-			Mat4f baseModelViewMatrix, boolean enableDirectionalCulling, LodRenderProgram program) {
+			boolean enableDirectionalCulling, LodRenderProgram program) {
 		if (!frontState.compareAndSet(FrontState.Unused, FrontState.Rendering)) return false;
 		try {
 		if (renderDim != lodDim) return false;
@@ -120,7 +120,7 @@ public class RenderRegion implements AutoCloseable
 		if (state == BackState.Complete) {
 			if (renderBufferBack != null) {
 				if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("RenderRegion swap @ {}", regionPos);
-				boolean shouldKeep = renderBufferFront==null ? false : renderBufferFront.onSwapToBack();
+				boolean shouldKeep = renderBufferFront != null && renderBufferFront.onSwapToBack();
 				RenderBuffer temp = shouldKeep ? renderBufferFront : null;
 				renderBufferFront = renderBufferBack;
 				renderBufferBack = temp;
@@ -131,12 +131,11 @@ public class RenderRegion implements AutoCloseable
 			}
 		}
 		if (renderBufferFront == null) return false;
-		Mat4f localModelViewMatrix = baseModelViewMatrix.copy();
-		localModelViewMatrix.multiplyTranslationMatrix(
-				(regionPos.x * LodUtil.REGION_WIDTH) - cameraPos.x,
-				LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y,
-				(regionPos.z * LodUtil.REGION_WIDTH) - cameraPos.z);
-		program.fillUniformModelMatrix(localModelViewMatrix);
+		program.setModelPos(new Vec3f(
+				(float) ((regionPos.x * LodUtil.REGION_WIDTH) - cameraPos.x),
+				(float) (LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y),
+				(float) ((regionPos.z * LodUtil.REGION_WIDTH) - cameraPos.z)));
+
 		return renderBufferFront.render(program);
 		} finally {
 			frontState.compareAndSet(FrontState.Rendering, FrontState.Unused);

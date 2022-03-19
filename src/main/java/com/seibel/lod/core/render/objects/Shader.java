@@ -54,7 +54,7 @@ public class Shader
 		ApiShared.LOGGER.info("Loading shader at "+path);
 		// Create an empty shader object
 		id = GL32.glCreateShader(type);
-		StringBuilder source = loadFile(path, absoluteFilePath);
+		StringBuilder source = loadFile(path, absoluteFilePath, new StringBuilder());
 		GL32.glShaderSource(id, source);
 
 		GL32.glCompileShader(id);
@@ -68,14 +68,30 @@ public class Shader
 		ApiShared.LOGGER.info("Shader at "+path+" loaded sucessfully.");
 	}
 
+	public Shader(int type, String sourceString)
+	{
+		ApiShared.LOGGER.info("Loading shader with soruceString:\n{}", sourceString);
+		// Create an empty shader object
+		id = GL32.glCreateShader(type);
+		GL32.glShaderSource(id, sourceString);
+
+		GL32.glCompileShader(id);
+		// check if the shader compiled
+		int status = GL32.glGetShaderi(id, GL32.GL_COMPILE_STATUS);
+		if (status != GL32.GL_TRUE) {
+			String message = "Shader compiler error. Details: "+GL32.glGetShaderInfoLog(id);
+			free(); // important!
+			throw new RuntimeException(message);
+		}
+		ApiShared.LOGGER.info("Shader loaded sucessfully.");
+	}
+
 	// REMEMBER to always free the resource!
 	public void free() {
 		GL32.glDeleteShader(id);
 	}
 	
-	private StringBuilder loadFile(String path, boolean absoluteFilePath) {
-		StringBuilder stringBuilder = new StringBuilder();
-		
+	public static StringBuilder loadFile(String path, boolean absoluteFilePath, StringBuilder stringBuilder) {
 		try
 		{
 			// open the file

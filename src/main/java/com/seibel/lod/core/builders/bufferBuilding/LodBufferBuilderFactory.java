@@ -273,15 +273,13 @@ public class LodBufferBuilderFactory {
 					ApiShared.LOGGER.error("LodBufferBuilder timed out: ", te);
 					resetThreadPools(true);
 				}
-			} catch (InterruptedException ie) {
 			} catch (Exception e) {
 				ApiShared.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
-			} finally {
-				if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("BufferBuilderStarter unlocked the region lock!");
-				regionsListLock.unlock();
 			}
 		} catch (InterruptedException ie) {
 		} finally {
+			regionsListLock.unlock();
+			if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("BufferBuilderStarter unlocked the region lock!");
 			builderThreadRunning = false;
 		}
 	}

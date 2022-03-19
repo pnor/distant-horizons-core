@@ -364,11 +364,7 @@ public class LodBuilder
 	
 	private boolean hasCliffFace(IChunkWrapper chunk, int x, int y, int z) {
 		for (LodDirection dir : DIRECTIONS) {
-			int cx = x+dir.getNormal().x;
-			int cy = y+dir.getNormal().y;
-			int cz = z+dir.getNormal().z;
-			if (!chunk.blockPosInsideChunk(cx, cy, cz)) return true;
-			IBlockDetailWrapper block = chunk.getBlockDetail(cx, cy, cz);
+			IBlockDetailWrapper block = chunk.getBlockDetailAtFace(x, y, z, dir);
 			if (block == null || !block.hasFaceCullingFor(LodDirection.OPPOSITE_DIRECTIONS[dir.ordinal()]))
 				return true;
 		}

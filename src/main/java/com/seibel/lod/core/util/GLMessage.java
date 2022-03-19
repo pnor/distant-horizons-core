@@ -1,5 +1,8 @@
 package com.seibel.lod.core.util;
 
+import com.seibel.lod.core.api.ApiShared;
+import org.lwjgl.system.CallbackI;
+
 import java.util.HashMap;
 import java.util.function.Function;
 
@@ -10,6 +13,32 @@ public final class GLMessage {
 	public final GLMessage.Source source;
 	public final String id;
 	public final String message;
+
+	// This is needed since gl callback will not have the correct class loader set, and causes issues.
+	static void initLoadClass() {
+		Builder dummy = new Builder();
+		dummy.add(GLMessage.HEADER);
+		dummy.add("ID");
+		dummy.add(":");
+		dummy.add("dummyId");
+		dummy.add("Source");
+		dummy.add(":");
+		dummy.add(Source.API.str);
+		dummy.add("Type");
+		dummy.add(":");
+		dummy.add(Type.OTHER.str);
+		dummy.add("Severity");
+		dummy.add(":");
+		dummy.add(Severity.LOW.str);
+		dummy.add("Message");
+		dummy.add(":");
+		dummy.add("dummyMessage");
+	}
+
+	static {
+		initLoadClass();
+	}
+
 	GLMessage(GLMessage.Type t, GLMessage.Severity s, GLMessage.Source sr, String id, String ms) {
 		this.type = t;
 		this.source = sr;
@@ -21,8 +50,7 @@ public final class GLMessage {
 	public String toString() {
 		return "[level:"+severity+", type:"+type+", source:"+source+", id:"+id+", msg:{"+message+"}]";
 	}
-	
-	
+
 	public enum Type {
 		ERROR,
 		DEPRECATED_BEHAVIOR,
@@ -34,7 +62,7 @@ public final class GLMessage {
 		POP_GROUP,
 		OTHER;
 		public final String str;
-		private Type() {
+		Type() {
 			str = super.toString().toUpperCase();
 		}
 		@Override
@@ -93,6 +121,9 @@ public final class GLMessage {
 	}
 	
 	public static class Builder {
+		static {
+			initLoadClass();
+		}
 		GLMessage.Type type;
 		GLMessage.Severity severity;
 		GLMessage.Source source;
@@ -121,10 +152,14 @@ public final class GLMessage {
 			boolean b = runStage(str);
 			if (b && stage >= 16) {
 				stage = 0;
-				return new GLMessage(type, severity, source, id, message);
-			} else {
-				return null;
+				GLMessage msg = new GLMessage(type, severity, source, id, message);
+				if (filterMessage(msg)) {
+					return msg;
+				}
+			} else if (!b) {
+				ApiShared.LOGGER.warn("Failed to parse GLMessage line '{}' at stage {}", str, stage);
 			}
+			return null;
 		}
 		
 		public void setTypeFilter(Function<Type, Boolean> typeFilter) {
@@ -136,7 +171,14 @@ public final class GLMessage {
 		public void setSourceFilter(Function<Source, Boolean> sourceFilter) {
 			this.sourceFilter = sourceFilter;
 		}
-		
+
+		private boolean filterMessage(GLMessage msg) {
+			if (sourceFilter!=null && !sourceFilter.apply(msg.source)) return false;
+			if (typeFilter!=null && !typeFilter.apply(msg.type)) return false;
+			if (severityFilter!=null && !severityFilter.apply(msg.severity)) return false;
+			return true;
+		}
+
 		private boolean runStage(String str) {
 			switch (stage) {
 			case 0:
@@ -155,7 +197,6 @@ public final class GLMessage {
 				return checkAndIncStage(str, ":");
 			case 6:
 				source = Source.get(str);
-				if (sourceFilter!=null && !sourceFilter.apply(source)) stage = -1;
 				stage++;
 				return true;
 			case 7:
@@ -164,7 +205,6 @@ public final class GLMessage {
 				return checkAndIncStage(str, ":");
 			case 9:
 				type = Type.get(str);
-				if (typeFilter!=null && !typeFilter.apply(type)) stage = -1;
 				stage++;
 				return true;
 			case 10:
@@ -173,7 +213,6 @@ public final class GLMessage {
 				return checkAndIncStage(str, ":");
 			case 12:
 				severity = Severity.get(str);
-				if (severityFilter!=null && !severityFilter.apply(severity)) stage = -1;
 				stage++;
 				return true;
 			case 13:

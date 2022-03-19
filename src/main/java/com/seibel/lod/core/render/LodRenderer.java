@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.util.*;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -39,10 +40,6 @@ import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.objects.LightmapTexture;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.MovableGridRingList;
-import com.seibel.lod.core.util.MovableGridList;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -80,7 +77,6 @@ public class LodRenderer
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
 
 	public static final int VANILLA_REFRESH_TIMEOUT = 60;
 	/**
@@ -136,13 +132,30 @@ public class LodRenderer
 	{
 		lodBufferBuilderFactory = newLodNodeBufferBuilder;
 	}
-	
+	public static SpamReducedLogger tickLogger = new SpamReducedLogger(1);
+
+	public static void dumpGLState(String str) {
+		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
+		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
+		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
+		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
+		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
+		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
+		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
+		int[] currentView = new int[4];
+		GL32.glGetIntegerv(GL32.GL_VIEWPORT, currentView);
+		tickLogger.info(str + ": [Prog:{}, VAO:{}, VBO:{}, Text:{}, FBO:{}, blend:{}, dpFunc:{}, view:{}]",
+				currentProgram, currentVAO, currentVBO, currentActiveText, currentFrameBuffer,
+				currentBlend, currentDepthFunc, currentView);
+	}
+
+
 	/**
 	 * Besides drawing the LODs this method also starts
 	 * the async process of generating the Buffers that hold those LODs.
 	 * @param lodDim The dimension to draw, if null doesn't replace the current dimension.
-	 * @param mcModelViewMatrix This matrix stack should come straight from MC's renderChunkLayer (or future equivalent) method
-	 * @param mcProjectionMatrix 
+	 * @param baseModelViewMatrix This matrix stack should come straight from MC's renderChunkLayer (or future equivalent) method
+	 * @param baseProjectionMatrix
 	 * @param partialTicks how far into the current tick this method was called.
 	 */
 	public void drawLODs(LodDimension lodDim, Mat4f baseModelViewMatrix, Mat4f baseProjectionMatrix, float partialTicks, IProfilerWrapper profiler)
@@ -173,9 +186,15 @@ public class LodRenderer
 		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
 		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
 		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
+		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
 		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
+		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
+		int[] currentView = new int[4];
+		GL32.glGetIntegerv(GL32.GL_VIEWPORT, currentView);
+		dumpGLState("PRE_LOD-DRAW");
+
 		drawSaveGLState.end("drawSaveGLState");
-		
+
 		GLProxy glProxy = GLProxy.getInstance();
 		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
 			if (!MC_RENDER.tryDisableVanillaFog())
@@ -231,11 +250,12 @@ public class LodRenderer
 		
 		profiler.push("LOD draw setup");
 		LagSpikeCatcher drawSetup = new LagSpikeCatcher();
-
 		/*---------Set GL State--------*/
 		// Make sure to unbind current VBO so we don't mess up vanilla settings
 		LagSpikeCatcher drawGLSetup = new LagSpikeCatcher();
 		LagSpikeCatcher drawBindBuff = new LagSpikeCatcher();
+		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, MC_RENDER.getTargetFrameBuffer());
+		GL32.glViewport(0,0, MC_RENDER.getTargetFrameBufferViewportWidth(), MC_RENDER.getTargetFrameBufferViewportHeight());
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
@@ -253,13 +273,16 @@ public class LodRenderer
 		drawSetPolygon.end("drawSetPolygon");
 		LagSpikeCatcher drawEnableDepth = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_DEPTH_TEST);
-		//GL32.glDisable(GL32.GL_DEPTH_TEST);
+		// GL32.glDisable(GL32.GL_DEPTH_TEST);
+		GL32.glDepthFunc(GL32.GL_LESS);
 		drawEnableDepth.end("drawEnableDepth");
 		drawGLSetup.end("drawGLSetup");
 		// enable transparent rendering
 		// GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
 		// GL32.glEnable(GL32.GL_BLEND);
-		
+		GL32.glDisable(GL32.GL_BLEND);
+		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
+
 		/*---------Bind required objects--------*/
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
 		// also binds LightmapTexture, VAO, and ShaderProgram
@@ -269,6 +292,11 @@ public class LodRenderer
 			drawObjectSetup.end("drawObjectSetup");
 		} else {
 			LagSpikeCatcher drawShaderBind = new LagSpikeCatcher();
+			LodFogConfig newConfig = shaderProgram.isShaderUsable();
+			if (newConfig != null) {
+				shaderProgram.free();
+				shaderProgram = new LodRenderProgram(newConfig);
+			}
 			shaderProgram.bind();
 			drawShaderBind.end("drawShaderBind");
 		}
@@ -287,18 +315,18 @@ public class LodRenderer
 			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
-		LodFogConfig fogSettings = new LodFogConfig(CONFIG, REFLECTION_HANDLER, farPlaneBlockDistance, vanillaBlockRenderedDistance);
 		drawCalculateParams.end("drawCalculateParams");
-		Mat4f projectionMatrix = createProjectionMatrix(baseProjectionMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
+
+		Mat4f combinedMatrix = createCombinedMatrix(baseProjectionMatrix, baseModelViewMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
 		
 		/*---------Fill uniform data--------*/
 		LagSpikeCatcher drawFillData = new LagSpikeCatcher();
 		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
-		shaderProgram.fillUniformData(projectionMatrix,
+		shaderProgram.fillUniformData(combinedMatrix,
 				MC_RENDER.isFogStateSpecial() ? getSpecialFogColor(partialTicks) : getFogColor(partialTicks),
-						(int) (MC.getSkyDarken(partialTicks) * 15), 0);
-		// Previous guy said fog setting may be different from region to region, but the fogSettings never changed... soooooo...
-		shaderProgram.fillUniformDataForFog(fogSettings, MC_RENDER.isFogStateSpecial());
+				0, MC.getWrappedClientWorld().getHeight(), MC.getWrappedClientWorld().getMinHeight(), farPlaneBlockDistance,
+				vanillaBlockRenderedDistance, MC_RENDER.isFogStateSpecial());
+
 		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
 		LagSpikeCatcher drawFillLightmap = new LagSpikeCatcher();
 		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
@@ -315,6 +343,7 @@ public class LodRenderer
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		AbstractBlockPosWrapper cameraBlockPos = MC_RENDER.getCameraBlockPosition();
 		Vec3f cameraDir = MC_RENDER.getLookAtVector();
+		int drawCount = 0;
 
 		{
 			int ox,oy,dx,dy;
@@ -331,8 +360,8 @@ public class LodRenderer
 		        	{
 						RenderRegion region = regions.get(regionX, regionZ);
 						if (region == null) continue;
-						region.render(lodDim, cameraPos, cameraBlockPos, cameraDir,
-								baseModelViewMatrix, !cullingDisabled, shaderProgram);
+						if (region.render(lodDim, cameraPos, cameraBlockPos, cameraDir,
+								!cullingDisabled, shaderProgram)) drawCount++;
 		        	}
 		        }
 		        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
@@ -344,8 +373,9 @@ public class LodRenderer
 		        oy += dy;
 		    }
 		}
+		dumpGLState("Post Lod Draw Before Cleanup");
 		//if (drawCall==0)
-		//	ApiShared.LOGGER.info("DrawCall Count: "+drawCall+"("+vCount0+")");
+			tickLogger.info("DrawCall Count: {}", drawCount);
 		
 		//================//
 		// render cleanup //
@@ -369,8 +399,11 @@ public class LodRenderer
 		// if this cleanup isn't done MC will crash
 		// when trying to render its own terrain
 		// And may causes mod compat issue
+		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, currentFrameBuffer);
+		GL32.glViewport(currentView[0], currentView[1],currentView[2],currentView[3]);
 		GL32.glUseProgram(currentProgram);
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, currentVBO);
+		GL32.glDepthFunc(currentDepthFunc);
 		GL32.glBindVertexArray(currentVAO);
 		GL32.glActiveTexture(currentActiveText);
 		
@@ -380,6 +413,7 @@ public class LodRenderer
 		drawCleanup.end("LodDrawCleanup");
 		// end of internal LOD profiling
 		profiler.pop();
+		tickLogger.incLogTries();
 	}
 	
 	//=================//
@@ -398,7 +432,7 @@ public class LodRenderer
 		}
 		
 		isSetupComplete = true;
-		shaderProgram = new LodRenderProgram();
+		shaderProgram = new LodRenderProgram(LodFogConfig.generateFogConfig());
 	}
 	
 	/** Create all buffers that will be used. */
@@ -425,18 +459,22 @@ public class LodRenderer
 
 	/**
 	 * create and return a new projection matrix based on MC's projection matrix
-	 * @param currentProjectionMatrix this is Minecraft's current projection matrix
+	 * @param projMat this is Minecraft's current projection matrix
+	 * @param modelMat this is Minecraft's current model matrix
 	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
 	 */
-	private static Mat4f createProjectionMatrix(Mat4f currentProjectionMatrix, float vanillaBlockRenderedDistance, int farPlaneBlockDistance)
+	private static Mat4f createCombinedMatrix(Mat4f projMat, Mat4f modelMat, float vanillaBlockRenderedDistance, int farPlaneBlockDistance)
 	{
 		//Create a copy of the current matrix, so the current matrix isn't modified.
-		Mat4f lodProj = currentProjectionMatrix.copy();
+		Mat4f lodProj = projMat.copy();
 
 		//Set new far and near clip plane values.
 		lodProj.setClipPlanes(
-				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ? vanillaBlockRenderedDistance / 5 : 1,
-				farPlaneBlockDistance * LodUtil.CHUNK_WIDTH / 2);
+				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ?
+						(vanillaBlockRenderedDistance-16) : 16,
+				(float)((farPlaneBlockDistance+LodUtil.REGION_WIDTH) * Math.sqrt(2)));
+
+		lodProj.multiply(modelMat);
 
 		return lodProj;
 	}
