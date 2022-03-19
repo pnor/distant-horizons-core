@@ -61,7 +61,7 @@ public class LodDimensionFileHelper
 			return null;
 		
 		// create a temporary dimension to store the new LOD
-		LodDimension newlyLoadedDim = new LodDimension(null, null, 1);
+		LodDimension newlyLoadedDim = new LodDimension(MC.getCurrentDimension(), null, 1);
 		newlyLoadedDim.move(playerRegionPos);
 		newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
 		
