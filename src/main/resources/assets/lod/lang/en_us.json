@@ -59,73 +59,72 @@
 	"Disable vanilla fog",
   "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog.@tooltip":
 	"§6True:§r disables Minecraft's fog on vanilla chunks.\n§6False:§r Minecraft renders fog like normal.\n\nMay cause issues with other mods that edit fog.\nDisable if vanilla chunks are completely covered in fog.",
-
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog":
-  "Advanced Fog Options",
+    "Advanced Fog Options",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogStart":
-"Far Fog Start",
+    "Far Fog Start",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogEnd":
-  "Far Fog End",
+    "Far Fog End",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMin":
-  "Far Fog Min",
+    "Far Fog Min",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMax":
-  "Far Fog Max",
+    "Far Fog Max",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogType":
-  "Far Fog Type",
+    "Far Fog Type",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogDensity":
-  "Far Fog Density",
+    "Far Fog Density",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog":
-  "Height Fog Options",
+    "Height Fog Options",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMixMode":
-  "Height Fog Mix Mode",
+    "Height Fog Mix Mode",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMode":
-  "Height Fog Mode",
+    "Height Fog Mode",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogHeight":
-  "Height Fog Set Height",
+    "Height Fog Set Height",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogStart":
-  "Height Fog Start",
+    "Height Fog Start",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogEnd":
-  "Height Fog End",
+    "Height Fog End",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMin":
-  "Height Fog Min",
+    "Height Fog Min",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMax":
-  "Height Fog Max",
+    "Height Fog Max",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogType":
-  "Height Fog Type",
+    "Height Fog Type",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogDensity":
-  "Height Fog Density",
+    "Height Fog Density",
 
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogStart.@tooltip":
-  "Where should the far fog start? \n\n  '0.0': Fog start at player's position.\n  '1.0': The fog-start's circle fit just in the lod render distance square.\n'1.414': The lod render distance square fit just in the fog-start's circle.\n",
+    "Where should the far fog start? \n\n  '0.0': Fog start at player's position.\n  '1.0': The fog-start's circle fit just in the lod render distance square.\n'1.414': The lod render distance square fit just in the fog-start's circle.\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogEnd.@tooltip":
-  "Where should the far fog end? \n\n  '0.0': Fog end at player's position.\n  '1.0': The fog-end's circle fit just in the lod render distance square.\n'1.414': The lod render distance square fit just in the fog-end's circle.\n",
+    "Where should the far fog end? \n\n  '0.0': Fog end at player's position.\n  '1.0': The fog-end's circle fit just in the lod render distance square.\n'1.414': The lod render distance square fit just in the fog-end's circle.\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMin.@tooltip":
-  "What is the minimum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
+    "What is the minimum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMax.@tooltip":
-  "What is the maximum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
+    "What is the maximum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogType.@tooltip":
-  "How the fog thickness should be calculated from distance?\n\nLINEAR: Linear based on distance (will ignore 'density')\nEXPONENTIAL: 1/(e^(distance*density)) \nEXPONENTIAL_SQUARED: 1/(e^((distance*density)^2) \n",
+    "How the fog thickness should be calculated from distance?\n\nLINEAR: Linear based on distance (will ignore 'density')\nEXPONENTIAL: 1/(e^(distance*density)) \nEXPONENTIAL_SQUARED: 1/(e^((distance*density)^2) \n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogDensity.@tooltip":
-  "What is the fog density? ",
+    "What is the fog density? ",
 
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMixMode.@tooltip":
-  "How the height should effect the fog thickness combined with the normal function? \n\nBASIC: No special height fog effect. Fog is calculated based on camera distance \nIGNORE_HEIGHT: Ignore height completely. Fog is calculated based on horizontal distance \nADDITION: heightFog + farFog \nMAX: max(heightFog, farFog) \nMULTIPLY: heightFog * farFog \nINVERSE_MULTIPLY: 1 - (1-heightFog) * (1-farFog) \nLIMITED_ADDITION: farFog + max(farFog, heightFog) \nMULTIPLY_ADDITION: farFog + farFog * heightFog \nINVERSE_MULTIPLY_ADDITION: farFog + 1 - (1-heightFog) * (1-farFog) \nAVERAGE: farFog*0.5 + heightFog*0.5 \n\nNote that for 'BASIC' mode and 'IGNORE_HEIGHT' mode, fog settings for height fog has no effect.\n",
+    "How the height should effect the fog thickness combined with the normal function? \n\nBASIC: No special height fog effect. Fog is calculated based on camera distance \nIGNORE_HEIGHT: Ignore height completely. Fog is calculated based on horizontal distance \nADDITION: heightFog + farFog \nMAX: max(heightFog, farFog) \nMULTIPLY: heightFog * farFog \nINVERSE_MULTIPLY: 1 - (1-heightFog) * (1-farFog) \nLIMITED_ADDITION: farFog + max(farFog, heightFog) \nMULTIPLY_ADDITION: farFog + farFog * heightFog \nINVERSE_MULTIPLY_ADDITION: farFog + 1 - (1-heightFog) * (1-farFog) \nAVERAGE: farFog*0.5 + heightFog*0.5 \n\nNote that for 'BASIC' mode and 'IGNORE_HEIGHT' mode, fog settings for height fog has no effect.\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMode.@tooltip":
-  "Where should the height fog be located? \n\nABOVE_CAMERA: Height fog starts from camera to the sky \nBELOW_CAMERA: Height fog starts from camera to the void \nABOVE_AND_BELOW_CAMERA: Height fog starts from camera to both the sky and the void \nABOVE_SET_HEIGHT: Height fog starts from a set height to the sky \nBELOW_SET_HEIGHT: Height fog starts from a set height to the void \nABOVE_AND_BELOW_SET_HEIGHT: Height fog starts from a set height to both the sky and the void \n",
+    "Where should the height fog be located? \n\nABOVE_CAMERA: Height fog starts from camera to the sky \nBELOW_CAMERA: Height fog starts from camera to the void \nABOVE_AND_BELOW_CAMERA: Height fog starts from camera to both the sky and the void \nABOVE_SET_HEIGHT: Height fog starts from a set height to the sky \nBELOW_SET_HEIGHT: Height fog starts from a set height to the void \nABOVE_AND_BELOW_SET_HEIGHT: Height fog starts from a set height to both the sky and the void \n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogHeight.@tooltip":
-  "If the height fog is calculated around a set height, what is that height position? ",
+    "If the height fog is calculated around a set height, what is that height position? ",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogStart.@tooltip":
-  "How far the start of height fog should offset? \n\n  '0.0': Fog start with no offset.\n  '1.0': Fog start with offset of the entire world's height. (Include depth)\n",
+    "How far the start of height fog should offset? \n\n  '0.0': Fog start with no offset.\n  '1.0': Fog start with offset of the entire world's height. (Include depth)\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogEnd.@tooltip":
-  "How far the end of height fog should offset? \n\n  '0.0': Fog end with no offset.\n  '1.0': Fog end with offset of the entire world's height. (Include depth)\n",
+    "How far the end of height fog should offset? \n\n  '0.0': Fog end with no offset.\n  '1.0': Fog end with offset of the entire world's height. (Include depth)\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMin.@tooltip":
-  "What is the minimum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
+    "What is the minimum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMax.@tooltip":
-  "What is the maximum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
+    "What is the maximum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogType.@tooltip":
-  "How the fog thickness should be calculated from height? \n\nLINEAR: Linear based on height (will ignore 'density')\nEXPONENTIAL: 1/(e^(height*density)) \nEXPONENTIAL_SQUARED: 1/(e^((height*density)^2) \n",
+    "How the fog thickness should be calculated from height? \n\nLINEAR: Linear based on height (will ignore 'density')\nEXPONENTIAL: 1/(e^(height*density)) \nEXPONENTIAL_SQUARED: 1/(e^((height*density)^2) \n",
   "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogDensity.@tooltip":
-  "What is the fog density? ",
+    "What is the fog density? ",
 
   "DistantHorizons.config.client.graphics.advancedGraphics":
 	"Advanced quality option",
@@ -153,6 +152,14 @@
 	"Backside Culling Range",
   "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange.@tooltip":
 	"The distance where the back side of fake chunks aren't rendered to improve performance.",
+  "DistantHorizons.config.client.graphics.advancedGraphics.brightnessMultiplier":
+    "Brightness Multiplier",
+  "DistantHorizons.config.client.graphics.advancedGraphics.brightnessMultiplier.@tooltip":
+    "How bright fake chunk colors are.\n\n0 = black \n1 = normal \n2 = near white",
+  "DistantHorizons.config.client.graphics.advancedGraphics.saturationMultiplier":
+    "Saturation Multiplier",
+  "DistantHorizons.config.client.graphics.advancedGraphics.saturationMultiplier.@tooltip":
+    "How saturated fake chunk colors are.\n\n0 = black and white \n1 = normal \n2 = vibrant",
   "DistantHorizons.config.client.worldGenerator":
 	"World generator",
   "DistantHorizons.config.client.worldGenerator.generationPriority":

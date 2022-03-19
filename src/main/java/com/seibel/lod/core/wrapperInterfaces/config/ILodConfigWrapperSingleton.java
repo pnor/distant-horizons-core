@@ -503,6 +503,27 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " This setting shouldn't affect performance. \n";
 				boolean getUseExtendedNearClipPlane();
 				void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane);
+				
+				double BRIGHTNESS_MULTIPLIER_DEFAULT = 1.0;
+				String BRIGHTNESS_MULTIPLIER_DESC = ""
+						+ " How bright fake chunk colors are. \n"
+						+ "\n"
+						+ " 0 = black \n"
+						+ " 1 = normal \n"
+						+ " 2 = near white \n";
+				double getBrightnessMultiplier();
+				void setBrightnessMultiplier(double newBrightnessMultiplier);
+				
+				double SATURATION_MULTIPLIER_DEFAULT = 1.0;
+				String SATURATION_MULTIPLIER_DESC = ""
+						+ " How saturated fake chunk colors are. \n"
+						+ "\n"
+						+ " 0 = black and white \n"
+						+ " 1 = normal \n"
+						+ " 2 = very saturated \n";
+				double getSaturationMultiplier();
+				void setSaturationMultiplier(double newSaturationMultiplier);
+				
 			}
 		}
 		
