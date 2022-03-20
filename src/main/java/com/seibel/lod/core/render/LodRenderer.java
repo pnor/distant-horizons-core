@@ -319,7 +319,8 @@ public class LodRenderer
 			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
 		drawCalculateParams.end("drawCalculateParams");
 
-		Mat4f combinedMatrix = createCombinedMatrix(baseProjectionMatrix, baseModelViewMatrix, vanillaBlockRenderedDistance, farPlaneBlockDistance);
+		Mat4f combinedMatrix = createCombinedMatrix(baseProjectionMatrix, baseModelViewMatrix,
+				vanillaBlockRenderedDistance, farPlaneBlockDistance, partialTicks);
 		
 		/*---------Fill uniform data--------*/
 		LagSpikeCatcher drawFillData = new LagSpikeCatcher();
@@ -459,21 +460,31 @@ public class LodRenderer
 		return MC_RENDER.getSpecialFogColor(partialTicks);
 	}
 
+	private static float calculateNearClipPlane(float distance, float partialTicks) {
+		double fov = MC_RENDER.getFov(partialTicks);
+		double aspectRatio = (double)MC_RENDER.getScreenWidth()/MC_RENDER.getScreenHeight();
+		return (float) (distance
+						/ Math.sqrt(1d + LodUtil.pow2(Math.tan(fov/180d*Math.PI/2d))
+						* (LodUtil.pow2(aspectRatio) + 1d)));
+	}
+
 	/**
 	 * create and return a new projection matrix based on MC's projection matrix
 	 * @param projMat this is Minecraft's current projection matrix
 	 * @param modelMat this is Minecraft's current model matrix
 	 * @param vanillaBlockRenderedDistance Minecraft's vanilla far plane distance
 	 */
-	private static Mat4f createCombinedMatrix(Mat4f projMat, Mat4f modelMat, float vanillaBlockRenderedDistance, int farPlaneBlockDistance)
+	private static Mat4f createCombinedMatrix(Mat4f projMat, Mat4f modelMat, float vanillaBlockRenderedDistance,
+											  int farPlaneBlockDistance, float partialTicks)
 	{
 		//Create a copy of the current matrix, so the current matrix isn't modified.
 		Mat4f lodProj = projMat.copy();
 
 		//Set new far and near clip plane values.
 		lodProj.setClipPlanes(
-				CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ?
-						(vanillaBlockRenderedDistance-16) : 16,
+				calculateNearClipPlane(
+						CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ?
+						(vanillaBlockRenderedDistance-16) : 16, partialTicks),
 				(float)((farPlaneBlockDistance+LodUtil.REGION_WIDTH) * Math.sqrt(2)));
 
 		lodProj.multiply(modelMat);

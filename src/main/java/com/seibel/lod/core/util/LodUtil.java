@@ -501,6 +501,10 @@ public class LodUtil
 		numb = Float.intBitsToFloat(i);
 		return numb * (1.5F - half * numb * numb);
 	}
+	public static float pow2(float x) {return x*x;}
+	public static double pow2(double x) {return x*x;}
+	public static int pow2(int x) {return x*x;}
+
 	
 	// True if the requested threshold pass, or false otherwise
 	// For details, see:
