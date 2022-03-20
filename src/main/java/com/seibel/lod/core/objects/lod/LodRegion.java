@@ -286,6 +286,28 @@ public class LodRegion {
 					priority, genMode, shouldSort, needFarPos);
 		}
 	}
+
+	public byte getRenderDetailLevelAt(int playerPosX, int playerPosZ, byte detailLevel, int offsetX, int offsetZ) {
+		GenerationPriority generationPriority = CONFIG.client().worldGenerator().getResolvedGenerationPriority();
+		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getResolvedDropoffQuality();
+
+		double minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ,
+				playerPosX, playerPosZ);
+		byte targetLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
+		byte renderLevel;
+		if (targetLevel > dropoffQuality.fastModeSwitch) {
+			double centerDistance = LevelPosUtil.centerDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
+			renderLevel = DetailDistanceUtil.getDetailLevelFromDistance(centerDistance);
+		} else {
+			int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel);
+			double posMinDistance = LevelPosUtil.minDistance(detailLevel,
+					LevelPosUtil.getRegionModule(detailLevel, offsetX) + regionPosX*size,
+					LevelPosUtil.getRegionModule(detailLevel, offsetZ) + regionPosZ*size,
+					playerPosX, playerPosZ);
+			renderLevel = DetailDistanceUtil.getDetailLevelFromDistance(posMinDistance);
+		}
+		return (byte) Math.max(getMinDetailLevel(), renderLevel);
+	}
 	
 	public void getPosToRender(PosToRenderContainer posToRender, int playerPosX,
 			int playerPosZ)
@@ -314,9 +336,10 @@ public class LodRegion {
 					priority);
 		} else {
 			// FarModeSwitchLevel or above is the level where a giant block of lod is not acceptable even if not all child data exist.
-			double maxDistance = LevelPosUtil.maxDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
+			double centerDistance = LevelPosUtil.centerDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ, playerPosX, playerPosZ);
+			targetLevel = DetailDistanceUtil.getDetailLevelFromDistance(centerDistance);
 			byte farModeSwitchLevel = (priority == GenerationPriority.NEAR_FIRST) ? 0 :
-				calculateFarModeSwitch(DetailDistanceUtil.getDetailLevelFromDistance(maxDistance));
+				calculateFarModeSwitch(targetLevel);
 			if (priority == GenerationPriority.FAR_FIRST) farModeSwitchLevel = 8;
 			getPosToRenderFlat(posToRender, LodUtil.REGION_DETAIL_LEVEL, 0, 0, targetLevel, farModeSwitchLevel);
 		}

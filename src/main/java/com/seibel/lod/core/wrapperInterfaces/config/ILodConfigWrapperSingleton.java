@@ -523,7 +523,20 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " 2 = very saturated \n";
 				double getSaturationMultiplier();
 				void setSaturationMultiplier(double newSaturationMultiplier);
-				
+
+				boolean ENABLE_CAVE_CULLING_DEFAULT = false;
+				String ENABLE_CAVE_CULLING_DESC = ""
+						+ " If enabled caves will be culled \n"
+						+ "\n"
+						+ " NOTE: This feature is under development and \n"
+						+ "  it is VERY experimental! Please don't report \n"
+						+ " any issues related to this feature. \n"
+						+ "\n"
+						+ " Additional Info: Currently this cull all faces \n"
+						+ "  with skylight value of 0 in dimensions that \n"
+						+ "  does not have a ceiling. \n";
+				boolean getEnableCaveCulling();
+				void setEnableCaveCulling(boolean newEnableCaveCulling);
 			}
 		}
 		

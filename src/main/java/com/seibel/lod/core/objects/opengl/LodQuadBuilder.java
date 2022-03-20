@@ -10,8 +10,10 @@ import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 public class LodQuadBuilder {
 	static final int MAX_BUFFER_SIZE = (1024 * 1024 * 1);
@@ -19,7 +21,9 @@ public class LodQuadBuilder {
 	static final int MAX_QUADS_PER_BUFFER = MAX_BUFFER_SIZE / QUAD_BYTE_SIZE;
 	//static final int MAX_MERGED_QUAD_SIZE = 64;
 
-	public boolean skipSkylight0Quads = true;
+	static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+
+	public final boolean skipSkylight0Quads;
 
 	static class Quad {
 		final short x;
@@ -225,9 +229,10 @@ public class LodQuadBuilder {
 
 	final ArrayList<Quad>[] quads;
 
-	public LodQuadBuilder(int initialSize) {
+	public LodQuadBuilder(int initialSize, boolean enableSkylightCulling) {
 		quads = new ArrayList[6];
 		for (int i=0; i<6; i++) quads[i] = new ArrayList<Quad>();
+		this.skipSkylight0Quads = enableSkylightCulling;
 	}
 
 	public void addQuadAdj(LodDirection dir, short x, short y, short z, short w0, short wy, int color, byte skylight,
@@ -366,6 +371,7 @@ public class LodQuadBuilder {
 	
 
 	public void mergeQuads() {
+		if(true)return;
 		long mergeCount = 0;
 		long preQuadsCount = getCurrentQuadsCount();
 		if (preQuadsCount<=1) return;

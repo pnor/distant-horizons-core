@@ -160,6 +160,10 @@
     "Saturation Multiplier",
   "DistantHorizons.config.client.graphics.advancedGraphics.saturationMultiplier.@tooltip":
     "How saturated fake chunk colors are.\n\n0 = black and white \n1 = normal \n2 = vibrant",
+  "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling":
+  "Cave Culling §6(EXPERIMENTAL)§r",
+  "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling.@tooltip":
+  "If enabled caves will be culled \n\n§6NOTE: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature.§r \n\nAdditional Info: Currently this cull all faces \n with skylight value of 0 in dimensions that \n does not have a ceiling. \n",
   "DistantHorizons.config.client.worldGenerator":
 	"World generator",
   "DistantHorizons.config.client.worldGenerator.generationPriority":

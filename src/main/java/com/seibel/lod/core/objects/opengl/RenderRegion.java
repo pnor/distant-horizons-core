@@ -170,7 +170,10 @@ public class RenderRegion implements AutoCloseable
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				if (ENABLE_EVENT_STEP_LOGGING) ApiShared.LOGGER.info("RenderRegion start QuadBuild @ {}", regionPos);
-				LodQuadBuilder builder = new LodQuadBuilder(10);
+				boolean useSkylightCulling = CONFIG.client().graphics().advancedGraphics().getEnableCaveCulling();
+				useSkylightCulling &= !lodDim.dimension.hasCeiling();
+				useSkylightCulling &= lodDim.dimension.hasSkyLight();
+				LodQuadBuilder builder = new LodQuadBuilder(10, useSkylightCulling);
 				Runnable buildRun = ()->{
 					makeLodRenderData(builder, region, adjRegions, playerPosX, playerPosZ);
 				};
@@ -325,64 +328,53 @@ public class RenderRegion implements AutoCloseable
 				try {
 					int xAdj = posX + lodDirection.getNormal().x;
 					int zAdj = posZ + lodDirection.getNormal().z;
-					byte adjDetail = detailLevel;
 					int chunkXAdj = LevelPosUtil.getChunkPos(detailLevel, xAdj);
 					int chunkZAdj = LevelPosUtil.getChunkPos(detailLevel, zAdj);
 					Boolean isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
-					boolean adjSkip = isRenderedAdj!=null && isRenderedAdj;
-					
-					//We check if the adjPos is to be rendered
-					boolean renderAdjPos = posToRender.contains(detailLevel, xAdj, zAdj);
-					boolean doesAdjLowerPosExist = detailLevel==0 ? false : posToRender.contains((byte) (detailLevel-1), xAdj*2, zAdj*2);
-					boolean renderLowerAdjPos = doesAdjLowerPosExist;
-					LodRegion adjRegion = region;
-					
-					//since he system doesn't work for region border we need to check with another system
-					if(!renderAdjPos && (!doesAdjLowerPosExist || detailLevel==0))
-					{
-						//we compute the distance from the adjPos
-						double minDistance = LevelPosUtil.minDistance(detailLevel, xAdj, zAdj, playerX, playerZ) - 1.4142*(2 << detailLevel);
+					if (isRenderedAdj!=null && isRenderedAdj) continue;
+
+					boolean isCrossRegionBoundary = LevelPosUtil.getRegion(detailLevel, xAdj) != region.regionPosX ||
+							LevelPosUtil.getRegion(detailLevel, zAdj) != region.regionPosZ;
+
+					LodRegion adjRegion;
+					byte adjDetail;
+					int childXAdj = xAdj*2 + (lodDirection.getNormal().x<0 ? 1 : 0);
+					int childZAdj = zAdj*2 + (lodDirection.getNormal().z<0 ? 1 : 0);
+
+					//we check if the detail of the adjPos is equal to the correct one (region border fix)
+					//or if the detail is wrong by 1 value (region+circle border fix)
+					if (isCrossRegionBoundary) {
 						//we compute at which detail that position should be rendered
 						adjRegion = adjRegions[lodDirection.ordinal()-2];
-						byte minLevel;
-						if(adjRegion != null)
-						{
-							minLevel = (byte) Math.max(adjRegion.getMinDetailLevel(),
-									DetailDistanceUtil.getDetailLevelFromDistance(minDistance));
-						} else{
-							minLevel = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
-						}
-						
-						//we check if the detail of the adjPos is equal to the correct one (region border fix)
-						//or if the detail is wrong by 1 value (region+circle border fix)
-						renderAdjPos = detailLevel == minLevel;
-						renderLowerAdjPos = detailLevel==0 ? false : detailLevel-1 == minLevel;
+						if(adjRegion == null) continue;
+						adjDetail = adjRegion.getRenderDetailLevelAt(playerX, playerZ, detailLevel, xAdj, zAdj);
+					} else {
+						adjRegion = region;
+						if (posToRender.contains(detailLevel, xAdj, zAdj)) adjDetail = detailLevel;
+						else if (detailLevel>0 &&
+								posToRender.contains((byte) (detailLevel-1), childXAdj, childZAdj))
+							adjDetail = (byte) (detailLevel-1);
+						else if (detailLevel<LodUtil.REGION_DETAIL_LEVEL &&
+								posToRender.contains((byte) (detailLevel+1), xAdj/2, zAdj/2))
+							adjDetail = (byte) (detailLevel+1);
+						else continue;
 					}
-					if (adjRegion == null) continue;
-					if (renderAdjPos && !adjSkip) {
-						//The adj data is at same detail and is extracted
-						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
-					} else if (renderLowerAdjPos)
-					{
-						//The adj data is at lower detail and is extracted in two steps
-						xAdj *= 2;
-						zAdj *= 2;
-						adjDetail = (byte) (detailLevel - 1);
+
+					if (adjDetail < detailLevel-1 || adjDetail > detailLevel+1) {
+						continue;
+					}
+
+					if (adjDetail == detailLevel || adjDetail > detailLevel) {
+						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail,
+								LevelPosUtil.convert(detailLevel, xAdj, adjDetail),
+								LevelPosUtil.convert(detailLevel, zAdj, adjDetail));
+					} else {
 						adjData[lodDirection.ordinal() - 2] = new long[2][];
-						isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
-						adjSkip = isRenderedAdj!=null && isRenderedAdj;
-						if (!adjSkip) {
-							adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
-						}
-						
-						xAdj += Math.abs(lodDirection.getNormal().x);
-						zAdj += Math.abs(lodDirection.getNormal().z);
-						isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
-						adjSkip = isRenderedAdj!=null && isRenderedAdj;
-						if (!adjSkip)
-						{
-							adjData[lodDirection.ordinal() - 2][1] = adjRegion.getAllData(adjDetail, xAdj, zAdj);
-						}
+						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail,
+								childXAdj, childZAdj);
+						adjData[lodDirection.ordinal() - 2][1] = adjRegion.getAllData(adjDetail,
+								childXAdj + (lodDirection.getAxis()==LodDirection.Axis.X ? 0 : 1),
+								childZAdj + (lodDirection.getAxis()==LodDirection.Axis.Z ? 0 : 1));
 					}
 				} catch (RuntimeException e) {
 					ApiShared.LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, posX, posZ, lodDirection);

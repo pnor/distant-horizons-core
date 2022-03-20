@@ -148,22 +148,26 @@ public class LevelPosUtil
 	{
 		return convert(detailLevel, pos, LodUtil.CHUNK_DETAIL_LEVEL);
 	}
-	
-	public static double myPow2(double x)
-	{
-		return x*x;
+
+	public static double centerDistance(byte detailLevel, int posX, int posZ, int playerPosX, int playerPosZ) {
+		int width = 1 << detailLevel;
+		double cPosX = posX * width + width/2.;
+		double cPosZ = posZ * width + width/2.;
+		cPosX = playerPosX - cPosX;
+		cPosZ = playerPosZ - cPosZ;
+		return Math.sqrt(LodUtil.pow2(cPosX) + LodUtil.pow2(cPosZ));
 	}
-	
+
 	public static double maxDistance(byte detailLevel, int posX, int posZ, int playerPosX, int playerPosZ)
 	{
 		int width = 1 << detailLevel;
 		
 		double startPosX = posX * width;
 		double startPosZ = posZ * width;
-		double endPosX = myPow2(playerPosX - startPosX - width);
-		double endPosZ = myPow2(playerPosZ - startPosZ - width);
-		startPosX = myPow2(playerPosX - startPosX);
-		startPosZ = myPow2(playerPosZ - startPosZ);
+		double endPosX = LodUtil.pow2(playerPosX - startPosX - width);
+		double endPosZ = LodUtil.pow2(playerPosZ - startPosZ - width);
+		startPosX = LodUtil.pow2(playerPosX - startPosX);
+		startPosZ = LodUtil.pow2(playerPosZ - startPosZ);
 		
 		double maxDistance = Math.sqrt(startPosX + startPosZ);
 		maxDistance = Math.max(maxDistance, Math.sqrt(startPosX + endPosZ));
@@ -203,10 +207,10 @@ public class LevelPosUtil
 		}
 		else
 		{
-			double startPosX2 = myPow2(playerPosX - startPosX);
-			double startPosZ2 = myPow2(playerPosZ - startPosZ);
-			double endPosX2 = myPow2(playerPosX - endPosX);
-			double endPosZ2 = myPow2(playerPosZ - endPosZ);
+			double startPosX2 = LodUtil.pow2(playerPosX - startPosX);
+			double startPosZ2 = LodUtil.pow2(playerPosZ - startPosZ);
+			double endPosX2 = LodUtil.pow2(playerPosX - endPosX);
+			double endPosZ2 = LodUtil.pow2(playerPosZ - endPosZ);
 			
 			double minDistance = Math.sqrt(startPosX2 + startPosZ2);
 			minDistance = Math.min(minDistance, Math.sqrt(startPosX2 + endPosZ2));
