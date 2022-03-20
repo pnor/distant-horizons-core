@@ -371,7 +371,6 @@ public class LodQuadBuilder {
 	
 
 	public void mergeQuads() {
-		if(true)return;
 		long mergeCount = 0;
 		long preQuadsCount = getCurrentQuadsCount();
 		if (preQuadsCount<=1) return;
