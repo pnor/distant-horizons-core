@@ -17,6 +17,7 @@ import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
@@ -32,6 +33,7 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
 import com.seibel.lod.core.util.StatsMap;
+import com.seibel.lod.core.util.gridList.PosArrayGridList;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
@@ -244,26 +246,6 @@ public class RenderRegion implements AutoCloseable
 			{ 1, 0},
 			{ 1, 1}
 	};
-	
-	private static MovableCenteredGridList<Boolean> shinkGridEdge(MovableCenteredGridList<Boolean> target) {
-		MovableCenteredGridList<Boolean> result =  new MovableCenteredGridList<Boolean>(
-				target.gridCentreToEdge-1, target.getCenterX(), target.getCenterY());
-		int chunkGridMinX = target.getCenterX() - target.gridCentreToEdge;
-		int chunkGridMinZ = target.getCenterY() - target.gridCentreToEdge;
-		for (int x=chunkGridMinX+1; x<chunkGridMinX+target.gridSize-2; x++) {
-			for (int z=chunkGridMinZ+1; z<chunkGridMinZ+target.gridSize-2; z++) {
-				Boolean b = target.get(x+1, z);
-				boolean rendered = b!=null && b;
-				if (!rendered) continue;
-				for (int[] pos : ADJACENT8) {
-					Boolean b0 = target.get(x+pos[0], z+pos[1]);
-					rendered &= b0!=null && b0;
-				}
-				if (rendered) result.set(x, z, true);
-			}
-		}
-		return result;
-	}
 
 	private static void makeLodRenderData(LodQuadBuilder quadBuilder, LodRegion region, LodRegion[] adjRegions, int playerX,
 			int playerZ) {
@@ -276,10 +258,7 @@ public class RenderRegion implements AutoCloseable
 		// position
 		PosToRenderContainer posToRender = new PosToRenderContainer(minDetail, region.regionPosX, region.regionPosZ);
 		region.getPosToRender(posToRender, playerX, playerZ);
-		MovableCenteredGridList<Boolean> chunkGrid = ClientApi.renderer.vanillaRenderedChunks;
-		if (CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw() == VanillaOverdraw.BORDER) {
-			chunkGrid = shinkGridEdge(chunkGrid);
-		}
+		PosArrayGridList<BoolType> chunkGrid = ClientApi.renderer.vanillaChunks;
 
 		for (int index = 0; index < posToRender.getNumberOfPos(); index++) {
 
@@ -297,9 +276,8 @@ public class RenderRegion implements AutoCloseable
 			if (detailLevel <= LodUtil.CHUNK_DETAIL_LEVEL) {
 				int chunkX = LevelPosUtil.getChunkPos(detailLevel, posX);
 				int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posZ);
-				Boolean isRendered = chunkGrid.get(chunkX, chunkZ);
 				// skip any chunks that Minecraft is going to render
-				if (isRendered != null && isRendered) continue;
+				if (chunkGrid.get(chunkX, chunkZ) != null) continue;
 			}
 
 			long[] posData = region.getAllData(detailLevel, posX, posZ);
@@ -330,8 +308,7 @@ public class RenderRegion implements AutoCloseable
 					int zAdj = posZ + lodDirection.getNormal().z;
 					int chunkXAdj = LevelPosUtil.getChunkPos(detailLevel, xAdj);
 					int chunkZAdj = LevelPosUtil.getChunkPos(detailLevel, zAdj);
-					Boolean isRenderedAdj = chunkGrid.get(chunkXAdj, chunkZAdj);
-					if (isRenderedAdj!=null && isRenderedAdj) continue;
+					if (chunkGrid.get(chunkXAdj, chunkZAdj)!=null) continue;
 
 					boolean isCrossRegionBoundary = LevelPosUtil.getRegion(detailLevel, xAdj) != region.regionPosX ||
 							LevelPosUtil.getRegion(detailLevel, zAdj) != region.regionPosZ;

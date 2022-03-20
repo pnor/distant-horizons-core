@@ -31,15 +31,12 @@ package com.seibel.lod.core.enums.config;
  */
 public enum VanillaOverdraw
 {
-	/** Never draw LODs where a minecraft chunk could be. */
+	/** Dont draw LODs where a minecraft chunk could be. Use Overdraw Offset to tweak the border thickness */
 	NEVER,
 	
-	/** Draw LODs over the farther minecraft chunks. */
+	/** Draw LODs over the farther minecraft chunks. Dynamically decides the border thickness */
 	DYNAMIC,
 	
 	/** Draw LODs over all minecraft chunks. */
 	ALWAYS,
-	
-	/** Draw LODs over border chunks. */
-	BORDER,
 }

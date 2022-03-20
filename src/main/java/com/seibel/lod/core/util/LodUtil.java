@@ -22,6 +22,7 @@ package com.seibel.lod.core.util;
 import java.awt.Color;
 import java.io.File;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.HorizontalResolution;
@@ -30,10 +31,12 @@ import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.ParsedIp;
+import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
+import com.seibel.lod.core.util.gridList.EdgeDistanceBooleanGrid;
 import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
@@ -351,144 +354,49 @@ public class LodUtil
 	public static int ceilDiv(int value, int divider) {
 		return -Math.floorDiv(-value, divider);
 	}
-	
-	/**
-	 * Get a HashSet of all ChunkPos within the normal render distance
-	 * that should not be rendered.
-	 */
-	public static HashSet<AbstractChunkPosWrapper> getNearbyLodChunkPosToSkip(LodDimension lodDim, AbstractBlockPosWrapper blockPosWrapper)
-	{
-		int chunkRenderDist = MC_RENDER.getRenderDistance();
-		
-		int skipRadius;
-		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
-		HorizontalResolution drawRes = CONFIG.client().graphics().quality().getDrawResolution();
-		
-		// apply distance based rules for dynamic overdraw
-		if (overdraw == VanillaOverdraw.DYNAMIC
-				&& chunkRenderDist <= MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW)
-		{
-			// The vanilla render distance isn't far enough 
-			// for partial skipping to make sense...
-			if (!lodDim.dimension.hasCeiling() && (drawRes == HorizontalResolution.BLOCK))
-			{
-				// ...and the dimension is open, so we don't have to worry about
-				// LODs rendering on top of the player,
-				// and the user is using a high horizontal resolution,
-				// so the overdraw shouldn't be noticeable
-				overdraw = VanillaOverdraw.ALWAYS;
-			}
-			else
-			{
-				// ...but we are underground, so we don't want
-				// LODs rendering on top of the player,
-				// Or the user is using a LOW horizontal resolution
-				// and overdraw would be very noticeable.
-				overdraw = VanillaOverdraw.NEVER;
-			}
-		}
-		
-		
-		// determine the skipping type based
-		// on the overdraw type
-		switch (overdraw)
-		{
-		case ALWAYS:
-			// don't skip any positions
-			return new HashSet<>();
-		
-		case DYNAMIC:
-			if (chunkRenderDist > MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW 
-				&& chunkRenderDist <= MINIMUM_RENDER_DISTANCE_FOR_FAR_OVERDRAW)
-			{
-				// This is a small render distance (but greater than the minimum partial distance)
-				// skip positions that are greater than 2/3 the render distance
-				skipRadius = (int) Math.ceil(chunkRenderDist * (2.0/3.0));
-			}
-			else
-			{
-				// This is a large render distance. 
-				// Skip positions that are greater than 4/5ths the render distance
-				skipRadius = (int) Math.ceil(chunkRenderDist * (4.0 / 5.0));
-			}
-			break;
-		
-		default:
-		case BORDER:
-		case NEVER:
-			// skip chunks in render distance that are rendered
-			// by vanilla minecraft
-			skipRadius = 0;
-			break;
-		}
-		
-		
-		// get the chunks that are going to be rendered by Minecraft
-		HashSet<AbstractChunkPosWrapper> posToSkip = MC_RENDER.getVanillaRenderedChunks();
-		
-		
-		// remove everything outside the skipRadius,
-		// if the skipRadius is being used
-		if (skipRadius != 0)
-		{
-			int centerCX = LevelPosUtil.getChunkPos(BLOCK_DETAIL_LEVEL, blockPosWrapper.getX());
-			int centerCZ = LevelPosUtil.getChunkPos(BLOCK_DETAIL_LEVEL, blockPosWrapper.getZ());
-			
-			if (VERSION_CONSTANTS.isVanillaRenderedChunkSquare()) {
-				int minX = centerCX-skipRadius;
-				int maxX = centerCX+skipRadius+1;
-				int minZ = centerCZ-skipRadius;
-				int maxZ = centerCZ+skipRadius+1;
-				posToSkip.removeIf((pos) -> {
-					return (pos.getX() < minX || pos.getX() > maxX || pos.getZ() < minZ || pos.getZ() > maxZ);
-				});
+
+	public static int computeOverdrawOffset(LodDimension lodDim) {
+		int chunkRenderDist = MC_RENDER.getRenderDistance() + 1;
+		VanillaOverdraw overdraw = null;//CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
+		if (overdraw == VanillaOverdraw.ALWAYS) return Integer.MAX_VALUE;
+		int offset;
+		if (overdraw == VanillaOverdraw.NEVER) {
+			offset = CONFIG.client().graphics().advancedGraphics().getOverdrawOffset();
+		} else {
+			if (chunkRenderDist < MINIMUM_RENDER_DISTANCE_FOR_FAR_OVERDRAW) {
+				offset = 1;
 			} else {
-				int skipRadius2 = skipRadius*skipRadius;
-				posToSkip.removeIf((pos) -> {
-					int dx = pos.getX()-centerCX;
-					int dz = pos.getZ()-centerCZ;
-					return (dx*dx + dz*dz > skipRadius2);
-				});
+				offset = chunkRenderDist / 5;
 			}
 		}
-		return posToSkip;
-	}
-	
-	
-	/**
-	 * This method find if a given chunk is a border chunk of the renderable ones
-	 * @param vanillaRenderedChunks matrix of the vanilla rendered chunks
-	 * @param x relative (to the matrix) x chunk to check
-	 * @param z relative (to the matrix) z chunk to check
-	 * @return true if and only if the chunk is a border of the renderable chunks
-	 */
-	@Deprecated
-	public static boolean isBorderChunk(boolean[][] vanillaRenderedChunks, int x, int z)
-	{
-		if (x < 0 || z < 0 || x >= vanillaRenderedChunks.length || z >= vanillaRenderedChunks[0].length)
-			return false;
-		int tempX;
-		int tempZ;
-		for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS)
-		{
-			tempX = x + lodDirection.getNormal().x;
-			tempZ = z + lodDirection.getNormal().z;
-			if (vanillaRenderedChunks[x][z] || (!(tempX < 0 || tempZ < 0 || tempX >= vanillaRenderedChunks.length || tempZ >= vanillaRenderedChunks[0].length)
-				&& !vanillaRenderedChunks[tempX][tempZ]))
-				return true;
+
+		if (chunkRenderDist - offset <= 1) {
+			return Integer.MAX_VALUE;
 		}
-		return false;
+		return offset;
 	}
-	public static boolean isBorderChunk(MovableCenteredGridList<Boolean> vanillaRenderedChunks, int chunkX, int chunkZ)
-	{
-		for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS)
-		{
-			int tempX = chunkX + lodDirection.getNormal().x;
-			int tempZ = chunkZ + lodDirection.getNormal().z;
-			Boolean b = vanillaRenderedChunks.get(tempX, tempZ);
-			if (b == null || !b) return true;
-		}
-		return false;
+
+	public static EdgeDistanceBooleanGrid readVanillaRenderedChunks(LodDimension lodDim) {
+		int offset = computeOverdrawOffset(lodDim);
+		if (offset == Integer.MAX_VALUE) return null;
+		int renderDist = MC_RENDER.getRenderDistance() + 1;
+
+		HashSet<AbstractChunkPosWrapper> posSet = MC_RENDER.getVanillaRenderedChunks();
+		return new EdgeDistanceBooleanGrid(new Iterator<>() {
+					final Iterator<AbstractChunkPosWrapper> iter = posSet.iterator();
+					@Override
+					public boolean hasNext() {
+						return iter.hasNext();
+					}
+
+					@Override
+					public Pos2D next() {
+						AbstractChunkPosWrapper pos = iter.next();
+						return new Pos2D(pos.getX(), pos.getZ());
+					}
+				},
+				MC.getPlayerChunkPos().getX() - renderDist,
+				MC.getPlayerChunkPos().getZ() - renderDist, renderDist * 2 + 1);
 	}
 	
 	

@@ -24,10 +24,10 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.util.*;
-import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
-import com.seibel.lod.core.util.gridList.MovableGridRingList;
+import com.seibel.lod.core.util.gridList.*;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -80,7 +80,6 @@ public class LodRenderer
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
-	public static final int VANILLA_REFRESH_TIMEOUT = 60;
 	/**
 	 * If true the LODs colors will be replaced with
 	 * a checkerboard, this can be used for debugging.
@@ -121,10 +120,7 @@ public class LodRenderer
 	 * This HashSet contains every chunk that Vanilla Minecraft
 	 * is going to render
 	 */
-	public MovableCenteredGridList<Boolean> vanillaRenderedChunks;
-	public int vanillaRenderedChunksCenterX;
-	public int vanillaRenderedChunksCenterZ;
-	public int vanillaRenderedChunksRefreshTimer;
+	public PosArrayGridList<BoolType> vanillaChunks = null;
 	
 	private boolean canVanillaFogBeDisabled = true;
 
@@ -534,44 +530,32 @@ public class LodRenderer
 	
 	// returns whether anything changed
 	private boolean updateVanillaRenderedChunks(LodDimension lodDim) {
-		int chunkRenderDistance = MC_RENDER.getRenderDistance()+2;
-		int chunkX = Math.floorDiv(lastUpdatedPos.getX(), 16);
-		int chunkZ = Math.floorDiv(lastUpdatedPos.getZ(), 16);
 		// if the player is high enough, draw all LODs
 		IWorldWrapper world = MC.getWrappedClientWorld();
 		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight()) {
-			vanillaRenderedChunks = new MovableCenteredGridList<Boolean>(
-					chunkRenderDistance, chunkX, chunkZ);
-			return true;
-		}
-		MovableCenteredGridList<Boolean> chunkList;
-
-		boolean anyChanged = false;
-		if (vanillaRenderedChunks == null || vanillaRenderedChunks.gridCentreToEdge != chunkRenderDistance ||
-				vanillaRenderedChunks.getCenterX()!=chunkX || vanillaRenderedChunks.getCenterY()!=chunkZ) {
-			chunkList = new MovableCenteredGridList<Boolean>(chunkRenderDistance, chunkX, chunkZ);
-			anyChanged = true;
-		} else {
-			chunkList = vanillaRenderedChunks;
+			if (vanillaChunks != null) {
+				vanillaChunks = null;
+				return true;
+			}
+			return false;
 		}
 
 		LagSpikeCatcher getChunks = new LagSpikeCatcher();
-		Set<AbstractChunkPosWrapper> chunkPosToSkip = LodUtil.getNearbyLodChunkPosToSkip(lodDim, lastUpdatedPos);
-		getChunks.end("LodDrawSetup:UpdateStatus:UpdateVanillaChunks:getChunks");
-		for (AbstractChunkPosWrapper pos : chunkPosToSkip)
-		{
-			// sometimes we are given chunks that are outside the render distance,
-			// This prevents index out of bounds exceptions
-			if (!chunkList.inRange(pos.getX(), pos.getZ())) continue;
-			Boolean oldBool = chunkList.swap(pos.getX(), pos.getZ(), true);
-			if (oldBool == null || !oldBool)
-			{
-				anyChanged = true;
-				lodBufferBuilderFactory.setRegionNeedRegen(pos.getRegionX(), pos.getRegionZ());
+		EdgeDistanceBooleanGrid edgeGrid = LodUtil.readVanillaRenderedChunks(lodDim);
+		if (edgeGrid == null) {
+			if (vanillaChunks != null) {
+				vanillaChunks = null;
+				return true;
 			}
+			return false;
 		}
-		if (anyChanged) vanillaRenderedChunks = chunkList;
-		return anyChanged;
+		getChunks.end("LodDrawSetup:UpdateStatus:UpdateVanillaChunks:getChunks");
+		PosArrayGridList<BoolType> grid = new PosArrayGridList<>(edgeGrid.gridSize, edgeGrid.getOffsetX(), edgeGrid.getOffsetY());
+
+		int overdrawOffset = LodUtil.computeOverdrawOffset(lodDim);
+		edgeGrid.flagAllWithDistance(grid, (i) -> (i >= overdrawOffset));
+		vanillaChunks = grid;
+		return true;
 	}
 	
 	private void updateRegenStatus(LodDimension lodDim, float partialTicks) {

@@ -472,20 +472,31 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " but may look odd for transparent blocks or in caves. \n"
 						+ "\n"
 						+ " " + VanillaOverdraw.NEVER + ": \n"
-						+ "     LODs won't render on top of vanilla chunks. \n"
-						+ " " + VanillaOverdraw.BORDER + ": \n"
-						+ "     LODs will render only on the border of vanilla chunks, preventing some holes in the world. \n"
+						+ "     LODs won't render on top of vanilla chunks. Use Overdraw offset to change the border offset. \n"
 						+ " " + VanillaOverdraw.DYNAMIC + ": \n"
 						+ "     LODs will render on top of distant vanilla chunks to hide delayed loading. \n"
-						+ "     More effective on higher render distances. \n"
-						+ "     For vanilla render distances less than or equal to " + LodUtil.MINIMUM_RENDER_DISTANCE_FOR_PARTIAL_OVERDRAW + " \n"
-						+ "     " + VanillaOverdraw.NEVER + " or " + VanillaOverdraw.ALWAYS + " will be used depending on the dimension. \n"
+						+ "     Will dynamically decide the border offset based on vanilla render distance. \n"
 						+ " " + VanillaOverdraw.ALWAYS + ": \n"
 						+ "     LODs will render on all vanilla chunks preventing all holes in the world. \n"
 						+ "\n"
 						+ " This setting shouldn't affect performance. \n";
 				VanillaOverdraw getVanillaOverdraw();
 				void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
+
+
+				MinDefaultMax<Integer> OVERDRAW_OFFSET_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(-16, 0, 16);
+				String OVERDRAW_OFFSET_DESC = ""
+						+ " If on Vanilla Overdraw mode of NEVER, how much should should the border be offset? \n"
+						+ "\n"
+						+ "  '1': The start of lods will be shifted inwards by 1 chunk, causing 1 chunk of overdraw. \n"
+						+ " '-1': The start fo lods will be shifted outwards by 1 chunk, causing 1 chunk of gap. \n"
+						+ "\n"
+						+ " This setting can be used to deal with gaps due to our vanilla rendered chunk \n"
+						+ "   detection not being perfect. \n";
+				int getOverdrawOffset();
+				void setOverdrawOffset(int newOverdrawOffset);
+
+
 				/* Disabled for now due to implementation issues.
 				MinDefaultMax<Integer> VANILLA_CULLING_RANGE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(0, 32, 512);
 				String VANILLA_CULLING_RANGE_DESC = ""
