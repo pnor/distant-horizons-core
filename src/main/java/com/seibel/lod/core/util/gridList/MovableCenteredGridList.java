@@ -1,7 +1,6 @@
 package com.seibel.lod.core.util.gridList;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 /*Layout:
@@ -11,7 +10,7 @@ import java.util.function.Consumer;
  */
 
 @Deprecated // Replace with PosArrayGridList<T>
-public class MovableCenteredGridList<T> extends ArrayList<T> implements List<T> {
+public class MovableCenteredGridList<T> extends ArrayList<T> {
 
 	private int centerX;
 	private int centerY;

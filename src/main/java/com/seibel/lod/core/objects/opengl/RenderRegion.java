@@ -13,7 +13,6 @@ import com.seibel.lod.core.builders.bufferBuilding.CubicLodTemplate;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -28,10 +27,8 @@ import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.render.RenderUtil;
 import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.util.gridList.PosArrayGridList;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
@@ -46,7 +43,7 @@ public class RenderRegion implements AutoCloseable
 	
 	/** stores if the region at the given x and z index needs to be regenerated */
 	// Use int because I need Tri state:
-	private AtomicInteger needRegen = new AtomicInteger(2);
+	private final AtomicInteger needRegen = new AtomicInteger(2);
 	
 	private enum BackState {
 		Unused,

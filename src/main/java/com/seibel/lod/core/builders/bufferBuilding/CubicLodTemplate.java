@@ -23,6 +23,7 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.opengl.LodBox;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder;
+import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
@@ -38,8 +39,7 @@ import java.awt.*;
 public class CubicLodTemplate
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	
-	
+
 	public static void addLodToBuffer(long data, long topData, long botData, long[][][] adjData, byte detailLevel,
 			int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, DebugMode debugging)
 	{
@@ -55,20 +55,20 @@ public class CubicLodTemplate
 		if (debugging != DebugMode.OFF && debugging != DebugMode.SHOW_WIREFRAME)
 		{
 			if (debugging == DebugMode.SHOW_DETAIL || debugging == DebugMode.SHOW_DETAIL_WIREFRAME)
-				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel].getRGB();
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel];
 			else /// if (debugging == DebugMode.SHOW_GENMODE || debugging ==
 				/// DebugMode.SHOW_GENMODE_WIREFRAME)
-				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[DataPointUtil.getGenerationMode(data)].getRGB();
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[DataPointUtil.getGenerationMode(data)];
 		}
 		else
 		{
 			double saturationMultiplier = CONFIG.client().graphics().advancedGraphics().getSaturationMultiplier();
 			double brightnessMultiplier = CONFIG.client().graphics().advancedGraphics().getBrightnessMultiplier();
-			
-			Color colorObject = LodUtil.intToColor(DataPointUtil.getColor(data));
-			
-			float[] hsb = Color.RGBtoHSB(colorObject.getRed(), colorObject.getGreen(), colorObject.getBlue(), null);
-			color = LodUtil.colorToInt(Color.getHSBColor(hsb[0], (float) LodUtil.clamp(0.0f, hsb[1] * saturationMultiplier, 1.0f), (float) LodUtil.clamp(0.0f, hsb[2] * brightnessMultiplier, 1.0f)));
+
+			float[] ahsv = ColorUtil.argbToAhsv(DataPointUtil.getColor(data));
+			ahsv[2] *= saturationMultiplier;
+			ahsv[3] *= brightnessMultiplier;
+			color = ColorUtil.ahsvToArgb(ahsv[0], ahsv[1], ahsv[2], ahsv[3]);
 		}
 		
 		

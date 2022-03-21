@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.wrapperInterfaces.minecraft;
 
-import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -82,15 +81,6 @@ public interface IMinecraftClientWrapper extends IBindable
 	 * @param skyLight z location in texture space
 	 */
 	int getColorIntFromLightMap(int blockLight, int skyLight);
-	
-	/**
-	 * Returns the Color at the given pixel coordinates
-	 * from the current lightmap.
-	 * @param blockLight x location in texture space
-	 * @param skyLight z location in texture space
-	 */
-	Color getColorFromLightMap(int blockLight, int skyLight);
-	
 	
 	
 	

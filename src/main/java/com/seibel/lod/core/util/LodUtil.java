@@ -19,13 +19,10 @@
 
 package com.seibel.lod.core.util;
 
-import java.awt.Color;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.enums.config.HorizontalResolution;
 import com.seibel.lod.core.enums.config.ServerFolderNameMode;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
 import com.seibel.lod.core.handlers.IReflectionHandler;
@@ -37,10 +34,8 @@ import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
 import com.seibel.lod.core.util.gridList.EdgeDistanceBooleanGrid;
-import com.seibel.lod.core.util.gridList.MovableCenteredGridList;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
@@ -84,10 +79,11 @@ public class LodUtil
 	/**
 	 * alpha used when drawing chunks in debug mode
 	 */
-	public static final int DEBUG_ALPHA = 255; // 0 - 255
-	public static final Color COLOR_DEBUG_BLACK = new Color(0, 0, 0, DEBUG_ALPHA);
-	public static final Color COLOR_DEBUG_WHITE = new Color(255, 255, 255, DEBUG_ALPHA);
-	public static final Color COLOR_INVISIBLE = new Color(0, 0, 0, 0);
+	public static final int DEBUG_ALPHA = 255; // 0 - 25;
+
+	public static final int COLOR_DEBUG_BLACK = ColorUtil.rgbToInt(DEBUG_ALPHA, 0, 0, 0);
+	public static final int COLOR_DEBUG_WHITE = ColorUtil.rgbToInt(DEBUG_ALPHA, 255, 255, 255);
+	public static final int COLOR_INVISIBLE = ColorUtil.rgbToInt(0, 0, 0, 0);
 	
 	public static final int CEILED_DIMENSION_MAX_RENDER_DISTANCE = 64; // 0 - 255
 	
@@ -96,9 +92,14 @@ public class LodUtil
 	 * In order of nearest to farthest: <br>
 	 * Red, Orange, Yellow, Green, Cyan, Blue, Magenta, white, gray, black
 	 */
-	public static final Color[] DEBUG_DETAIL_LEVEL_COLORS = new Color[] {
-			Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA, Color.BLACK,
-			Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK};
+	public static final int[] DEBUG_DETAIL_LEVEL_COLORS = new int[] {
+			ColorUtil.rgbToInt(255,0,0), ColorUtil.rgbToInt(255,127,0),
+			ColorUtil.rgbToInt(255, 255, 0), ColorUtil.rgbToInt(127, 255, 0),
+			ColorUtil.rgbToInt(0, 255, 0), ColorUtil.rgbToInt(0, 255, 127),
+			ColorUtil.rgbToInt(0, 255, 255), ColorUtil.rgbToInt(0, 127, 255),
+			ColorUtil.rgbToInt(0, 0, 255), ColorUtil.rgbToInt(127, 0, 255),
+			ColorUtil.rgbToInt(255, 0, 255), ColorUtil.rgbToInt(255, 127, 255),
+			ColorUtil.rgbToInt(255, 255, 255)};
 	
 	
 	public static final byte DETAIL_OPTIONS = 10;
@@ -301,26 +302,6 @@ public class LodUtil
 		return folderName;
 	}
 	
-	
-	/** Convert a BlockColors int into a Color object */
-	public static Color intToColor(int num)
-	{
-		int filter = 0b11111111;
-		
-		int red = (num >> 16) & filter;
-		int green = (num >> 8) & filter;
-		int blue = num & filter;
-		
-		return new Color(red, green, blue);
-	}
-	
-	/** Convert a Color into a BlockColors object. */
-	public static int colorToInt(Color color)
-	{
-		return color.getRGB();
-	}
-	
-	
 	/**
 	 * Clamps the given value between the min and max values.
 	 * May behave strangely if min > max.
@@ -381,22 +362,23 @@ public class LodUtil
 		if (offset == Integer.MAX_VALUE) return null;
 		int renderDist = MC_RENDER.getRenderDistance() + 1;
 
-		HashSet<AbstractChunkPosWrapper> posSet = MC_RENDER.getVanillaRenderedChunks();
+		Iterator<AbstractChunkPosWrapper> posIter = MC_RENDER.getVanillaRenderedChunks().iterator();
+
 		return new EdgeDistanceBooleanGrid(new Iterator<>() {
-					final Iterator<AbstractChunkPosWrapper> iter = posSet.iterator();
 					@Override
 					public boolean hasNext() {
-						return iter.hasNext();
+						return posIter.hasNext();
 					}
 
 					@Override
 					public Pos2D next() {
-						AbstractChunkPosWrapper pos = iter.next();
+						AbstractChunkPosWrapper pos = posIter.next();
 						return new Pos2D(pos.getX(), pos.getZ());
 					}
 				},
 				MC.getPlayerChunkPos().getX() - renderDist,
-				MC.getPlayerChunkPos().getZ() - renderDist, renderDist * 2 + 1);
+				MC.getPlayerChunkPos().getZ() - renderDist,
+				renderDist * 2 + 1);
 	}
 	
 	

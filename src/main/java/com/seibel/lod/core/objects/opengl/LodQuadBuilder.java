@@ -227,10 +227,9 @@ public class LodQuadBuilder {
 		
 	}
 
-	final ArrayList<Quad>[] quads;
+	final ArrayList<Quad>[] quads = new ArrayList[6];
 
 	public LodQuadBuilder(int initialSize, boolean enableSkylightCulling) {
-		quads = new ArrayList[6];
 		for (int i=0; i<6; i++) quads[i] = new ArrayList<Quad>();
 		this.skipSkylight0Quads = enableSkylightCulling;
 	}

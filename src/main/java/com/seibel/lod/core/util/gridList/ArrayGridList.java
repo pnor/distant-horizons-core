@@ -3,12 +3,11 @@ package com.seibel.lod.core.util.gridList;
 import com.seibel.lod.core.objects.Pos2D;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-public class ArrayGridList<T> extends ArrayList<T> implements List<T> {
+public class ArrayGridList<T> extends ArrayList<T> {
 	public final int gridSize;
 
 	public ArrayGridList(int gridSize, BiFunction<Integer, Integer, T> filler) {
