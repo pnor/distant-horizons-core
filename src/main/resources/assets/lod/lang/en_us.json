@@ -144,6 +144,10 @@
 	"Vanilla overdraw",
   "DistantHorizons.config.client.graphics.advancedGraphics.vanillaOverdraw.@tooltip":
 	"Determines how often fake chunks will be rendered on top of regular chunks.\n\n§6Dynamic:§r attempts to pick the best option based on vanilla render distance and dimension.\n§6Always:§r prevents holes in the world, but may look odd for transparent blocks or in caves.\n§6Border:§r renders fake chunks on the border of the vanilla render distance, preventing gaps when the player isn't moving.\n§6Never:§r fake chunks will never overlap the vanilla render distance, but there may be holes in the world.",
+  "DistantHorizons.config.client.graphics.advancedGraphics.overdrawOffset":
+    "Overdraw Offset",
+  "DistantHorizons.config.client.graphics.advancedGraphics.overdrawOffset.@tooltip":
+    "If on Vanilla Overdraw mode of NEVER, how much should should the border be offset? \n\n '1': The start of lods will be shifted inwards by 1 chunk, causing 1 chunk of overdraw. \n'-1': The start fo lods will be shifted outwards by 1 chunk, causing 1 chunk of gap. \n\nThis setting can be used to deal with gaps due to our vanilla rendered chunk \n  detection not being perfect. \n",
   "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane":
 	"Use extended near clip plane",
   "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane.@tooltip":

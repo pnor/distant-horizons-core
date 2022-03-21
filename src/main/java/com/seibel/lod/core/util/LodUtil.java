@@ -338,7 +338,7 @@ public class LodUtil
 
 	public static int computeOverdrawOffset(LodDimension lodDim) {
 		int chunkRenderDist = MC_RENDER.getRenderDistance() + 1;
-		VanillaOverdraw overdraw = null;//CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
+		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
 		if (overdraw == VanillaOverdraw.ALWAYS) return Integer.MAX_VALUE;
 		int offset;
 		if (overdraw == VanillaOverdraw.NEVER) {

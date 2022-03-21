@@ -282,7 +282,7 @@ public class RenderRegion implements AutoCloseable
 					|| DataPointUtil.isVoid(posData[0]))
 				continue;
 			
-			long[][][] adjData = new long[4][1][];
+			long[][][] adjData = new long[4][][];
 
 			// We extract the adj data in the four cardinal direction
 
@@ -339,6 +339,7 @@ public class RenderRegion implements AutoCloseable
 					}
 
 					if (adjDetail == detailLevel || adjDetail > detailLevel) {
+						adjData[lodDirection.ordinal() - 2] = new long[1][];
 						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail,
 								LevelPosUtil.convert(detailLevel, xAdj, adjDetail),
 								LevelPosUtil.convert(detailLevel, zAdj, adjDetail));
