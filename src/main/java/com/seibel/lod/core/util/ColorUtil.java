@@ -46,6 +46,10 @@ public class ColorUtil
 	{
 		return (alpha << 24) | (red << 16) | (green << 8) | blue;
 	}
+	public static int rgbToInt(float alpha, float red, float green, float blue)
+	{
+		return rgbToInt((int)(alpha*255f), (int)(red*255f), (int)(green*255f), (int)(blue*255f));
+	}
 	
 	/** Returns a value between 0 and 255 */
 	public static int getAlpha(int color)
@@ -101,18 +105,18 @@ public class ColorUtil
 	}
 
 	// Below 2 functions are from: https://stackoverflow.com/questions/13806483/increase-or-decrease-color-saturation
-	// hue is in 0 to 360 degrees
+	// Alpha in [0.0,1.0], hue in [0.0,360.0], Sat in [0.0,1.0], Value in [0.0,1.0]
 	public static float[] argbToAhsv(int color) {
-		float a = getAlpha(color);
-		float r = getRed(color);
-		float g = getGreen(color);
-		float b = getGreen(color);
+		float a = getAlpha(color) / 255f;
+		float r = getRed(color) / 255f;
+		float g = getGreen(color) / 255f;
+		float b = getBlue(color) / 255f;
 		float h, s, v;
 		float min = Math.min(Math.min( r, g), b );
 		float max = Math.max(Math.max( r, g), b );
-		float delta = max - min;
 
 		v = max;
+		float delta = max - min;
 		if( max != 0f )
 			s = delta / max;     // s
 		else {
@@ -131,25 +135,30 @@ public class ColorUtil
 		}
 		return new float[]{a,h,s,v};
 	}
+	// Alpha in [0.0,1.0], hue in [0.0,360.0], Sat in [0.0,1.0], Value in [0.0,1.0]
 	public static int ahsvToArgb(float a, float h, float s, float v) {
+		if (a > 1.f) a = 1.f;
+		if (h > 360.f) h -= 350.f;
+		if (s > 1.f) s = 1.f;
+		if (v > 1.f) v = 1.f;
+
 		if(s == 0f) {
 			// achromatic (grey)
-			return ColorUtil.rgbToInt((int) a, (int)v, (int)v, (int)v);
+			return ColorUtil.rgbToInt(a, v, v, v);
 		}
-		if (s > 255f) s = 255f;
-		if (v > 255f) v = 255f;
-		int i = (int)(h/60f) % 6;
-		float f = h - i;          // factorial part of h
+		h /= 60f;
+		int i = (int)(Math.floor(h));
+		float f = h-i;          // factorial part of h
 		float p = v * ( 1f - s );
 		float q = v * ( 1f - s * f );
 		float t = v * ( 1f - s * ( 1f - f ) );
 		return switch (i) {
-			case 0 -> ColorUtil.rgbToInt((int) a, (int) v, (int) t, (int) p);
-			case 1 -> ColorUtil.rgbToInt((int) a, (int) q, (int) v, (int) p);
-			case 2 -> ColorUtil.rgbToInt((int) a, (int) p, (int) v, (int) t);
-			case 3 -> ColorUtil.rgbToInt((int) a, (int) p, (int) q, (int) v);
-			case 4 -> ColorUtil.rgbToInt((int) a, (int) t, (int) p, (int) v);
-			default -> ColorUtil.rgbToInt((int) a, (int) v, (int) p, (int) q);  // case 5
+			case 0 -> ColorUtil.rgbToInt(a, v, t, p);
+			case 1 -> ColorUtil.rgbToInt(a, q, v, p);
+			case 2 -> ColorUtil.rgbToInt(a, p, v, t);
+			case 3 -> ColorUtil.rgbToInt(a, p, q, v);
+			case 4 -> ColorUtil.rgbToInt(a, t, p, v);
+			default -> ColorUtil.rgbToInt(a, v, p, q);  // case 5
 		};
 }
 

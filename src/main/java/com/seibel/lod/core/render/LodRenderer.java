@@ -480,7 +480,7 @@ public class LodRenderer
 		lodProj.setClipPlanes(
 				calculateNearClipPlane(
 						CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ?
-						(vanillaBlockRenderedDistance-16) : 16, partialTicks),
+						Math.min((vanillaBlockRenderedDistance-16),8*8) : 16, partialTicks),
 				(float)((farPlaneBlockDistance+LodUtil.REGION_WIDTH) * Math.sqrt(2)));
 
 		lodProj.multiply(modelMat);

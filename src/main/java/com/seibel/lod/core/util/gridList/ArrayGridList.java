@@ -53,10 +53,17 @@ public class ArrayGridList<T> extends ArrayList<T> {
 		return set(pos.x, pos.y, e);
 	}
 	public T get(int x, int y) {
+		if (!inRange(x,y)) return null;
 		return get(_indexOf(x,y));
 	}
 	public T set(int x, int y, T e) {
+		if (!inRange(x,y)) return null;
 		return set(_indexOf(x, y), e);
+	}
+
+	public boolean inRange(int x, int y) {
+		return (x>=0 && x<gridSize &&
+				y>=0 && y<gridSize);
 	}
 
 	public final void clear() {

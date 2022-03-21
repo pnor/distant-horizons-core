@@ -59,6 +59,7 @@ public class PosArrayGridList<T> extends ArrayGridList<T> {
 		return offsetY;
 	}
 
+	@Override
 	public boolean inRange(int x, int y) {
 		return (x>=offsetX && x<offsetX+gridSize &&
 				y>=offsetY && y<offsetY+gridSize);

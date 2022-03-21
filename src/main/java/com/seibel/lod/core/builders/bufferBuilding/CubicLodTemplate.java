@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.builders.bufferBuilding;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.opengl.LodBox;
@@ -62,13 +63,18 @@ public class CubicLodTemplate
 		}
 		else
 		{
-			double saturationMultiplier = CONFIG.client().graphics().advancedGraphics().getSaturationMultiplier();
-			double brightnessMultiplier = CONFIG.client().graphics().advancedGraphics().getBrightnessMultiplier();
+			float saturationMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getSaturationMultiplier();
+			float brightnessMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getBrightnessMultiplier();
 
-			float[] ahsv = ColorUtil.argbToAhsv(DataPointUtil.getColor(data));
-			ahsv[2] *= saturationMultiplier;
-			ahsv[3] *= brightnessMultiplier;
-			color = ColorUtil.ahsvToArgb(ahsv[0], ahsv[1], ahsv[2], ahsv[3]);
+			if (saturationMultiplier == 1.0 && brightnessMultiplier == 1.0) {
+				color = DataPointUtil.getColor(data);
+			} else {
+				float[] ahsv = ColorUtil.argbToAhsv(DataPointUtil.getColor(data));
+				color = ColorUtil.ahsvToArgb(ahsv[0], ahsv[1], ahsv[2] * saturationMultiplier, ahsv[3] * brightnessMultiplier);
+				//ApiShared.LOGGER.info("Raw color:[{}], AHSV:{}, Out color:[{}]",
+				//		ColorUtil.toString(DataPointUtil.getColor(data)),
+				//		ahsv, ColorUtil.toString(color));
+			}
 		}
 		
 		
