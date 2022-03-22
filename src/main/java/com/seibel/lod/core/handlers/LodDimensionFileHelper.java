@@ -163,7 +163,7 @@ public class LodDimensionFileHelper
 			{
 				for (int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
 				{
-					for (int y = 0; y < newChunkData[x][y].length; y++)
+					for (int y = 0; y < newChunkData[x][z].length; y++)
 					{
 						if (newChunkData[x][z][y] == testChunkData[x][z][y])
 						{
