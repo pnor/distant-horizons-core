@@ -41,8 +41,8 @@ public class CubicLodTemplate
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
-	public static void addLodToBuffer(long data, long topData, long botData, long[][][] adjData, byte detailLevel,
-			int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, DebugMode debugging)
+	public static void addLodToBuffer(long data, long topData, long botData, long[][][] adjData,
+			 boolean[] adjFillBlack, byte detailLevel,int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, DebugMode debugging)
 	{
 		short width = (short) (1 << detailLevel);
 		short x = (short) LevelPosUtil.convert(detailLevel, offsetPosX, LodUtil.BLOCK_DETAIL_LEVEL);
@@ -83,6 +83,6 @@ public class CubicLodTemplate
 				x, y, z, // setOffset
 				color, // setColor
 				DataPointUtil.getLightSky(data), DataPointUtil.getLightBlock(data), // setLights
-				topData, botData, adjData); // setAdjData
+				topData, botData, adjData, adjFillBlack); // setAdjData
 	}
 }

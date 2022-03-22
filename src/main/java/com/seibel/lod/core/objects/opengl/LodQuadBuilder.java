@@ -39,6 +39,8 @@ public class LodQuadBuilder {
 
 		Quad(short x, short y, short z, short w0, short w1, int color, byte skylight, byte blocklight,
 				LodDirection dir) {
+			if (w0 == 0 || w1 == 0) throw new IllegalArgumentException("Size 0 quad!");
+			if (w0 < 0 || w1 < 0) throw new IllegalArgumentException("Negative sized quad!");
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -373,7 +375,6 @@ public class LodQuadBuilder {
 		long mergeCount = 0;
 		long preQuadsCount = getCurrentQuadsCount();
 		if (preQuadsCount<=1) return;
-		long skipperMerge = 0;
 		for (int i=0; i<6; i++) {
 			mergeCount += mergeQuadsPass1(i);
 			if (i>=2) {
@@ -387,8 +388,8 @@ public class LodQuadBuilder {
 			}
 		}
 		long postQuadsCount = getCurrentQuadsCount();
-		//if (mergeCount != 0)
-		//	ApiShared.LOGGER.info("Merged {}/{}({}) quads, skip {}", mergeCount, preQuadsCount, mergeCount/(double)preQuadsCount, skipperMerge);
+		if (mergeCount != 0)
+			ApiShared.LOGGER.info("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount/(double)preQuadsCount);
 	}
 	
 	public Iterator<ByteBuffer> makeVertexBuffers() {

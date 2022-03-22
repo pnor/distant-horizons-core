@@ -283,6 +283,7 @@ public class RenderRegion implements AutoCloseable
 				continue;
 			
 			long[][][] adjData = new long[4][][];
+			boolean[] adjUseBlack = new boolean[4];
 
 			// We extract the adj data in the four cardinal direction
 
@@ -305,7 +306,9 @@ public class RenderRegion implements AutoCloseable
 					int zAdj = posZ + lodDirection.getNormal().z;
 					int chunkXAdj = LevelPosUtil.getChunkPos(detailLevel, xAdj);
 					int chunkZAdj = LevelPosUtil.getChunkPos(detailLevel, zAdj);
-					if (chunkGrid.get(chunkXAdj, chunkZAdj)!=null) continue;
+					if (chunkGrid.get(chunkXAdj, chunkZAdj)!=null) {
+						adjUseBlack[lodDirection.ordinal()-2] = true;
+					}
 
 					boolean isCrossRegionBoundary = LevelPosUtil.getRegion(detailLevel, xAdj) != region.regionPosX ||
 							LevelPosUtil.getRegion(detailLevel, zAdj) != region.regionPosZ;
@@ -370,7 +373,7 @@ public class RenderRegion implements AutoCloseable
 				long adjDataBot = i + 1 < posData.length ? posData[i + 1] : DataPointUtil.EMPTY_DATA;
 
 				// We send the call to create the vertices
-				CubicLodTemplate.addLodToBuffer(data, adjDataTop, adjDataBot, adjData, detailLevel,
+				CubicLodTemplate.addLodToBuffer(data, adjDataTop, adjDataBot, adjData, adjUseBlack, detailLevel,
 						LevelPosUtil.getRegionModule(detailLevel, posX),
 						LevelPosUtil.getRegionModule(detailLevel, posZ), quadBuilder, debugMode);
 			}

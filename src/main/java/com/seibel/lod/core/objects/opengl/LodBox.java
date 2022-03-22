@@ -4,13 +4,15 @@ import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
+import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 public class LodBox {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 
 	public static void addBoxQuadsToBuilder(LodQuadBuilder builder, short xSize, short ySize, short zSize, short x,
-			short y, short z, int color, byte skyLight, byte blockLight, long topData, long botData, long[][][] adjData)
+			short y, short z, int color, byte skyLight, byte blockLight, long topData, long botData, long[][][] adjData,
+			boolean[] adjFillBlack)
 	{
 		short maxX = (short) (x + xSize);
 		short maxY = (short) (y + ySize);
@@ -32,71 +34,79 @@ public class LodBox {
 			builder.addQuadDown(x, y, z, xSize, zSize, ColorUtil.applyShade(color, MC.getShade(LodDirection.DOWN)), skyLightBot, blockLight);
 		
 		//If the adj pos is at the same level we cull the faces normally, otherwise we divide the face in two and cull the two part separately
-		//NORTH face vertex creation
 
-		if (adjData[LodDirection.NORTH.ordinal() - 2] == null) {
-			builder.addQuadAdj(LodDirection.NORTH, x, y, z, xSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
-		} else if (adjData[LodDirection.NORTH.ordinal() - 2].length == 1)
+		//NORTH face vertex creation
 		{
-			makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2][0], LodDirection.NORTH, x, y, z, xSize, ySize,
-					color, skyLightTop, blockLight);
-		}else {
-			makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2][0], LodDirection.NORTH, x, y, z, (short) (xSize/2), ySize,
-					color, skyLightTop, blockLight);
-			makeAdjQuads(builder, adjData[LodDirection.NORTH.ordinal() - 2][1], LodDirection.NORTH, (short) (x+xSize/2), y, z, (short) (xSize/2), ySize,
-					color, skyLightTop, blockLight);
+			long[][] adjDataNorth = adjData[LodDirection.NORTH.ordinal() - 2];
+			int adjOverlapNorth = adjFillBlack[LodDirection.NORTH.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
+			if (adjDataNorth == null) {
+				// builder.addQuadAdj(LodDirection.NORTH, x, y, z, xSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+			} else if (adjDataNorth.length == 1) {
+				makeAdjQuads(builder, adjDataNorth[0], LodDirection.NORTH, x, y, z, xSize, ySize,
+						color, adjOverlapNorth, skyLightTop, blockLight);
+			} else {
+				makeAdjQuads(builder, adjDataNorth[0], LodDirection.NORTH, x, y, z, (short) (xSize / 2), ySize,
+						color, adjOverlapNorth, skyLightTop, blockLight);
+				makeAdjQuads(builder, adjDataNorth[1], LodDirection.NORTH, (short) (x + xSize / 2), y, z, (short) (xSize / 2), ySize,
+						color, adjOverlapNorth, skyLightTop, blockLight);
+			}
 		}
 		
 		//SOUTH face vertex creation
-		if (adjData[LodDirection.SOUTH.ordinal() - 2] == null) {
-			builder.addQuadAdj(LodDirection.SOUTH, x, y, maxZ, xSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
-		} else if (adjData[LodDirection.SOUTH.ordinal() - 2].length == 1)
 		{
-			makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2][0], LodDirection.SOUTH, x, y, maxZ, xSize, ySize,
-					color, skyLightTop, blockLight);
-		}else {
-			makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2][0], LodDirection.SOUTH, x, y, maxZ, (short) (xSize/2), ySize,
-					color, skyLightTop, blockLight);
-			
-			makeAdjQuads(builder, adjData[LodDirection.SOUTH.ordinal() - 2][1], LodDirection.SOUTH, (short) (x+xSize/2), y, maxZ, (short) (xSize/2), ySize,
-					color, skyLightTop, blockLight);
+			long[][] adjDataSouth = adjData[LodDirection.SOUTH.ordinal() - 2];
+			int adjOverlapSouth = adjFillBlack[LodDirection.SOUTH.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
+			if (adjDataSouth == null) {
+				//builder.addQuadAdj(LodDirection.SOUTH, x, y, maxZ, xSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+			} else if (adjDataSouth.length == 1) {
+				makeAdjQuads(builder, adjDataSouth[0], LodDirection.SOUTH, x, y, maxZ, xSize, ySize,
+						color, adjOverlapSouth, skyLightTop, blockLight);
+			} else {
+				makeAdjQuads(builder, adjDataSouth[0], LodDirection.SOUTH, x, y, maxZ, (short) (xSize / 2), ySize,
+						color, adjOverlapSouth, skyLightTop, blockLight);
+
+				makeAdjQuads(builder, adjDataSouth[1], LodDirection.SOUTH, (short) (x + xSize / 2), y, maxZ, (short) (xSize / 2), ySize,
+						color, adjOverlapSouth, skyLightTop, blockLight);
+			}
 		}
 		
 		//WEST face vertex creation
-
-		if (adjData[LodDirection.WEST.ordinal() - 2] == null) {
-			builder.addQuadAdj(LodDirection.WEST, x, y, z, zSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
-		} else if (adjData[LodDirection.WEST.ordinal() - 2].length == 1)
 		{
-			makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2][0], LodDirection.WEST, x, y, z, zSize, ySize, color,
-					skyLightTop, blockLight);
-		}else {
-			makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2][0], LodDirection.WEST, x, y, z, (short) (zSize/2), ySize, color,
-					skyLightTop, blockLight);
-			makeAdjQuads(builder, adjData[LodDirection.WEST.ordinal() - 2][1], LodDirection.WEST, x, y, (short) (z+zSize/2), (short) (zSize/2), ySize, color,
-					skyLightTop, blockLight);
-			
+			long[][] adjDataWest = adjData[LodDirection.WEST.ordinal() - 2];
+			int adjOverlapWest = adjFillBlack[LodDirection.WEST.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
+			if (adjDataWest == null) {
+				//builder.addQuadAdj(LodDirection.WEST, x, y, z, zSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+			} else if (adjDataWest.length == 1) {
+				makeAdjQuads(builder, adjDataWest[0], LodDirection.WEST, x, y, z, zSize, ySize,
+						color, adjOverlapWest, skyLightTop, blockLight);
+			} else {
+				makeAdjQuads(builder, adjDataWest[0], LodDirection.WEST, x, y, z, (short) (zSize / 2), ySize,
+						color, adjOverlapWest, skyLightTop, blockLight);
+				makeAdjQuads(builder, adjDataWest[1], LodDirection.WEST, x, y, (short) (z + zSize / 2), (short) (zSize / 2), ySize,
+						color, adjOverlapWest, skyLightTop, blockLight);
+			}
 		}
 		
 		//EAST face vertex creation
-
-		if (adjData[LodDirection.EAST.ordinal() - 2] == null) {
-			builder.addQuadAdj(LodDirection.EAST, maxX, y, z, zSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
-		} else if (adjData[LodDirection.EAST.ordinal() - 2].length == 1)
 		{
-			makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2][0], LodDirection.EAST, maxX, y, z, zSize, ySize,
-					color, skyLightTop, blockLight);
-		}else {
-			makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2][0], LodDirection.EAST, maxX, y, z, (short) (zSize/2), ySize,
-					color, skyLightTop, blockLight);
-			makeAdjQuads(builder, adjData[LodDirection.EAST.ordinal() - 2][1], LodDirection.EAST, maxX, y, (short) (z+zSize/2), (short) (zSize/2), ySize,
-					color, skyLightTop, blockLight);
-			
+			long[][] adjDataEast = adjData[LodDirection.EAST.ordinal() - 2];
+			int adjOverlapEast = adjFillBlack[LodDirection.EAST.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
+			if (adjData[LodDirection.EAST.ordinal() - 2] == null) {
+				//builder.addQuadAdj(LodDirection.EAST, maxX, y, z, zSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+			} else if (adjDataEast.length == 1) {
+				makeAdjQuads(builder, adjDataEast[0], LodDirection.EAST, maxX, y, z, zSize, ySize,
+						color, adjOverlapEast, skyLightTop, blockLight);
+			} else {
+				makeAdjQuads(builder, adjDataEast[0], LodDirection.EAST, maxX, y, z, (short) (zSize / 2), ySize,
+						color, adjOverlapEast, skyLightTop, blockLight);
+				makeAdjQuads(builder, adjDataEast[1], LodDirection.EAST, maxX, y, (short) (z + zSize / 2), (short) (zSize / 2), ySize,
+						color, adjOverlapEast, skyLightTop, blockLight);
+			}
 		}
 	}
 
 	private static void makeAdjQuads(LodQuadBuilder builder, long[] adjData, LodDirection direction, short x, short y,
-			short z, short w0, short wy, int color, byte upSkyLight, byte blockLight) {
+									 short z, short w0, short wy, int color, int overlapColor, byte upSkyLight, byte blockLight) {
 		color = ColorUtil.applyShade(color, MC.getShade(direction));
 		long[] dataPoint = adjData;
 		if (dataPoint == null || DataPointUtil.isVoid(dataPoint[0])) {
@@ -107,7 +117,7 @@ public class LodBox {
 		int i;
 		boolean firstFace = true;
 		boolean allAbove = true;
-		short nextStartingHeight = -1;
+		short previousDepth = -1;
 		byte nextSkyLight = upSkyLight;
 
 		// TODO transparency ocean floor fix
@@ -139,11 +149,11 @@ public class LodBox {
 							blockLight);
 				} else {
 					// Now: depth < height < y < previousDepth < maxY
-					if (nextStartingHeight == -1)
+					if (previousDepth == -1)
 						throw new RuntimeException("Loop error");
-					builder.addQuadAdj(direction, x, y, z, w0, (short) (nextStartingHeight - y), color,
+					builder.addQuadAdj(direction, x, y, z, w0, (short) (previousDepth - y), color,
 							DataPointUtil.getLightSky(adjPoint), blockLight);
-					nextStartingHeight = -1;
+					previousDepth = -1;
 				}
 				break;
 			}
@@ -152,24 +162,32 @@ public class LodBox {
 				if (y + wy <= height) {
 					// Basically: ________ y < maxY <= height
 					// _______&&: depth <= y < maxY
-					// The face is inside adj face completely. Don't draw.
+					// The face is inside adj face completely.
+					if (overlapColor != 0) {
+						builder.addQuadAdj(direction, x, y, z, w0, wy, overlapColor, (byte) 15, (byte) 15);
+					}
 					break;
 				}
 				// Otherwise: ________ y <= Height < maxY
 				// _______&&: depth <= y _________ < maxY
 				// the adj data intersects the lower part of the current data
+				if (height > y && overlapColor != 0) {
+					builder.addQuadAdj(direction, x, y, z, w0, (short) (height-y), overlapColor, (byte) 15, (byte) 15);
+				}
 				// if this is the only face, use the maxY and break,
 				// if there was another face we finish the last one and break
 				if (firstFace) {
 					builder.addQuadAdj(direction, x, height, z, w0, (short) (y + wy - height), color,
 							DataPointUtil.getLightSky(adjPoint), blockLight);
 				} else {
-					// Now: depth <= y <= height < previousDepth < maxY
-					if (nextStartingHeight == -1)
+					// Now: depth <= y <= height <= previousDepth < maxY
+					if (previousDepth == -1)
 						throw new RuntimeException("Loop error");
-					builder.addQuadAdj(direction, x, height, z, w0, (short) (nextStartingHeight - height), color,
-							DataPointUtil.getLightSky(adjPoint), blockLight);
-					nextStartingHeight = -1;
+					if (previousDepth > height) {
+						builder.addQuadAdj(direction, x, height, z, w0, (short) (previousDepth - height), color,
+								DataPointUtil.getLightSky(adjPoint), blockLight);
+					}
+					previousDepth = -1;
 				}
 				break;
 			}
@@ -181,24 +199,32 @@ public class LodBox {
 				// Basically: y _______ < maxY <= height
 				// _______&&: y < depth < maxY
 				// the adj data intersects the higher part of the current data
+				if (overlapColor != 0) {
+					builder.addQuadAdj(direction, x, depth, z, w0, (short) (y+wy-depth), overlapColor, (byte) 15, (byte) 15);
+				}
 				// we start the creation of a new face
 			} else {
 				// Otherwise: y < _____ height < maxY
 				// _______&&: y < depth ______ < maxY
+				if (overlapColor != 0) {
+					builder.addQuadAdj(direction, x, depth, z, w0, (short) (height-depth), overlapColor, (byte) 15, (byte) 15);
+				}
 				if (firstFace) {
 					builder.addQuadAdj(direction, x, height, z, w0, (short) (y + wy - height), color,
 							DataPointUtil.getLightSky(adjPoint), blockLight);
 				} else {
-					// Now: y < depth < height < previousDepth < maxY
-					if (nextStartingHeight == -1)
+					// Now: y < depth < height <= previousDepth < maxY
+					if (previousDepth == -1)
 						throw new RuntimeException("Loop error");
-					builder.addQuadAdj(direction, x, height, z, w0, (short) (nextStartingHeight - height), color,
-							DataPointUtil.getLightSky(adjPoint), blockLight);
-					nextStartingHeight = -1;
+					if (previousDepth > height) {
+						builder.addQuadAdj(direction, x, height, z, w0, (short) (previousDepth - height), color,
+								DataPointUtil.getLightSky(adjPoint), blockLight);
+					}
+					previousDepth = -1;
 				}
 			}
 			// set next top as current depth
-			nextStartingHeight = depth;
+			previousDepth = depth;
 			firstFace = false;
 			nextSkyLight = upSkyLight;
 			if (i + 1 < adjData.length && DataPointUtil.doesItExist(adjData[i + 1]))
@@ -207,11 +233,10 @@ public class LodBox {
 
 		if (allAbove) {
 			builder.addQuadAdj(direction, x, y, z, w0, wy, color, upSkyLight, blockLight);
-		} else if (nextStartingHeight != -1) {
+		} else if (previousDepth != -1) {
 			// We need to finish the last quad.
-			builder.addQuadAdj(direction, x, y, z, w0, (short) (nextStartingHeight - y), color, nextSkyLight,
+			builder.addQuadAdj(direction, x, y, z, w0, (short) (previousDepth - y), color, nextSkyLight,
 					blockLight);
 		}
 	}
-
 }
