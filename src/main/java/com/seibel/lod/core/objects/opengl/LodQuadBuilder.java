@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
@@ -24,6 +25,7 @@ public class LodQuadBuilder {
 	static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
 	public final boolean skipSkylight0Quads;
+	public final short skyLightCullingBelow;
 
 	static class Quad {
 		final short x;
@@ -231,49 +233,50 @@ public class LodQuadBuilder {
 
 	final ArrayList<Quad>[] quads = new ArrayList[6];
 
-	public LodQuadBuilder(int initialSize, boolean enableSkylightCulling) {
+	public LodQuadBuilder(int initialSize, boolean enableSkylightCulling, int skyLightCullingBelow) {
 		for (int i=0; i<6; i++) quads[i] = new ArrayList<Quad>();
 		this.skipSkylight0Quads = enableSkylightCulling;
+		this.skyLightCullingBelow = (short) (skyLightCullingBelow - LodBuilder.MIN_WORLD_HEIGHT);
 	}
 
 	public void addQuadAdj(LodDirection dir, short x, short y, short z, short w0, short wy, int color, byte skylight,
 			byte blocklight) {
 		if (dir.ordinal() <= LodDirection.DOWN.ordinal())
 			throw new IllegalArgumentException("addQuadAdj() is only for adj direction! Not UP or Down!");
-		if (skipSkylight0Quads && skylight==0) return;
+		if (skipSkylight0Quads && skylight==0 && y < skyLightCullingBelow) return;
 		quads[dir.ordinal()].add(new Quad(x, y, z, w0, wy, color, skylight, blocklight, dir));
 	}
 
 	// XZ
 	public void addQuadUp(short x, short y, short z, short wx, short wz, int color, byte skylight, byte blocklight) {
-		if (skipSkylight0Quads && skylight==0) return;
+		if (skipSkylight0Quads && skylight==0 && y < skyLightCullingBelow) return;
 		quads[LodDirection.UP.ordinal()].add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.UP));
 	}
 
 	public void addQuadDown(short x, short y, short z, short wx, short wz, int color, byte skylight, byte blocklight) {
-		if (skipSkylight0Quads && skylight==0) return;
+		if (skipSkylight0Quads && skylight==0 && y < skyLightCullingBelow) return;
 		quads[LodDirection.DOWN.ordinal()].add(new Quad(x, y, z, wx, wz, color, skylight, blocklight, LodDirection.DOWN));
 	}
 
 	// XY
 	public void addQuadN(short x, short y, short z, short wx, short wy, int color, byte skylight, byte blocklight) {
-		if (skipSkylight0Quads && skylight==0) return;
+		if (skipSkylight0Quads && skylight==0 && y < skyLightCullingBelow) return;
 		quads[LodDirection.NORTH.ordinal()].add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.NORTH));
 	}
 
 	public void addQuadS(short x, short y, short z, short wx, short wy, int color, byte skylight, byte blocklight) {
-		if (skipSkylight0Quads && skylight==0) return;
+		if (skipSkylight0Quads && skylight==0 && y < skyLightCullingBelow) return;
 		quads[LodDirection.SOUTH.ordinal()].add(new Quad(x, y, z, wx, wy, color, skylight, blocklight, LodDirection.SOUTH));
 	}
 
 	// ZY
 	public void addQuadW(short x, short y, short z, short wz, short wy, int color, byte skylight, byte blocklight) {
-		if (skipSkylight0Quads && skylight==0) return;
+		if (skipSkylight0Quads && skylight==0 && y < skyLightCullingBelow) return;
 		quads[LodDirection.WEST.ordinal()].add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.WEST));
 	}
 
 	public void addQuadE(short x, short y, short z, short wz, short wy, int color, byte skylight, byte blocklight) {
-		if (skipSkylight0Quads && skylight==0) return;
+		if (skipSkylight0Quads && skylight==0 && y < skyLightCullingBelow) return;
 		quads[LodDirection.EAST.ordinal()].add(new Quad(x, y, z, wz, wy, color, skylight, blocklight, LodDirection.EAST));
 	}
 

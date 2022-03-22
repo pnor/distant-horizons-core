@@ -172,7 +172,9 @@ public class RenderRegion implements AutoCloseable
 				boolean useSkylightCulling = CONFIG.client().graphics().advancedGraphics().getEnableCaveCulling();
 				useSkylightCulling &= !lodDim.dimension.hasCeiling();
 				useSkylightCulling &= lodDim.dimension.hasSkyLight();
-				LodQuadBuilder builder = new LodQuadBuilder(10, useSkylightCulling);
+				//TODO: Add config for skyLightCullingBelow
+				int skyLightCullingBelow = 40;
+				LodQuadBuilder builder = new LodQuadBuilder(10, useSkylightCulling, skyLightCullingBelow);
 				Runnable buildRun = ()->{
 					makeLodRenderData(builder, region, adjRegions, playerPosX, playerPosZ);
 				};
