@@ -60,6 +60,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class LodRenderer
 {
 	public static final boolean ENABLE_DRAW_LAG_SPIKE_LOGGING = false;
+	public static final boolean ENABLE_DUMP_GL_STATE = false;
 	public static final long DRAW_LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
 	
 	public static class LagSpikeCatcher {
@@ -133,6 +134,7 @@ public class LodRenderer
 	public static SpamReducedLogger tickLogger = new SpamReducedLogger(1);
 
 	public static void dumpGLState(String str) {
+		if (!ENABLE_DUMP_GL_STATE) return;
 		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
 		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
 		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
@@ -374,7 +376,7 @@ public class LodRenderer
 		}
 		dumpGLState("Post Lod Draw Before Cleanup");
 		//if (drawCall==0)
-			tickLogger.info("DrawCall Count: {}", drawCount);
+		//	tickLogger.info("DrawCall Count: {}", drawCount);
 		
 		//================//
 		// render cleanup //
@@ -476,11 +478,18 @@ public class LodRenderer
 		//Create a copy of the current matrix, so the current matrix isn't modified.
 		Mat4f lodProj = projMat.copy();
 
+		float nearClipPlane;
+		if (CONFIG.client().advanced().getLodOnlyMode()) {
+			nearClipPlane = 0.1f;
+		} else if (CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane()) {
+			nearClipPlane = Math.min((vanillaBlockRenderedDistance-16f),8f*16f);
+		} else {
+			nearClipPlane = 16f;
+		}
+
 		//Set new far and near clip plane values.
 		lodProj.setClipPlanes(
-				calculateNearClipPlane(
-						CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane() ?
-						Math.min((vanillaBlockRenderedDistance-16),8*8) : 16, partialTicks),
+				calculateNearClipPlane(nearClipPlane, partialTicks),
 				(float)((farPlaneBlockDistance+LodUtil.REGION_WIDTH) * Math.sqrt(2)));
 
 		lodProj.multiply(modelMat);
@@ -532,7 +541,8 @@ public class LodRenderer
 	private boolean updateVanillaRenderedChunks(LodDimension lodDim) {
 		// if the player is high enough, draw all LODs
 		IWorldWrapper world = MC.getWrappedClientWorld();
-		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight()) {
+		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight() ||
+			CONFIG.client().advanced().getLodOnlyMode()) {
 			if (vanillaChunks != null) {
 				vanillaChunks = null;
 				return true;

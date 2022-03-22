@@ -167,7 +167,11 @@
   "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling":
   "Cave Culling §6(EXPERIMENTAL)§r",
   "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling.@tooltip":
-  "If enabled caves will be culled \n\n§6NOTE: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature.§r \n\nAdditional Info: Currently this cull all faces \n with skylight value of 0 in dimensions that \n does not have a ceiling. \n",
+  "If enabled caves will be culled \n\n§6NOTE§r: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature. \n\nAdditional Info: Currently this cull all faces \n with skylight value of 0 in dimensions that \n does not have a ceiling. \n",
+  "DistantHorizons.config.client.graphics.advancedGraphics.caveCullingHeight":
+  "Cave Culling Height §6(EXPERIMENTAL)§r",
+  "DistantHorizons.config.client.graphics.advancedGraphics.caveCullingHeight.@tooltip":
+  "At what Y value should cave culling start? \n\n§6NOTE§r: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature.",
   "DistantHorizons.config.client.worldGenerator":
 	"World generator",
   "DistantHorizons.config.client.worldGenerator.generationPriority":
@@ -244,6 +248,10 @@
 	"Enable debug keybindings",
   "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings.@tooltip":
 	"§6True:§r debug keybindings can be used to change the Debug mode in game.",
+  "DistantHorizons.config.client.advanced.lodOnlyMode":
+  "Lod Only Mode §6(ONLY FOR FUN)§r",
+  "DistantHorizons.config.client.advanced.lodOnlyMode.@tooltip":
+  "Due to some demand for playing without vanilla terrains, \nwe decided to add this mode for fun. \n\n§6NOTE§r: Do not report any issues when this mode is on! \n  Again, this setting is only for fun, and mod \n  compatibility is not guaranteed. \n",
   "DistantHorizons.config.enum.HorizontalResolution.BLOCK":
 	"Block",
   "DistantHorizons.config.enum.HorizontalResolution.TWO_BLOCKS":

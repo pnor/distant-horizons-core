@@ -391,13 +391,13 @@ public class LodQuadBuilder {
 			}
 		}
 		long postQuadsCount = getCurrentQuadsCount();
-		if (mergeCount != 0)
-			ApiShared.LOGGER.info("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount/(double)preQuadsCount);
+		//if (mergeCount != 0)
+		//	ApiShared.LOGGER.info("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount/(double)preQuadsCount);
 	}
 	
 	public Iterator<ByteBuffer> makeVertexBuffers() {
 		return new Iterator<ByteBuffer>() {
-			ByteBuffer bb = ByteBuffer.allocateDirect(MAX_QUADS_PER_BUFFER * QUAD_BYTE_SIZE)
+			final ByteBuffer bb = ByteBuffer.allocateDirect(MAX_QUADS_PER_BUFFER * QUAD_BYTE_SIZE)
 					.order(ByteOrder.nativeOrder());
 			int dir = skipEmpty(0);
 			int quad = 0;

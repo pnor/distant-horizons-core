@@ -172,8 +172,9 @@ public class RenderRegion implements AutoCloseable
 				boolean useSkylightCulling = CONFIG.client().graphics().advancedGraphics().getEnableCaveCulling();
 				useSkylightCulling &= !lodDim.dimension.hasCeiling();
 				useSkylightCulling &= lodDim.dimension.hasSkyLight();
-				//TODO: Add config for skyLightCullingBelow
-				int skyLightCullingBelow = 40;
+				int skyLightCullingBelow = CONFIG.client().graphics().advancedGraphics().getCaveCullingHeight();
+				// FIXME: Clamp also to the max world height.
+				skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
 				LodQuadBuilder builder = new LodQuadBuilder(10, useSkylightCulling, skyLightCullingBelow);
 				Runnable buildRun = ()->{
 					makeLodRenderData(builder, region, adjRegions, playerPosX, playerPosZ);
@@ -276,7 +277,7 @@ public class RenderRegion implements AutoCloseable
 				int chunkX = LevelPosUtil.getChunkPos(detailLevel, posX);
 				int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posZ);
 				// skip any chunks that Minecraft is going to render
-				if (chunkGrid.get(chunkX, chunkZ) != null) continue;
+				if (chunkGrid != null && chunkGrid.get(chunkX, chunkZ) != null) continue;
 			}
 
 			long[] posData = region.getAllData(detailLevel, posX, posZ);
@@ -308,7 +309,7 @@ public class RenderRegion implements AutoCloseable
 					int zAdj = posZ + lodDirection.getNormal().z;
 					int chunkXAdj = LevelPosUtil.getChunkPos(detailLevel, xAdj);
 					int chunkZAdj = LevelPosUtil.getChunkPos(detailLevel, zAdj);
-					if (chunkGrid.get(chunkXAdj, chunkZAdj)!=null) {
+					if (chunkGrid != null && chunkGrid.get(chunkXAdj, chunkZAdj)!=null) {
 						adjUseBlack[lodDirection.ordinal()-2] = true;
 					}
 

@@ -548,6 +548,12 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ "  does not have a ceiling. \n";
 				boolean getEnableCaveCulling();
 				void setEnableCaveCulling(boolean newEnableCaveCulling);
+
+				MinDefaultMax<Integer> CAVE_CULLING_HEIGHT_MIN_DEFAULT_MAX = new MinDefaultMax<>(-4096,40,4096);
+				String CAVE_CULLING_HEIGHT_DESC = ""
+						+ " At what Y value should cave culling start? \n";
+				int getCaveCullingHeight();
+				void setCaveCullingHeight(int newCaveCullingHeight);
 			}
 		}
 		
@@ -875,6 +881,19 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				BufferRebuildTimes getRebuildTimes();
 				void setRebuildTimes(BufferRebuildTimes newBufferRebuildTimes);
 			}
+
+			boolean LOD_ONLY_MODE_DEFAULT = false;
+			String LOD_ONLY_MODE_DESC = ""
+					+ " Due to some demand for playing without vanilla terrains, \n"
+					+ " we decided to add this mode for fun. \n"
+					+ "\n"
+					+ " NOTE: Do not report any issues when this mode is on! \n"
+					+ "   Again, this setting is only for fun, and mod \n"
+					+ "   compatibility is not guaranteed. \n"
+					+ "\n";
+
+			boolean getLodOnlyMode();
+			void setLodOnlyMode(boolean newLodOnlyMode);
 		}
 	}
 	
