@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.builders.bufferBuilding.CubicLodTemplate;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.CubicLodTemplate;
+import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;

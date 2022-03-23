@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.builders.lodBuilding;
+package com.seibel.lod.core.objects.opengl.builders.lodBuilding;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

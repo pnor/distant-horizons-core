@@ -20,7 +20,7 @@
 package com.seibel.lod.core.api;
 
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LodWorld;
 import org.apache.logging.log4j.LogManager;

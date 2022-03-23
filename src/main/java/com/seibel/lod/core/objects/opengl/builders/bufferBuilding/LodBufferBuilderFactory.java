@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.builders.bufferBuilding;
+package com.seibel.lod.core.objects.opengl.builders.bufferBuilding;
 
 import java.time.Duration;
 import java.util.concurrent.*;

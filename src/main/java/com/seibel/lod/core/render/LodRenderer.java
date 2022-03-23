@@ -21,7 +21,6 @@ package com.seibel.lod.core.render;
 
 import java.awt.Color;
 import java.time.Duration;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.objects.BoolType;
@@ -31,7 +30,7 @@ import com.seibel.lod.core.util.gridList.*;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
@@ -43,7 +42,6 @@ import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;

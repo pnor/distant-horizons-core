@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.wrapperInterfaces;
 
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;

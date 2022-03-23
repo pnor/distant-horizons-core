@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.builders.bufferBuilding;
+package com.seibel.lod.core.objects.opengl.builders.bufferBuilding;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.enums.rendering.DebugMode;

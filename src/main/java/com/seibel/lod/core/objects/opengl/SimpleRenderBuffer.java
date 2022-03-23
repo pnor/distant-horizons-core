@@ -4,12 +4,10 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.SpamReducedLogger;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder.BufferFiller;

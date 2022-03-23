@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;

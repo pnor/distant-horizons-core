@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
