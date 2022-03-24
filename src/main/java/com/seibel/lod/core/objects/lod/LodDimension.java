@@ -26,7 +26,7 @@ import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
-import com.seibel.lod.core.handlers.LodDimensionFileHelper;
+import com.seibel.lod.core.handlers.LodSubDimensionFolderFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
@@ -136,7 +136,7 @@ public class LodDimension
 			try
 			{
 				// attempt to get the file handler
-				File saveDir = LodDimensionFileHelper.determineSubDimensionFolder();
+				File saveDir = LodSubDimensionFolderFinder.determineSubDimensionFolder();
 				if (saveDir == null)
 					return;
 				

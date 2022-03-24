@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import com.seibel.lod.core.handlers.LodDimensionFileHelper;
+import com.seibel.lod.core.handlers.LodSubDimensionFolderFinder;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
@@ -170,7 +170,7 @@ public class ClientApi
 			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(world.getDimensionType());
 			
 			// Make sure the player's data is up-to-date
-			LodDimensionFileHelper.updatePlayerData();
+			LodSubDimensionFolderFinder.updatePlayerData();
 			
 			// Make the LodDim if it does not exist
 			if (lodDim == null)

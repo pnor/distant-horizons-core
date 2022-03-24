@@ -27,9 +27,9 @@ import java.util.UUID;
 /**
  * Used to guess the world folder for the player's current dimension.
  * @author James Seibel
- * @version 3-17-2022
+ * @version 3-23-2022
  */
-public class LodDimensionFileHelper
+public class LodSubDimensionFolderFinder
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
@@ -39,8 +39,8 @@ public class LodDimensionFileHelper
 	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.MEDIUM;
 	
 	
-	private static LodDimensionFileHelper.PlayerData PLAYER_DATA = new LodDimensionFileHelper.PlayerData(MC);
-	private static LodDimensionFileHelper.PlayerData FIRST_SEEN_PLAYER_DATA = null;
+	private static LodSubDimensionFolderFinder.PlayerData PLAYER_DATA = new LodSubDimensionFolderFinder.PlayerData(MC);
+	private static LodSubDimensionFolderFinder.PlayerData FIRST_SEEN_PLAYER_DATA = null;
 	
 	
 	
@@ -56,7 +56,7 @@ public class LodDimensionFileHelper
 		if (FIRST_SEEN_PLAYER_DATA == null)
 		{
 			FIRST_SEEN_PLAYER_DATA = PLAYER_DATA;
-			PLAYER_DATA = new LodDimensionFileHelper.PlayerData(MC);
+			PLAYER_DATA = new LodSubDimensionFolderFinder.PlayerData(MC);
 		}
 		
 		
@@ -70,7 +70,7 @@ public class LodDimensionFileHelper
 		// chunk from the newly loaded dimension
 		IChunkWrapper newlyLoadedChunk = MC.getWrappedClientWorld().tryGetChunk(playerChunkPos);
 		// check if this chunk is valid to test
-		if (!LodDimensionFileHelper.CanDetermineDimensionFolder(newlyLoadedChunk))
+		if (!LodSubDimensionFolderFinder.CanDetermineDimensionFolder(newlyLoadedChunk))
 			return null;
 		
 		// create a temporary dimension to store the test LOD
