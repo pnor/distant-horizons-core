@@ -36,7 +36,7 @@ public class LodSubDimensionFolderFinder
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** Increasing this will increase accuracy but increase calculation time */
-	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.MEDIUM;
+	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.LOW;
 	
 	
 	private static LodSubDimensionFolderFinder.PlayerData PLAYER_DATA = new LodSubDimensionFolderFinder.PlayerData(MC);
