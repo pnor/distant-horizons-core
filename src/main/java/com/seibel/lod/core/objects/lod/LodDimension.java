@@ -131,12 +131,12 @@ public class LodDimension
 		
 		
 		// run asynchronously since this could take a while
-		new Thread(() ->
+		Thread thread =new Thread(() ->
 		{
 			try
 			{
 				// attempt to get the file handler
-				File saveDir = LodDimensionFileHelper.determineSaveFolder();
+				File saveDir = LodDimensionFileHelper.determineSubDimensionFolder();
 				if (saveDir == null)
 					return;
 				
@@ -155,7 +155,9 @@ public class LodDimension
 				// make sure we unlock this method
 				this.determiningWorldFolder = false;
 			}
-		}).start();
+		});
+		thread.setName("Sub-Dimension-Finder");
+		thread.start();
 	}
 	
 	

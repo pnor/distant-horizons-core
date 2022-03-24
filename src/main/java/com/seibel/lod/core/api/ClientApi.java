@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.handlers.LodDimensionFileHelper;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
@@ -100,10 +101,16 @@ public class ClientApi
 	public boolean rendererDisabledBecauseOfExceptions = false;
 	
 	
+	
+	
+	
 	private ClientApi()
 	{
 		
 	}
+	
+	
+	
 	
 	private void flushSpamLoggersState() {
 		synchronized(spamReducedLoggers) {
@@ -158,8 +165,12 @@ public class ClientApi
 				return;
 			
 			IWorldWrapper world = MC.getWrappedClientWorld();
-			if (world == null) return;
+			if (world == null)
+				return;
 			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(world.getDimensionType());
+			
+			// Make sure the player's data is up-to-date
+			LodDimensionFileHelper.updatePlayerData();
 			
 			// Make the LodDim if it does not exist
 			if (lodDim == null)

@@ -20,6 +20,7 @@
 package com.seibel.lod.core.api;
 
 import com.seibel.lod.core.api.ClientApi.LagSpikeCatcher;
+import com.seibel.lod.core.handlers.LodDimensionFileHelper;
 import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.objects.opengl.builders.worldGeneration.BatchGenerator;
 import com.seibel.lod.core.enums.WorldType;
@@ -58,6 +59,9 @@ public class EventApi
 	 * distance
 	 */
 	private boolean recalculateWidths = false;
+	
+	private boolean isCurrentlyOnSinglePlayerServer = false;
+	
 	
 	private EventApi()
 	{
@@ -112,8 +116,6 @@ public class EventApi
 	{
 		ApiShared.lodWorld.saveAllDimensions(false); // Do an async save.
 	}
-	
-	private boolean isCurrentlyOnSinglePlayerServer = false;
 	
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)

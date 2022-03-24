@@ -414,4 +414,22 @@ public class LodUtil
 	public static void checkInterruptsUnchecked() {
 		if (Thread.interrupted()) throw new RuntimeException(new InterruptedException());
 	}
+	
+	
+	/**
+	 * Returns a shortened version of the given string that is no longer than maxLength. <br>
+	 * If null returns the empty string.
+	 */
+	public static String shortenString(String str, int maxLength)
+	{
+		if (str == null)
+		{
+			return "";
+		}
+		else
+		{
+			return str.substring(0, Math.min(str.length(), maxLength));
+		}
+	}
+	
 }

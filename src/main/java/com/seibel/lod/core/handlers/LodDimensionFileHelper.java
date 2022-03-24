@@ -1,8 +1,9 @@
 package com.seibel.lod.core.handlers;
 
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
+import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -10,6 +11,8 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.util.LodUtil;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
+import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -30,9 +33,15 @@ public class LodDimensionFileHelper
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** Increasing this will increase accuracy but increase calculation time */
-	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.LOW;
+	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.MEDIUM;
+	
+	
+	private static LodDimensionFileHelper.PlayerData PLAYER_DATA = new LodDimensionFileHelper.PlayerData(MC);
+	private static LodDimensionFileHelper.PlayerData FIRST_SEEN_PLAYER_DATA = null;
+	
 	
 	
 	/**
@@ -42,13 +51,21 @@ public class LodDimensionFileHelper
 	 * @return the new or existing folder for this dimension, null if there was a problem
 	 * @throws IOException if the folder doesn't exist or can't be accessed
 	 */
-	public static File determineSaveFolder() throws IOException
+	public static File determineSubDimensionFolder() throws IOException
 	{
+		if (FIRST_SEEN_PLAYER_DATA == null)
+		{
+			FIRST_SEEN_PLAYER_DATA = PLAYER_DATA;
+			PLAYER_DATA = new LodDimensionFileHelper.PlayerData(MC);
+		}
+		
+		
 		// relevant positions
-		AbstractChunkPosWrapper playerChunkPos = MC.getPlayerChunkPos();
+		AbstractChunkPosWrapper playerChunkPos = FACTORY.createChunkPos(FIRST_SEEN_PLAYER_DATA.playerBlockPos);
 		int startingBlockPosX = playerChunkPos.getMinBlockX();
 		int startingBlockPosZ = playerChunkPos.getMinBlockZ();
-		RegionPos playerRegionPos = new RegionPos(MC.getPlayerChunkPos());
+		RegionPos playerRegionPos = new RegionPos(playerChunkPos);
+		
 		
 		// chunk from the newly loaded dimension
 		IChunkWrapper newlyLoadedChunk = MC.getWrappedClientWorld().tryGetChunk(playerChunkPos);
@@ -56,7 +73,7 @@ public class LodDimensionFileHelper
 		if (!LodDimensionFileHelper.CanDetermineDimensionFolder(newlyLoadedChunk))
 			return null;
 		
-		// create a temporary dimension to store the new LOD
+		// create a temporary dimension to store the test LOD
 		LodDimension newlyLoadedDim = new LodDimension(MC.getCurrentDimension(), null, 1);
 		newlyLoadedDim.move(playerRegionPos);
 		newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
@@ -65,6 +82,12 @@ public class LodDimensionFileHelper
 		boolean lodGenerated = ApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(DistanceGenerationMode.FULL), true, true);
 		if (!lodGenerated)
 			return null;
+		
+		
+		// log the start of this attempt
+		ApiShared.LOGGER.info("Attempting to determine sub-dimension for [" + MC.getCurrentDimension().getDimensionName() + "]");
+		ApiShared.LOGGER.info("First seen player block pos in dimension: [" + FIRST_SEEN_PLAYER_DATA.playerBlockPos.getX() + "," + FIRST_SEEN_PLAYER_DATA.playerBlockPos.getY() + "," + FIRST_SEEN_PLAYER_DATA.playerBlockPos.getZ() + "]");
+		
 		
 		// new chunk data
 		long[][][] newChunkData = new long[LodUtil.CHUNK_WIDTH][LodUtil.CHUNK_WIDTH][];
@@ -77,9 +100,6 @@ public class LodDimensionFileHelper
 			}
 		}
 		boolean newChunkHasData = isDataEmpty(newChunkData);
-//		String message = "new chunk data " + (newChunkHasData ? newChunkData[0][0][0] : "[NULL]");
-//		MC.sendChatMessage(message);
-//		ApiShared.LOGGER.info(message);
 		
 		// check if the chunk is actually empty
 		if (!newChunkHasData)
@@ -88,16 +108,16 @@ public class LodDimensionFileHelper
 			{
 				// the chunk isn't empty but the LOD is...
 				
-//				String message = "Error: the chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") has a height of [" + newlyLoadedChunk.getHeight() + "] but the LOD generated is empty!";
-//				MC.sendChatMessage(message);
-//				ApiShared.LOGGER.info(message);
+				String message = "Error: the chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") has a height of [" + newlyLoadedChunk.getHeight() + "] but the LOD generated is empty!";
+				MC.sendChatMessage(message);
+				ApiShared.LOGGER.error(message);
 				return null;
 			}
 			else
 			{
-//				String message = "The chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty.";
+				String message = "Warning: The chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty.";
 //				MC.sendChatMessage(message);
-//				ApiShared.LOGGER.info(message);
+				ApiShared.LOGGER.warn(message);
 			}
 		}
 		
@@ -114,21 +134,23 @@ public class LodDimensionFileHelper
 				// create the directory since it doesn't exist
 				dimensionFolder.mkdirs();
 			}
-			else
-			{
-				return null;
-			}
 		}
+		
+		// TODO move any old files if they exist
+		
 		
 		
 		// compare each world with the newly loaded one
 		File mostSimilarWorldFolder = null;
 		int mostEqualLines = 0;
-		boolean oneDimensionIsValid = false;
+		double highestEqualityPercent = 0.0;
 		double minimumSimilarityRequired = CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity();
 		
+		ApiShared.LOGGER.info("Known Sub Dimensions: [" + dimensionFolder.listFiles().length + "]");
 		for (File testDimFolder : dimensionFolder.listFiles())
 		{
+			ApiShared.LOGGER.info("Testing sub dimension: [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "]");
+			
 			// get a LOD from this dimension folder
 			LodDimension tempLodDim = new LodDimension(null, null, 1);
 			tempLodDim.move(playerRegionPos);
@@ -145,15 +167,28 @@ public class LodDimensionFileHelper
 				}
 			}
 			
+			
+			// get the player data for this dimension folder
+			PlayerData testPlayerData = new PlayerData(testDimFolder);
+			ApiShared.LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
+			
+			// check if the block positions are close
+			int distance = testPlayerData.playerBlockPos.getManhattanDistance(FIRST_SEEN_PLAYER_DATA.playerBlockPos);
+			ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + distance + "]");
+//			if (distance <= 2) // TODO make this number a config
+//			{
+//				// TODO do something with this information
+//			}
+			
+			
 			// check if the chunk is actually empty
 			if (!isDataEmpty(newChunkData))
 			{
-//				String message = "The test chunk for dimension folder [" + testDimFolder.getName() + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. Is that correct?";
+				String message = "The test chunk for dimension folder [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. Is that correct?";
 //				MC.sendChatMessage(message);
-//				ApiShared.LOGGER.info(message);
+				ApiShared.LOGGER.info(message);
 				continue;
 			}
-			oneDimensionIsValid = true;
 			
 			
 			// compare the two LODs
@@ -177,28 +212,31 @@ public class LodDimensionFileHelper
 			
 			// determine if this world is closer to the newly loaded world
 			double percentEqual = (double) equalLines / (double) totalLineCount;
-			if (equalLines > mostEqualLines && percentEqual >= minimumSimilarityRequired)
+			if (equalLines > mostEqualLines)
 			{
 				mostEqualLines = equalLines;
-				mostSimilarWorldFolder = testDimFolder;
+				highestEqualityPercent = percentEqual;
+				
+				if (percentEqual >= minimumSimilarityRequired)
+				{
+					mostSimilarWorldFolder = testDimFolder;
+				}
 			}
-//			String message = "test data [" + testDimFolder.getName().substring(0, 6) + "...] " + testChunkData[0][0][0] + " equal lines: " + equalLines + "/" + totalLineCount + " = " + percentEqual;
-//			MC.sendChatMessage(message);
-//			ApiShared.LOGGER.info(message);
+			String message = "Sub dimension [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " +  LodUtil.shortenString(percentEqual + "", 5) + " (" + equalLines + "/" + totalLineCount + ")";
+			MC.sendChatMessage(message);
+			ApiShared.LOGGER.info(message);
 		}
 		
-		
-		if (!oneDimensionIsValid && dimensionFolder.listFiles().length != 0)
-			// all the world folders were empty, and there was at least one world folder that we tested
-			return null;
+		// the first seen player data is no longer needed, the sub dimension has been determined
+		FIRST_SEEN_PLAYER_DATA = null;
 		
 		
 		if (mostSimilarWorldFolder != null)
 		{
 			// we found a world folder that is similar, use it
 			
-			String message = "Dimension folder set to: [" + mostSimilarWorldFolder.getName().substring(0, 8) + "...]";
-//			MC.sendChatMessage(message);
+			String message = "Sub Dimension set to: [" +  LodUtil.shortenString(mostSimilarWorldFolder.getName(), 8) + "...] with an equality of [" + highestEqualityPercent + "]";
+			MC.sendChatMessage(message);
 			ApiShared.LOGGER.info(message);
 			return mostSimilarWorldFolder;
 		}
@@ -207,8 +245,8 @@ public class LodDimensionFileHelper
 			// no world folder was found, create a new one
 			
 			String newId = UUID.randomUUID().toString();
-			String message = "No dimension folder found. Creating a new one with ID: " + newId.substring(0, 8) + "...";
-//			MC.sendChatMessage(message);
+			String message = "No suitable sub dimension found. The highest equality was [" + highestEqualityPercent + "]. Creating a new sub dimension with ID: " + LodUtil.shortenString(newId, 8) + "...";
+			MC.sendChatMessage(message);
 			ApiShared.LOGGER.info(message);
 			return GetDimensionFolder(newlyLoadedDim.dimension, newId);
 		}
@@ -276,4 +314,144 @@ public class LodDimensionFileHelper
 		return false;
 	}
 	
+	
+	
+	
+	
+	
+	
+	private static final String playerDataFileName = "_playerData.toml";
+	
+	private static PlayerData getPlayerData(File worldFolder)
+	{
+		File file = PlayerData.getFileForDimensionFolder(worldFolder);
+		if (!file.exists())
+		{
+			return null;
+		}
+		
+		
+		CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
+		toml.add("path", "test");
+		toml.save();
+		
+		return null;
+	}
+	
+	public static void updatePlayerData()
+	{
+		PLAYER_DATA.updateData(MC);
+	}
+	
+	/** saves any necessary player data to the given world folder */
+	public static void saveDimensionPlayerData(File worldFolder)
+	{
+		// get and create the file and path if they don't exist
+		File file = PlayerData.getFileForDimensionFolder(worldFolder);
+		if (!file.exists())
+		{
+			try
+			{
+				file.getParentFile().mkdirs();
+				file.createNewFile();
+			}
+			catch (IOException e)
+			{
+				ApiShared.LOGGER.error("Unable to save player dimension data for world folder [" + worldFolder.getPath() + "].", e);
+				return;
+			}
+		}
+		
+		// determine the playerData
+		IMinecraftClientWrapper mc = SingletonHandler.get(IMinecraftClientWrapper.class);
+		PlayerData playerdata = new PlayerData(mc);
+		
+		// write the data to file
+		CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
+		playerdata.toTomlFile(toml);
+	}
+	
+	
+	/** Data container for any player data we can use to differentiate one dimension from another. */
+	private static class PlayerData
+	{
+		public static final  IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
+		
+		public static final String PLAYER_BLOCK_POS_X_PATH = "playerBlockPosX";
+		public static final String PLAYER_BLOCK_POS_Y_PATH = "playerBlockPosY";
+		public static final String PLAYER_BLOCK_POS_Z_PATH = "playerBlockPosZ";
+		AbstractBlockPosWrapper playerBlockPos;
+		
+		// not implemented yet
+		public static final String WORLD_SPAWN_POS_X_PATH = "worldSpawnBlockPosX";
+		public static final String WORLD_SPAWN_POS_Y_PATH = "worldSpawnBlockPosY";
+		public static final String WORLD_SPAWN_POS_Z_PATH = "worldSpawnBlockPosZ";
+		/**
+		 * The client world has access to a spawn point, so this should be possible to fill in.
+		 * I'm not sure what this will look like for worlds that don't have a spawn point.
+		 */
+		AbstractBlockPosWrapper worldSpawnPointBlockPos;
+		
+		
+		
+		public PlayerData(IMinecraftClientWrapper mc)
+		{
+			updateData(mc);
+		}
+		
+		public PlayerData(File dimensionFolder)
+		{
+			File file = getFileForDimensionFolder(dimensionFolder);
+			CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
+			
+			// player block pos
+			try
+			{
+				toml.load();
+				
+				// TODO this is crashing...
+				int x = toml.getInt(PLAYER_BLOCK_POS_X_PATH);
+				int y = toml.getInt(PLAYER_BLOCK_POS_Y_PATH);
+				int z = toml.getInt(PLAYER_BLOCK_POS_Z_PATH);
+				this.playerBlockPos = FACTORY.createBlockPos(x, y, z);
+			}
+			catch(Exception e)
+			{
+				ApiShared.LOGGER.error(e.getMessage(), e);
+			}
+		}
+		
+		
+		
+		public static File getFileForDimensionFolder(File file)
+		{
+			return new File(file.getPath() + File.separatorChar + playerDataFileName);
+		}
+		
+		
+		/**  */
+		public void updateData(IMinecraftClientWrapper mc)
+		{
+			this.playerBlockPos = mc.getPlayerBlockPos();
+		}
+		
+		/** Writes everything from this object to the file given. */
+		public void toTomlFile(CommentedFileConfig toml)
+		{
+			// player block pos
+			toml.add(PLAYER_BLOCK_POS_X_PATH, playerBlockPos.getX());
+			toml.add(PLAYER_BLOCK_POS_Y_PATH, playerBlockPos.getY());
+			toml.add(PLAYER_BLOCK_POS_Z_PATH, playerBlockPos.getZ());
+			
+			
+			toml.save();
+		}
+		
+		
+		@Override
+		public String toString()
+		{
+			return "PlayerBlockPos: [" + playerBlockPos.getX() + "," + playerBlockPos.getY() + "," + playerBlockPos.getZ() + "]";
+		}
+	}
 }

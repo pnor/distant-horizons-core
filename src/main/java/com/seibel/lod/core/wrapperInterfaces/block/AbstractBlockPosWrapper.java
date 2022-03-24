@@ -45,4 +45,10 @@ public abstract class AbstractBlockPosWrapper
 	
 	/** returns itself */
 	public abstract AbstractBlockPosWrapper offset(int x, int y, int z);
+	
+	
+	public int getManhattanDistance(AbstractBlockPosWrapper otherPos)
+	{
+		return Math.abs(this.getX() - otherPos.getX()) + Math.abs(this.getY() - otherPos.getY()) + Math.abs(this.getZ() - otherPos.getZ());
+	}
 }

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.api.ApiShared;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
@@ -48,6 +49,8 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.SpamReducedLogger;
 import com.seibel.lod.core.util.UnitBytes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -61,6 +64,8 @@ import com.seibel.lod.core.util.UnitBytes;
  */
 public class LodDimensionFileHandler
 {
+	public static final Logger LOGGER = LogManager.getLogger("LodDimensionFileHandler");
+	
 	public static final boolean ENABLE_SAVE_THREAD_LOGGING = true;
 	public static final boolean ENABLE_SAVE_REGION_LOGGING = false;
 	
@@ -147,26 +152,26 @@ public class LodDimensionFileHandler
 							subFile.getName().equals(DistanceGenerationMode.BIOME_ONLY.toString()) ||
 							subFile.getName().equals(DistanceGenerationMode.NONE.toString()))
 					{
-						ApiShared.LOGGER.info("Noticed old save structure files. Starting merge process...");
+						LOGGER.info("Noticed old save structure files. Starting merge process...");
 						LodDimensionOldFileStructureHandler oldFileStructHandler = new LodDimensionOldFileStructureHandler(this);
 						if (mergeOldFileLock.tryLock())
 						{
 							// I got the lock to merge file.
-							ApiShared.LOGGER.info("Updating VerticalQuality LOW...");
+							LOGGER.info("Updating VerticalQuality LOW...");
 							oldFileStructHandler.mergeOldFileStructureForVertQuality(VerticalQuality.LOW);
-							ApiShared.LOGGER.info("Updating VerticalQuality MEDIUM...");
+							LOGGER.info("Updating VerticalQuality MEDIUM...");
 							oldFileStructHandler.mergeOldFileStructureForVertQuality(VerticalQuality.MEDIUM);
-							ApiShared.LOGGER.info("Updating VerticalQuality HIGH...");
+							LOGGER.info("Updating VerticalQuality HIGH...");
 							oldFileStructHandler.mergeOldFileStructureForVertQuality(VerticalQuality.HIGH);
-							ApiShared.LOGGER.info("Update completed.");
+							LOGGER.info("Update completed.");
 						}
 						else
 						{
-							// Someone is already doing it. I just need to wait until he is done.
+							// Someone is already doing it. I just need to wait until they are done.
 							mergeOldFileLock.lock();
 							mergeOldFileLock.unlock();
 						}
-						ApiShared.LOGGER.info("Merge process completed.");
+						LOGGER.info("Merge process completed.");
 						return;
 					}
 				}
@@ -238,7 +243,7 @@ public class LodDimensionFileHandler
 					// close the reader and delete the file.
 					inputStream.close();
 					file.delete();
-					ApiShared.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File has been deleted.");
@@ -251,7 +256,7 @@ public class LodDimensionFileHandler
 					// close the reader and ignore the file, we don't
 					// want to accidentally delete anything the user may want.
 					inputStream.close();
-					ApiShared.LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ " this region will not be written to in order to protect the newer file.");
@@ -260,7 +265,7 @@ public class LodDimensionFileHandler
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
 				{
-					ApiShared.LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File will be loaded and updated to new format in next save.");
@@ -283,7 +288,7 @@ public class LodDimensionFileHandler
 			}
 			catch (IOException ioEx)
 			{
-				ApiShared.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "]: ", ioEx);
+				LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "]: ", ioEx);
 				region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 			}
 		} // for each detail level
@@ -303,7 +308,7 @@ public class LodDimensionFileHandler
 				FILE_NAME_PREFIX + "." + posX + "." + posZ + FILE_EXTENSION);
 		if (file.exists())
 		{
-			ApiShared.LOGGER.warn("LOD file write warn. Unable to write [" + file + "] because the newer version file already exist! Skipping this position...");
+			LOGGER.warn("LOD file write warn. Unable to write [" + file + "] because the newer version file already exist! Skipping this position...");
 			return;
 		}
 		if (!file.getParentFile().exists())
@@ -314,7 +319,7 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException e)
 		{
-			ApiShared.LOGGER.error("LOD file write error. Unable to create parent directory for [" + file + "]: ", e);
+			LOGGER.error("LOD file write error. Unable to create parent directory for [" + file + "]: ", e);
 			return;
 		}
 		try (FileOutputStream fileOutStream = new FileOutputStream(file))
@@ -330,7 +335,7 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException e)
 		{
-			ApiShared.LOGGER.error("LOD file write error. Unable to write to temp file [" + file + "]: ", e);
+			LOGGER.error("LOD file write error. Unable to write to temp file [" + file + "]: ", e);
 		}
 	}
 	
@@ -367,7 +372,7 @@ public class LodDimensionFileHandler
 			LevelContainer[] container = r.debugGetDataContainers().clone();
 			if (container == null || container.length != LodUtil.DETAIL_OPTIONS)
 			{
-				ApiShared.LOGGER.warn("DumpRamUsage encountered an invalid region!");
+				LOGGER.warn("DumpRamUsage encountered an invalid region!");
 				continue;
 			}
 			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++)
@@ -395,6 +400,7 @@ public class LodDimensionFileHandler
 	/** Save all dirty regions in this LodDimension to file */
 	public void saveDirtyRegionsToFile(boolean blockUntilFinished)
 	{
+		// determine the regions to save
 		for (int i = 0; i < lodDimension.getWidth(); i++)
 		{
 			for (int j = 0; j < lodDimension.getWidth(); j++)
@@ -402,28 +408,34 @@ public class LodDimensionFileHandler
 				LodRegion r = lodDimension.getRegionByArrayIndex(i, j);
 				
 				// FIXME: Note that the isWriting is a crude attempt at syncing. It won't work.
-				// It just reduce the chance of race condition
+				// It just reduces the chance of a race condition
 				if (r != null && r.needSaving)
 				{
 					regionToSave.put(r.getRegionPos(), r);
 				}
 			}
 		}
+		
+		// save the dimension data
+		LodDimensionFileHelper.saveDimensionPlayerData(this.dimensionDataSaveFolder);
 		trySaveRegionsToBeSaved();
+		
+		// wait for the saving to finish if requested
 		if (blockUntilFinished)
 		{
 			if (ENABLE_SAVE_THREAD_LOGGING)
-				ApiShared.LOGGER.info("Blocking until lod file save finishes!");
+				LOGGER.info("Blocking until lod file save finishes!");
+			
 			try
 			{
 				fileWritingThreadPool.shutdown();
 				boolean worked = fileWritingThreadPool.awaitTermination(30, TimeUnit.SECONDS);
 				if (!worked)
-					ApiShared.LOGGER.error("File writing timed out! File data may not be saved correctly and may cause corruptions!!!");
+					LOGGER.error("File writing timed out! File data may not be saved correctly and may cause corruptions!!!");
 			}
 			catch (InterruptedException e)
 			{
-				ApiShared.LOGGER.error("File writing wait is interrupted! File data may not be saved correctly and may cause corruptions!!!: ", e);
+				LOGGER.error("File writing wait is interrupted! File data may not be saved correctly and may cause corruptions!!!: ", e);
 			}
 			finally
 			{
@@ -461,7 +473,7 @@ public class LodDimensionFileHandler
 			throw new ConcurrentModificationException("WriterMain Triggered but the thead state is not started!?");
 		
 		if (ENABLE_SAVE_THREAD_LOGGING)
-			ApiShared.LOGGER.info("Lod File Writer started. To-be-written-regions: " + regionToSave.size());
+			LOGGER.info("Lod File Writer started. To-be-written-regions: " + regionToSave.size());
 		
 		Instant start = Instant.now();
 		// Note: Since regionToSave is a ConcurrentHashMap, and the .values() return one that support concurrency,
@@ -481,16 +493,16 @@ public class LodDimensionFileHandler
 					r.needSaving = false;
 					Instant i = Instant.now();
 					if (ENABLE_SAVE_REGION_LOGGING)
-						ApiShared.LOGGER.info("Lod: Saving Region " + r.getRegionPos());
+						LOGGER.info("Lod: Saving Region " + r.getRegionPos());
 					saveRegionToFile(r);
 					Instant j = Instant.now();
 					Duration d = Duration.between(i, j);
 					if (ENABLE_SAVE_REGION_LOGGING)
-						ApiShared.LOGGER.info("Lod: Region " + r.getRegionPos() + " save finish. Took " + d);
+						LOGGER.info("Lod: Region " + r.getRegionPos() + " save finish. Took " + d);
 				}
 				catch (Exception e)
 				{
-					ApiShared.LOGGER.error("Lod: UNCAUGHT exception when saving region " + r.getRegionPos() + ": ", e);
+					LOGGER.error("Lod: UNCAUGHT exception when saving region " + r.getRegionPos() + ": ", e);
 				}
 				finally
 				{
@@ -501,7 +513,7 @@ public class LodDimensionFileHandler
 		Instant end = Instant.now();
 		
 		if (ENABLE_SAVE_THREAD_LOGGING)
-			ApiShared.LOGGER.info("Lod File Writer completed. Took " + Duration.between(start, end));
+			LOGGER.info("Lod File Writer completed. Took " + Duration.between(start, end));
 		
 		// Use Memory order Release to release any memory changes on setting this boolean
 		// (Corresponding call is the this::saveRegions(...)::...compareAndExchangeAcquire(false, true);)
@@ -525,7 +537,7 @@ public class LodDimensionFileHandler
 			// Get the old file
 			File oldFile = getRegionFile(region.regionPosX, region.regionPosZ, detailLevel, region.getVerticalQuality());
 			if (ENABLE_SAVE_REGION_LOGGING)
-				ApiShared.LOGGER.debug("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] detail " + detailLevel + " to file.");
+				LOGGER.debug("saving region [" + region.regionPosX + ", " + region.regionPosZ + "] detail " + detailLevel + " to file.");
 			
 			boolean isFileFullyGened = false;
 			// make sure the file and folder exists
@@ -542,7 +554,7 @@ public class LodDimensionFileHandler
 				}
 				catch (IOException e)
 				{
-					ApiShared.LOGGER.error("LOD file write error. Unable to create parent directory for [" + oldFile + "] error [" + e.getMessage() + "]: ");
+					LOGGER.error("LOD file write error. Unable to create parent directory for [" + oldFile + "] error [" + e.getMessage() + "]: ");
 					e.printStackTrace();
 					continue;
 				}
@@ -564,7 +576,7 @@ public class LodDimensionFileHandler
 				}
 				catch (IOException e)
 				{
-					ApiShared.LOGGER.warn("LOD file write warning. Unable to read existing file [" + oldFile + "] version. Treating it as latest version. [" + e.getMessage() + "]: ");
+					LOGGER.warn("LOD file write warning. Unable to read existing file [" + oldFile + "] version. Treating it as latest version. [" + e.getMessage() + "]: ");
 					e.printStackTrace();
 				}
 				
@@ -598,7 +610,7 @@ public class LodDimensionFileHandler
 					// existing file is complete while new one is only partially generate
 					// this can happen is for some reason loading failed
 					// this doesn't fix the bug, but at least protects old data
-					ApiShared.LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + oldFile + "]");
+					LOGGER.error("LOD file write error. Attempted to overwrite complete region with incomplete one [" + oldFile + "]");
 					try
 					{
 						tempFile.delete();
@@ -612,7 +624,7 @@ public class LodDimensionFileHandler
 			}
 			catch (IOException e)
 			{
-				ApiShared.LOGGER.error("LOD file write error. Unable to write to temp file [" + tempFile + "]: ", e);
+				LOGGER.error("LOD file write error. Unable to write to temp file [" + tempFile + "]: ", e);
 				continue;
 			}
 			
@@ -623,7 +635,7 @@ public class LodDimensionFileHandler
 			}
 			catch (IOException e)
 			{
-				ApiShared.LOGGER.error("LOD file write error. Unable to update file [" + oldFile + "]: ", e);
+				LOGGER.error("LOD file write error. Unable to update file [" + oldFile + "]: ", e);
 			}
 		}
 	}
@@ -645,7 +657,7 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException e)
 		{
-			ApiShared.LOGGER.warn("Unable to get the base save file path. One possible cause is that"
+			LOGGER.warn("Unable to get the base save file path. One possible cause is that"
 					+ " the process failed to read the current path location due to security configs.");
 			throw new RuntimeException("DistantHorizons Get Save File Path Failure");
 		}
