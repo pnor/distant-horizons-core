@@ -19,6 +19,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -141,10 +142,7 @@ public class LodSubDimensionFolderFinder
 		
 		
 		// compare each world with the newly loaded one
-		File mostSimilarWorldFolder = null;
-		int mostEqualLines = 0;
-		double highestEqualityPercent = 0.0;
-		double minimumSimilarityRequired = CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity();
+		SubDimCompare mostSimilarSubDim = null;
 		
 		ApiShared.LOGGER.info("Known Sub Dimensions: [" + dimensionFolder.listFiles().length + "]");
 		for (File testDimFolder : dimensionFolder.listFiles())
@@ -173,12 +171,8 @@ public class LodSubDimensionFolderFinder
 			ApiShared.LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
 			
 			// check if the block positions are close
-			int distance = testPlayerData.playerBlockPos.getManhattanDistance(FIRST_SEEN_PLAYER_DATA.playerBlockPos);
-			ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + distance + "]");
-//			if (distance <= 2) // TODO make this number a config
-//			{
-//				// TODO do something with this information
-//			}
+			int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(FIRST_SEEN_PLAYER_DATA.playerBlockPos);
+			ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + playerBlockDist + "]");
 			
 			
 			// check if the chunk is actually empty
@@ -192,8 +186,8 @@ public class LodSubDimensionFolderFinder
 			
 			
 			// compare the two LODs
-			int equalLines = 0;
-			int totalLineCount = 0;
+			int equalDataPoints = 0;
+			int totalDataPointCount = 0;
 			for (int x = 0; x < LodUtil.CHUNK_WIDTH; x++)
 			{
 				for (int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
@@ -202,27 +196,22 @@ public class LodSubDimensionFolderFinder
 					{
 						if (newChunkData[x][z][y] == testChunkData[x][z][y])
 						{
-							equalLines++;
+							equalDataPoints++;
 						}
-						totalLineCount++;
+						totalDataPointCount++;
 					}
 				}
 			}
 			
 			
 			// determine if this world is closer to the newly loaded world
-			double percentEqual = (double) equalLines / (double) totalLineCount;
-			if (equalLines > mostEqualLines)
+			SubDimCompare subDimCompare = new SubDimCompare(equalDataPoints, totalDataPointCount, playerBlockDist, testDimFolder);
+			if (mostSimilarSubDim == null || subDimCompare.compareTo(mostSimilarSubDim) > 0)
 			{
-				mostEqualLines = equalLines;
-				highestEqualityPercent = percentEqual;
-				
-				if (percentEqual >= minimumSimilarityRequired)
-				{
-					mostSimilarWorldFolder = testDimFolder;
-				}
+				mostSimilarSubDim = subDimCompare;
 			}
-			String message = "Sub dimension [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " +  LodUtil.shortenString(percentEqual + "", 5) + " (" + equalLines + "/" + totalLineCount + ")";
+			
+			String message = "Sub dimension [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " +  LodUtil.shortenString(subDimCompare.getPercentEqual() + "", 5) + " (" + equalDataPoints + "/" + totalDataPointCount + ")";
 			MC.sendChatMessage(message);
 			ApiShared.LOGGER.info(message);
 		}
@@ -231,21 +220,23 @@ public class LodSubDimensionFolderFinder
 		FIRST_SEEN_PLAYER_DATA = null;
 		
 		
-		if (mostSimilarWorldFolder != null)
+		if (mostSimilarSubDim != null && mostSimilarSubDim.isValidSubDim())
 		{
 			// we found a world folder that is similar, use it
 			
-			String message = "Sub Dimension set to: [" +  LodUtil.shortenString(mostSimilarWorldFolder.getName(), 8) + "...] with an equality of [" + highestEqualityPercent + "]";
+			String message = "Sub Dimension set to: [" +  LodUtil.shortenString(mostSimilarSubDim.folder.getName(), 8) + "...] with an equality of [" + mostSimilarSubDim.getPercentEqual() + "]";
 			MC.sendChatMessage(message);
 			ApiShared.LOGGER.info(message);
-			return mostSimilarWorldFolder;
+			return mostSimilarSubDim.folder;
 		}
 		else
 		{
 			// no world folder was found, create a new one
 			
+			double highestEqualityPercent = mostSimilarSubDim != null ? mostSimilarSubDim.getPercentEqual() : 0;
+			
 			String newId = UUID.randomUUID().toString();
-			String message = "No suitable sub dimension found. The highest equality was [" + highestEqualityPercent + "]. Creating a new sub dimension with ID: " + LodUtil.shortenString(newId, 8) + "...";
+			String message = "No suitable sub dimension found. The highest equality was [" + LodUtil.shortenString(highestEqualityPercent + "", 5) + "]. Creating a new sub dimension with ID: " + LodUtil.shortenString(newId, 8) + "...";
 			MC.sendChatMessage(message);
 			ApiShared.LOGGER.info(message);
 			return GetDimensionFolder(newlyLoadedDim.dimension, newId);
@@ -322,22 +313,6 @@ public class LodSubDimensionFolderFinder
 	
 	private static final String playerDataFileName = "_playerData.toml";
 	
-	private static PlayerData getPlayerData(File worldFolder)
-	{
-		File file = PlayerData.getFileForDimensionFolder(worldFolder);
-		if (!file.exists())
-		{
-			return null;
-		}
-		
-		
-		CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
-		toml.add("path", "test");
-		toml.save();
-		
-		return null;
-	}
-	
 	public static void updatePlayerData()
 	{
 		PLAYER_DATA.updateData(MC);
@@ -404,20 +379,22 @@ public class LodSubDimensionFolderFinder
 			File file = getFileForDimensionFolder(dimensionFolder);
 			CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
 			
-			// player block pos
-			try
+			toml.load();
+			
+			
+			// get the player block pos if it is specified
+			if (toml.contains(PLAYER_BLOCK_POS_X_PATH)
+				&& toml.contains(PLAYER_BLOCK_POS_Y_PATH)
+				&& toml.contains(PLAYER_BLOCK_POS_Z_PATH))
 			{
-				toml.load();
-				
-				// TODO this is crashing...
-				int x = toml.getInt(PLAYER_BLOCK_POS_X_PATH);
-				int y = toml.getInt(PLAYER_BLOCK_POS_Y_PATH);
-				int z = toml.getInt(PLAYER_BLOCK_POS_Z_PATH);
+				int x = toml.getIntOrElse(PLAYER_BLOCK_POS_X_PATH, 0);
+				int y = toml.getIntOrElse(PLAYER_BLOCK_POS_Y_PATH, 0);
+				int z = toml.getIntOrElse(PLAYER_BLOCK_POS_Z_PATH, 0);
 				this.playerBlockPos = FACTORY.createBlockPos(x, y, z);
 			}
-			catch(Exception e)
+			else
 			{
-				ApiShared.LOGGER.error(e.getMessage(), e);
+				this.playerBlockPos = FACTORY.createBlockPos(0, 0, 0);
 			}
 		}
 		
@@ -429,7 +406,7 @@ public class LodSubDimensionFolderFinder
 		}
 		
 		
-		/**  */
+		/** Should be called often to make sure this object is up to date with the player's info */
 		public void updateData(IMinecraftClientWrapper mc)
 		{
 			this.playerBlockPos = mc.getPlayerBlockPos();
@@ -443,7 +420,6 @@ public class LodSubDimensionFolderFinder
 			toml.add(PLAYER_BLOCK_POS_Y_PATH, playerBlockPos.getY());
 			toml.add(PLAYER_BLOCK_POS_Z_PATH, playerBlockPos.getZ());
 			
-			
 			toml.save();
 		}
 		
@@ -454,4 +430,56 @@ public class LodSubDimensionFolderFinder
 			return "PlayerBlockPos: [" + playerBlockPos.getX() + "," + playerBlockPos.getY() + "," + playerBlockPos.getZ() + "]";
 		}
 	}
+	
+	
+	
+	
+	private static class SubDimCompare implements Comparable<SubDimCompare>
+	{
+		public int equalDataPoints = 0;
+		public int totalDataPoints = 0;
+		public int playerPosDist = 0;
+		public File folder = null;
+		
+		
+		public SubDimCompare(int newEqualDataPoints, int newTotalDataPoints, int newPlayerPosDistance, File newSubDimFolder)
+		{
+			this.equalDataPoints = newEqualDataPoints;
+			this.totalDataPoints = newTotalDataPoints;
+			this.playerPosDist = newPlayerPosDistance;
+			
+			this.folder = newSubDimFolder;
+		}
+		
+		/** returns a number between 0 (not equal) and 1 (totally equal) */
+		public double getPercentEqual()
+		{
+			return (double) equalDataPoints / (double) totalDataPoints;
+		}
+		
+		
+		@Override
+		public int compareTo(@NotNull LodSubDimensionFolderFinder.SubDimCompare other)
+		{
+			if (this.equalDataPoints != other.equalDataPoints)
+			{
+				// compare based on data points
+				return Integer.compare(this.equalDataPoints, other.equalDataPoints);
+			}
+			else
+			{
+				// break ties based on player position
+				return Integer.compare(this.playerPosDist, other.playerPosDist);
+			}
+		}
+		
+		/** Returns true if this sub dimension is close enough to be considered a valid sub dimension */
+		public boolean isValidSubDim()
+		{
+			double minimumSimilarityRequired = CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity();
+			return this.getPercentEqual() >= minimumSimilarityRequired || this.playerPosDist <= 3;
+		}
+	}
+	
+	
 }
