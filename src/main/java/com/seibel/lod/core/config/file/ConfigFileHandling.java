@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.ConfigEntry;
+import com.seibel.lod.core.util.MultiOption;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 
@@ -65,8 +66,13 @@ public class ConfigFileHandling {
         saveEntry(entry, config);
         config.close();
     }
+    @SuppressWarnings("unchecked")
     public static void saveEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
-        workConfig.set(entry.getNameWCategory(), entry.get());
+        if (!entry.get().getClass().isAssignableFrom(MultiOption.class)) {
+            workConfig.set(entry.getNameWCategory(), entry.get());
+        } else {
+            workConfig.set(entry.getNameWCategory(), ((MultiOption) entry.get()).getAsString());
+        }
     }
     public static void loadEntry(ConfigEntry<?> entry) {
         loadConfig(config);
@@ -79,11 +85,15 @@ public class ConfigFileHandling {
 	public static <T> void loadEntry(ConfigEntry<T> entry, CommentedFileConfig workConfig) {
         if (workConfig.contains(entry.getNameWCategory())) {
             if (entry.get().getClass().isEnum()) {
-            	// Safe cast due to above checking that <T> is indeed a Enum
-            	// And the second cast back to <T> is safe due to the template
-                entry.setWTSave((T)(
-                		workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.get().getClass())
-                	));
+                // Safe cast due to above checking that <T> is indeed a Enum
+                // And the second cast back to <T> is safe due to the template
+                entry.setWTSave((T) (
+                        workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.get().getClass())
+                ));
+            } else if (entry.get().getClass().isAssignableFrom(MultiOption.class)) {
+                entry.setWTSave(
+                        (T) new MultiOption<T>().getFromString(workConfig.get(entry.getNameWCategory()))
+                );
             } else {
                 entry.setWTSave(workConfig.get(entry.getNameWCategory()));
             }

@@ -17,6 +17,19 @@ import java.util.List;
  * @author Ran
  */
 public class ConfigBase {
+    /*
+            What the config works with
+
+        Enum
+        Integer
+        Boolean
+        Double
+        Float
+        Byte
+        Map<String, Boolean> or MultiOption
+     */
+
+
     public static final List<ConfigEntry<?>> entries = new ArrayList<ConfigEntry<?>>();
     public static final List<String> categories = new ArrayList<>();
 
@@ -26,10 +39,6 @@ public class ConfigBase {
 
         // File handling (load from file)
         ConfigFileHandling.loadFromFile();
-
-        // Temporary to see stuff
-        System.out.println(entries);
-        System.out.println(categories);
     }
 
     private static void initNestedClass(Class<?> config, String category) {

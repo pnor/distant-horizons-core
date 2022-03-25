@@ -3,6 +3,7 @@ package com.seibel.lod.core;
 import com.seibel.lod.core.config.*;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
+import com.seibel.lod.core.util.MultiOption;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 /**
@@ -45,6 +46,10 @@ public class Config
         public static ConfigEntry<Boolean> optionsButton = new ConfigEntry.Builder<Boolean>()
                 .comment(ILodConfigWrapperSingleton.IClient.OPTIONS_BUTTON_DESC)
                 .set(ILodConfigWrapperSingleton.IClient.OPTIONS_BUTTON_DEFAULT)
+                .build();
+
+        public static ConfigEntry<MultiOption<Boolean>> testMultiOption = new ConfigEntry.Builder<MultiOption<Boolean>>()
+                .set(new MultiOption<Boolean>().set("overworld", true).set("nether", false))
                 .build();
 
 
