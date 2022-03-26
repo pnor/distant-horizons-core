@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.render;
 
-import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -30,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+
+import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 /**
  * This object is just a replacement for an array
@@ -104,9 +105,9 @@ public class LodFogConfig
 		if (DEBUG_DUMP_GENERATED_CODE) {
 			try (FileOutputStream file = new FileOutputStream("debugGenerated.frag", false)) {
 				file.write(str.toString().getBytes(StandardCharsets.UTF_8));
-				ApiShared.LOGGER.info("Debug dumped generated code to debugGenerated.frag for {}", path);
+				GL_LOGGER.info("Debug dumped generated code to debugGenerated.frag for {}", path);
 			} catch (IOException e) {
-				ApiShared.LOGGER.warn("Failed to debug dump generated code to file for {}", path);
+				GL_LOGGER.warn("Failed to debug dump generated code to file for {}", path);
 			}
 		}
 		return str;

@@ -5,10 +5,11 @@ import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ClientApi;
+
+import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 
 public final class VertexAttributePreGL43 extends VertexAttribute {
@@ -120,31 +121,30 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 		for (int i = 0; i < pointers.length; i++) {
 			VertexPointer pointer = pointers[i];
 			if (pointer == null) {
-				ApiShared.LOGGER.warn("Vertex Attribute index "+i+" is not set! No index should be skipped normally!");
+				GL_LOGGER.warn("Vertex Attribute index "+i+" is not set! No index should be skipped normally!");
 				continue;
 			}
 			pointersOffset[i] = currentOffset;
 			currentOffset += pointer.byteSize;
 		}
 		if (currentOffset != expectedStrideSize) {
-			ApiShared.LOGGER.error("Vertex Attribute calculated stride size " + currentOffset +
+			GL_LOGGER.error("Vertex Attribute calculated stride size " + currentOffset +
 					" does not match the provided expected stride size " + expectedStrideSize + "!");
 			throw new IllegalArgumentException("Vertex Attribute Incorrect Format");
 		}
 		strideSize = currentOffset;
-		ApiShared.LOGGER.info("Vertex Attribute (pre GL43) completed.");
+		GL_LOGGER.info("Vertex Attribute (pre GL43) completed.");
 		
 		// Debug logging
-		ApiShared.LOGGER.info("Vertex Attribute Debug Data:");
-		ApiShared.LOGGER.info("AttributeIndex: ElementCount, glType, normalized, strideSize, offset");
+		GL_LOGGER.debug("AttributeIndex: ElementCount, glType, normalized, strideSize, offset");
 		
 		for (int i=0; i< pointers.length; i++) {
 			VertexPointer pointer = pointers[i];
 			if (pointer==null) {
-				ApiShared.LOGGER.warn(i + ": Null!!!!");
+				GL_LOGGER.debug(i + ": Null!!!!");
 				continue;
 				}
-			ApiShared.LOGGER.info(i + ": "+pointer.elementCount+", "+
+			GL_LOGGER.debug(i + ": "+pointer.elementCount+", "+
 				pointer.glType+", "+pointer.normalized+", "+strideSize+", "+pointersOffset[i]);
 		}
 		

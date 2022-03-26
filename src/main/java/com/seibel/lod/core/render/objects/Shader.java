@@ -26,10 +26,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ClientApi;
+
+import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 /**
  * This object holds a OpenGL reference to a shader
@@ -51,7 +52,7 @@ public class Shader
 	 */
 	public Shader(int type, String path, boolean absoluteFilePath)
 	{
-		ApiShared.LOGGER.info("Loading shader at "+path);
+		GL_LOGGER.info("Loading shader at "+path);
 		// Create an empty shader object
 		id = GL32.glCreateShader(type);
 		StringBuilder source = loadFile(path, absoluteFilePath, new StringBuilder());
@@ -65,12 +66,13 @@ public class Shader
 			free(); // important!
 			throw new RuntimeException(message);
 		}
-		ApiShared.LOGGER.info("Shader at "+path+" loaded sucessfully.");
+		GL_LOGGER.info("Shader at "+path+" loaded sucessfully.");
 	}
 
 	public Shader(int type, String sourceString)
 	{
-		ApiShared.LOGGER.info("Loading shader with soruceString:\n{}", sourceString);
+		GL_LOGGER.info("Loading shader with type: {}", type);
+		GL_LOGGER.debug("Source:\n{}", sourceString);
 		// Create an empty shader object
 		id = GL32.glCreateShader(type);
 		GL32.glShaderSource(id, sourceString);
@@ -83,7 +85,7 @@ public class Shader
 			free(); // important!
 			throw new RuntimeException(message);
 		}
-		ApiShared.LOGGER.info("Shader loaded sucessfully.");
+		GL_LOGGER.info("Shader loaded sucessfully.");
 	}
 
 	// REMEMBER to always free the resource!

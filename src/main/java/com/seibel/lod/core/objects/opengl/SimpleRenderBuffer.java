@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder.BufferFiller;
@@ -16,6 +16,8 @@ import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+
+import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 public class SimpleRenderBuffer extends RenderBuffer
 {
@@ -75,6 +77,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 			if (b.size == FULL_SIZED_BUFFERS) {
 				statsMap.incStat("FullsizedVBOs");
 			}
+			if (b.size == 0) GL_LOGGER.warn("VBO with size 0");
 			statsMap.incBytesStat("TotalUsage", b.size);
 		}
 	}

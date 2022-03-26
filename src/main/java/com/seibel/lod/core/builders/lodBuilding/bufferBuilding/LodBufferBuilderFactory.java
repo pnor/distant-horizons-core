@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.objects.opengl.builders.bufferBuilding;
+package com.seibel.lod.core.builders.lodBuilding.bufferBuilding;
 
 import java.time.Duration;
 import java.util.concurrent.*;
@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;

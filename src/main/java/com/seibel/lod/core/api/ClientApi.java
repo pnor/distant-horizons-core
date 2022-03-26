@@ -19,19 +19,18 @@
 
 package com.seibel.lod.core.api;
 
-import java.lang.ref.WeakReference;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.logging.ConfigBasedLogger;
+import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
+import org.apache.logging.log4j.Level;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -39,7 +38,7 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.SpamReducedLogger;
+import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -59,8 +58,6 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class ClientApi
 {	
 	public static boolean prefLoggerEnabled = false;
-	public static final List<WeakReference<SpamReducedLogger>> spamReducedLoggers
-		= Collections.synchronizedList(new LinkedList<WeakReference<SpamReducedLogger>>());
 	
 	public static final ClientApi INSTANCE = new ClientApi();
 
@@ -101,7 +98,7 @@ public class ClientApi
 	private boolean configOverrideReminderPrinted = false;
 	
 	public boolean rendererDisabledBecauseOfExceptions = false;
-	
+
 	
 	
 	
@@ -112,18 +109,26 @@ public class ClientApi
 	{
 		
 	}
-	
-	
-	
-	
-	private void flushSpamLoggersState() {
-		synchronized(spamReducedLoggers) {
-			spamReducedLoggers.removeIf((logger) -> logger.get()==null);
-			spamReducedLoggers.forEach((logger) -> {
-				SpamReducedLogger l = logger.get();
-				if (l!=null) l.reset();
-			});
+
+	public static void logToChat(Level logLevel, String str) {
+		String prefix = "["+ModInfo.READABLE_NAME+"] ";
+		if (logLevel == Level.ERROR) {
+			prefix += "\u00A74";
+		} else if (logLevel == Level.WARN) {
+			prefix += "\u00A76";
+		} else if (logLevel == Level.INFO) {
+			prefix += "\u00A7f";
+		} else if (logLevel == Level.DEBUG) {
+			prefix += "\u00A77";
+		} else if (logLevel == Level.TRACE) {
+			prefix += "\u00A78";
+		} else {
+			prefix += "\u00A7f";
 		}
+		prefix += "\u00A7l\u00A7u";
+		prefix += logLevel.name();
+		prefix += ":\u00A7r ";
+		if (MC != null) MC.sendChatMessage(prefix + str);
 	}
 
 	private final ConcurrentHashMap.KeySetView<Long,Boolean> generating = ConcurrentHashMap.newKeySet();
@@ -149,10 +154,13 @@ public class ClientApi
 		
 		try
 		{
-			if (System.nanoTime() - lastFlush >= SPAM_LOGGER_FLUSH_NS) {
+			boolean doFlush = System.nanoTime() - lastFlush >= SPAM_LOGGER_FLUSH_NS;
+			if (doFlush) {
 				lastFlush = System.nanoTime();
-				flushSpamLoggersState();
+				SpamReducedLogger.flushAll();
 			}
+			ConfigBasedLogger.updateAll();
+			ConfigBasedSpamLogger.updateAll(doFlush);
 
 			if (ApiShared.previousVertQual != CONFIG.client().graphics().quality().getVerticalQuality()) {
 				ApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();

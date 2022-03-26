@@ -21,15 +21,12 @@ package com.seibel.lod.core.render;
 
 import java.awt.Color;
 
-import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.render.objects.*;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 
 public class LodRenderProgram extends ShaderProgram {
 	public static final String VERTEX_SHADER_PATH = "shaders/standard.vert";

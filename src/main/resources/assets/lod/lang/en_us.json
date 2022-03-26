@@ -248,6 +248,28 @@
 	"Enable debug keybindings",
   "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings.@tooltip":
 	"§6True:§r debug keybindings can be used to change the Debug mode in game.",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch":
+    "Debug switch",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.@tooltip":
+    "The debug switch to use when logging.",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logWorldGenEvent":
+    "World Gen Event Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logWorldGenPerformance":
+    "World Gen Performance Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logWorldGenLoadEvent":
+    "World Gen Load Event Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logLodBuilderEvent":
+    "Lod Builder Event Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logRendererBufferEvent":
+    "Renderer Buffer Event Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logRendererGLEvent":
+    "Renderer GL Event Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logFileReadWriteEvent":
+    "File Read Write Event Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logFileSubDimEvent":
+    "File Sub Dim Event Logging",
+  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logNetworkEvent":
+    "Network Event Logging",
   "DistantHorizons.config.client.advanced.lodOnlyMode":
   "Lod Only Mode §6(ONLY FOR FUN)§r",
   "DistantHorizons.config.client.advanced.lodOnlyMode.@tooltip":
@@ -392,6 +414,48 @@
 	"Show generation mode",
   "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME":
 	"Show generation mode with wireframe",
+  /*
+    DISABLED(Level.OFF, Level.OFF),
+    LOG_ALL_TO_FILE(Level.ALL, Level.OFF),
+    LOG_ERROR_TO_CHAT(Level.ALL, Level.ERROR),
+    LOG_WARNING_TO_CHAT(Level.ALL, Level.WARN),
+    LOG_INFO_TO_CHAT(Level.ALL, Level.INFO),
+    LOG_DEBUG_TO_CHAT(Level.ALL, Level.DEBUG),
+    LOG_ALL_TO_CHAT(Level.ALL, Level.ALL),
+    LOG_ERROR_TO_CHAT_AND_FILE(Level.ERROR, Level.ERROR),
+    LOG_WARNING_TO_CHAT_AND_FILE(Level.WARN, Level.WARN),
+    LOG_INFO_TO_CHAT_AND_FILE(Level.INFO, Level.INFO),
+    LOG_DEBUG_TO_CHAT_AND_FILE(Level.DEBUG, Level.DEBUG),
+    LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE(Level.INFO, Level.WARN),
+    LOG_ERROR_TO_CHAT_AND_INFO_TO_FILE(Level.INFO, Level.ERROR),
+    */
+
+  "DistantHorizons.config.enum.LoggerMode.DISABLED":
+    "Disabled",
+  "DistantHorizons.config.enum.LoggerMode.LOG_ALL_TO_FILE":
+    "File: All, Chat: Off",
+  "DistantHorizons.config.enum.LoggerMode.LOG_ERROR_TO_CHAT":
+    "File: All, Chat: Error",
+  "DistantHorizons.config.enum.LoggerMode.LOG_WARNING_TO_CHAT":
+    "File: All, Chat: Warning",
+  "DistantHorizons.config.enum.LoggerMode.LOG_INFO_TO_CHAT":
+    "File: All, Chat: Info",
+  "DistantHorizons.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT":
+    "File: All, Chat: Debug",
+  "DistantHorizons.config.enum.LoggerMode.LOG_ALL_TO_CHAT":
+    "File: All, Chat: All",
+  "DistantHorizons.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_FILE":
+    "File: Error, Chat: Error",
+  "DistantHorizons.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE":
+    "File: Warning, Chat: Warning",
+  "DistantHorizons.config.enum.LoggerMode.LOG_INFO_TO_CHAT_AND_FILE":
+    "File: Info, Chat: Info",
+  "DistantHorizons.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT_AND_FILE":
+    "File: Debug, Chat: Debug",
+  "DistantHorizons.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE":
+    "File: Info, Chat: Warning",
+  "DistantHorizons.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_INFO_TO_FILE":
+    "File: Info, Chat: Error",
   "DistantHorizons.config.enum.GpuUploadMethod.AUTO":
 	"Auto",
   "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_STORAGE":

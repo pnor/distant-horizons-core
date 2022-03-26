@@ -19,18 +19,7 @@
 
 package com.seibel.lod.core.wrapperInterfaces.config;
 
-import com.seibel.lod.core.enums.config.BlocksToAvoid;
-import com.seibel.lod.core.enums.config.BufferRebuildTimes;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.enums.config.DropoffQuality;
-import com.seibel.lod.core.enums.config.GenerationPriority;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.config.HorizontalQuality;
-import com.seibel.lod.core.enums.config.HorizontalResolution;
-import com.seibel.lod.core.enums.config.LightGenerationMode;
-import com.seibel.lod.core.enums.config.ServerFolderNameMode;
-import com.seibel.lod.core.enums.config.VanillaOverdraw;
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -831,6 +820,88 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " and the F6 key can be used to enable and disable LOD rendering.";
 				boolean getDebugKeybindingsEnabled();
 				void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings);
+
+				IDebugSwitch debugSwitch();
+
+				interface IDebugSwitch
+				{
+					String DESC = "These settings can be used to look for bugs by enabling and disabling logging.";
+
+					/* The logging switches available:
+					 * WorldGenEvent
+					 * WorldGenPerformance
+					 * WorldGenLoadEvent
+					 * LodBuilderEvent
+					 * RendererBufferEvent
+					 * RendererGLEvent
+					 * FileReadWriteEvent
+					 * FileSubDimEvent
+					 * NetworkEvent //NOT IMPL YET
+					*/
+
+					LoggerMode LOG_WORLDGEN_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_WORLDGEN_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about the world generation process. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogWorldGenEvent();
+					void setLogWorldGenEvent(LoggerMode newLogWorldGenEvent);
+
+					LoggerMode LOG_WORLDGEN_PERFORMANCE_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_WORLDGEN_PERFORMANCE_DESC = ""
+							+ " If enabled, the mod will log performance about the world generation process. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogWorldGenPerformance();
+					void setLogWorldGenPerformance(LoggerMode newLogWorldGenPerformance);
+
+					LoggerMode LOG_WORLDGEN_LOAD_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE;
+					String LOG_WORLDGEN_LOAD_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about the world generation process. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogWorldGenLoadEvent();
+					void setLogWorldGenLoadEvent(LoggerMode newLogWorldGenLoadEvent);
+
+					LoggerMode LOG_LODBUILDER_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_LODBUILDER_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about the LOD generation process. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogLodBuilderEvent();
+					void setLogLodBuilderEvent(LoggerMode newLogLodBuilderEvent);
+
+					LoggerMode LOG_RENDERER_BUFFER_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_RENDERER_BUFFER_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about the renderer buffer process. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogRendererBufferEvent();
+					void setLogRendererBufferEvent(LoggerMode newLogRendererBufferEvent);
+
+					LoggerMode LOG_RENDERER_GL_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_RENDERER_GL_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about the renderer OpenGL process. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogRendererGLEvent();
+					void setLogRendererGLEvent(LoggerMode newLogRendererGLEvent);
+
+					LoggerMode LOG_FILE_READWRITE_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_FILE_READWRITE_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about file read/write operations. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogFileReadWriteEvent();
+					void setLogFileReadWriteEvent(LoggerMode newLogFileReadWriteEvent);
+
+					LoggerMode LOG_FILE_SUB_DIM_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_FILE_SUB_DIM_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about file sub-dimension operations. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogFileSubDimEvent();
+					void setLogFileSubDimEvent(LoggerMode newLogFileSubDimEvent);
+
+					LoggerMode LOG_NETWORK_EVENT_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					String LOG_NETWORK_EVENT_DESC = ""
+							+ " If enabled, the mod will log information about network operations. \n"
+							+ " This can be useful for debugging. \n";
+					LoggerMode getLogNetworkEvent();
+					void setLogNetworkEvent(LoggerMode newLogNetworkEvent);
+				}
 			}
 			
 			interface IBuffers

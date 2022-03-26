@@ -1,21 +1,25 @@
 package com.seibel.lod.core.handlers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.handlers.dimensionFinder.PlayerData;
 import com.seibel.lod.core.handlers.dimensionFinder.SubDimCompare;
-import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilderConfig;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
@@ -33,7 +37,9 @@ import java.util.UUID;
 public class LodDimensionFinder
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
+	public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(() -> CONFIG.client().advanced().debugging().debugSwitch().getLogFileSubDimEvent());
 	
 	/** Increasing this will increase accuracy but increase calculation time */
 	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.LOW;
@@ -149,14 +155,15 @@ public class LodDimensionFinder
 		newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
 		
 		// generate a LOD to test against
+		LOGGER.debug("Generating LOD for testing...");
 		boolean lodGenerated = ApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(DistanceGenerationMode.FULL), true, true);
 		if (!lodGenerated)
 			return null;
 		
 		
 		// log the start of this attempt
-		ApiShared.LOGGER.info("Attempting to determine sub-dimension for [" + MC.getCurrentDimension().getDimensionName() + "]");
-		ApiShared.LOGGER.info("First seen player block pos in dimension: [" + firstSeenPlayerData.playerBlockPos.getX() + "," + firstSeenPlayerData.playerBlockPos.getY() + "," + firstSeenPlayerData.playerBlockPos.getZ() + "]");
+		LOGGER.info("Attempting to determine sub-dimension for [" + MC.getCurrentDimension().getDimensionName() + "]");
+		LOGGER.info("First seen player block pos in dimension: [" + firstSeenPlayerData.playerBlockPos.getX() + "," + firstSeenPlayerData.playerBlockPos.getY() + "," + firstSeenPlayerData.playerBlockPos.getZ() + "]");
 		
 		
 		// new chunk data
@@ -169,7 +176,7 @@ public class LodDimensionFinder
 				newChunkData[x][z] = array;
 			}
 		}
-		boolean newChunkHasData = isDataEmpty(newChunkData);
+		boolean newChunkHasData = !isDataEmpty(newChunkData);
 		
 		// check if the chunk is actually empty
 		if (!newChunkHasData)
@@ -179,16 +186,14 @@ public class LodDimensionFinder
 				// the chunk isn't empty but the LOD is...
 				
 				String message = "Error: the chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") has a height of [" + newlyLoadedChunk.getHeight() + "] but the LOD generated is empty!";
-				MC.sendChatMessage(message);
-				ApiShared.LOGGER.error(message);
-				return null;
+				LOGGER.error(message);
 			}
 			else
 			{
 				String message = "Warning: The chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty.";
-//				MC.sendChatMessage(message);
-				ApiShared.LOGGER.warn(message);
+				LOGGER.warn(message);
 			}
+			return null;
 		}
 		
 		
@@ -212,11 +217,11 @@ public class LodDimensionFinder
 		
 		// compare each world with the newly loaded one
 		SubDimCompare mostSimilarSubDim = null;
-		
-		ApiShared.LOGGER.info("Known Sub Dimensions: [" + dimensionFolder.listFiles().length + "]");
+
+		LOGGER.info("Known Sub Dimensions: [" + dimensionFolder.listFiles().length + "]");
 		for (File testDimFolder : dimensionFolder.listFiles())
 		{
-			ApiShared.LOGGER.info("Testing sub dimension: [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "]");
+			LOGGER.info("Testing sub dimension: [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "]");
 			
 			// get a LOD from this dimension folder
 			LodDimension tempLodDim = new LodDimension(null, 1, null, false);
@@ -237,7 +242,7 @@ public class LodDimensionFinder
 			
 			// get the player data for this dimension folder
 			PlayerData testPlayerData = new PlayerData(testDimFolder);
-			ApiShared.LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
+			LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
 			
 			// check if the block positions are close
 			int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(firstSeenPlayerData.playerBlockPos);
@@ -245,11 +250,10 @@ public class LodDimensionFinder
 			
 			
 			// check if the chunk is actually empty
-			if (!isDataEmpty(newChunkData))
+			if (isDataEmpty(testChunkData))
 			{
 				String message = "The test chunk for dimension folder [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. Is that correct?";
-//				MC.sendChatMessage(message);
-				ApiShared.LOGGER.info(message);
+				LOGGER.info(message);
 				continue;
 			}
 			
@@ -268,6 +272,9 @@ public class LodDimensionFinder
 							equalDataPoints++;
 						}
 						totalDataPointCount++;
+						
+						if (!DataPointUtil.doesItExist(newChunkData[x][z][y]) || !DataPointUtil.doesItExist(testChunkData[x][z][y]))
+							break;
 					}
 				}
 			}
@@ -281,8 +288,7 @@ public class LodDimensionFinder
 			}
 			
 			String message = "Sub dimension [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " +  LodUtil.shortenString(subDimCompare.getPercentEqual() + "", 5) + " (" + equalDataPoints + "/" + totalDataPointCount + ")";
-			MC.sendChatMessage(message);
-			ApiShared.LOGGER.info(message);
+			LOGGER.info(message);
 		}
 		
 		// the first seen player data is no longer needed, the sub dimension has been determined
@@ -294,8 +300,7 @@ public class LodDimensionFinder
 			// we found a world folder that is similar, use it
 			
 			String message = "Sub Dimension set to: [" +  LodUtil.shortenString(mostSimilarSubDim.folder.getName(), 8) + "...] with an equality of [" + mostSimilarSubDim.getPercentEqual() + "]";
-			MC.sendChatMessage(message);
-			ApiShared.LOGGER.info(message);
+			LOGGER.info(message);
 			return mostSimilarSubDim.folder;
 		}
 		else
@@ -306,8 +311,7 @@ public class LodDimensionFinder
 			
 			String newId = UUID.randomUUID().toString();
 			String message = "No suitable sub dimension found. The highest equality was [" + LodUtil.shortenString(highestEqualityPercent + "", 5) + "]. Creating a new sub dimension with ID: " + LodUtil.shortenString(newId, 8) + "...";
-			MC.sendChatMessage(message);
-			ApiShared.LOGGER.info(message);
+			LOGGER.info(message);
 			return GetDimensionFolder(newlyLoadedDim.dimension, newId);
 		}
 	}
@@ -340,7 +344,7 @@ public class LodDimensionFinder
 		}
 		catch (IOException e)
 		{
-			ApiShared.LOGGER.error("Unable to get dimension folder for dimension [" + newDimensionType.getDimensionName() + "]", e);
+			LOGGER.error("Unable to get dimension folder for dimension [" + newDimensionType.getDimensionName() + "]", e);
 			return null;
 		}
 	}
@@ -365,13 +369,13 @@ public class LodDimensionFinder
 				{
 					if (dataPoint != 0)
 					{
-						return true;
+						return false;
 					}
 				}
 			}
 		}
-
-		return false;
+		
+		return true;
 	}
 
 
@@ -401,7 +405,7 @@ public class LodDimensionFinder
 			}
 			catch (IOException e)
 			{
-				ApiShared.LOGGER.error("Unable to save player dimension data for world folder [" + worldFolder.getPath() + "].", e);
+				LOGGER.error("Unable to save player dimension data for world folder [" + worldFolder.getPath() + "].", e);
 				return;
 			}
 		}

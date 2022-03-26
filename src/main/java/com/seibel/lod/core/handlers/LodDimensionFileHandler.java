@@ -22,6 +22,7 @@ package com.seibel.lod.core.handlers;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.security.Signature;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,6 +34,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.ConfigBasedLogger;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.api.ClientApi;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
@@ -46,10 +50,8 @@ import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.SpamReducedLogger;
+import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.util.UnitBytes;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -63,7 +65,8 @@ import org.apache.logging.log4j.Logger;
  */
 public class LodDimensionFileHandler
 {
-	public static final Logger LOGGER = LogManager.getLogger("LodDimensionFileHandler");
+	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(() -> config.client().advanced().debugging().debugSwitch().getLogFileReadWriteEvent());
 	
 	public static final boolean ENABLE_SAVE_THREAD_LOGGING = true;
 	public static final boolean ENABLE_SAVE_REGION_LOGGING = false;
@@ -242,7 +245,7 @@ public class LodDimensionFileHandler
 					// close the reader and delete the file.
 					inputStream.close();
 					file.delete();
-					LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File has been deleted.");
@@ -255,7 +258,7 @@ public class LodDimensionFileHandler
 					// close the reader and ignore the file, we don't
 					// want to accidentally delete anything the user may want.
 					inputStream.close();
-					LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ " this region will not be written to in order to protect the newer file.");
@@ -264,7 +267,7 @@ public class LodDimensionFileHandler
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
 				{
-					LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Old LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File will be loaded and updated to new format in next save.");
@@ -277,6 +280,7 @@ public class LodDimensionFileHandler
 				}
 				else
 				{
+					LOGGER.debug("Loading LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]");
 					// this file is a readable version,
 					// read and add the data to our region
 					DataInputStream dataStream = new DataInputStream(inputStream);
@@ -371,7 +375,7 @@ public class LodDimensionFileHandler
 			LevelContainer[] container = r.debugGetDataContainers().clone();
 			if (container == null || container.length != LodUtil.DETAIL_OPTIONS)
 			{
-				LOGGER.warn("DumpRamUsage encountered an invalid region!");
+				LOGGER.error("DumpRamUsage encountered an invalid region!");
 				continue;
 			}
 			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++)

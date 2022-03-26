@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.objects.opengl.builders.lodBuilding;
+package com.seibel.lod.core.builders.lodBuilding;
 
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 

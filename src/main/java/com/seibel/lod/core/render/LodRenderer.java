@@ -23,14 +23,16 @@ import java.awt.Color;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.logging.ConfigBasedLogger;
+import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.*;
 import org.lwjgl.opengl.GL32;
 
-import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.enums.rendering.FogDistance;
@@ -57,6 +59,9 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  */
 public class LodRenderer
 {
+	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererBufferEvent());
+
 	public static final boolean ENABLE_DRAW_LAG_SPIKE_LOGGING = false;
 	public static final boolean ENABLE_DUMP_GL_STATE = false;
 	public static final long DRAW_LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
@@ -69,7 +74,7 @@ public class LodRenderer
 			if (!ENABLE_DRAW_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
 			if (timer> DRAW_LAG_SPIKE_THRESOLD_NS) { //4 ms
-				ApiShared.LOGGER.info("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
+				EVENT_LOGGER.debug("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 			
 		}
@@ -77,7 +82,6 @@ public class LodRenderer
 	
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
 	/**
 	 * If true the LODs colors will be replaced with
@@ -422,16 +426,18 @@ public class LodRenderer
 	/** Setup all render objects - REQUIRES to be in render thread */
 	private void setup() {
 		if (isSetupComplete) {
-			ApiShared.LOGGER.warn("Renderer setup called but it has already completed setup!");
+			EVENT_LOGGER.warn("Renderer setup called but it has already completed setup!");
 			return;
 		}
 		if (!GLProxy.hasInstance()) {
-			ApiShared.LOGGER.warn("Renderer setup called but GLProxy has not yet been setup!");
+			EVENT_LOGGER.warn("Renderer setup called but GLProxy has not yet been setup!");
 			return;
 		}
-		
+
+		EVENT_LOGGER.info("Setting up renderer");
 		isSetupComplete = true;
 		shaderProgram = new LodRenderProgram(LodFogConfig.generateFogConfig());
+		EVENT_LOGGER.info("Renderer setup complete");
 	}
 	
 	/** Create all buffers that will be used. */
@@ -503,17 +509,17 @@ public class LodRenderer
 	 *  (Many objects are Native, outside of JVM, and need manual cleanup)  */ 
 	private void cleanup() {
 		if (!isSetupComplete) {
-			ApiShared.LOGGER.warn("Renderer cleanup called but Renderer has not completed setup!");
+			EVENT_LOGGER.warn("Renderer cleanup called but Renderer has not completed setup!");
 			return;
 		}
 		if (!GLProxy.hasInstance()) {
-			ApiShared.LOGGER.warn("Renderer Cleanup called but the GLProxy has never been inited!");
+			EVENT_LOGGER.warn("Renderer Cleanup called but the GLProxy has never been inited!");
 			return;
 		}
 		isSetupComplete = false;
-		ApiShared.LOGGER.info("Renderer Cleanup Started");
+		EVENT_LOGGER.info("Renderer Cleanup Started");
 		shaderProgram.free();
-		ApiShared.LOGGER.info("Renderer Cleanup Complete");
+		EVENT_LOGGER.info("Renderer Cleanup Complete");
 	}
 
 	/** Calls the BufferBuilder's destroyBuffers method. */
