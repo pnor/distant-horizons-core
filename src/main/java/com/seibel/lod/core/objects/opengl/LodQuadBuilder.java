@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
@@ -15,6 +14,8 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+
+import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
 public class LodQuadBuilder {
 	static final int MAX_BUFFER_SIZE = (1024 * 1024 * 1);
@@ -108,7 +109,7 @@ public class LodQuadBuilder {
 					return false;
 				if (z + w0 > o.z)
 				{
-					ApiShared.LOGGER.warn("Overlapping quads detected!");
+					EVENT_LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -127,7 +128,7 @@ public class LodQuadBuilder {
 					return false;
 				if (x + w0 > o.x)
 				{
-					ApiShared.LOGGER.warn("Overlapping quads detected!");
+					EVENT_LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -146,7 +147,7 @@ public class LodQuadBuilder {
 					return false;
 				if (x + w0 > o.x)
 				{
-					ApiShared.LOGGER.warn("Overlapping quads detected!");
+					EVENT_LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -177,7 +178,7 @@ public class LodQuadBuilder {
 					return false;
 				if (y + w1 > o.y)
 				{
-					ApiShared.LOGGER.warn("Overlapping quads detected!");
+					EVENT_LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -195,7 +196,7 @@ public class LodQuadBuilder {
 					return false;
 				if (z + w1 > o.z)
 				{
-					ApiShared.LOGGER.warn("Overlapping quads detected!");
+					EVENT_LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -213,7 +214,7 @@ public class LodQuadBuilder {
 					return false;
 				if (y + w1 > o.y)
 				{
-					ApiShared.LOGGER.warn("Overlapping quads detected!");
+					EVENT_LOGGER.warn("Overlapping quads detected!");
 					o.color = ColorUtil.rgbToInt(255, 0, 0);
 					return false;
 				}
@@ -392,7 +393,7 @@ public class LodQuadBuilder {
 		}
 		long postQuadsCount = getCurrentQuadsCount();
 		//if (mergeCount != 0)
-		//	ApiShared.LOGGER.info("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount/(double)preQuadsCount);
+		EVENT_LOGGER.debug("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount/(double)preQuadsCount);
 	}
 	
 	public Iterator<ByteBuffer> makeVertexBuffers() {

@@ -17,16 +17,16 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.objects.opengl.builders.lodBuilding;
+package com.seibel.lod.core.builders.lodBuilding;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.LodWorld;
@@ -56,7 +56,9 @@ public class LodBuilder
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
-	
+	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+
+	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(() -> config.client().advanced().debugging().debugSwitch().getLogLodBuilderEvent());
 	
 	/** This cannot be final! Different world have different height, and in menu, this causes Null Exceptions*/
 	//public static final short MIN_WORLD_HEIGHT = MC.getWrappedClientWorld().getMinHeight();
@@ -68,7 +70,6 @@ public class LodBuilder
 
 	private final ExecutorService lodGenThreadPool = Executors.newSingleThreadExecutor(
 			new LodThreadFactory(this.getClass().getSimpleName(), Thread.NORM_PRIORITY-1));
-	private final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	
 	
@@ -134,7 +135,7 @@ public class LodBuilder
 			}
 			catch (RuntimeException e)
 			{
-				ApiShared.LOGGER.error("LodBuilder Thread Uncaught Exception: ", e);
+				EVENT_LOGGER.error("LodBuilder Thread Uncaught Exception: ", e);
 				// if the world changes while LODs are being generated
 				// they will throw errors as they try to access things that no longer
 				// exist.
@@ -199,7 +200,7 @@ public class LodBuilder
 				return writePartialLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
 			}
 		} catch (RuntimeException e) {
-			ApiShared.LOGGER.error("LodBuilder encountered an error on building lod: ", e);
+			EVENT_LOGGER.error("LodBuilder encountered an error on building lod: ", e);
 			return false;
 		}
 	}
@@ -216,7 +217,7 @@ public class LodBuilder
 		try {
 			if (region.getMinDetailLevel()!= 0) {
 				if (!LodUtil.checkRamUsage(0.05, 16)) {
-					ApiShared.LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
+					EVENT_LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
 					return false;
 				}
 				
@@ -271,7 +272,7 @@ public class LodBuilder
 			for (int i=0; i<data.length; i+=vertQual) {
 				if (!DataPointUtil.doesItExist(data[i]) ||
 						DataPointUtil.getGenerationMode(data[i]) != config.distanceGenerationMode.complexity) {
-					ApiShared.LOGGER.error("NULL data at {}, detail {}, vertQual {}, lodCount {}, chunkPos [{},{}]\n"
+					EVENT_LOGGER.error("NULL data at {}, detail {}, vertQual {}, lodCount {}, chunkPos [{},{}]\n"
 							+ "Data: {}",
 							i, targetLevel, vertQual, lodCount, chunkX, chunkZ, DataPointUtil.toString(data[i]));
 					throw new RuntimeException("Null data!");
@@ -296,7 +297,7 @@ public class LodBuilder
 					config.distanceGenerationMode))
 				throw new RuntimeException("data at detail "+ targetLevel+" is still null after writes to it!");
 		} catch (Exception e) {
-			ApiShared.LOGGER.error("LodBuilder encountered an error on writePartialLodNodeData: ", e);
+			EVENT_LOGGER.error("LodBuilder encountered an error on writePartialLodNodeData: ", e);
 		} finally {
 			region.isWriting.decrementAndGet();
 		}
@@ -325,7 +326,7 @@ public class LodBuilder
 		boolean topBlock = true;
 		if (y < chunk.getMinBuildHeight())
 			dataToMerge[0] = DataPointUtil.createVoidDataPoint(generation);
-		int maxConnectedLods = this.config.client().graphics().quality().getVerticalQuality().maxVerticalData[0];
+		int maxConnectedLods = LodBuilder.config.client().graphics().quality().getVerticalQuality().maxVerticalData[0];
 		while (y >= chunk.getMinBuildHeight()) {
 			int height = determineHeightPointFrom(chunk, config, x, y, z);
 			// If the lod is at the default height, it must be void data

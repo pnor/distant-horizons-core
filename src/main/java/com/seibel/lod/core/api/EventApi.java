@@ -20,8 +20,8 @@
 package com.seibel.lod.core.api;
 
 import com.seibel.lod.core.api.ClientApi.LagSpikeCatcher;
-import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.objects.opengl.builders.worldGeneration.BatchGenerator;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
 import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;

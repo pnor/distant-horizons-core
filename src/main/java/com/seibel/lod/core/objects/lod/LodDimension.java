@@ -28,6 +28,7 @@ import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.handlers.LodSubDimensionFolderFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.util.*;

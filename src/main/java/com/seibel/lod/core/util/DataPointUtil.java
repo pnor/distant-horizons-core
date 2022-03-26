@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.util;
 
+import com.seibel.lod.core.logging.SpamReducedLogger;
+
 import java.util.Arrays;
 
 
@@ -193,7 +195,7 @@ public class DataPointUtil
 	}
 	
 	
-	private static SpamReducedLogger warnLogger = new SpamReducedLogger(1);
+	private static final SpamReducedLogger warnLogger = new SpamReducedLogger(1);
 	
 	public static byte getGenerationMode(long dataPoint)
 	{

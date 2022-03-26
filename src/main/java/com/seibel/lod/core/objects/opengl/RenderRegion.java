@@ -7,10 +7,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.CubicLodTemplate;
-import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.CubicLodTemplate;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -34,11 +33,10 @@ import com.seibel.lod.core.util.gridList.PosArrayGridList;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
+import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
+
 public class RenderRegion implements AutoCloseable
 {
-	public static final boolean ENABLE_EVENT_LOGGING = false;
-	public static final boolean ENABLE_EVENT_STEP_LOGGING = false;
-	public static final boolean ENABLE_VERBOSE_LOGGING = false;
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	
 	/** stores if the region at the given x and z index needs to be regenerated */
@@ -83,22 +81,22 @@ public class RenderRegion implements AutoCloseable
 		
 		BackState state = backState.get();
 		if (state != BackState.Unused) {
-			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: BackState is {}", regionPos, state);
+			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: BackState is {}", regionPos, state);
 			return Optional.empty();
 		}
 
 		LodRegion r = lodDim.getRegion(regionPos.x, regionPos.z);
 		if (r==null) {
-			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: Region is null", regionPos);
+			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: Region is null", regionPos);
 			return Optional.empty();
 		}
 		if (needRegen.get() == 0) {
-			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: Region doesn't need regen", regionPos);
+			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: Region doesn't need regen", regionPos);
 			return Optional.empty();
 		}
 		
 		if (!backState.compareAndSet(BackState.Unused, BackState.Building)) {
-			if (ENABLE_VERBOSE_LOGGING) ApiShared.LOGGER.info("{}: UpdateStatus rejected. Cause: CAS on BackState failed: ", backState.get());
+			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: CAS on BackState failed: ", backState.get());
 			return Optional.empty();
 		}
 		needRegen.decrementAndGet();
@@ -117,7 +115,7 @@ public class RenderRegion implements AutoCloseable
 		BackState state = backState.get();
 		if (state == BackState.Complete) {
 			if (renderBufferBack != null) {
-				if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("RenderRegion swap @ {}", regionPos);
+				EVENT_LOGGER.debug("RenderRegion swap @ {}", regionPos);
 				boolean shouldKeep = renderBufferFront != null && renderBufferFront.onSwapToBack();
 				RenderBuffer temp = shouldKeep ? renderBufferFront : null;
 				renderBufferFront = renderBufferBack;
@@ -125,7 +123,7 @@ public class RenderRegion implements AutoCloseable
 				if (renderBufferFront != null) renderBufferFront.onSwapToFront();
 			}
 			if (!backState.compareAndSet(BackState.Complete, BackState.Unused)) {
-				ApiShared.LOGGER.error("RenderRegion.render() got illegal state on swapping buffer!");
+				EVENT_LOGGER.error("RenderRegion.render() got illegal state on swapping buffer!");
 			}
 		}
 		if (renderBufferFront == null) return false;
@@ -150,7 +148,7 @@ public class RenderRegion implements AutoCloseable
 	}
 	
 	private CompletableFuture<Void> startBuid(Executor bufferUploader, Executor bufferBuilder, LodRegion region, LodDimension lodDim, int playerPosX, int playerPosZ) {
-		if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("RenderRegion startBuild @ {}", regionPos);
+		EVENT_LOGGER.trace("RenderRegion startBuild @ {}", regionPos);
 		LodRegion[] adjRegions = new LodRegion[4];
 		try {
 			if (renderBufferBack != null) renderBufferBack.onReuse();
@@ -160,7 +158,7 @@ public class RenderRegion implements AutoCloseable
 		} catch (Throwable t) {
 			setNeedRegen();
 			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
-				ApiShared.LOGGER.error("\"Lod Builder Starter\""
+				EVENT_LOGGER.error("\"Lod Builder Starter\""
 					+ " encountered error on catching exceptions and fallback on starting build task: ",
 					new ConcurrentModificationException("RenderRegion Illegal State"));
 			}
@@ -168,7 +166,7 @@ public class RenderRegion implements AutoCloseable
 		}
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				if (ENABLE_EVENT_STEP_LOGGING) ApiShared.LOGGER.info("RenderRegion start QuadBuild @ {}", regionPos);
+				EVENT_LOGGER.trace("RenderRegion start QuadBuild @ {}", regionPos);
 				boolean useSkylightCulling = CONFIG.client().graphics().advancedGraphics().getEnableCaveCulling();
 				useSkylightCulling &= !lodDim.dimension.hasCeiling();
 				useSkylightCulling &= lodDim.dimension.hasSkyLight();
@@ -183,17 +181,17 @@ public class RenderRegion implements AutoCloseable
 					renderBufferBack.build(buildRun);
 				else
 					buildRun.run();
-				if (ENABLE_EVENT_STEP_LOGGING) ApiShared.LOGGER.info("RenderRegion end QuadBuild @ {}", regionPos);
+				EVENT_LOGGER.trace("RenderRegion end QuadBuild @ {}", regionPos);
 				return builder;
 			} catch (Throwable e3) {
-				ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to build quads: ", e3);
+				EVENT_LOGGER.error("\"LodNodeBufferBuilder\" was unable to build quads: ", e3);
 				throw e3;
 			}
 		}, bufferBuilder)
 				
 				.thenAcceptAsync((builder) -> {
 			try {
-				if (ENABLE_EVENT_STEP_LOGGING) ApiShared.LOGGER.info("RenderRegion start Upload @ {}", regionPos);
+				EVENT_LOGGER.trace("RenderRegion start Upload @ {}", regionPos);
 				GLProxy glProxy = GLProxy.getInstance();
 				GpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
 				GLProxyContext oldContext = glProxy.getGlContext();
@@ -211,22 +209,22 @@ public class RenderRegion implements AutoCloseable
 				} finally {
 					glProxy.setGlContext(oldContext);
 				}
-				if (ENABLE_EVENT_STEP_LOGGING) ApiShared.LOGGER.info("RenderRegion end Upload @ {}", regionPos);
+				EVENT_LOGGER.trace("RenderRegion end Upload @ {}", regionPos);
 			} catch (Throwable e3) {
-				ApiShared.LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
+				EVENT_LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
 				throw e3;
 			}
 		}, bufferUploader).handle((v, e) -> {
 			if (e != null) {
 				setNeedRegen();
 				if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
-					ApiShared.LOGGER.error("\"LodNodeBufferBuilder\""
+					EVENT_LOGGER.error("\"LodNodeBufferBuilder\""
 						+ " encountered error on exit: ",
 						new ConcurrentModificationException("RenderRegion Illegal State"));
 				}
 			} else {
 				if (!backState.compareAndSet(BackState.Building, BackState.Complete)) {
-					ApiShared.LOGGER.error("\"LodNodeBufferBuilder\""
+					EVENT_LOGGER.error("\"LodNodeBufferBuilder\""
 							+ " encountered error on exit: ",
 							new ConcurrentModificationException("RenderRegion Illegal State"));
 				}
@@ -358,8 +356,8 @@ public class RenderRegion implements AutoCloseable
 								childZAdj + (lodDirection.getAxis()==LodDirection.Axis.Z ? 0 : 1));
 					}
 				} catch (RuntimeException e) {
-					ApiShared.LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, posX, posZ, lodDirection);
-					ApiShared.LOGGER.warn("Detail exception: ", e);
+					EVENT_LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, posX, posZ, lodDirection);
+					EVENT_LOGGER.warn("Detail exception: ", e);
 				}
 			}
 			

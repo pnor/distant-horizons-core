@@ -25,7 +25,6 @@ import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL44;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.render.GLProxy;

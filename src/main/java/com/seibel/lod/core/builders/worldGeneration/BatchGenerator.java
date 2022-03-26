@@ -17,10 +17,10 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.objects.opengl.builders.worldGeneration;
+package com.seibel.lod.core.builders.worldGeneration;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;

@@ -1,6 +1,6 @@
 package com.seibel.lod.core.wrapperInterfaces.worldGeneration;
 
-import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 

@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.objects.opengl.builders.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.opengl.LodQuadBuilder.BufferFiller;

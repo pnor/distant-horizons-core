@@ -1,9 +1,8 @@
 package com.seibel.lod.core.render.objects;
 
-import com.seibel.lod.core.api.ApiShared;
 import org.lwjgl.opengl.GL43;
 
-import com.seibel.lod.core.api.ClientApi;
+import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 // In OpenGL 4.3 and later, Vertex Attribute got a make-over.
 // Now it provides support for buffer binding points natively.
@@ -64,11 +63,11 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 	// Requires VertexAttribute binded
 	public void completeAndCheck(int expectedStrideSize) {
 		if (strideSize != expectedStrideSize) {
-			ApiShared.LOGGER.error("Vertex Attribute calculated stride size " + strideSize +
+			GL_LOGGER.error("Vertex Attribute calculated stride size " + strideSize +
 					" does not match the provided expected stride size " + expectedStrideSize + "!");
 			throw new IllegalArgumentException("Vertex Attribute Incorrect Format");
 		}
-		ApiShared.LOGGER.info("Vertex Attribute (GL43+) completed. It contains "+numberOfBindingPoints
+		GL_LOGGER.info("Vertex Attribute (GL43+) completed. It contains "+numberOfBindingPoints
 				+" binding points and a stride size of "+strideSize);
 	}
 
