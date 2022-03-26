@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.api.ClientApi;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
@@ -58,7 +59,7 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author James Seibel
  * @author Cola
- * @version 3-7-2022
+ * @version 2022-3-26
  */
 public class LodDimensionFileHandler
 {
@@ -415,7 +416,7 @@ public class LodDimensionFileHandler
 		}
 		
 		// save the dimension data
-		LodSubDimensionFolderFinder.saveDimensionPlayerData(this.dimensionDataSaveFolder);
+		ClientApi.DIMENSION_FINDER.saveDimensionPlayerData(this.dimensionDataSaveFolder);
 		trySaveRegionsToBeSaved();
 		
 		// wait for the saving to finish if requested

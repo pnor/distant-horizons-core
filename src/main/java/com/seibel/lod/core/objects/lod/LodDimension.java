@@ -26,7 +26,6 @@ import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
-import com.seibel.lod.core.handlers.LodSubDimensionFolderFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
@@ -37,7 +36,6 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,7 +54,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author Leonardo Amato
  * @author James Seibel
- * @version 3-17-2022
+ * @version 2022-3-26
  */
 public class LodDimension
 {
@@ -89,75 +87,49 @@ public class LodDimension
 	private final ExecutorService cutAndExpandThread = Executors.newSingleThreadExecutor(
 			new LodThreadFactory(this.getClass().getSimpleName() + " - Cut and Expand", Thread.NORM_PRIORITY - 1));
 	
-	/** If true the LodDimensionFileHelper is attempting to determine the folder for this dimension */
-	private boolean determiningWorldFolder = false;
+	private boolean logEvents = true;
+	
 	
 	
 	/**
-	 * Creates the dimension centered at (0,0)
-	 * @param newWidth in regions
+	 * Creates the dimension centered at (0,0), with event logging, and no file saving/loading.
+	 *
+	 * @param newWidth measured in regions
 	 */
-	public LodDimension(IDimensionTypeWrapper newDimension, LodWorld lodWorld, int newWidth)
+	public LodDimension(IDimensionTypeWrapper newDimension, int newWidth)
 	{
-		dimension = newDimension;
-		width = newWidth;  // FIXME any width besides 1 causes an indexOutOfBounds Exception
-		halfWidth = width / 2;
-		
-		if (newDimension != null && lodWorld != null)
-		{
-			attemptToSetWorldFileHandler();
-		}
-		
-		
-		regions = new MovableGridRingList<LodRegion>(halfWidth, 0, 0);
-		generateIteratorList();
+		this(newDimension, newWidth, null, true);
 	}
 	
 	/**
-	 * Attempts to determine and set the file handler based on
-	 * the chunk the player is currently in.
-	 * @returns true if the fileHandler has been set, false otherwise
+	 * Creates the dimension centered at (0,0)
+	 *
+	 * @param newWidth measured in regions
+	 * @param saveDir can be null. If null regions will not be saved or loaded from file.
 	 */
-	public void attemptToSetWorldFileHandler()
+	public LodDimension(IDimensionTypeWrapper newDimension, int newWidth, File saveDir)
 	{
-		// check if we need to get the file handler
-		if (this.fileHandler != null)
-			return;
+		this(newDimension, newWidth, saveDir, true);
+	}
+	
+	/**
+	 * Creates the dimension centered at (0,0)
+	 *
+	 * @param newWidth measured in regions
+	 * @param saveDir can be null. If null regions will not be saved or loaded from file.
+	 */
+	public LodDimension(IDimensionTypeWrapper newDimension, int newWidth, File saveDir, boolean newLogEvents)
+	{
+		this.dimension = newDimension;
+		this.width = newWidth;  // FIXME any width besides 1 causes an indexOutOfBounds Exception
+		this.halfWidth = width / 2;
+		this.logEvents = newLogEvents;
 		
-		// prevent multiple threads running at the same time
-		if (this.determiningWorldFolder)
-			return;
-		this.determiningWorldFolder = true;
+		if (saveDir != null)
+			this.fileHandler =  new LodDimensionFileHandler(saveDir, this);
 		
-		
-		// run asynchronously since this could take a while
-		Thread thread =new Thread(() ->
-		{
-			try
-			{
-				// attempt to get the file handler
-				File saveDir = LodSubDimensionFolderFinder.determineSubDimensionFolder();
-				if (saveDir == null)
-					return;
-				
-				this.fileHandler = new LodDimensionFileHandler(saveDir, this);
-				
-				// clear the previous regions so we can load the LODs from file
-				if (this.regions != null)
-					this.regions.clear();
-			}
-			catch (IOException e)
-			{
-				ApiShared.LOGGER.error("Unable to set the dimension file handler for dimension type [" + this.dimension.getDimensionName() + "]. Error: " + e.getMessage(), e);
-			}
-			finally
-			{
-				// make sure we unlock this method
-				this.determiningWorldFolder = false;
-			}
-		});
-		thread.setName("Sub-Dimension-Finder");
-		thread.start();
+		this.regions = new MovableGridRingList<LodRegion>(halfWidth, 0, 0);
+		generateIteratorList();
 	}
 	
 	
@@ -193,11 +165,15 @@ public class LodDimension
 	 */
 	public synchronized void move(RegionPos regionOffset)
 	{
-		ApiShared.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
+		if (this.logEvents)
+			ApiShared.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
+		
 		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
 		Pos2D p = regions.getCenter();
 		regions.move(p.x+regionOffset.x, p.y+regionOffset.z);
-		ApiShared.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
+		
+		if (this.logEvents)
+			ApiShared.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
 	}
 	
 	
@@ -343,9 +319,13 @@ public class LodDimension
 
 		if (isExpanding) return;
 		// If we have less than 20% or 128MB ram left. Don't expend.
-		if (expandOrLoadPaused) {
-			if (LodUtil.checkRamUsage(0.2, 128)) {
-				ApiShared.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
+		if (expandOrLoadPaused)
+		{
+			if (LodUtil.checkRamUsage(0.2, 128))
+			{
+				if (this.logEvents)
+					ApiShared.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
+				
 				expandOrLoadPaused = false;
 			}
 		}
@@ -359,14 +339,20 @@ public class LodDimension
 		int dropoffSwitch = dropoffQuality.fastModeSwitch;
 		// don't run the expander multiple times
 		// for the same location
-		Runnable thread = () -> {
+		Runnable thread = () ->
+		{
 			//ApiShared.LOGGER.info("LodDim expend Region: " + playerPosX + "," + playerPosZ);
 			Pos2D minPos = regions.getMinInRange();
-			iterateWithSpiral((int x, int z) -> {
-				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.02, 64)) {
+			iterateWithSpiral((int x, int z) ->
+			{
+				if (!expandOrLoadPaused && !LodUtil.checkRamUsage(0.02, 64))
+				{
 					Runtime.getRuntime().gc();
-					if (!LodUtil.checkRamUsage(0.2, 128)) {
-						ApiShared.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
+					if (!LodUtil.checkRamUsage(0.2, 128))
+					{
+						if (this.logEvents)
+							ApiShared.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
+						
 						// We have less than 10% or 64MB ram left. Don't expend.
 						expandOrLoadPaused = true;
 						saveDirtyRegionsToFile(false);
@@ -396,10 +382,15 @@ public class LodDimension
 					double deltaRPosX = debugRPosX - playerPosX;
 					double deltaRPosZ = debugRPosZ - playerPosZ;
 					double debugDistance = Math.sqrt(deltaRPosX*deltaRPosX + deltaRPosZ*deltaRPosZ);
-					if (minDistance > debugDistance || maxDistance < debugDistance || minDistance > maxDistance) {
-						ApiShared.LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
-								+ "At center block pos: {} {}, region pos: {}",
-								minDistance, maxDistance, debugDistance, debugRPosX, debugRPosZ, regionPos);
+					if (minDistance > debugDistance || maxDistance < debugDistance || minDistance > maxDistance)
+					{
+						if (this.logEvents)
+						{
+							ApiShared.LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
+											+ "At center block pos: {} {}, region pos: {}",
+									minDistance, maxDistance, debugDistance, debugRPosX, debugRPosZ, regionPos);
+						}
+						
 						return;
 					}
 				}
@@ -742,13 +733,18 @@ public class LodDimension
 		return stringBuilder.toString();
 	}
 
-	public void shutdown() {
+	public void shutdown()
+	{
 		cutAndExpandThread.shutdown();
-		try {
+		try
+		{
 			boolean worked = cutAndExpandThread.awaitTermination(5, TimeUnit.SECONDS);
+			
 			if (!worked)
 				ApiShared.LOGGER.error("Cut And Expend threads timed out! May cause crash on game exit due to cleanup failure.");
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e)
+		{
 			ApiShared.LOGGER.error("Cut And Expend threads shutdown is interrupted! May cause crash on game exit due to cleanup failure: ", e);
 		}
 		

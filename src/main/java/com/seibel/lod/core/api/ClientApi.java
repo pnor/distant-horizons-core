@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import com.seibel.lod.core.handlers.LodSubDimensionFolderFinder;
+import com.seibel.lod.core.handlers.LodDimensionFinder;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
@@ -54,7 +54,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * Specifically for the client.
  * 
  * @author James Seibel
- * @version 12-8-2021
+ * @version 2022-3-26
  */
 public class ClientApi
 {	
@@ -78,6 +78,8 @@ public class ClientApi
 	
 	public static final long SPAM_LOGGER_FLUSH_NS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 	
+	public static LodDimensionFinder DIMENSION_FINDER = new LodDimensionFinder();;
+	
 	public static class LagSpikeCatcher {
 
 		long timer = System.nanoTime();
@@ -99,6 +101,8 @@ public class ClientApi
 	private boolean configOverrideReminderPrinted = false;
 	
 	public boolean rendererDisabledBecauseOfExceptions = false;
+	
+	
 	
 	
 	
@@ -170,19 +174,21 @@ public class ClientApi
 			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(world.getDimensionType());
 			
 			// Make sure the player's data is up-to-date
-			LodSubDimensionFolderFinder.updatePlayerData();
+			DIMENSION_FINDER.updatePlayerData();
 			
 			// Make the LodDim if it does not exist
 			if (lodDim == null)
 			{
-				lodDim = new LodDimension(world.getDimensionType(), ApiShared.lodWorld,
-						ApiShared.lodBuilder.defaultDimensionWidthInRegions);
-				ApiShared.lodWorld.addLodDimension(lodDim);
-			}
-			// if necessary attempt to get the world file handler
-			if (lodDim.isFileHandlerNull())
-			{
-				lodDim.attemptToSetWorldFileHandler();
+				if (DIMENSION_FINDER.isDone())
+				{
+					lodDim = DIMENSION_FINDER.getAndClearFoundLodDimension();
+					ApiShared.lodWorld.addLodDimension(lodDim);
+				}
+				else
+				{
+					DIMENSION_FINDER.AttemptToDetermineSubDimensionAsync(MC.getCurrentDimension());
+					return;
+				}
 			}
 			
 			if (prefLoggerEnabled) {

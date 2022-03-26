@@ -2,6 +2,8 @@ package com.seibel.lod.core.handlers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.handlers.dimensionFinder.PlayerData;
+import com.seibel.lod.core.handlers.dimensionFinder.SubDimCompare;
 import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.objects.opengl.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
@@ -12,14 +14,11 @@ import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,21 +26,88 @@ import java.util.UUID;
 
 /**
  * Used to guess the world folder for the player's current dimension.
+ *
  * @author James Seibel
- * @version 3-23-2022
+ * @version 2022-3-26
  */
-public class LodSubDimensionFolderFinder
+public class LodDimensionFinder
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	
 	/** Increasing this will increase accuracy but increase calculation time */
 	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.LOW;
 	
+	public static final String THREAD_NAME = "Sub-Dimension-Finder";
 	
-	private static LodSubDimensionFolderFinder.PlayerData PLAYER_DATA = new LodSubDimensionFolderFinder.PlayerData(MC);
-	private static LodSubDimensionFolderFinder.PlayerData FIRST_SEEN_PLAYER_DATA = null;
+	private PlayerData playerData = new PlayerData(MC);
+	private PlayerData firstSeenPlayerData = null;
+	
+	private volatile LodDimension foundLodDimension = null;
+	
+	/** If true the LodDimensionFileHelper is attempting to determine the folder for this dimension */
+	private boolean determiningWorldFolder = false;
+	
+	
+	
+	public LodDimensionFinder()
+	{
+	
+	}
+	
+	
+	
+	/** Returns true if a LodDimension has been found */
+	public boolean isDone()
+	{
+		return foundLodDimension != null;
+	}
+	
+	/** Returns the found LodDimension */
+	public LodDimension getAndClearFoundLodDimension()
+	{
+		// clear the found dimension
+		LodDimension returnDim = this.foundLodDimension;
+		this.foundLodDimension = null;
+		
+		return returnDim;
+	}
+	
+	
+	
+	public void AttemptToDetermineSubDimensionAsync(IDimensionTypeWrapper dimensionTypeWrapper)
+	{
+		// prevent multiple threads running at the same time
+		if (determiningWorldFolder && !isDone())
+			return;
+		determiningWorldFolder = true;
+		
+		
+		// run asynchronously since this could take a while
+		Thread thread = new Thread(() ->
+		{
+			try
+			{
+				// attempt to get the file handler
+				File saveDir = attemptToDetermineSubDimensionFolder();
+				if (saveDir == null)
+					return;
+				
+				foundLodDimension = new LodDimension(dimensionTypeWrapper, ApiShared.lodBuilder.defaultDimensionWidthInRegions, saveDir);
+			}
+			catch (IOException e)
+			{
+				ApiShared.LOGGER.error("Unable to set the dimension file handler for dimension type [" + dimensionTypeWrapper.getDimensionName() + "]. Error: " + e.getMessage(), e);
+			}
+			finally
+			{
+				// make sure we unlock this method
+				determiningWorldFolder = false;
+			}
+		});
+		thread.setName(THREAD_NAME);
+		thread.start();
+	}
 	
 	
 	
@@ -49,20 +115,23 @@ public class LodSubDimensionFolderFinder
 	 * Currently this method checks a single chunk (where the player is)
 	 * and compares it against the same chunk position in the other dimension worlds to
 	 * guess which world the player is in.
-	 * @return the new or existing folder for this dimension, null if there was a problem
 	 * @throws IOException if the folder doesn't exist or can't be accessed
 	 */
-	public static File determineSubDimensionFolder() throws IOException
+	public File attemptToDetermineSubDimensionFolder() throws IOException
 	{
-		if (FIRST_SEEN_PLAYER_DATA == null)
+		if (firstSeenPlayerData == null)
 		{
-			FIRST_SEEN_PLAYER_DATA = PLAYER_DATA;
-			PLAYER_DATA = new LodSubDimensionFolderFinder.PlayerData(MC);
+			firstSeenPlayerData = playerData;
+			playerData = new PlayerData(MC);
 		}
+		
+		// TODO check based on the dimension's last seen location instead of the first seen player data
+		// hopefully this should fix entering a dimension in two different locations
+		
 		
 		
 		// relevant positions
-		AbstractChunkPosWrapper playerChunkPos = FACTORY.createChunkPos(FIRST_SEEN_PLAYER_DATA.playerBlockPos);
+		AbstractChunkPosWrapper playerChunkPos = FACTORY.createChunkPos(firstSeenPlayerData.playerBlockPos);
 		int startingBlockPosX = playerChunkPos.getMinBlockX();
 		int startingBlockPosZ = playerChunkPos.getMinBlockZ();
 		RegionPos playerRegionPos = new RegionPos(playerChunkPos);
@@ -71,11 +140,11 @@ public class LodSubDimensionFolderFinder
 		// chunk from the newly loaded dimension
 		IChunkWrapper newlyLoadedChunk = MC.getWrappedClientWorld().tryGetChunk(playerChunkPos);
 		// check if this chunk is valid to test
-		if (!LodSubDimensionFolderFinder.CanDetermineDimensionFolder(newlyLoadedChunk))
+		if (!CanDetermineDimensionFolder(newlyLoadedChunk))
 			return null;
 		
 		// create a temporary dimension to store the test LOD
-		LodDimension newlyLoadedDim = new LodDimension(MC.getCurrentDimension(), null, 1);
+		LodDimension newlyLoadedDim = new LodDimension(MC.getCurrentDimension(), 1, null, false);
 		newlyLoadedDim.move(playerRegionPos);
 		newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
 		
@@ -87,7 +156,7 @@ public class LodSubDimensionFolderFinder
 		
 		// log the start of this attempt
 		ApiShared.LOGGER.info("Attempting to determine sub-dimension for [" + MC.getCurrentDimension().getDimensionName() + "]");
-		ApiShared.LOGGER.info("First seen player block pos in dimension: [" + FIRST_SEEN_PLAYER_DATA.playerBlockPos.getX() + "," + FIRST_SEEN_PLAYER_DATA.playerBlockPos.getY() + "," + FIRST_SEEN_PLAYER_DATA.playerBlockPos.getZ() + "]");
+		ApiShared.LOGGER.info("First seen player block pos in dimension: [" + firstSeenPlayerData.playerBlockPos.getX() + "," + firstSeenPlayerData.playerBlockPos.getY() + "," + firstSeenPlayerData.playerBlockPos.getZ() + "]");
 		
 		
 		// new chunk data
@@ -150,7 +219,7 @@ public class LodSubDimensionFolderFinder
 			ApiShared.LOGGER.info("Testing sub dimension: [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "]");
 			
 			// get a LOD from this dimension folder
-			LodDimension tempLodDim = new LodDimension(null, null, 1);
+			LodDimension tempLodDim = new LodDimension(null, 1, null, false);
 			tempLodDim.move(playerRegionPos);
 			LodDimensionFileHandler tempFileHandler = new LodDimensionFileHandler(testDimFolder, tempLodDim);
 			LodRegion testRegion = tempFileHandler.loadRegionFromFile(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH);
@@ -171,7 +240,7 @@ public class LodSubDimensionFolderFinder
 			ApiShared.LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
 			
 			// check if the block positions are close
-			int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(FIRST_SEEN_PLAYER_DATA.playerBlockPos);
+			int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(firstSeenPlayerData.playerBlockPos);
 			ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + playerBlockDist + "]");
 			
 			
@@ -217,7 +286,7 @@ public class LodSubDimensionFolderFinder
 		}
 		
 		// the first seen player data is no longer needed, the sub dimension has been determined
-		FIRST_SEEN_PLAYER_DATA = null;
+		firstSeenPlayerData = null;
 		
 		
 		if (mostSimilarSubDim != null && mostSimilarSubDim.isValidSubDim())
@@ -248,7 +317,7 @@ public class LodSubDimensionFolderFinder
 	 * If the worldId is empty or null this returns the dimension parent folder <br>
 	 * Example folder names: "dim_overworld/worldId", "dim_the_nether/worldId"
 	 */
-	public static File GetDimensionFolder(IDimensionTypeWrapper newDimensionType, String worldId)
+	public File GetDimensionFolder(IDimensionTypeWrapper newDimensionType, String worldId)
 	{
 		// prevent null pointers
 		if (worldId == null)
@@ -278,7 +347,7 @@ public class LodSubDimensionFolderFinder
 	
 	
 	/** Returns true if the given chunk is valid to test */
-	public static boolean CanDetermineDimensionFolder(IChunkWrapper chunk)
+	public boolean CanDetermineDimensionFolder(IChunkWrapper chunk)
 	{
 		// we can only guess if the given chunk can be converted into a LOD
 		return LodBuilder.canGenerateLodFromChunk(chunk);
@@ -301,9 +370,11 @@ public class LodSubDimensionFolderFinder
 				}
 			}
 		}
-		
+
 		return false;
 	}
+
+
 	
 	
 	
@@ -311,15 +382,13 @@ public class LodSubDimensionFolderFinder
 	
 	
 	
-	private static final String playerDataFileName = "_playerData.toml";
-	
-	public static void updatePlayerData()
+	public void updatePlayerData()
 	{
-		PLAYER_DATA.updateData(MC);
+		playerData.updateData(MC);
 	}
 	
 	/** saves any necessary player data to the given world folder */
-	public static void saveDimensionPlayerData(File worldFolder)
+	public void saveDimensionPlayerData(File worldFolder)
 	{
 		// get and create the file and path if they don't exist
 		File file = PlayerData.getFileForDimensionFolder(worldFolder);
@@ -344,141 +413,6 @@ public class LodSubDimensionFolderFinder
 		// write the data to file
 		CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
 		playerdata.toTomlFile(toml);
-	}
-	
-	
-	/** Data container for any player data we can use to differentiate one dimension from another. */
-	private static class PlayerData
-	{
-		public static final  IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
-		
-		public static final String PLAYER_BLOCK_POS_X_PATH = "playerBlockPosX";
-		public static final String PLAYER_BLOCK_POS_Y_PATH = "playerBlockPosY";
-		public static final String PLAYER_BLOCK_POS_Z_PATH = "playerBlockPosZ";
-		AbstractBlockPosWrapper playerBlockPos;
-		
-		// not implemented yet
-		public static final String WORLD_SPAWN_POS_X_PATH = "worldSpawnBlockPosX";
-		public static final String WORLD_SPAWN_POS_Y_PATH = "worldSpawnBlockPosY";
-		public static final String WORLD_SPAWN_POS_Z_PATH = "worldSpawnBlockPosZ";
-		/**
-		 * The client world has access to a spawn point, so this should be possible to fill in.
-		 * I'm not sure what this will look like for worlds that don't have a spawn point.
-		 */
-		AbstractBlockPosWrapper worldSpawnPointBlockPos;
-		
-		
-		
-		public PlayerData(IMinecraftClientWrapper mc)
-		{
-			updateData(mc);
-		}
-		
-		public PlayerData(File dimensionFolder)
-		{
-			File file = getFileForDimensionFolder(dimensionFolder);
-			CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
-			
-			toml.load();
-			
-			
-			// get the player block pos if it is specified
-			if (toml.contains(PLAYER_BLOCK_POS_X_PATH)
-				&& toml.contains(PLAYER_BLOCK_POS_Y_PATH)
-				&& toml.contains(PLAYER_BLOCK_POS_Z_PATH))
-			{
-				int x = toml.getIntOrElse(PLAYER_BLOCK_POS_X_PATH, 0);
-				int y = toml.getIntOrElse(PLAYER_BLOCK_POS_Y_PATH, 0);
-				int z = toml.getIntOrElse(PLAYER_BLOCK_POS_Z_PATH, 0);
-				this.playerBlockPos = FACTORY.createBlockPos(x, y, z);
-			}
-			else
-			{
-				this.playerBlockPos = FACTORY.createBlockPos(0, 0, 0);
-			}
-		}
-		
-		
-		
-		public static File getFileForDimensionFolder(File file)
-		{
-			return new File(file.getPath() + File.separatorChar + playerDataFileName);
-		}
-		
-		
-		/** Should be called often to make sure this object is up to date with the player's info */
-		public void updateData(IMinecraftClientWrapper mc)
-		{
-			this.playerBlockPos = mc.getPlayerBlockPos();
-		}
-		
-		/** Writes everything from this object to the file given. */
-		public void toTomlFile(CommentedFileConfig toml)
-		{
-			// player block pos
-			toml.add(PLAYER_BLOCK_POS_X_PATH, playerBlockPos.getX());
-			toml.add(PLAYER_BLOCK_POS_Y_PATH, playerBlockPos.getY());
-			toml.add(PLAYER_BLOCK_POS_Z_PATH, playerBlockPos.getZ());
-			
-			toml.save();
-		}
-		
-		
-		@Override
-		public String toString()
-		{
-			return "PlayerBlockPos: [" + playerBlockPos.getX() + "," + playerBlockPos.getY() + "," + playerBlockPos.getZ() + "]";
-		}
-	}
-	
-	
-	
-	
-	private static class SubDimCompare implements Comparable<SubDimCompare>
-	{
-		public int equalDataPoints = 0;
-		public int totalDataPoints = 0;
-		public int playerPosDist = 0;
-		public File folder = null;
-		
-		
-		public SubDimCompare(int newEqualDataPoints, int newTotalDataPoints, int newPlayerPosDistance, File newSubDimFolder)
-		{
-			this.equalDataPoints = newEqualDataPoints;
-			this.totalDataPoints = newTotalDataPoints;
-			this.playerPosDist = newPlayerPosDistance;
-			
-			this.folder = newSubDimFolder;
-		}
-		
-		/** returns a number between 0 (not equal) and 1 (totally equal) */
-		public double getPercentEqual()
-		{
-			return (double) equalDataPoints / (double) totalDataPoints;
-		}
-		
-		
-		@Override
-		public int compareTo(@NotNull LodSubDimensionFolderFinder.SubDimCompare other)
-		{
-			if (this.equalDataPoints != other.equalDataPoints)
-			{
-				// compare based on data points
-				return Integer.compare(this.equalDataPoints, other.equalDataPoints);
-			}
-			else
-			{
-				// break ties based on player position
-				return Integer.compare(this.playerPosDist, other.playerPosDist);
-			}
-		}
-		
-		/** Returns true if this sub dimension is close enough to be considered a valid sub dimension */
-		public boolean isValidSubDim()
-		{
-			double minimumSimilarityRequired = CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity();
-			return this.getPercentEqual() >= minimumSimilarityRequired || this.playerPosDist <= 3;
-		}
 	}
 	
 	
