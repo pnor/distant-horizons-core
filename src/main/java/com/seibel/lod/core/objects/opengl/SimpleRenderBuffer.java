@@ -17,6 +17,8 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
+import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
+
 public class SimpleRenderBuffer extends RenderBuffer
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
@@ -75,6 +77,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 			if (b.size == FULL_SIZED_BUFFERS) {
 				statsMap.incStat("FullsizedVBOs");
 			}
+			if (b.size == 0) GL_LOGGER.warn("VBO with size 0");
 			statsMap.incBytesStat("TotalUsage", b.size);
 		}
 	}

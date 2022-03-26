@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,9 +48,14 @@ public class ConfigBasedSpamLogger {
         Message msg = ApiShared.LOGGER.getMessageFactory().newMessage(str, param);
         String msgStr = msg.getFormattedMessage();
         if (mode.levelForFile.isLessSpecificThan(level)) {
-            ApiShared.LOGGER.atLevel(level).withLocation().log(msgStr);
+            Level logLevel = level.isLessSpecificThan(Level.INFO) ? Level.INFO : level;
+            if (param.length > 0 && param[param.length-1] instanceof Throwable)
+                ApiShared.LOGGER.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
+            else ApiShared.LOGGER.atLevel(logLevel).withLocation().log(msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
+            if (param.length > 0 && param[param.length-1] instanceof Throwable)
+                ClientApi.logToChat(level, msgStr + "\nat\n" + ((Throwable) param[param.length-1]).getStackTrace().toString());
             ClientApi.logToChat(level, msgStr);
         }
     }
@@ -79,9 +85,14 @@ public class ConfigBasedSpamLogger {
         Message msg = ApiShared.LOGGER.getMessageFactory().newMessage(str, param);
         String msgStr = msg.getFormattedMessage();
         if (mode.levelForFile.isLessSpecificThan(level)) {
-            ApiShared.LOGGER.atLevel(level).withLocation().log(msgStr);
+            Level logLevel = level.isLessSpecificThan(Level.INFO) ? Level.INFO : level;
+            if (param.length > 0 && param[param.length-1] instanceof Throwable)
+                ApiShared.LOGGER.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
+            else ApiShared.LOGGER.atLevel(logLevel).withLocation().log(msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
+            if (param.length > 0 && param[param.length-1] instanceof Throwable)
+                ClientApi.logToChat(level, msgStr + "\nat\n" + Arrays.toString(((Throwable) param[param.length - 1]).getStackTrace()));
             ClientApi.logToChat(level, msgStr);
         }
     }

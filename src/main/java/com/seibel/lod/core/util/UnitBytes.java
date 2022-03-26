@@ -1,5 +1,7 @@
 package com.seibel.lod.core.util;
 
+import java.util.Objects;
+
 public class UnitBytes
 {
 	public final long value;
@@ -42,5 +44,18 @@ public class UnitBytes
 		v -= KBToByte(KB);
 		str.append(v).append("B");
 		return str.toString();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		UnitBytes unitBytes = (UnitBytes) o;
+		return value == unitBytes.value;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(value);
 	}
 }

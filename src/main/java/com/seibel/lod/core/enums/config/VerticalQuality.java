@@ -64,6 +64,8 @@ public enum VerticalQuality
 	{
 		switch (mode)
 		{
+		case ULTRA:
+			return VerticalQuality.HIGH;
 		case HIGH:
 			return VerticalQuality.MEDIUM;
 		case MEDIUM:
@@ -84,6 +86,8 @@ public enum VerticalQuality
 		case LOW:
 			return VerticalQuality.MEDIUM;
 		case HIGH:
+			return VerticalQuality.ULTRA;
+		case ULTRA:
 		default:
 			return null;
 		}

@@ -244,7 +244,7 @@ public class LodDimensionFileHandler
 					// close the reader and delete the file.
 					inputStream.close();
 					file.delete();
-					LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File has been deleted.");
@@ -257,7 +257,7 @@ public class LodDimensionFileHandler
 					// close the reader and ignore the file, we don't
 					// want to accidentally delete anything the user may want.
 					inputStream.close();
-					LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Newer LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ " this region will not be written to in order to protect the newer file.");
@@ -266,7 +266,7 @@ public class LodDimensionFileHandler
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
 				{
-					LOGGER.info("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Old LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File will be loaded and updated to new format in next save.");
@@ -279,6 +279,7 @@ public class LodDimensionFileHandler
 				}
 				else
 				{
+					LOGGER.debug("Loading LOD region file for region: (" + regionX + "," + regionZ + ")[" + tempDetailLevel + "]");
 					// this file is a readable version,
 					// read and add the data to our region
 					DataInputStream dataStream = new DataInputStream(inputStream);

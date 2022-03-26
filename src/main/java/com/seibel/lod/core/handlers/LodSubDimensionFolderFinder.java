@@ -12,6 +12,7 @@ import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
@@ -56,11 +57,14 @@ public class LodSubDimensionFolderFinder
 	 */
 	public static File determineSubDimensionFolder() throws IOException
 	{
-		if (FIRST_SEEN_PLAYER_DATA == null)
-		{
+		if (FIRST_SEEN_PLAYER_DATA == null) {
+			LOGGER.debug("Creating FIRST SEEN PLAYER DATA for testing...");
 			FIRST_SEEN_PLAYER_DATA = PLAYER_DATA;
-			PLAYER_DATA = new LodSubDimensionFolderFinder.PlayerData(MC);
+			LOGGER.debug("Created FIRST SEEN PLAYER DATA: {}", FIRST_SEEN_PLAYER_DATA);
 		}
+		LOGGER.debug("Creating PLAYER DATA for testing...");
+		PLAYER_DATA = new LodSubDimensionFolderFinder.PlayerData(MC);
+		LOGGER.debug("Created PLAYER DATA: {}", PLAYER_DATA);
 		
 		
 		// relevant positions
@@ -73,6 +77,7 @@ public class LodSubDimensionFolderFinder
 		// chunk from the newly loaded dimension
 		IChunkWrapper newlyLoadedChunk = MC.getWrappedClientWorld().tryGetChunk(playerChunkPos);
 		// check if this chunk is valid to test
+		LOGGER.debug("Getting chunk for testing...");
 		if (!LodSubDimensionFolderFinder.CanDetermineDimensionFolder(newlyLoadedChunk))
 			return null;
 		
@@ -82,6 +87,7 @@ public class LodSubDimensionFolderFinder
 		newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
 		
 		// generate a LOD to test against
+		LOGGER.debug("Generating LOD for testing...");
 		boolean lodGenerated = ApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(DistanceGenerationMode.FULL), true, true);
 		if (!lodGenerated)
 			return null;
@@ -102,7 +108,7 @@ public class LodSubDimensionFolderFinder
 				newChunkData[x][z] = array;
 			}
 		}
-		boolean newChunkHasData = isDataEmpty(newChunkData);
+		boolean newChunkHasData = !isDataEmpty(newChunkData);
 		
 		// check if the chunk is actually empty
 		if (!newChunkHasData)
@@ -113,13 +119,13 @@ public class LodSubDimensionFolderFinder
 				
 				String message = "Error: the chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") has a height of [" + newlyLoadedChunk.getHeight() + "] but the LOD generated is empty!";
 				LOGGER.error(message);
-				return null;
 			}
 			else
 			{
 				String message = "Warning: The chunk at (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty.";
 				LOGGER.warn(message);
 			}
+			return null;
 		}
 		
 		
@@ -180,10 +186,11 @@ public class LodSubDimensionFolderFinder
 //			{
 //				// TODO do something with this information
 //			}
+			LOGGER.trace("Comparing the two LODs:\n {}\n===================++\n {}\n\n", newChunkData, testChunkData);
 			
 			
 			// check if the chunk is actually empty
-			if (!isDataEmpty(newChunkData))
+			if (isDataEmpty(testChunkData))
 			{
 				String message = "The test chunk for dimension folder [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. Is that correct?";
 				LOGGER.info(message);
@@ -205,6 +212,9 @@ public class LodSubDimensionFolderFinder
 							equalLines++;
 						}
 						totalLineCount++;
+						if (!DataPointUtil.doesItExist(newChunkData[x][z][y]) || !DataPointUtil.doesItExist(testChunkData[x][z][y])) {
+							break;
+						}
 					}
 				}
 			}
@@ -212,6 +222,7 @@ public class LodSubDimensionFolderFinder
 			
 			// determine if this world is closer to the newly loaded world
 			double percentEqual = (double) equalLines / (double) totalLineCount;
+			LOGGER.info("Equal lines: [" + equalLines + "] Total lines: [" + totalLineCount + "] Percent equal: [" + percentEqual + "]");
 			if (equalLines > mostEqualLines)
 			{
 				mostEqualLines = equalLines;
@@ -302,13 +313,13 @@ public class LodSubDimensionFolderFinder
 				{
 					if (dataPoint != 0)
 					{
-						return true;
+						return false;
 					}
 				}
 			}
 		}
 		
-		return false;
+		return true;
 	}
 	
 	

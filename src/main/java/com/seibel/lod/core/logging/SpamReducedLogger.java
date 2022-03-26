@@ -32,7 +32,7 @@ public class SpamReducedLogger {
 
 	public void log(Level level, String str, Object... param) {
 		if (logTries.get() >= maxLogCount) return;
-		ApiShared.LOGGER.log(level, str, param);
+		ApiShared.LOGGER.log(level.isLessSpecificThan(Level.INFO) ? Level.INFO : level, str, param);
 	}
 
 	public void error(String str, Object... param) {
@@ -57,7 +57,7 @@ public class SpamReducedLogger {
 
 	public void logInc(Level level, String str, Object... param) {
 		if (logTries.getAndIncrement() >= maxLogCount) return;
-		ApiShared.LOGGER.log(level, str, param);
+		ApiShared.LOGGER.log(level.isLessSpecificThan(Level.INFO) ? Level.INFO : level, str, param);
 	}
 
 	public void errorInc(String str, Object... param) {

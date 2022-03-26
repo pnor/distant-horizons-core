@@ -77,10 +77,12 @@ public class LodVertexBuffer implements AutoCloseable
 	
 	private void _uploadBufferStorage(ByteBuffer bb) {
 		if (!isBufferStorage) throw new IllegalStateException("Buffer is not bufferStorage but its trying to use bufferStorage upload method!");
+		int bbSize = bb.limit() - bb.position();
 		GL32.glDeleteBuffers(id);
 		id = GL32.glGenBuffers();
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, id);
 		GL44.glBufferStorage(GL32.GL_ARRAY_BUFFER, bb, 0);
+		size = bbSize;
 	}
 
 	// bufferData
