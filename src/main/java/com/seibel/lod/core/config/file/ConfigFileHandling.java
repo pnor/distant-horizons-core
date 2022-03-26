@@ -4,14 +4,16 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.ConfigEntry;
-import com.seibel.lod.core.util.MultiOption;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 
 /**
  * Handles all stuff to do with the files
@@ -55,7 +57,6 @@ public class ConfigFileHandling {
         for (ConfigEntry<?> entry : ConfigBase.entries) {
             createComment(entry, config);
             loadEntry(entry, config);
-            System.out.println(entry.get());
         }
 
         config.close();
@@ -68,10 +69,10 @@ public class ConfigFileHandling {
     }
     @SuppressWarnings("unchecked")
     public static void saveEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
-        if (!entry.get().getClass().isAssignableFrom(MultiOption.class)) {
+        if (!entry.get().getClass().isAssignableFrom(HashMap.class)) {
             workConfig.set(entry.getNameWCategory(), entry.get());
         } else {
-            workConfig.set(entry.getNameWCategory(), ((MultiOption) entry.get()).getAsString());
+            workConfig.set(entry.getNameWCategory(), getStringFromHashMap((HashMap<String, ?>) entry.get()));
         }
     }
     public static void loadEntry(ConfigEntry<?> entry) {
@@ -90,14 +91,11 @@ public class ConfigFileHandling {
                 entry.setWTSave((T) (
                         workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.get().getClass())
                 ));
-            } else if (entry.get().getClass().isAssignableFrom(MultiOption.class)) {
-                entry.setWTSave(
-                        (T) new MultiOption<T>().getFromString(workConfig.get(entry.getNameWCategory()))
-                );
+            } else if (entry.get().getClass().isAssignableFrom(HashMap.class)) {
+                entry.setWTSave((T) getHashMapFromString(workConfig.get(entry.getNameWCategory())));
             } else {
                 entry.setWTSave(workConfig.get(entry.getNameWCategory()));
             }
-            System.out.println(workConfig.get(entry.getNameWCategory()).getClass().toString());
 //            entry.setWTSave(workConfig.get(entry.getNameWCategory()));
         } else {
             saveEntry(entry, workConfig);
@@ -128,5 +126,35 @@ public class ConfigFileHandling {
                 SingletonHandler.get(IMinecraftWrapper.class).crashMinecraft("Loading file and resetting config file failed at path ["+ConfigPath+"]. Please check the file is ok and you have the permissions", ex);
             }
         }
+    }
+
+
+
+
+    // Stuff for converting HashMap's and String's
+    public static String getStringFromHashMap(HashMap<String, ?> item) {
+        JSONObject jsonObject = new JSONObject();
+
+        for (int i=0; i< item.size(); i++) {
+            jsonObject.put(item.keySet().toArray()[i], item.get(item.keySet().toArray()[i]));
+        }
+
+        return jsonObject.toJSONString();
+    }
+
+    public static <type> HashMap<String, ?> getHashMapFromString(String s) {
+        HashMap<String, type> map = new HashMap<>();
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = (JSONObject) new JSONParser().parse(s);
+        } catch (ParseException p) {
+            p.printStackTrace();
+        }
+
+        for (int i = 0; i < jsonObject.keySet().toArray().length; i++) {
+            map.put((String) jsonObject.keySet().toArray()[i], (type) jsonObject.get(jsonObject.keySet().toArray()[i]));
+        }
+        return map;
     }
 }
