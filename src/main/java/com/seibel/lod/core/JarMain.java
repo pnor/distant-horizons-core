@@ -2,7 +2,9 @@ package com.seibel.lod.core;
 
 import com.seibel.lod.core.jar.JarDependencySetup;
 
-import java.io.InputStream;
+import javax.swing.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The main class when you run the standalone jar
@@ -12,8 +14,11 @@ import java.io.InputStream;
 public class JarMain {
     public static void main(String[] args){
         JarDependencySetup.createInitialBindings();
-        System.out.println("Why are you running the jar, this isn't done yet  >:(");
+        System.out.println("WARNING: The standalone jar still work in progress");
+        JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);
     }
+
+
 
     /** Get a file within the mods resources */
     public static InputStream accessFile(String resource) {
@@ -26,5 +31,24 @@ public class JarMain {
         }
 
         return input;
+    }
+
+    /** Convert inputStream to String. Usefull for reading .txt or .json that are inside the jar file */
+    public static String convertInputStreamToString(InputStream inputStream) {
+        final char[] buffer = new char[8192];
+        final StringBuilder result = new StringBuilder();
+
+        // InputStream -> Reader
+        try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+            int charsRead;
+            while ((charsRead = reader.read(buffer, 0, buffer.length)) > 0) {
+                result.append(buffer, 0, charsRead);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result.toString();
+
     }
 }

@@ -2,7 +2,7 @@ package com.seibel.lod.core.wrapperInterfaces.config;
 
 public interface IConfigWrapper {
 
-    boolean LangExists(String str);
+    boolean langExists(String str);
 
-    String getFromLang(String str);
+    String getLang(String str);
 }

@@ -12,7 +12,7 @@ public class ConfigWrapper implements IConfigWrapper {
 
     public static void init() {
         try {
-            Object obj = new JSONParser().parse(JarMain.accessFile("assets/lod/lang/en_us.json").toString());
+            Object obj = new JSONParser().parse(JarMain.convertInputStreamToString(JarMain.accessFile("assets/lod/lang/en_us.json")));
             jsonObject =  (JSONObject) obj;
         } catch (ParseException e) {
             e.printStackTrace();
@@ -20,19 +20,18 @@ public class ConfigWrapper implements IConfigWrapper {
     }
 
     @Override
-    public boolean LangExists(String str) {
-        try {
-            if (jsonObject.get(str) == null)
-                return false;
-            else
-                return true;
-        } catch (Exception e) {
+    public boolean langExists(String str) {
+        if (jsonObject.get(str) == null)
             return false;
-        }
+        else
+            return true;
     }
 
     @Override
-    public String getFromLang(String str) {
-        return (String) jsonObject.get(str);
+    public String getLang(String str) {
+        if (jsonObject.get(str) != null)
+            return (String) jsonObject.get(str);
+        else
+            return str;
     }
 }
