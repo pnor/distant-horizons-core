@@ -276,7 +276,7 @@ public class LodDimensionFinder
 				// check if the chunk is actually empty
 				if (isDataEmpty(testChunkData))
 				{
-					String message = "The test chunk for dimension folder [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. Is that correct?";
+					String message = "The test chunk for dimension folder [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. This is expected if the position is outside the sub-dimension's generated area.";
 					LOGGER.info(message);
 					continue;
 				}
