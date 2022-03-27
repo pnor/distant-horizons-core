@@ -47,6 +47,7 @@ public class LodDimensionFinder
 	private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.LOW;
 	
 	public static final String THREAD_NAME = "Sub-Dimension-Finder";
+	public static final String DEFAULT_SAVE_DIMENSION_FOLDER = "_Default-Sub-Dimension";
 	
 	private PlayerData playerData = new PlayerData(MC);
 	private PlayerData firstSeenPlayerData = null;
@@ -97,7 +98,16 @@ public class LodDimensionFinder
 			try
 			{
 				// attempt to get the file handler
-				File saveDir = attemptToDetermineSubDimensionFolder();
+				File saveDir;
+				if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0)
+				{
+					saveDir = GetDimensionFolder(dimensionTypeWrapper, DEFAULT_SAVE_DIMENSION_FOLDER);
+				}
+				else
+				{
+					saveDir = attemptToDetermineSubDimensionFolder();
+				}
+				
 				if (saveDir == null)
 					return;
 				
@@ -355,7 +365,7 @@ public class LodDimensionFinder
 	 * If the worldId is empty or null this returns the dimension parent folder <br>
 	 * Example folder names: "dim_overworld/worldId", "dim_the_nether/worldId"
 	 */
-	public File GetDimensionFolder(IDimensionTypeWrapper newDimensionType, String worldId)
+	public static File GetDimensionFolder(IDimensionTypeWrapper newDimensionType, String worldId)
 	{
 		// prevent null pointers
 		if (worldId == null)

@@ -24,7 +24,6 @@ import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.MinDefaultMax;
-import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
@@ -568,15 +567,19 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			ServerFolderNameMode getServerFolderNameMode();
 			void setServerFolderNameMode(ServerFolderNameMode newServerFolderNameMode);
 			
-			double MULTI_DIMENSION_REQUIRED_SIMILARITY_DEFAULT = 0.8;
+			MinDefaultMax<Double> MULTI_DIMENSION_REQUIRED_SIMILARITY_MIN_DEFAULT_MAX = new MinDefaultMax<Double>(0.0, 0.0, 1.0);
 			String MULTI_DIMENSION_REQUIRED_SIMILARITY_DESC = ""
 					+ " When matching worlds of the same dimension type the \n"
-					+ " chunks tested must be at least this percent the same \n"
+					+ " tested chunks must be at least this percent the same \n"
 					+ " in order to be considered the same world. \n"
 					+ "\n"
-					+ " 1 (100%) means the chunks must be identical. \n"
-					+ " 0.5 (50%) means the chunks must be half the same. \n"
-					+ " 0 (0%) means almost any world will match. \n"
+					+ " Note: If you use portals to enter a dimension at two \n"
+					+ " different locations this system may think it is two different worlds. \n"
+					+ "\n"
+					+ " 1.0 (100%) the chunks must be identical. \n"
+					+ " 0.5 (50%)  the chunks must be half the same. \n"
+					+ " 0.0 (0%)   disables multi-dimension support, \n"
+					+ "            only one world will be used per dimension. \n"
 					+ "\n";
 			double getMultiDimensionRequiredSimilarity();
 			void setMultiDimensionRequiredSimilarity(double newMultiDimensionMinimumSimilarityPercent);
