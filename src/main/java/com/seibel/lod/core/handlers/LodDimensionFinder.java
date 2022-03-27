@@ -23,10 +23,10 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import net.minecraft.world.level.dimension.DimensionType;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.util.UUID;
 
@@ -101,6 +101,12 @@ public class LodDimensionFinder
 				File saveDir;
 				if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0)
 				{
+					// only allow 1 sub dimension per world
+					
+					// move any old data folders if they exist
+					File dimensionFolder = GetDimensionFolder(MC.getCurrentDimension(), "");
+					moveOldSaveFoldersIfNecessary(dimensionFolder, MC.getCurrentDimension(), DEFAULT_SAVE_DIMENSION_FOLDER);
+					
 					saveDir = GetDimensionFolder(dimensionTypeWrapper, DEFAULT_SAVE_DIMENSION_FOLDER);
 				}
 				else
@@ -220,25 +226,8 @@ public class LodDimensionFinder
 		
 		
 		// move any old data folders if they exist
-		String moveId = UUID.randomUUID().toString();
-		for (File folder : dimensionFolder.listFiles())
-		{
-			if (VerticalQuality.getByName(folder.getName()) != null)
-			{
-				// this is a LOD save folder
-				// create a new sub dimension and move the data into it
-				
-				File newDimension = GetDimensionFolder(newlyLoadedDim.dimension, moveId);
-				newDimension.mkdirs();
-				
-				File oldDataNewPath = new File(newDimension.getPath() + File.separatorChar + folder.getName());
-				Files.move(folder.toPath(), oldDataNewPath.toPath());
-			}
-			else
-			{
-				// ignore this folder
-			}
-		}
+		moveOldSaveFoldersIfNecessary(dimensionFolder, MC.getCurrentDimension(), UUID.randomUUID().toString());
+		
 		
 		
 		
@@ -421,8 +410,33 @@ public class LodDimensionFinder
 		
 		return true;
 	}
-
-
+	
+	/**
+	 * Moves any folders from the old save location
+	 * (directly under the dimension type)
+	 * to a sub-dimension folder with the given name.
+	 */
+	private void moveOldSaveFoldersIfNecessary(File dimensionFolder, IDimensionTypeWrapper dimensionType, String subDimensionName) throws IOException
+	{
+		for (File folder : dimensionFolder.listFiles())
+		{
+			if (VerticalQuality.getByName(folder.getName()) != null)
+			{
+				// this is a LOD save folder
+				// create a new sub dimension and move the data into it
+				
+				File newDimension = GetDimensionFolder(dimensionType, subDimensionName);
+				newDimension.mkdirs();
+				
+				File oldDataNewPath = new File(newDimension.getPath() + File.separatorChar + folder.getName());
+				Files.move(folder.toPath(), oldDataNewPath.toPath());
+			}
+			else
+			{
+				// ignore this folder
+			}
+		}
+	}
 	
 	
 	
