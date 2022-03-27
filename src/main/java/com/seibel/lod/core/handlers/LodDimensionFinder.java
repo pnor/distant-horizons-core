@@ -236,77 +236,89 @@ public class LodDimensionFinder
 		// compare each world with the newly loaded one
 		SubDimCompare mostSimilarSubDim = null;
 
-		LOGGER.info("Known Sub Dimensions: [" + dimensionFolder.listFiles().length + "]");
+		LOGGER.info("Known Sub Dimension folders: [" + dimensionFolder.listFiles(File::isDirectory).length + "]");
 		for (File testDimFolder : dimensionFolder.listFiles())
 		{
+			if (!testDimFolder.isDirectory())
+				continue;
+			
 			LOGGER.info("Testing sub dimension: [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "]");
 			
-			// get a LOD from this dimension folder
-			LodDimension tempLodDim = new LodDimension(null, 1, null, false);
-			tempLodDim.move(playerRegionPos);
-			LodDimensionFileHandler tempFileHandler = new LodDimensionFileHandler(testDimFolder, tempLodDim);
-			LodRegion testRegion = tempFileHandler.loadRegionFromFile(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH);
-			// get data from this LOD
-			long[][][] testChunkData = new long[LodUtil.CHUNK_WIDTH][LodUtil.CHUNK_WIDTH][];
-			for (int x = 0; x < LodUtil.CHUNK_WIDTH; x++)
+			try
 			{
-				for (int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
+				
+				// get a LOD from this dimension folder
+				LodDimension tempLodDim = new LodDimension(null, 1, null, false);
+				tempLodDim.move(playerRegionPos);
+				LodDimensionFileHandler tempFileHandler = new LodDimensionFileHandler(testDimFolder, tempLodDim);
+				LodRegion testRegion = tempFileHandler.loadRegionFromFile(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH);
+				// get data from this LOD
+				long[][][] testChunkData = new long[LodUtil.CHUNK_WIDTH][LodUtil.CHUNK_WIDTH][];
+				for (int x = 0; x < LodUtil.CHUNK_WIDTH; x++)
 				{
-					long[] array = testRegion.getAllData(LodUtil.BLOCK_DETAIL_LEVEL, x + startingBlockPosX, z + startingBlockPosZ);
-					testChunkData[x][z] = array;
-				}
-			}
-			
-			
-			// get the player data for this dimension folder
-			PlayerData testPlayerData = new PlayerData(testDimFolder);
-			LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
-			
-			// check if the block positions are close
-			int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(firstSeenPlayerData.playerBlockPos);
-			ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + playerBlockDist + "]");
-			
-			
-			// check if the chunk is actually empty
-			if (isDataEmpty(testChunkData))
-			{
-				String message = "The test chunk for dimension folder [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. Is that correct?";
-				LOGGER.info(message);
-				continue;
-			}
-			
-			
-			// compare the two LODs
-			int equalDataPoints = 0;
-			int totalDataPointCount = 0;
-			for (int x = 0; x < LodUtil.CHUNK_WIDTH; x++)
-			{
-				for (int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
-				{
-					for (int y = 0; y < newChunkData[x][z].length; y++)
+					for (int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
 					{
-						if (newChunkData[x][z][y] == testChunkData[x][z][y])
-						{
-							equalDataPoints++;
-						}
-						totalDataPointCount++;
-						
-						if (!DataPointUtil.doesItExist(newChunkData[x][z][y]) || !DataPointUtil.doesItExist(testChunkData[x][z][y]))
-							break;
+						long[] array = testRegion.getAllData(LodUtil.BLOCK_DETAIL_LEVEL, x + startingBlockPosX, z + startingBlockPosZ);
+						testChunkData[x][z] = array;
 					}
 				}
+				
+				
+				// get the player data for this dimension folder
+				PlayerData testPlayerData = new PlayerData(testDimFolder);
+				LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
+				
+				// check if the block positions are close
+				int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(firstSeenPlayerData.playerBlockPos);
+				ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + playerBlockDist + "]");
+				
+				
+				// check if the chunk is actually empty
+				if (isDataEmpty(testChunkData))
+				{
+					String message = "The test chunk for dimension folder [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "] and chunk pos (" + playerChunkPos.getX() + "," + playerChunkPos.getZ() + ") is empty. Is that correct?";
+					LOGGER.info(message);
+					continue;
+				}
+				
+				
+				// compare the two LODs
+				int equalDataPoints = 0;
+				int totalDataPointCount = 0;
+				for (int x = 0; x < LodUtil.CHUNK_WIDTH; x++)
+				{
+					for (int z = 0; z < LodUtil.CHUNK_WIDTH; z++)
+					{
+						for (int y = 0; y < newChunkData[x][z].length; y++)
+						{
+							if (newChunkData[x][z][y] == testChunkData[x][z][y])
+							{
+								equalDataPoints++;
+							}
+							totalDataPointCount++;
+							
+							if (!DataPointUtil.doesItExist(newChunkData[x][z][y]) || !DataPointUtil.doesItExist(testChunkData[x][z][y]))
+								break;
+						}
+					}
+				}
+				
+				
+				// determine if this world is closer to the newly loaded world
+				SubDimCompare subDimCompare = new SubDimCompare(equalDataPoints, totalDataPointCount, playerBlockDist, testDimFolder);
+				if (mostSimilarSubDim == null || subDimCompare.compareTo(mostSimilarSubDim) > 0)
+				{
+					mostSimilarSubDim = subDimCompare;
+				}
+				
+				String message = "Sub dimension [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " + LodUtil.shortenString(subDimCompare.getPercentEqual() + "", 5) + " (" + equalDataPoints + "/" + totalDataPointCount + ")";
+				LOGGER.info(message);
 			}
-			
-			
-			// determine if this world is closer to the newly loaded world
-			SubDimCompare subDimCompare = new SubDimCompare(equalDataPoints, totalDataPointCount, playerBlockDist, testDimFolder);
-			if (mostSimilarSubDim == null || subDimCompare.compareTo(mostSimilarSubDim) > 0)
+			catch (Exception e)
 			{
-				mostSimilarSubDim = subDimCompare;
+				// this sub dimension isn't formatted correctly
+				// for now we are just assuming it is an unrelated file
 			}
-			
-			String message = "Sub dimension [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " +  LodUtil.shortenString(subDimCompare.getPercentEqual() + "", 5) + " (" + equalDataPoints + "/" + totalDataPointCount + ")";
-			LOGGER.info(message);
 		}
 		
 		// TODO if two sub dimensions contain the same LODs merge them
