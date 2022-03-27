@@ -24,7 +24,7 @@ package com.seibel.lod.core.enums.config;
  * multi_lod <br>
  *
  * @author Leonardo Amato
- * @version 10-07-2021
+ * @version 2022-3-26
  */
 public enum VerticalQuality
 {
@@ -59,7 +59,7 @@ public enum VerticalQuality
 		this.maxConnectedLods = maxConnectedLods;
 	}
 	
-	// Note: return null if out of range
+	/** returns null if out of range */
 	public static VerticalQuality previous(VerticalQuality mode)
 	{
 		switch (mode)
@@ -76,7 +76,7 @@ public enum VerticalQuality
 		}
 	}
 	
-	// Note: return null if out of range
+	/** returns null if out of range */
 	public static VerticalQuality next(VerticalQuality mode)
 	{
 		switch (mode)
@@ -92,4 +92,28 @@ public enum VerticalQuality
 			return null;
 		}
 	}
+	
+	/**
+	 * Returns the value with the given name, case-insensitive. <br>
+	 * Returns null if no enums match the name. <br>
+	 * Similar to valueOf(String value)
+	 */
+	public static VerticalQuality getByName(String name)
+	{
+		switch (name.toUpperCase())
+		{
+		case "ULTRA":
+			return VerticalQuality.ULTRA;
+		case "HIGH":
+			return VerticalQuality.HIGH;
+		case "MEDIUM":
+			return VerticalQuality.MEDIUM;
+		case "LOW":
+			return VerticalQuality.LOW;
+			
+		default:
+			return null;
+		}
+	}
+	
 }

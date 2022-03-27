@@ -26,6 +26,8 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
 import java.util.UUID;
 
 /**
@@ -131,11 +133,6 @@ public class LodDimensionFinder
 			playerData = new PlayerData(MC);
 		}
 		
-		// TODO check based on the dimension's last seen location instead of the first seen player data
-		// hopefully this should fix entering a dimension in two different locations
-		
-		
-		
 		// relevant positions
 		AbstractChunkPosWrapper playerChunkPos = FACTORY.createChunkPos(firstSeenPlayerData.playerBlockPos);
 		int startingBlockPosX = playerChunkPos.getMinBlockX();
@@ -211,7 +208,28 @@ public class LodDimensionFinder
 			}
 		}
 		
-		// TODO move any old files if they exist
+		
+		// move any old data folders if they exist
+		String moveId = UUID.randomUUID().toString();
+		for (File folder : dimensionFolder.listFiles())
+		{
+			if (VerticalQuality.getByName(folder.getName()) != null)
+			{
+				// this is a LOD save folder
+				// create a new sub dimension and move the data into it
+				
+				File newDimension = GetDimensionFolder(newlyLoadedDim.dimension, moveId);
+				newDimension.mkdirs();
+				
+				File oldDataNewPath = new File(newDimension.getPath() + File.separatorChar + folder.getName());
+				Files.move(folder.toPath(), oldDataNewPath.toPath());
+			}
+			else
+			{
+				// ignore this folder
+			}
+		}
+		
 		
 		
 		
@@ -290,6 +308,10 @@ public class LodDimensionFinder
 			String message = "Sub dimension [" +  LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " +  LodUtil.shortenString(subDimCompare.getPercentEqual() + "", 5) + " (" + equalDataPoints + "/" + totalDataPointCount + ")";
 			LOGGER.info(message);
 		}
+		
+		// TODO if two sub dimensions contain the same LODs merge them
+		
+		
 		
 		// the first seen player data is no longer needed, the sub dimension has been determined
 		firstSeenPlayerData = null;
