@@ -34,7 +34,7 @@ import java.util.UUID;
  * Used to guess the world folder for the player's current dimension.
  *
  * @author James Seibel
- * @version 2022-3-26
+ * @version 2022-3-27
  */
 public class LodDimensionFinder
 {
@@ -418,6 +418,11 @@ public class LodDimensionFinder
 	 */
 	private void moveOldSaveFoldersIfNecessary(File dimensionFolder, IDimensionTypeWrapper dimensionType, String subDimensionName) throws IOException
 	{
+		// if there are no files this will return null
+		if (dimensionFolder.listFiles() == null)
+			return;
+		
+		
 		for (File folder : dimensionFolder.listFiles())
 		{
 			if (VerticalQuality.getByName(folder.getName()) != null)
