@@ -18,7 +18,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
 public class LodQuadBuilder {
-	static final int MAX_BUFFER_SIZE = (1024 * 1024 * 1);
+	static final int MAX_BUFFER_SIZE = (1024 * 1024);
 	static final int QUAD_BYTE_SIZE = (12 * 6);
 	static final int MAX_QUADS_PER_BUFFER = MAX_BUFFER_SIZE / QUAD_BYTE_SIZE;
 	//static final int MAX_MERGED_QUAD_SIZE = 64;
@@ -232,7 +232,7 @@ public class LodQuadBuilder {
 		
 	}
 
-	final ArrayList<Quad>[] quads = new ArrayList[6];
+	final ArrayList<Quad>[] quads = (ArrayList<Quad>[])new ArrayList[6];
 
 	public LodQuadBuilder(int initialSize, boolean enableSkylightCulling, int skyLightCullingBelow) {
 		for (int i=0; i<6; i++) quads[i] = new ArrayList<Quad>();

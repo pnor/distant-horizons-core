@@ -22,7 +22,6 @@ package com.seibel.lod.core.handlers;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.security.Signature;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -52,6 +51,7 @@ import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.util.UnitBytes;
+import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -66,7 +66,8 @@ import com.seibel.lod.core.util.UnitBytes;
 public class LodDimensionFileHandler
 {
 	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(() -> config.client().advanced().debugging().debugSwitch().getLogFileReadWriteEvent());
+	public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodDimensionFileHandler.class),
+			() -> config.client().advanced().debugging().debugSwitch().getLogFileReadWriteEvent());
 	
 	public static final boolean ENABLE_SAVE_THREAD_LOGGING = true;
 	public static final boolean ENABLE_SAVE_REGION_LOGGING = false;

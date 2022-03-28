@@ -236,10 +236,10 @@
 	"How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU?",
   "DistantHorizons.config.client.advanced.debugging":
 	"Debug",
-  "DistantHorizons.config.client.advanced.debugging.drawLods":
-	"Draw LOD's",
-  "DistantHorizons.config.client.advanced.debugging.drawLods.@tooltip":
-	"§6True:§r fake chunks will be rendered.\n§6False:§r fake chunks will not be rendered, however they will still be generated and saved to file.",
+  "DistantHorizons.config.client.advanced.debugging.rendererType":
+    "Renderer type",
+  "DistantHorizons.config.client.advanced.debugging.rendererType.@tooltip":
+    "TODO",
   "DistantHorizons.config.client.advanced.debugging.debugMode":
 	"Debug mode",
   "DistantHorizons.config.client.advanced.debugging.debugMode.@tooltip":
@@ -402,6 +402,12 @@
 	"No collision",
   "DistantHorizons.config.enum.BlocksToAvoid.BOTH":
 	"Both",
+  "DistantHorizons.config.enum.RendererType.DEFAULT":
+    "Default",
+  "DistantHorizons.config.enum.RendererType.DEBUG":
+    "Debug",
+  "DistantHorizons.config.enum.RendererType.DISABLED":
+    "Disabled",
   "DistantHorizons.config.enum.DebugMode.OFF":
 	"Off",
   "DistantHorizons.config.enum.DebugMode.SHOW_WIREFRAME":
@@ -414,22 +420,6 @@
 	"Show generation mode",
   "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME":
 	"Show generation mode with wireframe",
-  /*
-    DISABLED(Level.OFF, Level.OFF),
-    LOG_ALL_TO_FILE(Level.ALL, Level.OFF),
-    LOG_ERROR_TO_CHAT(Level.ALL, Level.ERROR),
-    LOG_WARNING_TO_CHAT(Level.ALL, Level.WARN),
-    LOG_INFO_TO_CHAT(Level.ALL, Level.INFO),
-    LOG_DEBUG_TO_CHAT(Level.ALL, Level.DEBUG),
-    LOG_ALL_TO_CHAT(Level.ALL, Level.ALL),
-    LOG_ERROR_TO_CHAT_AND_FILE(Level.ERROR, Level.ERROR),
-    LOG_WARNING_TO_CHAT_AND_FILE(Level.WARN, Level.WARN),
-    LOG_INFO_TO_CHAT_AND_FILE(Level.INFO, Level.INFO),
-    LOG_DEBUG_TO_CHAT_AND_FILE(Level.DEBUG, Level.DEBUG),
-    LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE(Level.INFO, Level.WARN),
-    LOG_ERROR_TO_CHAT_AND_INFO_TO_FILE(Level.INFO, Level.ERROR),
-    */
-
   "DistantHorizons.config.enum.LoggerMode.DISABLED":
     "Disabled",
   "DistantHorizons.config.enum.LoggerMode.LOG_ALL_TO_FILE":

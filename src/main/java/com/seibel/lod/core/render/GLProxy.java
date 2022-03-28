@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.logging.ConfigBasedLogger;
+import org.apache.logging.log4j.LogManager;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -70,7 +71,8 @@ public class GLProxy
 
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
-	public static final ConfigBasedLogger GL_LOGGER = new ConfigBasedLogger(() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererGLEvent());
+	public static final ConfigBasedLogger GL_LOGGER = new ConfigBasedLogger(LogManager.getLogger(GLProxy.class),
+			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererGLEvent());
 
 	private static GLProxy instance = null;
 	
@@ -461,7 +463,7 @@ public class GLProxy
 	 */
 	public void recordOpenGlCall(Runnable renderCall)
 	{
-		workerThread.execute(new Thread(() -> { runnableContainer(renderCall); }));
+		workerThread.execute(() -> runnableContainer(renderCall));
 	}
 	private void runnableContainer(Runnable renderCall)
 	{

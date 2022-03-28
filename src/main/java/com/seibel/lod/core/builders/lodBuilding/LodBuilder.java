@@ -42,6 +42,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * This object is in charge of creating Lod related objects.
@@ -58,7 +59,8 @@ public class LodBuilder
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
-	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(() -> config.client().advanced().debugging().debugSwitch().getLogLodBuilderEvent());
+	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodBuilder.class),
+			() -> config.client().advanced().debugging().debugSwitch().getLogLodBuilderEvent());
 	
 	/** This cannot be final! Different world have different height, and in menu, this causes Null Exceptions*/
 	//public static final short MIN_WORLD_HEIGHT = MC.getWrappedClientWorld().getMinHeight();

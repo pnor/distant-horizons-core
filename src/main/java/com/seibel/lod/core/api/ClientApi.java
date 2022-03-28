@@ -23,8 +23,10 @@ import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
+import com.seibel.lod.core.render.RenderSystemTest;
 import org.apache.logging.log4j.Level;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import org.lwjgl.glfw.GLFW;
@@ -63,6 +65,7 @@ public class ClientApi
 
 	public static final LodBufferBuilderFactory lodBufferBuilderFactory = new LodBufferBuilderFactory();
 	public static LodRenderer renderer = new LodRenderer(lodBufferBuilderFactory);
+	public static RenderSystemTest testRenderer = new RenderSystemTest();
 	
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
@@ -250,7 +253,7 @@ public class ClientApi
 			
 			
 			
-			if (CONFIG.client().advanced().debugging().getDrawLods())
+			if (CONFIG.client().advanced().debugging().getRendererType() == RendererType.DEFAULT)
 			{
 				// Note to self:
 				// if "unspecified" shows up in the pie chart, it is
@@ -271,15 +274,20 @@ public class ClientApi
 									+ " renderer has encountered an exception!");
 							MC.sendChatMessage("\u00A74Renderer is now disabled to prevent futher issues.");
 							MC.sendChatMessage("\u00A74Exception detail: "+e.toString());
-						} catch (RuntimeException noMessagesThen) {}
+						} catch (RuntimeException ignored) {}
 					}
 				}
 				profiler.pop(); // end LOD
 				profiler.push("terrain"); // go back into "terrain"
+			} else if (CONFIG.client().advanced().debugging().getRendererType() == RendererType.DEBUG) {
+				IProfilerWrapper profiler = MC.getProfiler();
+				profiler.pop(); // get out of "terrain"
+				profiler.push("LODTestRendering");
+				ClientApi.testRenderer.render();
+				profiler.pop(); // end LODTestRendering
+				profiler.push("terrain"); // go back into "terrain"
 			}
-			
-			
-			
+
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
 			ApiShared.previousChunkRenderDistance = MC_RENDER.getRenderDistance();
@@ -337,8 +345,8 @@ public class ClientApi
 		
 		if (glfwKey == GLFW.GLFW_KEY_F6) {
 			CONFIG.client().advanced().debugging()
-					.setDrawLods(!CONFIG.client().advanced().debugging().getDrawLods());
-			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getDrawLods());
+					.setRendererType(RendererType.next(CONFIG.client().advanced().debugging().getRendererType()));
+			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getRendererType());
 		}
 
 		if (glfwKey == GLFW.GLFW_KEY_P) {

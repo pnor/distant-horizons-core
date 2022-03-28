@@ -28,8 +28,10 @@ import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.Pos2D;
+import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.*;
+import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
@@ -60,11 +62,12 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 public class LodRenderer
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererBufferEvent());
+	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodRenderer.class),
+			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererBufferEvent());
 
 	public static final boolean ENABLE_DRAW_LAG_SPIKE_LOGGING = false;
-	public static final boolean ENABLE_DUMP_GL_STATE = false;
-	public static final long DRAW_LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
+	public static final boolean ENABLE_DUMP_GL_STATE = true;
+	public static final long DRAW_LAG_SPIKE_THRESHOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
 	
 	public static class LagSpikeCatcher {
 
@@ -73,7 +76,7 @@ public class LodRenderer
 		public void end(String source) {
 			if (!ENABLE_DRAW_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
-			if (timer> DRAW_LAG_SPIKE_THRESOLD_NS) { //4 ms
+			if (timer> DRAW_LAG_SPIKE_THRESHOLD_NS) { //4 ms
 				EVENT_LOGGER.debug("NOTE: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 			
@@ -135,23 +138,6 @@ public class LodRenderer
 	}
 	public static SpamReducedLogger tickLogger = new SpamReducedLogger(1);
 
-	public static void dumpGLState(String str) {
-		if (!ENABLE_DUMP_GL_STATE) return;
-		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
-		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
-		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
-		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
-		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
-		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
-		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
-		int[] currentView = new int[4];
-		GL32.glGetIntegerv(GL32.GL_VIEWPORT, currentView);
-		tickLogger.info(str + ": [Prog:{}, VAO:{}, VBO:{}, Text:{}, FBO:{}, blend:{}, dpFunc:{}, view:{}]",
-				currentProgram, currentVAO, currentVBO, currentActiveText, currentFrameBuffer,
-				currentBlend, currentDepthFunc, currentView);
-	}
-
-
 	/**
 	 * Besides drawing the LODs this method also starts
 	 * the async process of generating the Buffers that hold those LODs.
@@ -184,17 +170,10 @@ public class LodRenderer
 		// get MC's shader program
 		// Save all MC render state
 		LagSpikeCatcher drawSaveGLState = new LagSpikeCatcher();
-		int currentProgram = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
-		int currentVBO = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
-		int currentVAO = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
-		int currentActiveText = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
-		int currentFrameBuffer = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
-		boolean currentBlend = GL32.glGetBoolean(GL32.GL_BLEND);
-		int currentDepthFunc = GL32.glGetInteger(GL32.GL_DEPTH_FUNC);
-		int[] currentView = new int[4];
-		GL32.glGetIntegerv(GL32.GL_VIEWPORT, currentView);
-		dumpGLState("PRE_LOD-DRAW");
-
+		GLState currentState = new GLState();
+		if (ENABLE_DUMP_GL_STATE) {
+			tickLogger.debug("Saving GL state: {}", currentState);
+		}
 		drawSaveGLState.end("drawSaveGLState");
 
 		GLProxy glProxy = GLProxy.getInstance();
@@ -376,7 +355,6 @@ public class LodRenderer
 		        oy += dy;
 		    }
 		}
-		dumpGLState("Post Lod Draw Before Cleanup");
 		//if (drawCall==0)
 		//	tickLogger.info("DrawCall Count: {}", drawCount);
 		
@@ -391,29 +369,11 @@ public class LodRenderer
 
 		shaderProgram.unbind();
 		lightmapTexture.free();
-
-		GL32.glEnable(GL32.GL_CULL_FACE);
-		GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
-		if (currentBlend)
-			GL32.glEnable(GL32.GL_BLEND);
-		else 
-			GL32.glDisable(GL32.GL_BLEND);
-
-		// if this cleanup isn't done MC will crash
-		// when trying to render its own terrain
-		// And may causes mod compat issue
-		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, currentFrameBuffer);
-		GL32.glViewport(currentView[0], currentView[1],currentView[2],currentView[3]);
-		GL32.glUseProgram(currentProgram);
-		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, currentVBO);
-		GL32.glDepthFunc(currentDepthFunc);
-		GL32.glBindVertexArray(currentVAO);
-		GL32.glActiveTexture(currentActiveText);
-		
-		// clear the depth buffer so everything is drawn over the LODs
 		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
-		GL32.glEnable(GL32.GL_DEPTH_TEST);
+
+		currentState.restore();
 		drawCleanup.end("LodDrawCleanup");
+
 		// end of internal LOD profiling
 		profiler.pop();
 		tickLogger.incLogTries();

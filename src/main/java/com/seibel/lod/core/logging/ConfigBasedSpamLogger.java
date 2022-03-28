@@ -4,6 +4,7 @@ import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.enums.config.LoggerMode;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
 
 import java.lang.ref.WeakReference;
@@ -26,15 +27,17 @@ public class ConfigBasedSpamLogger {
         });
     }
 
-    LoggerMode mode;
-    final Supplier<LoggerMode> getter;
+    private LoggerMode mode;
+    private final Supplier<LoggerMode> getter;
     private final int maxLogCount;
     private final AtomicInteger logTries = new AtomicInteger(0);
+    private final Logger logger;
 
-    public ConfigBasedSpamLogger(Supplier<LoggerMode> configQuery, int maxLogPerSec) {
+    public ConfigBasedSpamLogger(Logger logger, Supplier<LoggerMode> configQuery, int maxLogPerSec) {
         getter = configQuery;
         mode = getter.get();
         maxLogCount = maxLogPerSec;
+        this.logger = logger;
         loggers.add(new WeakReference<>(this));
     }
     public void reset() {logTries.set(0);}
@@ -45,17 +48,18 @@ public class ConfigBasedSpamLogger {
 
     public void log(Level level, String str, Object... param) {
         if (logTries.get() >= maxLogCount) return;
-        Message msg = ApiShared.LOGGER.getMessageFactory().newMessage(str, param);
+
+        Message msg = logger.getMessageFactory().newMessage(str, param);
         String msgStr = msg.getFormattedMessage();
         if (mode.levelForFile.isLessSpecificThan(level)) {
             Level logLevel = level.isLessSpecificThan(Level.INFO) ? Level.INFO : level;
             if (param.length > 0 && param[param.length-1] instanceof Throwable)
-                ApiShared.LOGGER.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
-            else ApiShared.LOGGER.atLevel(logLevel).withLocation().log(msgStr);
+                logger.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
+            else logger.atLevel(logLevel).withLocation().log(msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
-            if (param.length > 0 && param[param.length-1] instanceof Throwable)
-                ClientApi.logToChat(level, msgStr + "\nat\n" + ((Throwable) param[param.length-1]).getStackTrace().toString());
+            if (param.length > 0 && param[param.length - 1] instanceof Throwable)
+                ClientApi.logToChat(level, msgStr + "\nat\n" + Arrays.toString(((Throwable) param[param.length - 1]).getStackTrace()));
             ClientApi.logToChat(level, msgStr);
         }
     }
@@ -82,16 +86,17 @@ public class ConfigBasedSpamLogger {
 
     public void logInc(Level level, String str, Object... param) {
         if (logTries.getAndIncrement() >= maxLogCount) return;
-        Message msg = ApiShared.LOGGER.getMessageFactory().newMessage(str, param);
+
+        Message msg = logger.getMessageFactory().newMessage(str, param);
         String msgStr = msg.getFormattedMessage();
         if (mode.levelForFile.isLessSpecificThan(level)) {
             Level logLevel = level.isLessSpecificThan(Level.INFO) ? Level.INFO : level;
             if (param.length > 0 && param[param.length-1] instanceof Throwable)
-                ApiShared.LOGGER.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
-            else ApiShared.LOGGER.atLevel(logLevel).withLocation().log(msgStr);
+                logger.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
+            else logger.atLevel(logLevel).withLocation().log(msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
-            if (param.length > 0 && param[param.length-1] instanceof Throwable)
+            if (param.length > 0 && param[param.length - 1] instanceof Throwable)
                 ClientApi.logToChat(level, msgStr + "\nat\n" + Arrays.toString(((Throwable) param[param.length - 1]).getStackTrace()));
             ClientApi.logToChat(level, msgStr);
         }

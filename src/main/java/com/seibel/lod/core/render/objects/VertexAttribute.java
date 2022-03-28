@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.render.objects;
 
+import com.seibel.lod.core.render.GLProxy;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.util.LodUtil;
@@ -50,7 +51,7 @@ public abstract class VertexAttribute {
 			return new VertexPointer(3, GL32.GL_FLOAT, normalized, 12);
 		}
 		public static VertexPointer addVec4Pointer(boolean normalized) {
-			return new VertexPointer(1, GL32.GL_FLOAT, normalized, 16);
+			return new VertexPointer(4, GL32.GL_FLOAT, normalized, 16);
 		}
 		public static VertexPointer addUnsignedBytePointer(boolean normalized) {
 			return new VertexPointer(1, GL32.GL_UNSIGNED_BYTE, normalized, 4); // Always aligned to 4 bytes
@@ -83,6 +84,14 @@ public abstract class VertexAttribute {
 	protected VertexAttribute() {
 		id = GL32.glGenVertexArrays();
 		GL32.glBindVertexArray(id);
+	}
+
+	public static VertexAttribute create() {
+		if (GLProxy.getInstance().VertexAttributeBufferBindingSupported) {
+			return new VertexAttributePostGL43();
+		} else {
+			return new VertexAttributePreGL43();
+		}
 	}
 
 	// This will bind VertexAttribute

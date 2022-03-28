@@ -793,16 +793,16 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			interface IDebugging
 			{
 				String DESC = "These settings can be used to look for bugs, or see how certain aspects of the mod work.";
-				
-				boolean DRAW_LODS_DEFAULT = true;
-				String DRAW_LODS_DESC = ""
-						+ " If true, the mod is enabled and fake chunks will be drawn. \n"
-						+ " If false, the mod will still generate fake chunks, \n"
-						+ " but they won't be rendered. \n"
+
+				RendererType RENDERER_TYPE_DEFAULT = RendererType.DEFAULT;
+				String RENDERER_TYPE_DESC = ""
+						+ " What renderer is active? \n"
 						+ "\n"
-						+ " Disabling rendering will reduce GPU usage \n";
-				boolean getDrawLods();
-				void setDrawLods(boolean newDrawLods);
+						+ " " + RendererType.DEFAULT + ": Default lod renderer \n"
+						+ " " + RendererType.DEBUG + ": Debug testing renderer \n"
+						+ " " + RendererType.DISABLED + ": Disable rendering \n";
+				RendererType getRendererType();
+				void setRendererType(RendererType newRendererType);
 				
 				DebugMode DEBUG_MODE_DEFAULT = DebugMode.OFF;
 				String DEBUG_MODE_DESC = ""
