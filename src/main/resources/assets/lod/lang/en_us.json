@@ -167,7 +167,7 @@
   "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling":
   "Cave Culling §6(EXPERIMENTAL)§r",
   "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling.@tooltip":
-  "If enabled caves will be culled \n\n§6NOTE§r: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature. \n\nAdditional Info: Currently this cull all faces \n with skylight value of 0 in dimensions that \n does not have a ceiling. \n",
+  "If enabled caves will be culled \n\n§6NOTE§r: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature. \n\nAdditional Info: Currently this cull all faces \n with skylight value of 0 under the cave culling height in dimensions that \n do not have a ceiling. \n",
   "DistantHorizons.config.client.graphics.advancedGraphics.caveCullingHeight":
   "Cave Culling Height §6(EXPERIMENTAL)§r",
   "DistantHorizons.config.client.graphics.advancedGraphics.caveCullingHeight.@tooltip":
@@ -181,7 +181,7 @@
   "DistantHorizons.config.client.worldGenerator.distanceGenerationMode":
 	"Distance generation mode",
   "DistantHorizons.config.client.worldGenerator.distanceGenerationMode.@tooltip":
-	"How complicated the generation should be when generating fake chunks outside the vanilla render distance.\n\n§6§6Fastest:§r Biome only\n§6Best Quality:§r Features (suggested)\n§6Best compatability:§r Full (Very slow, don't use unless the fake chunks generate incorrectly.)",
+	"How complicated the generation should be when generating fake chunks outside the vanilla render distance.\n\n§6§6Fastest:§r Biome only\n§6Best Quality:§r Features (suggested)\n§6Best compatibility:§r Full (Very slow, don't use unless the fake chunks generate incorrectly.)",
   "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration":
 	"Allow unstable feature generation",
   "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration.@tooltip":
