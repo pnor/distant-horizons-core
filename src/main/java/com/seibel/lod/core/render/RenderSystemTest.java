@@ -93,12 +93,12 @@ public class RenderSystemTest {
 
         // Switch between the two buffers per second
         if (System.currentTimeMillis() % 2000 < 1000) {
-            va.bindBufferToBindingPoint(sameContextBuffer.id, 0);
             GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, sameContextBuffer.id);
+            va.bindBufferToAllBindingPoint(sameContextBuffer.id);
             spamLogger.debug("same context buffer");
         } else {
-            va.bindBufferToBindingPoint(sharedContextBuffer.id, 0);
             GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, sharedContextBuffer.id);
+            va.bindBufferToAllBindingPoint(sharedContextBuffer.id);
             spamLogger.debug("shared context buffer");
         }
         // Render the square

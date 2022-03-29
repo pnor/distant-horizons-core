@@ -82,11 +82,7 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 	@Override
 	// Requires VertexAttribute binded
 	public void setVertexAttribute(int bindingPoint, int attributeIndex, VertexPointer attribute) {
-		TreeSet<Integer> intArray = bindingPointsToIndexBuilder.get(bindingPoint);
-		if (intArray == null) {
-			intArray = new TreeSet<Integer>();
-			bindingPointsToIndexBuilder.put(bindingPoint, intArray);
-		}
+		TreeSet<Integer> intArray = bindingPointsToIndexBuilder.computeIfAbsent(bindingPoint, k -> new TreeSet<Integer>());
 		intArray.add(attributeIndex);
 		
 		while (pointersBuilder.size() <= attributeIndex) {
