@@ -50,7 +50,7 @@ public class DataPointUtil
 	// If there is a bug with color then it's probably caused by this.
 	
 	public final static int EMPTY_DATA = 0;
-	public static int WORLD_HEIGHT = 4096;
+	public final static int MAX_WORLD_Y_SIZE = 4096;
 	
 	public final static int ALPHA_DOWNSIZE_SHIFT = 4;
 	
@@ -389,7 +389,7 @@ public class DataPointUtil
 		int size = dataToMerge.length / inputVerticalData;
 
 		// We initialize the arrays that are going to be used
-		int heightAndDepthLength = (WORLD_HEIGHT / 2 + 16) * 2;
+		int heightAndDepthLength = (MAX_WORLD_Y_SIZE / 2 + 16) * 2;
 		short[] heightAndDepth = tLocalHeightAndDepth.get();
 		if (heightAndDepth==null || heightAndDepth.length != heightAndDepthLength) {
 			heightAndDepth = new short[heightAndDepthLength];
@@ -570,7 +570,7 @@ public class DataPointUtil
 		while (count > maxVerticalData)
 		{
 			limited = true;
-			ii = WORLD_HEIGHT;
+			ii = MAX_WORLD_Y_SIZE;
 			for (i = 0; i < count - 1; i++)
 			{
 				if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)

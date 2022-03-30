@@ -129,7 +129,7 @@ public class EventApi
 			return;
 		isCurrentlyOnSinglePlayerServer = MC.hasSinglePlayerServer();
 		ApiShared.isShuttingDown = false;
-		DataPointUtil.WORLD_HEIGHT = world.getHeight();
+		//DataPointUtil.WORLD_HEIGHT = world.getHeight();
 		LodBuilder.MIN_WORLD_HEIGHT = world.getMinHeight(); // This updates the World height
 		
 		// LodNodeGenWorker.restartExecutorService();
