@@ -51,6 +51,10 @@ public class CubicLodTemplate
 		short dy = (short) (DataPointUtil.getHeight(data) - y);
 		if (dy == 0)
 			return;
+		if (dy < 0)
+		{
+			throw new IllegalArgumentException("Negative y size for the data! Data: " + DataPointUtil.toString(data));
+		}
 		
 		int color;
 		if (debugging != DebugMode.OFF && debugging != DebugMode.SHOW_WIREFRAME)

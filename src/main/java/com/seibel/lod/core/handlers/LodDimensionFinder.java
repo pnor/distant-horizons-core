@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Used to guess the world folder for the player's current dimension.
@@ -56,7 +57,7 @@ public class LodDimensionFinder
 	private volatile LodDimension foundLodDimension = null;
 	
 	/** If true the LodDimensionFileHelper is attempting to determine the folder for this dimension */
-	private boolean determiningWorldFolder = false;
+	private AtomicBoolean determiningWorldFolder = new AtomicBoolean(false);
 	
 	
 	
@@ -88,11 +89,11 @@ public class LodDimensionFinder
 	public void AttemptToDetermineSubDimensionAsync(IDimensionTypeWrapper dimensionTypeWrapper)
 	{
 		// prevent multiple threads running at the same time
-		if (determiningWorldFolder && !isDone())
+		boolean v = determiningWorldFolder.getAndSet(true);
+		if (v) {
 			return;
-		determiningWorldFolder = true;
-		
-		
+		}
+
 		// run asynchronously since this could take a while
 		Thread thread = new Thread(() ->
 		{
@@ -127,7 +128,7 @@ public class LodDimensionFinder
 			finally
 			{
 				// make sure we unlock this method
-				determiningWorldFolder = false;
+				determiningWorldFolder.set(false);
 			}
 		});
 		thread.setName(THREAD_NAME);
@@ -151,7 +152,7 @@ public class LodDimensionFinder
 		}
 		
 		// relevant positions
-		AbstractChunkPosWrapper playerChunkPos = FACTORY.createChunkPos(firstSeenPlayerData.playerBlockPos);
+		AbstractChunkPosWrapper playerChunkPos = FACTORY.createChunkPos(playerData.playerBlockPos);
 		int startingBlockPosX = playerChunkPos.getMinBlockX();
 		int startingBlockPosZ = playerChunkPos.getMinBlockZ();
 		RegionPos playerRegionPos = new RegionPos(playerChunkPos);
@@ -177,7 +178,7 @@ public class LodDimensionFinder
 		
 		// log the start of this attempt
 		LOGGER.info("Attempting to determine sub-dimension for [" + MC.getCurrentDimension().getDimensionName() + "]");
-		LOGGER.info("First seen player block pos in dimension: [" + firstSeenPlayerData.playerBlockPos.getX() + "," + firstSeenPlayerData.playerBlockPos.getY() + "," + firstSeenPlayerData.playerBlockPos.getZ() + "]");
+		LOGGER.info("Player block pos in dimension: [" + playerData.playerBlockPos.getX() + "," + playerData.playerBlockPos.getY() + "," + playerData.playerBlockPos.getZ() + "]");
 		
 		
 		// new chunk data
@@ -269,7 +270,7 @@ public class LodDimensionFinder
 				LOGGER.info("Last known player pos: [" + testPlayerData.playerBlockPos.getX() + "," + testPlayerData.playerBlockPos.getY() + "," + testPlayerData.playerBlockPos.getZ() + "]");
 				
 				// check if the block positions are close
-				int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(firstSeenPlayerData.playerBlockPos);
+				int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(playerData.playerBlockPos);
 				ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + playerBlockDist + "]");
 				
 				

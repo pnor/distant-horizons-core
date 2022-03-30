@@ -108,6 +108,27 @@ public class DataPointUtil
 	{
 		if (generationMode == 0)
 			throw new IllegalArgumentException("Trying to create datapoint with genMode 0, which is NOT allowed in DataPoint version 10!");
+		if (height < 0 || height > 4096)
+			throw new IllegalArgumentException("Height must be between 0 and 4096!");
+		if (depth < 0 || depth > 4096)
+			throw new IllegalArgumentException("Depth must be between 0 and 4096!");
+		if (lightSky < 0 || lightSky > 15)
+			throw new IllegalArgumentException("Sky light must be between 0 and 15!");
+		if (lightBlock < 0 || lightBlock > 15)
+			throw new IllegalArgumentException("Block light must be between 0 and 15!");
+		if (alpha < 0 || alpha > 255)
+			throw new IllegalArgumentException("Alpha must be between 0 and 255!");
+		if (red < 0 || red > 255)
+			throw new IllegalArgumentException("Red must be between 0 and 255!");
+		if (green < 0 || green > 255)
+			throw new IllegalArgumentException("Green must be between 0 and 255!");
+		if (blue < 0 || blue > 255)
+			throw new IllegalArgumentException("Blue must be between 0 and 255!");
+		if (generationMode < 0 || generationMode > 7)
+			throw new IllegalArgumentException("Generation mode must be between 0 and 7!");
+		if (depth > height)
+			throw new IllegalArgumentException("Depth must be less than or equal to height!");
+
 		return (long) (alpha >>> ALPHA_DOWNSIZE_SHIFT) << ALPHA_SHIFT
 			| (red & RED_MASK) << RED_SHIFT
 			| (green & GREEN_MASK) << GREEN_SHIFT
@@ -249,7 +270,7 @@ public class DataPointUtil
 		arraySize *= packetSize;
 		//remove comment to not leave garbage at the end
 		//array[start + packetSize + i] = 0;
-		if (arraySize - start >= 0) System.arraycopy(array, start + length + 0, array, start + 0, arraySize - start);
+		if (arraySize - start >= 0) System.arraycopy(array, start + length, array, start, arraySize - start);
 	}
 	
 	public static void extendArray(short[] array, int packetSize, int start, int length, int arraySize)
