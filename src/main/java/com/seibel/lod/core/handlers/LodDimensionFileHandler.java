@@ -96,6 +96,13 @@ public class LodDimensionFileHandler
 	private static final String TMP_FILE_EXTENSION = ".tmp";
 	
 	/**
+	 * This is compression level set in XZ
+	 * lower values are faster
+	 * difference in size should be only 2x
+	 */
+	private static final int COMPRESSION_LEVEL = 1;
+	
+	/**
 	 * This is the file version currently accepted by this
 	 * file handler, older versions (smaller numbers) will be deleted and overwritten,
 	 * newer versions (larger numbers) will be ignored and won't be read.
@@ -328,7 +335,7 @@ public class LodDimensionFileHandler
 		}
 		try (FileOutputStream fileOutStream = new FileOutputStream(file))
 		{
-			XZCompressorOutputStream outputStream = new XZCompressorOutputStream(fileOutStream, 3);
+			XZCompressorOutputStream outputStream = new XZCompressorOutputStream(fileOutStream, COMPRESSION_LEVEL);
 			// add the version of this file
 			outputStream.write(LOD_SAVE_FILE_VERSION);
 			// add each LodChunk to the file
