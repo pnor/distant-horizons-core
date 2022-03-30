@@ -27,10 +27,9 @@ import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 
 /**
  * This stores all LODs for a given world.
- * 
  * @author James Seibel
  * @author Leonardo Amato
- * @version 9-27-2021
+ * @version 2022-3-29
  */
 public class LodWorld
 {
@@ -44,7 +43,7 @@ public class LodWorld
 	private boolean isWorldLoaded = false;
 	
 	/** the name given to the world if it isn't loaded */
-	public static final String NO_WORLD_LOADED = "No world loaded";
+	public static final String NO_WORLD_LOADED = "";
 	
 	
 	
@@ -69,7 +68,7 @@ public class LodWorld
 			// don't recreate everything if we
 			// didn't actually change worlds
 			return;
-
+		
 		deselectWorld();
 		worldName = newWorldName;
 		lodDimensions = new Hashtable<>();
@@ -77,8 +76,7 @@ public class LodWorld
 	}
 	
 	/**
-	 * Set the worldName to "No world loaded"
-	 * and clear the lodDimensions Map. <br>
+	 * Clear the lodDimensions Map. <br>
 	 * This should be done whenever unloaded a world. <br><br>
 	 * <p>
 	 * Note a System.gc() call may be in order after calling this <Br>
@@ -103,7 +101,8 @@ public class LodWorld
 			return;
 		
 		LodDimension oldDim = lodDimensions.put(newDimension.dimension, newDimension);
-		if (oldDim != null) oldDim.saveDirtyRegionsToFile(true);
+		if (oldDim != null)
+			oldDim.saveDirtyRegionsToFile(true);
 	}
 	
 	/**
@@ -144,11 +143,13 @@ public class LodWorld
 		// but that requires a LodDimension.hasDirtyRegions() method or something similar
 		ApiShared.LOGGER.info("Saving LODs");
 		
-		for (IDimensionTypeWrapper key : lodDimensions.keySet()) {
+		for (IDimensionTypeWrapper key : lodDimensions.keySet())
+		{
 			lodDimensions.get(key).saveDirtyRegionsToFile(isBlocking);
 		}
 		//FIXME: This should block until file is saved.
 	}
+	
 	/**
 	 * Requests all dimensions to shutdown
 	 */
@@ -158,7 +159,8 @@ public class LodWorld
 			return;
 		
 		// TODO: Add parallel shutdowns.
-		for (IDimensionTypeWrapper key : lodDimensions.keySet()) {
+		for (IDimensionTypeWrapper key : lodDimensions.keySet())
+		{
 			lodDimensions.get(key).shutdown();
 		}
 	}
