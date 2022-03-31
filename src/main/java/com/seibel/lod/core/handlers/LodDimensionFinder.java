@@ -89,10 +89,8 @@ public class LodDimensionFinder
 	public void AttemptToDetermineSubDimensionAsync(IDimensionTypeWrapper dimensionTypeWrapper)
 	{
 		// prevent multiple threads running at the same time
-		boolean v = determiningWorldFolder.getAndSet(true);
-		if (v) {
+		if (determiningWorldFolder.getAndSet(true))
 			return;
-		}
 
 		// run asynchronously since this could take a while
 		Thread thread = new Thread(() ->

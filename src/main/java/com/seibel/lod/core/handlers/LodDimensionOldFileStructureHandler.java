@@ -242,12 +242,15 @@ public class LodDimensionOldFileStructureHandler
 		renameOldFileStructure(vertQual, OldDistanceGenerationMode.FULL);
 	}
 
-	private String getFileBasePath() {
-		try {
+	private String getFileBasePath()
+	{
+		try
+		{
 			return dimensionDataSaveFolder.getCanonicalPath() + File.separatorChar;
-		} catch (IOException e) {
-			ApiShared.LOGGER.warn("Unable to get the base save file path. One possible cause is that"
-					+ " the process failed to read the current path location due to security configs.");
+		}
+		catch (IOException e)
+		{
+			ApiShared.LOGGER.warn("Unable to get the base save file path. Error: " + e.getMessage(), e);
 			throw new RuntimeException("DistantHorizons Get Save File Path Failure");
 		}
 	}
