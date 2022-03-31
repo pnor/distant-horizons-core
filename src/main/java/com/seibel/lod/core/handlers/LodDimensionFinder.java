@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Used to guess the world folder for the player's current dimension.
  *
  * @author James Seibel
- * @version 2022-3-27
+ * @version 2022-3-30
  */
 public class LodDimensionFinder
 {
@@ -360,11 +360,15 @@ public class LodDimensionFinder
 		if (worldId == null)
 			worldId = "";
 		
+		// make sure the ID is a valid path
+		worldId = worldId.replaceAll(LodUtil.INVALID_FILE_CHARACTERS_REGEX, "");
+		
 		try
 		{
 			if (MC.hasSinglePlayerServer())
 			{
 				// local world
+				
 				IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(newDimensionType);
 				return new File(serverWorld.getSaveFolder().getCanonicalFile().getPath() + File.separatorChar + "lod" + File.separatorChar + worldId);
 			}

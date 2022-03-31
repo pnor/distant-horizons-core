@@ -47,7 +47,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * This class holds methods and constants that may be used in multiple places.
  * 
  * @author James Seibel
- * @version 3-7-2022
+ * @version 2022-3-30
  */
 public class LodUtil
 {
@@ -292,10 +292,10 @@ public class LodUtil
 			folderName = serverName + ", IP " + serverIpCleaned;
 			break;
 		case NAME_IP_PORT:
-			folderName = serverName + ", IP " + serverIpCleaned + (serverPortCleaned.length() != 0 ? (":" + serverPortCleaned) : "");
+			folderName = serverName + ", IP " + serverIpCleaned + (serverPortCleaned.length() != 0 ? ("-" + serverPortCleaned) : "");
 			break;
 		case NAME_IP_PORT_MC_VERSION:
-			folderName = serverName + ", IP " + serverIpCleaned + (serverPortCleaned.length() != 0 ? (":" + serverPortCleaned) : "") + ", GameVersion " + serverMcVersion;
+			folderName = serverName + ", IP " + serverIpCleaned + (serverPortCleaned.length() != 0 ? ("-" + serverPortCleaned) : "") + ", GameVersion " + serverMcVersion;
 			break;
 		}
 		

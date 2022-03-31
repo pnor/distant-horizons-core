@@ -61,7 +61,7 @@ import org.apache.logging.log4j.LogManager;
  * 
  * @author James Seibel
  * @author Cola
- * @version 2022-3-26
+ * @version 2022-3-30
  */
 public class LodDimensionFileHandler
 {
@@ -668,8 +668,7 @@ public class LodDimensionFileHandler
 		}
 		catch (IOException e)
 		{
-			LOGGER.warn("Unable to get the base save file path. One possible cause is that"
-					+ " the process failed to read the current path location due to security configs.");
+			LOGGER.warn("Unable to get the base save file path. Error: " + e.getMessage(), e);
 			throw new RuntimeException("DistantHorizons Get Save File Path Failure");
 		}
 	}

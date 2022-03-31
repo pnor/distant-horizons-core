@@ -152,6 +152,7 @@ public class EventApi
 					"WorldUnloadEvent called here for "
 							+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"),
 					new RuntimeException());
+		
 		// If it's single player, ignore the client side world unload event
 		// Note: using isCurrentlyOnSinglePlayerServer as often API call unload event
 		// AFTER setting MC to not be in a singlePlayerServer
