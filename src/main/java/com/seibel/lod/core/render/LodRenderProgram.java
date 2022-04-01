@@ -34,10 +34,6 @@ public class LodRenderProgram extends ShaderProgram {
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
 	public final VertexAttribute vao;
-	
-	// Attributes
-	public final int posAttrib;
-	public final int colAttrib;
 
 	// Uniforms
 	public final int combinedMatUniform;
@@ -59,11 +55,8 @@ public class LodRenderProgram extends ShaderProgram {
 	public LodRenderProgram(LodFogConfig fogConfig) {
 		super(() -> Shader.loadFile(VERTEX_SHADER_PATH, false, new StringBuilder()).toString(),
 				() -> fogConfig.loadAndProcessFragShader(FRAGMENT_SHADER_PATH, false).toString(),
-				"fragColor");
+				"fragColor", new String[] { "vPosition", "color" });
 		this.fogConfig = fogConfig;
-		
-        posAttrib = getAttributeLocation("vPosition");
-        colAttrib = tryGetAttributeLocation("color"); // might be optimized out in some fog settings
 
 		combinedMatUniform = getUniformLocation("combinedMatrix");
 		modelOffsetUniform = getUniformLocation("modelOffset");
@@ -86,11 +79,11 @@ public class LodRenderProgram extends ShaderProgram {
 			vao = new VertexAttributePostGL43(); // also binds VertexAttribute
 		else
 			vao = new VertexAttributePreGL43(); // also binds VertexAttribute
-		//vao.bind();
+		vao.bind();
 		// Now a pos+light.
-		vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addUnsignedShortsPointer(4, false)); // 2+2+2+2
+		vao.setVertexAttribute(0, 0, VertexAttribute.VertexPointer.addUnsignedShortsPointer(4, false)); // 2+2+2+2
 		//vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false)); // 4+4+4
-		vao.setVertexAttribute(0, colAttrib == -1 ? 2 : colAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true)); // +4
+		vao.setVertexAttribute(0, 1, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true)); // +4
 		//vao.setVertexAttribute(0, lightAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(2, false)); // +4 due to how it aligns
 		try {
 		vao.completeAndCheck(vertexByteCount);

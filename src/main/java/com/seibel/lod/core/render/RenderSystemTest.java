@@ -44,7 +44,8 @@ public class RenderSystemTest {
         // Color
         va.setVertexAttribute(0, 1, VertexAttribute.VertexPointer.addVec4Pointer(false));
         va.completeAndCheck(Float.BYTES * 6);
-        basicShader = new ShaderProgram("shaders/test/vert.vert", "shaders/test/frag.frag", "fragColor");
+        basicShader = new ShaderProgram("shaders/test/vert.vert", "shaders/test/frag.frag",
+                "fragColor", new String[]{"vPosition", "color"});
         createBuffer();
     }
 

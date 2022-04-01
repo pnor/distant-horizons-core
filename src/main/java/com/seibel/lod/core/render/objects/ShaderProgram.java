@@ -48,14 +48,14 @@ public class ShaderProgram
 	// TODO: A better way to set the fragData output name
 	/** Creates a shader program.
 	  * This will bind ShaderProgram */
-	public ShaderProgram(String vert, String frag, String fragDataOutputName)
+	public ShaderProgram(String vert, String frag, String fragDataOutputName, String[] attributes)
 	{
 		this(() -> Shader.loadFile(vert, false, new StringBuilder()).toString(),
 				() -> Shader.loadFile(frag, false, new StringBuilder()).toString(),
-	fragDataOutputName);
+	fragDataOutputName, attributes);
 	}
 
-	public ShaderProgram(Supplier<String> vert, Supplier<String> frag, String fragDataOutputName)
+	public ShaderProgram(Supplier<String> vert, Supplier<String> frag, String fragDataOutputName, String[] attributes)
 	{
 		Shader vertShader = new Shader(GL32.GL_VERTEX_SHADER, vert.get());
 		Shader fragShader = new Shader(GL32.GL_FRAGMENT_SHADER, frag.get());
@@ -65,6 +65,9 @@ public class ShaderProgram
 		GL32.glAttachShader(this.id, vertShader.id);
 		GL32.glAttachShader(this.id, fragShader.id);
 		//GL32.glBindFragDataLocation(id, 0, fragDataOutputName);
+		for (int i = 0; i < attributes.length; i++) {
+			GL32.glBindAttribLocation(id, i, attributes[i]);
+		}
 		GL32.glLinkProgram(this.id);
 
 		vertShader.free(); // important!
