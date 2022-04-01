@@ -28,6 +28,8 @@ import org.apache.logging.log4j.LogManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Used to guess the world folder for the player's current dimension.
  *
  * @author James Seibel
- * @version 2022-3-30
+ * @version 2022-3-31
  */
 public class LodDimensionFinder
 {
@@ -102,12 +104,7 @@ public class LodDimensionFinder
 				if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0)
 				{
 					// only allow 1 sub dimension per world
-					
-					// move any old data folders if they exist
-					File dimensionFolder = GetDimensionFolder(MC.getCurrentDimension(), "");
-					moveOldSaveFoldersIfNecessary(dimensionFolder, MC.getCurrentDimension(), DEFAULT_SAVE_DIMENSION_FOLDER);
-					
-					saveDir = GetDimensionFolder(dimensionTypeWrapper, DEFAULT_SAVE_DIMENSION_FOLDER);
+					saveDir = getDefaultSubDimensionFolder(dimensionTypeWrapper);
 				}
 				else
 				{
@@ -133,12 +130,70 @@ public class LodDimensionFinder
 		thread.start();
 	}
 	
+	/**
+	 * Returns the default save folder if it exists
+	 * otherwise the first valid subDimension folder lexicographically.
+	 *
+	 * @throws IOException if the folder doesn't exist or can't be accessed
+	 */
+	public File getDefaultSubDimensionFolder(IDimensionTypeWrapper dimensionTypeWrapper) throws IOException
+	{
+		File subDimFolder = null;
+		LOGGER.info("Attempting to determine default sub-dimension for [" + MC.getCurrentDimension().getDimensionName() + "]");
+		
+		// move any old data folders if they exist
+		File dimensionFolder = GetDimensionFolder(MC.getCurrentDimension(), "");
+		moveOldSaveFoldersIfNecessary(dimensionFolder, MC.getCurrentDimension(), DEFAULT_SAVE_DIMENSION_FOLDER);
+		
+		// check if a sub dimension folder exists
+		if (dimensionFolder.listFiles() != null)
+		{
+			// at least one folder exists
+			LOGGER.info("Potential Sub Dimension folders: [" + dimensionFolder.listFiles(File::isDirectory).length + "]");
+			
+			
+			// search for a valid sub dimension folder
+			File[] potentialSubDimFolders = dimensionFolder.listFiles();
+			Arrays.sort(potentialSubDimFolders); // listFiles isn't necessarily sorted
+			for (File potentialSubDim : potentialSubDimFolders)
+			{
+				if (isValidSubDimensionDirectory(potentialSubDim))
+				{
+					if (potentialSubDim.getName().equals(DEFAULT_SAVE_DIMENSION_FOLDER))
+					{
+						// use the default save folder if possible
+						subDimFolder = potentialSubDim;
+						break;
+					}
+					else if (subDimFolder == null)
+					{
+						// only get the first non-default sub folder
+						subDimFolder = potentialSubDim;
+					}
+				}
+			}
+		}
+		
+		// if no valid sub dimension was found, create a new one
+		if (subDimFolder == null)
+		{
+			subDimFolder = GetDimensionFolder(dimensionTypeWrapper, DEFAULT_SAVE_DIMENSION_FOLDER);
+			LOGGER.info("Default Sub Dimension not found. Creating: [" +  DEFAULT_SAVE_DIMENSION_FOLDER + "]");
+		}
+		else
+		{
+			LOGGER.info("Default Sub Dimension set to: [" +  LodUtil.shortenString(subDimFolder.getName(), 8) + "...]");
+		}
+		
+		return subDimFolder;
+	}
 	
 	
 	/**
 	 * Currently this method checks a single chunk (where the player is)
 	 * and compares it against the same chunk position in the other dimension worlds to
 	 * guess which world the player is in.
+	 *
 	 * @throws IOException if the folder doesn't exist or can't be accessed
 	 */
 	public File attemptToDetermineSubDimensionFolder() throws IOException
@@ -168,7 +223,6 @@ public class LodDimensionFinder
 		newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
 		
 		// generate a LOD to test against
-		LOGGER.debug("Generating LOD for testing...");
 		boolean lodGenerated = ApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(DistanceGenerationMode.FULL), true, true);
 		if (!lodGenerated)
 			return null;
@@ -235,7 +289,7 @@ public class LodDimensionFinder
 		// compare each world with the newly loaded one
 		SubDimCompare mostSimilarSubDim = null;
 
-		LOGGER.info("Known Sub Dimension folders: [" + dimensionFolder.listFiles(File::isDirectory).length + "]");
+		LOGGER.info("Potential Sub Dimension folders: [" + dimensionFolder.listFiles(File::isDirectory).length + "]");
 		for (File testDimFolder : dimensionFolder.listFiles())
 		{
 			if (!testDimFolder.isDirectory())
@@ -245,7 +299,6 @@ public class LodDimensionFinder
 			
 			try
 			{
-				
 				// get a LOD from this dimension folder
 				LodDimension tempLodDim = new LodDimension(null, 1, null, false);
 				tempLodDim.move(playerRegionPos);
@@ -310,8 +363,7 @@ public class LodDimensionFinder
 					mostSimilarSubDim = subDimCompare;
 				}
 				
-				String message = "Sub dimension [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " + LodUtil.shortenString(subDimCompare.getPercentEqual() + "", 5) + " (" + equalDataPoints + "/" + totalDataPointCount + ")";
-				LOGGER.info(message);
+				LOGGER.info("Sub dimension [" + LodUtil.shortenString(testDimFolder.getName(), 8) + "...] is current dimension probability: " + LodUtil.shortenString(subDimCompare.getPercentEqual() + "", 5) + " (" + equalDataPoints + "/" + totalDataPointCount + ")");
 			}
 			catch (Exception e)
 			{
@@ -332,8 +384,7 @@ public class LodDimensionFinder
 		{
 			// we found a world folder that is similar, use it
 			
-			String message = "Sub Dimension set to: [" +  LodUtil.shortenString(mostSimilarSubDim.folder.getName(), 8) + "...] with an equality of [" + mostSimilarSubDim.getPercentEqual() + "]";
-			LOGGER.info(message);
+			LOGGER.info("Sub Dimension set to: [" +  LodUtil.shortenString(mostSimilarSubDim.folder.getName(), 8) + "...] with an equality of [" + mostSimilarSubDim.getPercentEqual() + "]");
 			return mostSimilarSubDim.folder;
 		}
 		else
@@ -413,6 +464,30 @@ public class LodDimensionFinder
 		}
 		
 		return true;
+	}
+	
+	/** Returns true if the given folder holds valid Lod Dimension data */
+	public static boolean isValidSubDimensionDirectory(File potentialFolder)
+	{
+		if (!potentialFolder.isDirectory())
+			// it needs to be a folder
+			return false;
+		
+		if (potentialFolder.listFiles() == null)
+			// it needs to have folders in it
+			return false;
+		
+		// check if there is at least one VerticalQuality folder in this directory
+		for (File internalFolder : potentialFolder.listFiles())
+		{
+			if (VerticalQuality.getByName(internalFolder.getName()) != null)
+			{
+				// one of the internal folders is a VerticalQuality folder
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
