@@ -118,18 +118,18 @@ public class LodFogConfig
 		str.append("// =======RUNTIME GENERATED DEFINE SECTION========\n#version 150 core\n");
 
 		if (farFogSetting == null) {
-			str.append("""
-#define farFogStart 0.0
-#define farFogLength 0.0
-#define farFogMin 0.0
-#define farFogRange 0.0
-#define farFogDensity 0.0
-#define heightFogStart 0.0
-#define heightFogLength 0.0
-#define heightFogMin 0.0
-#define heightFogRange 0.0
-#define heightFogDensity 0.0
-					""");
+			str.append(""+
+"#define farFogStart 0.0"+
+"#define farFogLength 0.0"+
+"#define farFogMin 0.0"+
+"#define farFogRange 0.0"+
+"#define farFogDensity 0.0"+
+"#define heightFogStart 0.0"+
+"#define heightFogLength 0.0"+
+"#define heightFogMin 0.0"+
+"#define heightFogRange 0.0"+
+"#define heightFogDensity 0.0"+
+					"");
 		} else {
 			str.append("\n#define farFogStart ");
 			str.append(farFogSetting.start);
@@ -144,13 +144,13 @@ public class LodFogConfig
 			str.append("\n");
 
 			if (heightFogSetting == null) {
-				str.append("""
-#define heightFogStart 0.0
-#define heightFogLength 0.0
-#define heightFogMin 0.0
-#define heightFogRange 0.0
-#define heightFogDensity 0.0
-						""");
+				str.append(""+
+"#define heightFogStart 0.0"+
+"#define heightFogLength 0.0"+
+"#define heightFogMin 0.0"+
+"#define heightFogRange 0.0"+
+"#define heightFogDensity 0.0"+
+						"");
 			} else {
 				str.append("\n#define heightFogStart ");
 				str.append(heightFogSetting.start);
@@ -238,25 +238,25 @@ public class LodFogConfig
 
 		// Generate method: float getNearFogThickness(float dist);
 		if (drawNearFog) {
-			str.append("""
-float getNearFogThickness(float dist) {
-	return linearFog(dist, nearFogStart, nearFogLength, 1.0, -1.0);
-}
-					""");
+			str.append(""+
+"float getNearFogThickness(float dist) {"+
+"	return linearFog(dist, nearFogStart, nearFogLength, 1.0, -1.0);"+
+"}"+
+					"");
 		} else {
-			str.append("""
-float getNearFogThickness(float dist) {return 0.0;}
-					""");
+			str.append(""+
+"float getNearFogThickness(float dist) {return 0.0;}"+
+					"");
 		}
 
 		if (farFogSetting == null) {
-			str.append("""
-float getFarFogThickness(float dist) { return 0.0; }
-float getHeightFogThickness(float dist) { return 0.0; }
-float calculateFarFogDepth(float horizontal, float dist) { return 0.0; }
-float calculateHeightFogDepth(float vertical, float realY) { return 0.0; }
-float mixFogThickness(float near, float far, float height) { return near; }
-					""");
+			str.append(""+
+"float getFarFogThickness(float dist) { return 0.0; }"+
+"float getHeightFogThickness(float dist) { return 0.0; }"+
+"float calculateFarFogDepth(float horizontal, float dist) { return 0.0; }"+
+"float calculateHeightFogDepth(float vertical, float realY) { return 0.0; }"+
+"float mixFogThickness(float near, float far, float height) { return near; }"+
+					"");
 		} else {
 			// Generate method: float getFarFogThickness(float dist);
 			str.append("float getFarFogThickness(float dist) {\n");
@@ -265,10 +265,10 @@ float mixFogThickness(float near, float far, float height) { return near; }
 
 			// Generate method: float getHeightFogThickness(float dist);
 			if (heightFogSetting == null) {
-				str.append("""
-float getHeightFogThickness(float dist) { return 0.0; }
-float calculateHeightFogDepth(float vertical, float realY) { return 0.0; }
-					""");
+				str.append(""+
+"float getHeightFogThickness(float dist) { return 0.0; }"+
+"float calculateHeightFogDepth(float vertical, float realY) { return 0.0; }"+
+					"");
 			} else {
 				str.append("float getHeightFogThickness(float dist) {\n");
 				str.append(getHeightFogMethod(heightFogSetting.fogType));

@@ -89,7 +89,7 @@ public interface IMinecraftRenderWrapper extends IBindable
 		return sodium==null ? getMaximumRenderedChunks() : sodium.getNormalRenderedChunks();
 	}
 
-	private static boolean correctedCheckRadius(int dx, int dz, int radius2Mul4) {
+	static boolean correctedCheckRadius(int dx, int dz, int radius2Mul4) {
 		dx = dx*2;// + (dx < 0 ? -1 : 1);
 		dz = dz*2;// + (dz < 0 ? -1 : 1);
 		return (dx*dx + dz*dz <= radius2Mul4);
