@@ -238,7 +238,7 @@ public class LodRenderer
 		// Make sure to unbind current VBO so we don't mess up vanilla settings
 		LagSpikeCatcher drawGLSetup = new LagSpikeCatcher();
 		LagSpikeCatcher drawBindBuff = new LagSpikeCatcher();
-		GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, MC_RENDER.getTargetFrameBuffer());
+		//GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, MC_RENDER.getTargetFrameBuffer());
 		GL32.glViewport(0,0, MC_RENDER.getTargetFrameBufferViewportWidth(), MC_RENDER.getTargetFrameBufferViewportHeight());
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 		drawBindBuff.end("drawBindBuff");
