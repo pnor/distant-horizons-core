@@ -30,6 +30,6 @@ public interface ILightMapWrapper extends IBindable
 	int getLightValue(int skyLight, int blockLight);
 
 	// Returns the binded texture position
-	int bind();
+	void bind();
 	void unbind();
 }
