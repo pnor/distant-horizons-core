@@ -7,22 +7,18 @@ public enum RendererType {
     ;
 
     public static RendererType next(RendererType type) {
-        RendererType rendererType;
         switch (type) {
-            case DEFAULT: rendererType = DEBUG;
-            case DEBUG: rendererType = DISABLED;
-            default: rendererType = DEFAULT;
-        };
-        return rendererType;
+            case DEFAULT: return DEBUG;
+            case DEBUG: return DISABLED;
+            default: return DEFAULT;
+        }
     }
 
     public static RendererType previous(RendererType type) {
-        RendererType rendererType;
         switch (type) {
-            case DEFAULT: rendererType = DISABLED;
-            case DEBUG: rendererType = DEFAULT;
-            default: rendererType = DEBUG;
-        };
-        return rendererType;
+            case DEFAULT: return DISABLED;
+            case DEBUG: return DEFAULT;
+            default: return DEBUG;
+        }
     }
 }

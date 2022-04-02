@@ -157,16 +157,14 @@ public class ColorUtil
 		float q = v * ( 1f - s * f );
 		float t = v * ( 1f - s * ( 1f - f ) );
 
-		int color;
 		switch (i) {
-			case 0: color = ColorUtil.rgbToInt(a, v, t, p);
-			case 1: color = ColorUtil.rgbToInt(a, q, v, p);
-			case 2: color = ColorUtil.rgbToInt(a, p, v, t);
-			case 3: color = ColorUtil.rgbToInt(a, p, q, v);
-			case 4: color = ColorUtil.rgbToInt(a, t, p, v);
-			default: color = ColorUtil.rgbToInt(a, v, p, q);  // case 5
-		};
-		return color;
+			case 0: return ColorUtil.rgbToInt(a, v, t, p);
+			case 1: return ColorUtil.rgbToInt(a, q, v, p);
+			case 2: return ColorUtil.rgbToInt(a, p, v, t);
+			case 3: return ColorUtil.rgbToInt(a, p, q, v);
+			case 4: return ColorUtil.rgbToInt(a, t, p, v);
+			default: return ColorUtil.rgbToInt(a, v, p, q);  // case 5
+		}
 }
 
 	public static String toString(int color)
