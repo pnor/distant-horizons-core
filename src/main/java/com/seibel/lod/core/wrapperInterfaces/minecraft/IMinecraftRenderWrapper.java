@@ -32,6 +32,7 @@ import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
@@ -132,6 +133,8 @@ public interface IMinecraftRenderWrapper extends IBindable
 	
 	/** @returns null if there was a issue getting the lightmap */
 	int[] getLightmapPixels();
+
+	ILightMapWrapper getLightmapWrapper();
 
 	/** @returns -1 if there was an issue getting the lightmap */
 	int getLightmapTextureHeight();

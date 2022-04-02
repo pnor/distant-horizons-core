@@ -29,8 +29,12 @@ void main()
     vertexWorldPos = vPosition.xyz + modelOffset;
     vertexYPos = vPosition.y + worldYOffset;
 
-	float light = (vPosition.a+0.5) / 256.0;
-	vertexColor = color * texture(lightMap, vec2(light,0.5));
+    float delta = 0.5/16.0;
+
+	float light = (vPosition.a) / 16.0;
+	float partLight = modf(light, light);
+	light = light / 16.0;
+	vertexColor = color * texture(lightMap, vec2(light+delta, partLight+delta));
 
     gl_Position = combinedMatrix * vec4(vertexWorldPos, 1.0);
 }

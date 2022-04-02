@@ -25,12 +25,14 @@ import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
+import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.*;
+import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.GL32;
 
@@ -65,6 +67,8 @@ public class LodRenderer
 	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodRenderer.class),
 			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererBufferEvent());
 
+	public static ConfigBasedSpamLogger tickLogger = new ConfigBasedSpamLogger(LogManager.getLogger(LodRenderer.class),
+			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererBufferEvent(),1);
 	public static final boolean ENABLE_DRAW_LAG_SPIKE_LOGGING = false;
 	public static final boolean ENABLE_DUMP_GL_STATE = true;
 	public static final long DRAW_LAG_SPIKE_THRESHOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
@@ -136,7 +140,6 @@ public class LodRenderer
 	{
 		lodBufferBuilderFactory = newLodNodeBufferBuilder;
 	}
-	public static SpamReducedLogger tickLogger = new SpamReducedLogger(1);
 
 	/**
 	 * Besides drawing the LODs this method also starts
@@ -285,7 +288,7 @@ public class LodRenderer
 		GL32.glActiveTexture(GL32.GL_TEXTURE0);
 		drawSetActiveTexture.end("drawSetActiveTexture");
 		LagSpikeCatcher drawCalculateParams = new LagSpikeCatcher();
-		LightmapTexture lightmapTexture = new LightmapTexture();
+		//LightmapTexture lightmapTexture = new LightmapTexture();
 		
 		/*---------Get required data--------*/
 		// Get the matrixs for rendering
@@ -311,7 +314,9 @@ public class LodRenderer
 
 		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
 		LagSpikeCatcher drawFillLightmap = new LagSpikeCatcher();
-		lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
+		ILightMapWrapper lightmap = MC_RENDER.getLightmapWrapper();
+		lightmap.bind();
+		//lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
 		drawFillLightmap.end("drawFillLightmap");
 		drawFillData.end("DrawFillData");
 		//===========//
@@ -364,11 +369,12 @@ public class LodRenderer
 		draw.end("LodDraw");
 		profiler.popPush("LOD cleanup");
 		LagSpikeCatcher drawCleanup = new LagSpikeCatcher();
+		lightmap.unbind();
 		
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 
 		shaderProgram.unbind();
-		lightmapTexture.free();
+		//lightmapTexture.free();
 		GL32.glClear(GL32.GL_DEPTH_BUFFER_BIT);
 
 		currentState.restore();
