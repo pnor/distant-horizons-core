@@ -40,7 +40,7 @@ public class LodBox {
 			long[][] adjDataNorth = adjData[LodDirection.NORTH.ordinal() - 2];
 			int adjOverlapNorth = adjFillBlack[LodDirection.NORTH.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjDataNorth == null) {
-				// builder.addQuadAdj(LodDirection.NORTH, x, y, z, xSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+				builder.addQuadAdj(LodDirection.NORTH, x, y, z, xSize, ySize, color, (byte) 15, blockLight);
 			} else if (adjDataNorth.length == 1) {
 				makeAdjQuads(builder, adjDataNorth[0], LodDirection.NORTH, x, y, z, xSize, ySize,
 						color, adjOverlapNorth, skyLightTop, blockLight);
@@ -57,7 +57,7 @@ public class LodBox {
 			long[][] adjDataSouth = adjData[LodDirection.SOUTH.ordinal() - 2];
 			int adjOverlapSouth = adjFillBlack[LodDirection.SOUTH.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjDataSouth == null) {
-				//builder.addQuadAdj(LodDirection.SOUTH, x, y, maxZ, xSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+				builder.addQuadAdj(LodDirection.SOUTH, x, y, maxZ, xSize, ySize, color, (byte) 15, blockLight);
 			} else if (adjDataSouth.length == 1) {
 				makeAdjQuads(builder, adjDataSouth[0], LodDirection.SOUTH, x, y, maxZ, xSize, ySize,
 						color, adjOverlapSouth, skyLightTop, blockLight);
@@ -75,7 +75,7 @@ public class LodBox {
 			long[][] adjDataWest = adjData[LodDirection.WEST.ordinal() - 2];
 			int adjOverlapWest = adjFillBlack[LodDirection.WEST.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjDataWest == null) {
-				//builder.addQuadAdj(LodDirection.WEST, x, y, z, zSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+				builder.addQuadAdj(LodDirection.WEST, x, y, z, zSize, ySize, color, (byte) 15, blockLight);
 			} else if (adjDataWest.length == 1) {
 				makeAdjQuads(builder, adjDataWest[0], LodDirection.WEST, x, y, z, zSize, ySize,
 						color, adjOverlapWest, skyLightTop, blockLight);
@@ -92,7 +92,7 @@ public class LodBox {
 			long[][] adjDataEast = adjData[LodDirection.EAST.ordinal() - 2];
 			int adjOverlapEast = adjFillBlack[LodDirection.EAST.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjData[LodDirection.EAST.ordinal() - 2] == null) {
-				//builder.addQuadAdj(LodDirection.EAST, maxX, y, z, zSize, ySize, ColorUtil.rgbToInt(0, 0, 0), (byte) 15, (byte) 15);
+				builder.addQuadAdj(LodDirection.EAST, maxX, y, z, zSize, ySize, color, (byte) 15, blockLight);
 			} else if (adjDataEast.length == 1) {
 				makeAdjQuads(builder, adjDataEast[0], LodDirection.EAST, maxX, y, z, zSize, ySize,
 						color, adjOverlapEast, skyLightTop, blockLight);
