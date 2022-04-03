@@ -395,12 +395,13 @@ public class LodBuilder
 		for (int y = yAbs - 1; y >= chunk.getMinBuildHeight(); y--)
 		{
 			IBlockDetailWrapper nextBlock = chunk.getBlockDetail(xAbs, y, zAbs);
-			if (!isLayerValidLodPoint(nextBlock)
-				|| (strictEdge && hasCliffFace(chunk, xAbs, y, zAbs) && !currentBlockDetail.equals(nextBlock)) )
-			{
-				depth = (short) (y + 1);
-				break;
+			if (isLayerValidLodPoint(nextBlock)) {
+				if (!strictEdge) continue;
+				if (currentBlockDetail.equals(nextBlock)) continue;
+				if (!hasCliffFace(chunk, xAbs, y, zAbs)) continue;
 			}
+			depth = (y + 1);
+			break;
 		}
 		return depth;
 	}
