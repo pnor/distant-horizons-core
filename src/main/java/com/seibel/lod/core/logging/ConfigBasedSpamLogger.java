@@ -54,8 +54,8 @@ public class ConfigBasedSpamLogger {
         if (mode.levelForFile.isLessSpecificThan(level)) {
             Level logLevel = level.isLessSpecificThan(Level.INFO) ? Level.INFO : level;
             if (param.length > 0 && param[param.length-1] instanceof Throwable)
-                logger.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
-            else logger.atLevel(logLevel).withLocation().log(msgStr);
+                logger.log(logLevel, msgStr, (Throwable)param[param.length-1]);
+            else logger.log(logLevel, msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
             if (param.length > 0 && param[param.length - 1] instanceof Throwable)
@@ -92,8 +92,8 @@ public class ConfigBasedSpamLogger {
         if (mode.levelForFile.isLessSpecificThan(level)) {
             Level logLevel = level.isLessSpecificThan(Level.INFO) ? Level.INFO : level;
             if (param.length > 0 && param[param.length-1] instanceof Throwable)
-                logger.atLevel(logLevel).withLocation().withThrowable((Throwable)param[param.length-1]).log(msgStr);
-            else logger.atLevel(logLevel).withLocation().log(msgStr);
+                logger.log(logLevel, msgStr, (Throwable)param[param.length-1]);
+            else logger.log(logLevel, msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
             if (param.length > 0 && param[param.length - 1] instanceof Throwable)
