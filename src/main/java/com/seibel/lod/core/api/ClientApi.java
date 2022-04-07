@@ -150,7 +150,7 @@ public class ClientApi
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
-		//applyConfigOverrides();
+		applyConfigOverrides();
 
 		// clear any out of date objects
 		MC.clearFrameObjectCache();
@@ -310,7 +310,6 @@ public class ClientApi
 			MC.sendChatMessage("Here be dragons!");
 			
 			configOverrideReminderPrinted = true;
-			CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 		}
 		
 //		CONFIG.client().worldGenerator().setDistanceGenerationMode(DistanceGenerationMode.FULL);
@@ -326,7 +325,7 @@ public class ClientApi
 		
 //		CONFIG.client().advanced().buffers().setRebuildTimes(BufferRebuildTimes.FREQUENT);
 		
-		
+//		CONFIG.client().advanced().debugging().setDebugKeybindingsEnabled(true);
 	}
 
 	//=================//
