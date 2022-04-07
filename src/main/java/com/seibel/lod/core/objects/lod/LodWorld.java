@@ -64,7 +64,7 @@ public class LodWorld
 	 */
 	public void selectWorld(String newWorldName)
 	{
-		ApiShared.LOGGER.error("Selecting world {} while in world {}", newWorldName, worldName);
+		ApiShared.LOGGER.info("Selecting world {} while in world {}", newWorldName, worldName);
 		if (worldName.equals(newWorldName))
 			// don't recreate everything if we
 			// didn't actually change worlds
@@ -85,7 +85,7 @@ public class LodWorld
 	 */
 	public void deselectWorld()
 	{
-		ApiShared.LOGGER.error("Deselecting world {}", worldName);
+		ApiShared.LOGGER.info("Deselecting world {}", worldName);
 		worldName = NO_WORLD_LOADED;
 		saveAllDimensions(true); // Make sure all dims are saved. This will block threads
 		lodDimensions = null;
@@ -101,7 +101,7 @@ public class LodWorld
 	{
 		if (lodDimensions == null)
 			return;
-		ApiShared.LOGGER.error("Adding dim {} to world {}", newDimension, worldName);
+		ApiShared.LOGGER.info("Adding dim {} to world {}", newDimension, worldName);
 		
 		LodDimension oldDim = lodDimensions.put(newDimension.dimension, newDimension);
 		if (oldDim != null)
