@@ -169,6 +169,8 @@ public class LodRenderer
 			// which blindness relies on.
 			return;
 		}
+		if (MC_RENDER.getLightmapWrapper() == null)
+			return;
 
 		// get MC's shader program
 		// Save all MC render state

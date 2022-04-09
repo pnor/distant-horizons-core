@@ -135,10 +135,6 @@ public class LodBufferBuilderFactory {
 		// only allow one generation process to happen at a time
 		if (builderThreadRunning) return false;
 
-		if (MC.getCurrentLightMap() == null)
-			// the lighting hasn't loaded yet
-			return false;
-
 		builderThreadRunning = true;
 
 		Runnable thread = () -> generateLodBuffersThread(renderer, lodDim, playerX, playerY, playerZ, fullRegen);

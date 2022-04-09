@@ -70,20 +70,7 @@ public interface IMinecraftClientWrapper extends IBindable
 	IDimensionTypeWrapper getCurrentDimension();
 	
 	String getCurrentDimensionId();
-	
-	/** This texture changes every frame */
-	ILightMapWrapper getCurrentLightMap();
-	
-	/**
-	 * Returns the color int at the given pixel coordinates
-	 * from the current lightmap.
-	 * @param blockLight x location in texture space
-	 * @param skyLight z location in texture space
-	 */
-	int getColorIntFromLightMap(int blockLight, int skyLight);
-	
-	
-	
+
 	//=============//
 	// Simple gets //
 	//=============//

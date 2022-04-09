@@ -35,6 +35,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Contains everything related to
@@ -130,22 +131,8 @@ public interface IMinecraftRenderWrapper extends IBindable
 		}
 		return renderedPos;	
 	}
-	
-	/** @returns null if there was a issue getting the lightmap */
-	@Deprecated
-	int[] getLightmapPixels();
 
 	ILightMapWrapper getLightmapWrapper();
-
-	/** @returns -1 if there was an issue getting the lightmap */
-	@Deprecated
-	int getLightmapTextureHeight();
-	/** @returns -1 if there was an issue getting the lightmap */
-	@Deprecated
-	int getLightmapTextureWidth();
-	/** @returns -1 if there was an issue getting the lightmap */
-	@Deprecated
-	int getLightmapGLFormat();
 	
 	// Try and disable vanilla fog. Return true if successful, or false if not able to.
 	boolean tryDisableVanillaFog();

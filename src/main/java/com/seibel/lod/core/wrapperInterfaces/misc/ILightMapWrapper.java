@@ -27,8 +27,6 @@ import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
  */
 public interface ILightMapWrapper extends IBindable
 {
-	@Deprecated
-	int getLightValue(int skyLight, int blockLight);
 
 	// Returns the binded texture position
 	void bind();
