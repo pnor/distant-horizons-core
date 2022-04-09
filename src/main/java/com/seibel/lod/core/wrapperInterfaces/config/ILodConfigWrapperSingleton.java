@@ -849,7 +849,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					LoggerMode getLogWorldGenEvent();
 					void setLogWorldGenEvent(LoggerMode newLogWorldGenEvent);
 
-					LoggerMode LOG_WORLDGEN_PERFORMANCE_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE;
+					LoggerMode LOG_WORLDGEN_PERFORMANCE_DEFAULT = LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE;
 					String LOG_WORLDGEN_PERFORMANCE_DESC = ""
 							+ " If enabled, the mod will log performance about the world generation process. \n"
 							+ " This can be useful for debugging. \n";
