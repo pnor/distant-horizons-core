@@ -23,13 +23,14 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.objects.opengl.LodQuadBuilder.BufferFiller;
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder.BufferFiller;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.LodUtil;
@@ -112,7 +113,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 	}
 	
 	private void _uploadBuffersDirect(LodQuadBuilder builder, GpuUploadMethod method) {
-		resize(builder.getCurrentNeededVertexBuffers());
+		resize(builder.getCurrentNeededVertexBufferCount());
 		long remainingNS = 0;
 		long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
 		
@@ -147,7 +148,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 
 	private void _uploadBuffersMapped(LodQuadBuilder builder, GpuUploadMethod method)
 	{
-		resize(builder.getCurrentNeededVertexBuffers());
+		resize(builder.getCurrentNeededVertexBufferCount());
 		for (int i=0; i<vbos.length; i++) {
 			if (vbos[i]==null) vbos[i] = new LodVertexBuffer(method.useBufferStorage);
 		}

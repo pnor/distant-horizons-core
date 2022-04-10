@@ -28,11 +28,18 @@ import java.util.stream.Collectors;
 import com.seibel.lod.core.objects.math.Vec3i;
 
 /**
- * A (almost) exact copy of Minecraft's
+ * An (almost) exact copy of Minecraft's
  * Direction enum.
- * 
+ *
+ * Up <Br>
+ * Down <Br>
+ * North <Br>
+ * South <Br>
+ * East <Br>
+ * West <Br>
+ *
  * @author James Seibel
- * @version 11-13-2021
+ * @version 2021-11-13
  */
 public enum LodDirection
 {

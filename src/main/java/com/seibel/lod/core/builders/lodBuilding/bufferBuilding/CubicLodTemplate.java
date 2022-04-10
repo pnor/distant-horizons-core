@@ -19,18 +19,14 @@
 
 package com.seibel.lod.core.builders.lodBuilding.bufferBuilding;
 
-import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.opengl.LodBox;
-import com.seibel.lod.core.objects.opengl.LodQuadBuilder;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-
-import java.awt.*;
 
 /**
  * Builds LODs as rectangular prisms.

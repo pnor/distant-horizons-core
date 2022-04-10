@@ -19,11 +19,11 @@
 
 package com.seibel.lod.core.objects.opengl;
 
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
-import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 public class LodBox

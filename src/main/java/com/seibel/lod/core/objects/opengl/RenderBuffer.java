@@ -21,6 +21,7 @@ package com.seibel.lod.core.objects.opengl;
 
 import java.util.ConcurrentModificationException;
 
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.StatsMap;

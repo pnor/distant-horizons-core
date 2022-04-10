@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.CubicLodTemplate;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
@@ -160,7 +161,7 @@ public class RenderRegion implements AutoCloseable
 	
 	private void recreateBuffer(LodQuadBuilder builder) {
 		if (renderBufferBack != null) throw new RuntimeException("Assert Error");
-		boolean useSimpleBuffer = (builder.getCurrentNeededVertexBuffers() <= 6) || true;
+		boolean useSimpleBuffer = (builder.getCurrentNeededVertexBufferCount() <= 6) || true;
 		renderBufferBack = useSimpleBuffer ?
 				new SimpleRenderBuffer()
 				: null; //new ComplexRenderRegion(regPos);
@@ -192,7 +193,7 @@ public class RenderRegion implements AutoCloseable
 				int skyLightCullingBelow = CONFIG.client().graphics().advancedGraphics().getCaveCullingHeight();
 				// FIXME: Clamp also to the max world height.
 				skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
-				LodQuadBuilder builder = new LodQuadBuilder(10, useSkylightCulling, skyLightCullingBelow);
+				LodQuadBuilder builder = new LodQuadBuilder(useSkylightCulling, skyLightCullingBelow);
 				Runnable buildRun = ()->{
 					makeLodRenderData(builder, region, adjRegions, playerPosX, playerPosZ);
 				};
