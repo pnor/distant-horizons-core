@@ -3,8 +3,8 @@ package com.seibel.lod.core.objects.opengl;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL31.GL_COPY_WRITE_BUFFER;
 
 public class QuadIBO {
     //Datatype of the stored indices (can be GL_UNSIGNED_INT, GL_UNSIGNED_SHORT, GL_UNSIGNED_BYTE)
@@ -18,7 +18,7 @@ public class QuadIBO {
     public static QuadIBO GLOBAL = new QuadIBO();
 
     public QuadIBO() {
-        id = glCreateBuffers();
+        id = glGenBuffers();
     }
 
     public void resize(int cap) {
@@ -35,10 +35,11 @@ public class QuadIBO {
         type = GL_UNSIGNED_INT;
         int DT_SIZE = 4;//Datatype size (int: 4, short: 2, byte: 1)
 
+        glBindBuffer(GL_COPY_WRITE_BUFFER, id);
         //Resize the buffer
-        glNamedBufferData(id, (long) DT_SIZE * 6 * cap, GL_STATIC_DRAW);// 4L is datatype
+        glBufferData(GL_COPY_WRITE_BUFFER, (long) DT_SIZE * 6 * cap, GL_STATIC_DRAW);// 4L is datatype
         //Map and write the index data to the buffer
-        long ptr = nglMapNamedBuffer(id, GL_WRITE_ONLY);
+        long ptr = nglMapBuffer(GL_COPY_WRITE_BUFFER, GL_WRITE_ONLY);
         for (int base = 0; base < cap; base++) {
             //Write index's
             MemoryUtil.memPutInt(ptr+(base*6*DT_SIZE+DT_SIZE*0),(int)(base*4 + 0));
@@ -48,7 +49,7 @@ public class QuadIBO {
             MemoryUtil.memPutInt(ptr+(base*6*DT_SIZE+DT_SIZE*4),(int)(base*4 + 3));
             MemoryUtil.memPutInt(ptr+(base*6*DT_SIZE+DT_SIZE*5),(int)(base*4 + 0));
         }
-        glUnmapNamedBuffer(id);
+        glUnmapBuffer(GL_COPY_WRITE_BUFFER);
     }
 
     public void bind(int capacity) {
