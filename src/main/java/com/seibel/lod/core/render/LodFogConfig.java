@@ -208,28 +208,53 @@ public class LodFogConfig
 		}
 		throw new IllegalArgumentException();
 	}
-	private static String getMixFogMethod(HeightFogMixMode mode) {
-		switch (mode) {
-			case BASIC:
-			case IGNORE_HEIGHT:
-				return "	return max(near, far);\n";
-			case ADDITION:
-				return "	return max(near, far + height);\n";
-			case MAX:
-				return "	return max(near, max(far, height));\n";
-			case INVERSE_MULTIPLY:
-				return "	return max(near, 1.0 - (1.0-far)*(1.0-height));\n";
-			case MULTIPLY:
-				return "	return max(near, far*height);\n";
-			case LIMITED_ADDITION:
-				return "	return max(near, far + max(far, height));\n";
-			case MULTIPLY_ADDITION:
-				return "	return max(near, far + far*height);\n";
-			case INVERSE_MULTIPLY_ADDITION:
-				return "	return max(near, far + 1.0 - (1.0-far)*(1.0-height));\n";
-			case AVERAGE:
-				return "	return max(near, far*0.5 + height*0.5);\n";
+	private static String getMixFogMethod(HeightFogMixMode mode, boolean drawNearFog) {
+		if (drawNearFog) {
+			switch (mode) {
+				case BASIC:
+				case IGNORE_HEIGHT:
+					return "	return max(1.0-near, far);\n";
+				case ADDITION:
+					return "	return max(1.0-near, far + height);\n";
+				case MAX:
+					return "	return max(1.0-near, max(far, height));\n";
+				case INVERSE_MULTIPLY:
+					return "	return max(1.0-near, 1.0 - (1.0-far)*(1.0-height));\n";
+				case MULTIPLY:
+					return "	return max(1.0-near, far*height);\n";
+				case LIMITED_ADDITION:
+					return "	return max(1.0-near, far + max(far, height));\n";
+				case MULTIPLY_ADDITION:
+					return "	return max(1.0-near, far + far*height);\n";
+				case INVERSE_MULTIPLY_ADDITION:
+					return "	return max(1.0-near, far + 1.0 - (1.0-far)*(1.0-height));\n";
+				case AVERAGE:
+					return "	return max(1.0-near, far*0.5 + height*0.5);\n";
+			}
+		} else {
+			switch (mode) {
+				case BASIC:
+				case IGNORE_HEIGHT:
+					return "	return near * far;\n";
+				case ADDITION:
+					return "	return near * (far + height);\n";
+				case MAX:
+					return "	return near * max(far, height);\n";
+				case INVERSE_MULTIPLY:
+					return "	return near * (1.0 - (1.0-far)*(1.0-height));\n";
+				case MULTIPLY:
+					return "	return near * far*height);\n";
+				case LIMITED_ADDITION:
+					return "	return near * (far + max(far, height));\n";
+				case MULTIPLY_ADDITION:
+					return "	return near * (far + far*height);\n";
+				case INVERSE_MULTIPLY_ADDITION:
+					return "	return near * (far + 1.0 - (1.0-far)*(1.0-height));\n";
+				case AVERAGE:
+					return "	return near * (far*0.5 + height*0.5);\n";
+			}
 		}
+
 		throw new IllegalArgumentException();
 	}
 
@@ -237,25 +262,20 @@ public class LodFogConfig
 		str.append("// =======RUNTIME GENERATED CODE SECTION========\n");
 
 		// Generate method: float getNearFogThickness(float dist);
-		if (drawNearFog) {
 			str.append(""+
 "float getNearFogThickness(float dist) {\n"+
-"	return linearFog(dist, nearFogStart, nearFogLength, 1.0, -1.0);\n"+
-"}\n"+
-					"\n");
-		} else {
-			str.append("\n"+
-"float getNearFogThickness(float dist) {return 0.0;}\n"+
-					"\n");
-		}
+"	return linearFog(dist, nearFogStart, nearFogLength, 0.0, 1.0);\n"+
+"}\n"+"\n");
 
 		if (farFogSetting == null) {
 			str.append("\n"+
 "float getFarFogThickness(float dist) { return 0.0; }\n"+
 "float getHeightFogThickness(float dist) { return 0.0; }\n"+
-"float calculateFarFogDepth(float horizontal, float dist) { return 0.0; }\n"+
+"float calculateFarFogDepth(float horizontal, float dist, float nearFogStart) { return 0.0; }\n"+
 "float calculateHeightFogDepth(float vertical, float realY) { return 0.0; }\n"+
-"float mixFogThickness(float near, float far, float height) { return near; }\n"+
+"float mixFogThickness(float near, float far, float height) {" +
+					(drawNearFog ? "return 1.0-near;" : "return 0.0;") +
+					"}\n"+
 					"\n");
 		} else {
 			// Generate method: float getFarFogThickness(float dist);
@@ -278,18 +298,18 @@ public class LodFogConfig
 				str.append("\n}\n");
 			}
 
-			// Generate method: calculateFarFogDepth(float horizontal, float vertical, float dist);
-			str.append("float calculateFarFogDepth(float horizontal, float dist) {\n");
+			// Generate method: calculateFarFogDepth(float horizontal, float dist, float nearFogStart);
+			str.append("float calculateFarFogDepth(float horizontal, float dist, float nearFogStart) {\n");
 			if (heightFogMixMode == HeightFogMixMode.BASIC) {
-				str.append("	return dist;\n");
+				str.append("	return (dist - nearFogStart)/(1.0 - nearFogStart);\n");
 			} else {
-				str.append("	return horizontal;\n");
+				str.append("	return (horizontal - nearFogStart)/(1.0 - nearFogStart);\n");
 			}
 			str.append("}\n");
 
 			// Generate method: float mixFogThickness(float near, float far, float height);
 			str.append("float mixFogThickness(float near, float far, float height) {\n");
-			str.append(getMixFogMethod(heightFogMixMode));
+			str.append(getMixFogMethod(heightFogMixMode, drawNearFog));
 			str.append("}\n");
 		}
 	}
