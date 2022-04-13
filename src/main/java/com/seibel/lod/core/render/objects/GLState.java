@@ -28,6 +28,8 @@ public class GLState {
     public int vbo;
     public int fbo;
     public int text;
+    public int activeTex;
+    public int text0;
     public boolean blend;
     public int blendSrc;
     public int blendDst;
@@ -48,6 +50,10 @@ public class GLState {
         vbo = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
         fbo = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
         text = GL32.glGetInteger(GL32.GL_TEXTURE_BINDING_2D);
+        activeTex = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
+        GL32.glActiveTexture(GL32.GL_TEXTURE0);
+        text0 = GL32.glGetInteger(GL32.GL_TEXTURE_BINDING_2D);
+        GL32.glActiveTexture(activeTex);
         blend = GL32.glIsEnabled(GL32.GL_BLEND);
         blendSrc = GL32.glGetInteger(GL32.GL_BLEND_SRC);
         blendDst = GL32.glGetInteger(GL32.GL_BLEND_DST);
@@ -66,7 +72,8 @@ public class GLState {
 
     @Override
     public String toString() {
-        return "GLState{" + "prog=" + prog + ", vao=" + vao + ", vbo=" + vbo + ", fbo=" + fbo + ", text=" + GLEnums.getString(text) +
+        return "GLState{" + "prog=" + prog + ", vao=" + vao + ", vbo=" + vbo + ", fbo=" + fbo +
+                ", text=" + GLEnums.getString(text) + "@"+activeTex+", text0=" + GLEnums.getString(text0) +
                 ", blend=" + blend + ", blendMode=" + GLEnums.getString(blendSrc) + "," + GLEnums.getString(blendDst) +
                 ", depth=" + depth +
                 ", depthFunc=" + GLEnums.getString(depthFunc) + ", stencil=" + stencil + ", stencilFunc=" +
@@ -83,6 +90,9 @@ public class GLState {
         } else {
             GL32.glDisable(GL32.GL_BLEND);
         }
+        GL32.glActiveTexture(GL32.GL_TEXTURE0);
+        GL32.glBindTexture(GL32.GL_TEXTURE_2D, text0);
+        GL32.glActiveTexture(activeTex);
         GL32.glBindTexture(GL32.GL_TEXTURE_2D, text);
         GL32.glBindVertexArray(vao);
         GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo);

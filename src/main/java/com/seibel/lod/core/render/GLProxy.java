@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import org.apache.logging.log4j.LogManager;
 import org.lwjgl.glfw.GLFW;
@@ -458,19 +459,20 @@ public class GLProxy
 		}
 	}
 	
-	public static void ensureAllGLJobCompleted() {
+	public static void ensureAllGLJobCompleted() { // Uses global logger since it's a cleanup method
 		if (!hasInstance()) return;
-		GL_LOGGER.info("Blocking until GL jobs finished!");
+		ApiShared.LOGGER.info("Blocking until GL jobs finished...");
 		try {
 			instance.workerThread.shutdown();
 			boolean worked = instance.workerThread.awaitTermination(30, TimeUnit.SECONDS);
 			if (!worked)
-				GL_LOGGER.error("GLWorkerThread shutdown timed out! Game may crash on exit due to cleanup failure!");
+				ApiShared.LOGGER.error("GLWorkerThread shutdown timed out! Game may crash on exit due to cleanup failure!");
 		} catch (InterruptedException e) {
-			GL_LOGGER.error("GLWorkerThread shutdown is interrupted! Game may crash on exit due to cleanup failure!");
+			ApiShared.LOGGER.error("GLWorkerThread shutdown is interrupted! Game may crash on exit due to cleanup failure!");
 			e.printStackTrace();
 		} finally {
 			instance.workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 		}
+		ApiShared.LOGGER.info("All GL jobs finished!");
 	}
 }

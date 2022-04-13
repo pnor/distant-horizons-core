@@ -312,7 +312,7 @@ public class LodBufferBuilderFactory {
 	 * May have to wait for the bufferLock to open.
 	 */
 	public void destroyBuffers() {
-		ApiShared.LOGGER.info("LodBufferBuilder Destroy");
+		ApiShared.LOGGER.info("Destroying LodBufferBuilder...");
 		mainGenThread.shutdownNow();
 		mainGenThread = Executors.newSingleThreadExecutor(mainGenThreadFactory);
 		regionsListLock.lock();
@@ -322,6 +322,7 @@ public class LodBufferBuilderFactory {
 		} finally {
 			regionsListLock.unlock();
 		}
+		ApiShared.LOGGER.info("LodBufferBuilder destroyed.");
 	}
 
 	/** Get the newly created VBOs

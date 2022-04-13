@@ -28,7 +28,6 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
@@ -128,6 +127,8 @@ public class EventApi
 		if (world.getWorldType() == WorldType.ServerWorld)
 			return;
 		isCurrentlyOnSinglePlayerServer = MC.hasSinglePlayerServer();
+		if (!ApiShared.isShuttingDown) ApiShared.LOGGER.warn("WorldLoadEvent called on {} while another world is loaded!",
+				(world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"));
 		ApiShared.isShuttingDown = false;
 		//DataPointUtil.WORLD_HEIGHT = world.getHeight();
 		LodBuilder.MIN_WORLD_HEIGHT = world.getMinHeight(); // This updates the World height
@@ -136,7 +137,10 @@ public class EventApi
 		// ThreadMapUtil.clearMaps();
 		
 		// the player just loaded a new world/dimension
-		ApiShared.lodWorld.selectWorld(LodUtil.getWorldID(world));
+		String worldID = LodUtil.getWorldID(world);
+		ApiShared.LOGGER.info("Loading new world/dimension: {}",worldID);
+		ApiShared.lodWorld.selectWorld(worldID);
+		ApiShared.LOGGER.info("World/dimension loaded: {}",worldID);
 		
 		// make sure the correct LODs are being rendered
 		// (if this isn't done the previous world's LODs may be drawn)
@@ -158,9 +162,10 @@ public class EventApi
 		// AFTER setting MC to not be in a singlePlayerServer
 		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == WorldType.ClientWorld)
 			return;
-		
+
 		// if this isn't done unfinished tasks may be left in the queue
 		// preventing new LodChunks form being generated
+		if (ApiShared.isShuttingDown) return; // Don't do this if we're already shutting down
 		ApiShared.isShuttingDown = true;
 		
 		// TODO Better report on when world gen is stuck and timeout
@@ -181,6 +186,7 @@ public class EventApi
 		// TODO: Check if after the refactoring, is this still needed
 		ClientApi.renderer = new LodRenderer(ClientApi.lodBufferBuilderFactory);
 		ClientApi.INSTANCE.rendererDisabledBecauseOfExceptions = false;
+		ApiShared.LOGGER.info("Distant Horizon unloaded");
 	}
 	
 	public void blockChangeEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
