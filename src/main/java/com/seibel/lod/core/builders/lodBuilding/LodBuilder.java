@@ -113,7 +113,7 @@ public class LodBuilder
 			return;
 		}
 		
-		Thread thread = new Thread(() ->
+		Runnable thread = () ->
 		{
 			boolean retryNeeded = false;
 			try
@@ -147,7 +147,7 @@ public class LodBuilder
 				else
 					retryCallback.run();
 			}
-		});
+		};
 		lodGenThreadPool.execute(thread);
 	}
 	
@@ -173,6 +173,7 @@ public class LodBuilder
 			// generate the LODs
 			int maxVerticalData = DetailDistanceUtil.getMaxVerticalData((byte)0);
 			long[] data = new long[maxVerticalData*16*16];
+			boolean isAllVoid = true;
 			
 			if (!config.quickFillWithVoid) {
 				for (int i = 0; i < 16*16; i++)
@@ -180,8 +181,7 @@ public class LodBuilder
 					int subX = i/16;
 					int subZ = i%16;
 					writeVerticalData(data, i*maxVerticalData, maxVerticalData, chunk, config, subX, subZ);
-					//if (DataPointUtil.isVoid(data[i*maxVerticalData]))
-					//	ApiShared.LOGGER.debug("Datapoint is Void: {}, {}", chunk.getMinX()+subX, chunk.getMinZ()+subZ);
+					isAllVoid &= DataPointUtil.isVoid(data[i*maxVerticalData]);
 					if (!DataPointUtil.doesItExist(data[i*maxVerticalData]))
 						throw new RuntimeException("writeVerticalData result: Datapoint does not exist at "+ chunk.getMinX()+subX +", "+ chunk.getMinZ()+subZ);
 					if (DataPointUtil.getGenerationMode(data[i*maxVerticalData]) != config.distanceGenerationMode.complexity)
@@ -193,9 +193,12 @@ public class LodBuilder
 					data[i*maxVerticalData] = DataPointUtil.createVoidDataPoint(config.distanceGenerationMode.complexity);
 				}
 			}
+			if (isAllVoid) EVENT_LOGGER.debug("The chunk {} is completely void.", chunk);
+
+			// This MUST be done after the data is generated, to ensure that during the generation, the data is valid.
 			if (!canGenerateLodFromChunk(chunk)) // TODO Why are we calling this again? - James
-				return false;
-			
+				return false;					 // Answer: Because concurrency change may cause the chunk to have invalid data, like light.
+
 			if (genAll) {
 				return writeAllLodNodeData(lodDim, region, chunk.getChunkPosX(), chunk.getChunkPosZ(), data, config, override);
 			} else {

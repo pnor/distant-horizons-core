@@ -23,10 +23,12 @@ import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.render.RenderSystemTest;
+import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import org.apache.logging.log4j.Level;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import org.lwjgl.glfw.GLFW;
@@ -209,13 +211,14 @@ public class ClientApi
 
 			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();
 			for (long pos : toBeLoaded) {
-				if (generating.size() >= 8) {
+				if (generating.size() >= 1) {
 					//ApiShared.LOGGER.info("Lod Generating Full! Remining: "+toBeLoaded.size());
 					break;
 				}
 				IChunkWrapper chunk = world.tryGetChunk(FACTORY.createChunkPos(pos));
 				if (chunk == null) {
 					toBeLoaded.remove(pos);
+					LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} not ready. Remaining queue: {}", FACTORY.createChunkPos(pos), toBeLoaded.size());
 					continue;
 				}
 				if (!chunk.isLightCorrect()) continue;
@@ -225,11 +228,12 @@ public class ClientApi
 				//ApiShared.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
 				ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld,
 						world.getDimensionType(), DistanceGenerationMode.FULL, true, true, () -> {
-							//ApiShared.LOGGER.info("Lod Generation for "+pos+" done. Remining: " +toBeLoaded.size());
 							generating.remove(pos);
+							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} done. Remaining queue: {}", FACTORY.createChunkPos(pos), toBeLoaded.size());
 						}, () -> {
 							generating.remove(pos);
 							toBeLoaded.add(pos);
+							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} not ready. Remaining queue: {}", FACTORY.createChunkPos(pos), toBeLoaded.size());
 						});
 			}
 			updateToBeLoadedChunk.end("updateToBeLoadedChunk");

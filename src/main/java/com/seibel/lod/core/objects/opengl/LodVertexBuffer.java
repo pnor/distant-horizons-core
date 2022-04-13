@@ -22,6 +22,7 @@ package com.seibel.lod.core.objects.opengl;
 import java.nio.ByteBuffer;
 
 import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.util.UnitBytes;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL44;
 
@@ -118,6 +119,7 @@ public class LodVertexBuffer implements AutoCloseable
 		int bbSize = bb.limit()-bb.position();
 		if (bbSize > maxExpensionSize)
 			throw new IllegalArgumentException("maxExpensionSize is "+maxExpensionSize+" but buffer size is "+bbSize+"!");
+		GLProxy.GL_LOGGER.debug("Uploading {} buffer with {} vertices.", new UnitBytes(bbSize), vertCount);
 		// If size is zero, just ignore it.
 		if (bbSize == 0) return;
 		boolean useBuffStorage = uploadMethod.useBufferStorage;

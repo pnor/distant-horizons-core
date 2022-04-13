@@ -24,6 +24,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
+import org.spongepowered.asm.mixin.injection.Inject;
 
 /**
  * @author James Seibel
@@ -75,11 +76,12 @@ public interface IChunkWrapper extends IBindable
 	}
 	
 	boolean doesNearbyChunksExist();
+	String toString();
 	
 	
 	
 	/** This is a bad hash algorithm, but can be used for rough debugging. */
-	public default int roughHashCode()
+	default int roughHashCode()
 	{
 		int hash = 31;
 		int primeMultiplier = 227;
