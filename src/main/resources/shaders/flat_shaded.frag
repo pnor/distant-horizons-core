@@ -33,7 +33,7 @@ uniform vec4 fogColor;
 float getNearFogThickness(float dist);
 float getFarFogThickness(float dist);
 float getHeightFogThickness(float dist);
-float calculateFarFogDepth(float horizontal, float dist);
+float calculateFarFogDepth(float horizontal, float dist, float nearFogStart);
 float calculateHeightFogDepth(float vertical, float realY);
 float mixFogThickness(float near, float far, float height);
 // =========================================================
@@ -58,7 +58,7 @@ void main()
         float heightDist = calculateHeightFogDepth(
             vertexWorldPos.y, vertexYPos) * fogVerticalScale;
         float farDist = calculateFarFogDepth(horizontalDist,
-            length(vertexWorldPos.xyz) * fogScale);
+            length(vertexWorldPos.xyz) * fogScale, nearFogStart);
 
         float nearFogThickness = getNearFogThickness(horizontalDist);
         float farFogThickness = getFarFogThickness(farDist);
