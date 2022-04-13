@@ -23,7 +23,9 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
+import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -80,7 +82,8 @@ public class SimpleRenderBuffer extends RenderBuffer
 			hasRendered = true;
 			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 			shaderProgram.bindVertexBuffer(vbo.id);
-			GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbo.vertexCount);
+			QuadIBO.GLOBAL.bind(vbo.vertexCount/4);
+			GL32.glDrawElements(GL32.GL_TRIANGLES, (vbo.vertexCount/4)*6, QuadIBO.GLOBAL.type, 0);
 			//LodRenderer.tickLogger.info("Vertex buffer: {}", vbo);
 		}
 		return hasRendered;

@@ -45,7 +45,7 @@ import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 public class LodQuadBuilder
 {
 	static final int MAX_BUFFER_SIZE = (1024 * 1024);
-	static final int QUAD_BYTE_SIZE = (12 * 6);
+	static final int QUAD_BYTE_SIZE = (12 * 4);
 	static final int MAX_QUADS_PER_BUFFER = MAX_BUFFER_SIZE / QUAD_BYTE_SIZE;
 	
 	static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
@@ -62,17 +62,11 @@ public class LodQuadBuilder
 				{ 1, 0 }, // 0
 				{ 1, 1 }, // 1
 				{ 0, 1 }, // 2
-				
-				{ 1, 0 }, // 0
-				{ 0, 1 }, // 2
 				{ 0, 0 }, // 3
 			},
 			{ // DOWN
 				{ 0, 0 }, // 0
 				{ 0, 1 }, // 1
-				{ 1, 1 }, // 2
-				
-				{ 0, 0 }, // 0
 				{ 1, 1 }, // 2
 				{ 1, 0 }, // 3
 			},
@@ -82,18 +76,14 @@ public class LodQuadBuilder
 				{ 0, 0 }, // 0
 				{ 0, 1 }, // 1
 				{ 1, 1 }, // 2
-				
-				{ 0, 0 }, // 0
-				{ 1, 1 }, // 2
+
 				{ 1, 0 }, // 3
 			},
 			{ // SOUTH
 				{ 1, 0 }, // 0
 				{ 1, 1 }, // 1
 				{ 0, 1 }, // 2
-				
-				{ 1, 0 }, // 0
-				{ 0, 1 }, // 2
+
 				{ 0, 0 }, // 3
 			},
 			
@@ -102,18 +92,14 @@ public class LodQuadBuilder
 				{ 0, 0 }, // 0
 				{ 1, 0 }, // 1
 				{ 1, 1 }, // 2
-				
-				{ 0, 0 }, // 0
-				{ 1, 1 }, // 2
+
 				{ 0, 1 }, // 3
 			},
 			{ // EAST
 				{ 0, 1 }, // 0
 				{ 1, 1 }, // 1
 				{ 1, 0 }, // 2
-				
-				{ 0, 1 }, // 0
-				{ 1, 0 }, // 2
+
 				{ 0, 0 }, // 3
 			},
 		};
@@ -406,7 +392,7 @@ public class LodQuadBuilder
 				}
 				bb.rewind();
 				vbo.unmapBuffer(method);
-				vbo.vertexCount = numOfQuads * 6;
+				vbo.vertexCount = numOfQuads * 4;
 				return dir < 6;
 			}
 			
