@@ -90,71 +90,43 @@ public class GLProxy
 	public final long proxyWorkerGlContext;
 	/** the proxyWorker's GL capabilities */
 	public final GLCapabilities proxyWorkerGlCapabilities;
-	
-	/** Requires OpenGL 4.4, and offers the best buffer uploading */
-	public final boolean bufferStorageSupported;
-	
-	/** Requires OpenGL 4.5 */
-	public final boolean namedObjectSupported;
 
-	/** Requires OpenGL 4.3 */
-	public final boolean VertexAttributeBufferBindingSupported;
-	
-	/** Requires OpenGL 3.0, which will current min requirement as 3.3, should always be true */
-	@Deprecated
-	public final boolean mapBufferRangeSupported = true;
+	public boolean namedObjectSupported = false; // ~OpenGL 4.5 (UNUSED CURRENTLY)
+	public boolean bufferStorageSupported = false; // ~OpenGL 4.4
+	public boolean VertexAttributeBufferBindingSupported = false; // ~OpenGL 4.3
 	
 	private final GpuUploadMethod preferredUploadMethod;
 
 	public final GLMessage.Builder vanillaDebugMessageBuilder;
 	public final GLMessage.Builder lodBuilderDebugMessageBuilder;
 	public final GLMessage.Builder proxyWorkerDebugMessageBuilder;
-	
+
 	
 	private String getFailedVersionInfo(GLCapabilities c) {
-		
-		return "Your supported OpenGL version:\n" + "1.1: " + c.OpenGL11 + "\n" +
-				"1.2: " + c.OpenGL12 + "\n" +
-				"1.3: " + c.OpenGL13 + "\n" +
-				"1.4: " + c.OpenGL14 + "\n" +
-				"1.5: " + c.OpenGL15 + "\n" +
-				"2.0: " + c.OpenGL20 + "\n" +
-				"2.1: " + c.OpenGL21 + "\n" +
-				"3.0: " + c.OpenGL30 + "\n" +
-				"3.1: " + c.OpenGL31 + "\n" +
-				"3.2: " + c.OpenGL32 + " <- REQUIRED\n" +
-				"3.3: " + c.OpenGL33 + "\n" +
-				"4.0: " + c.OpenGL40 + "\n" +
-				"4.1: " + c.OpenGL41 + "\n" +
-				"4.2: " + c.OpenGL42 + "\n" +
-				"4.3: " + c.OpenGL43 + " <- optional improvement\n" +
-				"4.4: " + c.OpenGL44 + " <- optional improvement\n" +
-				"4.5: " + c.OpenGL45 + "\n" +
-				"4.6: " + c.OpenGL46 + "\n" +
+		return "Your OpenGL support:\n" +
+				"openGL version 3.2+: " + c.OpenGL32 + " <- REQUIRED\n" +
+				"Vertex Attribute Buffer Binding: " + (c.glVertexAttribBinding!=0) + " <- optional improvement\n" +
+				"Buffer Storage: " + (c.glBufferStorage!=0) + " <- optional improvement\n" +
 				"If you noticed that your computer supports higher OpenGL versions"
 				+ " but not the required version, try running the game in compatibility mode."
 				+ " (How you turn that on, I have no clue~)";
 	}
+
+	private boolean checkCapabilities(GLCapabilities c) {
+		if (!c.OpenGL32) {
+			return false;
+		}
+		namedObjectSupported = c.glNamedBufferStorage!=0;
+		bufferStorageSupported = c.glBufferStorage!=0;
+		VertexAttributeBufferBindingSupported = c.glVertexAttribBinding!=0;
+		return true;
+	}
+
 	private String getVersionInfo(GLCapabilities c) {
-		
-		return "Your supported OpenGL version:\n" + "1.1: " + c.OpenGL11 + "\n" +
-				"1.2: " + c.OpenGL12 + "\n" +
-				"1.3: " + c.OpenGL13 + "\n" +
-				"1.4: " + c.OpenGL14 + "\n" +
-				"1.5: " + c.OpenGL15 + "\n" +
-				"2.0: " + c.OpenGL20 + "\n" +
-				"2.1: " + c.OpenGL21 + "\n" +
-				"3.0: " + c.OpenGL30 + "\n" +
-				"3.1: " + c.OpenGL31 + "\n" +
-				"3.2: " + c.OpenGL32 + " <- REQUIRED\n" +
-				"3.3: " + c.OpenGL33 + "\n" +
-				"4.0: " + c.OpenGL40 + "\n" +
-				"4.1: " + c.OpenGL41 + "\n" +
-				"4.2: " + c.OpenGL42 + "\n" +
-				"4.3: " + c.OpenGL43 + " <- optional improvement\n" +
-				"4.4: " + c.OpenGL44 + " <- optional improvement\n" +
-				"4.5: " + c.OpenGL45 + "\n" +
-				"4.6: " + c.OpenGL46 + "\n";
+		return "Your OpenGL support:\n" +
+				"openGL version 3.2+: " + c.OpenGL32 + " <- REQUIRED\n" +
+				"Vertex Attribute Buffer Binding: " + (c.glVertexAttribBinding!=0) + " <- optional improvement\n" +
+				"Buffer Storage: " + (c.glBufferStorage!=0) + " <- optional improvement\n";
 	}
 	
 	private static void logMessage(GLMessage msg) {
@@ -254,13 +226,12 @@ public class GLProxy
 		if (!minecraftGlCapabilities.OpenGL32)
 		{
 			String supportedVersionInfo = getFailedVersionInfo(minecraftGlCapabilities);
-			
-			// Note: as of MC 1.17 this shouldn't happen since MC
-			// requires OpenGL 3.2, but for older MC version this will warn the player.
+
+			// See full requirement at above.
 			String errorMessage = ModInfo.READABLE_NAME + " was initializing " + GLProxy.class.getSimpleName()
-					+ " and discovered this GPU doesn't support OpenGL 3.2." + " Sorry I couldn't tell you sooner :(\n"+
+					+ " and discovered this GPU doesn't meet the OpenGL requirement." + " Sorry I couldn't tell you sooner :(\n"+
 					"Additional info:\n"+supportedVersionInfo;
-			MC.crashMinecraft(errorMessage, new UnsupportedOperationException("This GPU doesn't support OpenGL 3.2."));
+			MC.crashMinecraft(errorMessage, new UnsupportedOperationException("Distant Horizon OpenGL requirements not met"));
 		}
 		GL_LOGGER.info("minecraftGlCapabilities:\n"+getVersionInfo(minecraftGlCapabilities));
 
@@ -278,8 +249,8 @@ public class GLProxy
 //		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
 //		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
 		
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
+		//GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
+		//GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);

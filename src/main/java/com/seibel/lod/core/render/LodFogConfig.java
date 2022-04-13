@@ -44,7 +44,7 @@ public class LodFogConfig
 	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
-	public static final boolean DEBUG_DUMP_GENERATED_CODE = true;
+	public static final boolean DEBUG_DUMP_GENERATED_CODE = false;
 
 	public final FogSetting farFogSetting;
 	public final FogSetting heightFogSetting;
