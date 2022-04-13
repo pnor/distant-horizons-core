@@ -23,9 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
-import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
