@@ -30,7 +30,7 @@ import static org.lwjgl.opengl.GL31.GL_COPY_WRITE_BUFFER;
  * Represents a OpenGL Index Buffer Object.
  *
  * @author Cotex
- * @version 4-13-2022
+ * @version 2022-4-13
  */
 public class QuadIBO
 {
