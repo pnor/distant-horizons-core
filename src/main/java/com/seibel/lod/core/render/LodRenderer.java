@@ -29,6 +29,7 @@ import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.Pos2D;
+import com.seibel.lod.core.objects.opengl.QuadIBO;
 import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.*;
@@ -318,6 +319,9 @@ public class LodRenderer
 		LagSpikeCatcher drawFillLightmap = new LagSpikeCatcher();
 		ILightMapWrapper lightmap = MC_RENDER.getLightmapWrapper();
 		lightmap.bind();
+		
+		QuadIBO.GLOBAL.bind();
+		
 		//lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
 		drawFillLightmap.end("drawFillLightmap");
 		drawFillData.end("DrawFillData");
@@ -372,6 +376,7 @@ public class LodRenderer
 		profiler.popPush("LOD cleanup");
 		LagSpikeCatcher drawCleanup = new LagSpikeCatcher();
 		lightmap.unbind();
+		QuadIBO.GLOBAL.unbind();
 		
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 
