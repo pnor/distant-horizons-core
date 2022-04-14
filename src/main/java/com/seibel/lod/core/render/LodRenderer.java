@@ -322,10 +322,13 @@ public class LodRenderer
 		lightmap.bind();
 
 		if (ENABLE_IBO) quadIBO.bind();
-		
+
 		//lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
 		drawFillLightmap.end("drawFillLightmap");
 		drawFillData.end("DrawFillData");
+		//GL32.glEnable( GL32.GL_POLYGON_OFFSET_FILL );
+		//GL32.glPolygonOffset( 1f, 1f );
+
 		//===========//
 		// rendering //
 		//===========//

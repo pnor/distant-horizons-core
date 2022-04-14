@@ -70,7 +70,10 @@ public final class VertexAttributePostGL43 extends VertexAttribute {
 	@Override
 	// Requires VertexAttribute binded
 	public void setVertexAttribute(int bindingPoint, int attributeIndex, VertexPointer attribute) {
-		GL43.glVertexAttribFormat(attributeIndex, attribute.elementCount, attribute.glType, 
+		if (attribute.useInteger)
+			GL43.glVertexAttribIFormat(attributeIndex, attribute.elementCount, attribute.glType, strideSize);
+		else
+			GL43.glVertexAttribFormat(attributeIndex, attribute.elementCount, attribute.glType,
 				attribute.normalized, strideSize); // Here strideSize is new attrib offset
 		strideSize += attribute.byteSize;
 		if (numberOfBindingPoints <= bindingPoint) numberOfBindingPoints = bindingPoint+1;

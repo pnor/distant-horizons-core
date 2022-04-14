@@ -59,7 +59,10 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 		for (int i=0; i< pointers.length; i++) {
 			VertexPointer pointer = pointers[i];
 			if (pointer==null) continue;
-			GL32.glVertexAttribPointer(i, pointer.elementCount, pointer.glType,
+			if (pointer.useInteger)
+				GL32.glVertexAttribIPointer(i, pointer.elementCount, pointer.glType,
+						strideSize, pointersOffset[i]);
+			else GL32.glVertexAttribPointer(i, pointer.elementCount, pointer.glType,
 					pointer.normalized, strideSize, pointersOffset[i]);
 		}
 	}
@@ -77,7 +80,10 @@ public final class VertexAttributePreGL43 extends VertexAttribute {
 			VertexPointer pointer = pointers[j];
 			if (pointer == null)
 				continue;
-			GL32.glVertexAttribPointer(j, pointer.elementCount, pointer.glType,
+			if (pointer.useInteger)
+				GL32.glVertexAttribIPointer(j, pointer.elementCount, pointer.glType,
+						strideSize, pointersOffset[j]);
+			else GL32.glVertexAttribPointer(j, pointer.elementCount, pointer.glType,
 					pointer.normalized, strideSize, pointersOffset[j]);
 		}
 

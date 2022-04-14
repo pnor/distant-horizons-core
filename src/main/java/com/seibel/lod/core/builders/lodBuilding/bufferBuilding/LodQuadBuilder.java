@@ -234,7 +234,7 @@ public class LodQuadBuilder
 	
 	
 	
-	private static void putVertex(ByteBuffer bb, short x, short y, short z, int color, byte skylight, byte blocklight)
+	private static void putVertex(ByteBuffer bb, short x, short y, short z, int color, byte skylight, byte blocklight, int mx, int my, int mz)
 	{
 		skylight %= 16;
 		blocklight %= 16;
@@ -242,8 +242,21 @@ public class LodQuadBuilder
 		bb.putShort(x);
 		bb.putShort(y);
 		bb.putShort(z);
-		
-		bb.putShort((short) (skylight | (blocklight << 4)));
+
+		short meta = 0;
+		meta |= (skylight | (blocklight << 4));
+		byte mirco = 0;
+		// mirco offset which is a xyz 2bit value
+		// 0b00 = no offset
+		// 0b01 = positive offset
+		// 0b11 = negative offset
+		// format is: 0b00zzyyxx
+		if (mx != 0) mirco |= mx > 0 ? 0b01 : 0b11;
+		if (my != 0) mirco |= my > 0 ? 0b0100 : 0b1100;
+		if (mz != 0) mirco |= mz > 0 ? 0b010000 : 0b110000;
+		meta |= mirco << 8;
+
+		bb.putShort(meta);
 		byte r = (byte) ColorUtil.getRed(color);
 		byte g = (byte) ColorUtil.getGreen(color);
 		byte b = (byte) ColorUtil.getBlue(color);
@@ -263,28 +276,38 @@ public class LodQuadBuilder
 		for (int i = 0; i < quadBase.length; i++)
 		{
 			short dx, dy, dz;
+			int mx, my, mz;
 			switch (axis)
 			{
 			case X: // ZY
 				dx = 0;
 				dy = quadBase[i][1] == 1 ? widthNorthSouth : 0;
 				dz = quadBase[i][0] == 1 ? widthEastWest : 0;
+				mx = 0;
+				my = quadBase[i][1] == 1 ? 1 : -1;
+				mz = quadBase[i][0] == 1 ? 1 : -1;
 				break;
 			case Y: // XZ
 				dx = quadBase[i][0] == 1 ? widthEastWest : 0;
 				dy = 0;
 				dz = quadBase[i][1] == 1 ? widthNorthSouth : 0;
+				mx = quadBase[i][0] == 1 ? 1 : -1;
+				my = 0;
+				mz = quadBase[i][1] == 1 ? 1 : -1;
 				break;
 			case Z: // XY
 				dx = quadBase[i][0] == 1 ? widthEastWest : 0;
 				dy = quadBase[i][1] == 1 ? widthNorthSouth : 0;
 				dz = 0;
+				mx = quadBase[i][0] == 1 ? 1 : -1;
+				my = quadBase[i][1] == 1 ? 1 : -1;
+				mz = 0;
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid Axis enum: " + axis);
 			}
 			putVertex(bb, (short) (quad.x + dx), (short) (quad.y + dy), (short) (quad.z + dz), quad.color,
-					quad.skyLight, quad.blockLight);
+					quad.skyLight, quad.blockLight, mx, my, mz);
 		}
 	}
 	
