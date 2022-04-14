@@ -23,7 +23,10 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
+import com.seibel.lod.core.render.LodRenderer;
+import com.seibel.lod.core.render.objects.GLVertexBuffer;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.api.ApiShared;
@@ -42,16 +45,14 @@ import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 public class SimpleRenderBuffer extends RenderBuffer
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	private static final int FULL_SIZED_BUFFERS =
-			LodBufferBuilderFactory.MAX_TRIANGLES_PER_BUFFER * LodUtil.LOD_VERTEX_FORMAT.getByteSize() * 3;
 	private static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = 1_000_000;
-	
-	LodVertexBuffer[] vbos;
+
+	GLVertexBuffer[] vbos;
 	
 	// public void onReuse() {}
 	
 	public SimpleRenderBuffer() {
-		vbos = new LodVertexBuffer[0];
+		vbos = new GLVertexBuffer[0];
 	}
 	
 	@Override
@@ -74,14 +75,17 @@ public class SimpleRenderBuffer extends RenderBuffer
 	public boolean render(LodRenderProgram shaderProgram)
 	{
 		boolean hasRendered = false;
-		for (LodVertexBuffer vbo : vbos) {
+		for (GLVertexBuffer vbo : vbos) {
 			if (vbo == null) continue;
-			if (vbo.vertexCount == 0) continue;
+			if (vbo.getVertexCount() == 0) continue;
 			hasRendered = true;
-			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
-			shaderProgram.bindVertexBuffer(vbo.id);
-			QuadIBO.GLOBAL.resizeIfNecessary(vbo.vertexCount/4);
-			GL32.glDrawElements(GL32.GL_TRIANGLES, (vbo.vertexCount/4)*6, QuadIBO.GLOBAL.type, 0);
+			vbo.bind();
+			shaderProgram.bindVertexBuffer(vbo.getId());
+			if (LodRenderer.ENABLE_IBO) {
+				GL32.glDrawElements(GL32.GL_TRIANGLES, (vbo.getVertexCount()/4)*6, ClientApi.renderer.quadIBO.getType(), 0);
+			} else {
+				GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbo.getVertexCount());
+			}
 			//LodRenderer.tickLogger.info("Vertex buffer: {}", vbo);
 		}
 		return hasRendered;
@@ -92,14 +96,14 @@ public class SimpleRenderBuffer extends RenderBuffer
 	{
 		statsMap.incStat("RenderBuffers");
 		statsMap.incStat("SimpleRenderBuffers");
-		for (LodVertexBuffer b : vbos) {
+		for (GLVertexBuffer b : vbos) {
 			if (b == null) continue;
 			statsMap.incStat("VBOs");
-			if (b.size == FULL_SIZED_BUFFERS) {
+			if (b.getSize() == LodBufferBuilderFactory.FULL_SIZED_BUFFER) {
 				statsMap.incStat("FullsizedVBOs");
 			}
-			if (b.size == 0) GL_LOGGER.warn("VBO with size 0");
-			statsMap.incBytesStat("TotalUsage", b.size);
+			if (b.getSize() == 0) GL_LOGGER.warn("VBO with size 0");
+			statsMap.incBytesStat("TotalUsage", b.getSize());
 		}
 	}
 	
@@ -107,8 +111,8 @@ public class SimpleRenderBuffer extends RenderBuffer
 	public void close()
 	{
 		GLProxy.getInstance().recordOpenGlCall(() -> {
-			for (LodVertexBuffer b : vbos) {
-				b.close();
+			for (GLVertexBuffer b : vbos) {
+				b.destroy(false);
 			}
 		});
 	}
@@ -122,10 +126,11 @@ public class SimpleRenderBuffer extends RenderBuffer
 		Iterator<ByteBuffer> iter = builder.makeVertexBuffers();
 		while (iter.hasNext()) {
 			ByteBuffer bb = iter.next();
-			LodVertexBuffer vbo = getOrMakeVbo(i++, method.useBufferStorage);
+			GLVertexBuffer vbo = getOrMakeVbo(i++, method.useBufferStorage);
 			int size = bb.limit() - bb.position();
 			try {
-				vbo.uploadBuffer(bb, size/LodUtil.LOD_VERTEX_FORMAT.getByteSize(), method, FULL_SIZED_BUFFERS);
+				vbo.bind();
+				vbo.uploadBuffer(bb, size/LodUtil.LOD_VERTEX_FORMAT.getByteSize(), method, LodBufferBuilderFactory.FULL_SIZED_BUFFER);
 			} catch (Exception e) {
 				vbos[i-1] = null;
 				vbo.close();
@@ -151,23 +156,23 @@ public class SimpleRenderBuffer extends RenderBuffer
 	{
 		resize(builder.getCurrentNeededVertexBufferCount());
 		for (int i=0; i<vbos.length; i++) {
-			if (vbos[i]==null) vbos[i] = new LodVertexBuffer(method.useBufferStorage);
+			if (vbos[i]==null) vbos[i] = new GLVertexBuffer(method.useBufferStorage);
 		}
 		BufferFiller func = builder.makeBufferFiller(method);
 		int i = 0;
 		while (i < vbos.length && func.fill(vbos[i++])) {}
 	}
 
-	private LodVertexBuffer getOrMakeVbo(int iIndex, boolean useBuffStorage) {
+	private GLVertexBuffer getOrMakeVbo(int iIndex, boolean useBuffStorage) {
 		if (vbos[iIndex] == null) {
-			vbos[iIndex] = new LodVertexBuffer(useBuffStorage);
+			vbos[iIndex] = new GLVertexBuffer(useBuffStorage);
 		}
 		return vbos[iIndex];
 	}
 	
 	private void resize(int size) {
 		if (vbos.length != size) {
-			LodVertexBuffer[] newVbos = new LodVertexBuffer[size];
+			GLVertexBuffer[] newVbos = new GLVertexBuffer[size];
 			if (vbos.length > size) {
 				for (int i=size; i<vbos.length; i++) {
 					if (vbos[i]!=null) vbos[i].close();
@@ -178,7 +183,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 				newVbos[i] = vbos[i];
 				vbos[i] = null;
 			}
-			for (LodVertexBuffer b : vbos) {
+			for (GLVertexBuffer b : vbos) {
 				if (b != null) throw new RuntimeException("LEAKING VBO!");
 			}
 			vbos = newVbos;

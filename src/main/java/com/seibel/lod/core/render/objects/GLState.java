@@ -26,6 +26,7 @@ public class GLState {
     public int prog;
     public int vao;
     public int vbo;
+    public int ebo;
     public int fbo;
     public int text;
     public int activeTex;
@@ -48,6 +49,7 @@ public class GLState {
         prog = GL32.glGetInteger(GL32.GL_CURRENT_PROGRAM);
         vao = GL32.glGetInteger(GL32.GL_VERTEX_ARRAY_BINDING);
         vbo = GL32.glGetInteger(GL32.GL_ARRAY_BUFFER_BINDING);
+        ebo = GL32.glGetInteger(GL32.GL_ELEMENT_ARRAY_BUFFER_BINDING);
         fbo = GL32.glGetInteger(GL32.GL_FRAMEBUFFER_BINDING);
         text = GL32.glGetInteger(GL32.GL_TEXTURE_BINDING_2D);
         activeTex = GL32.glGetInteger(GL32.GL_ACTIVE_TEXTURE);
@@ -72,7 +74,7 @@ public class GLState {
 
     @Override
     public String toString() {
-        return "GLState{" + "prog=" + prog + ", vao=" + vao + ", vbo=" + vbo + ", fbo=" + fbo +
+        return "GLState{" + "prog=" + prog + ", vao=" + vao + ", vbo=" + vbo + ", ebo=" + ebo + ", fbo=" + fbo +
                 ", text=" + GLEnums.getString(text) + "@"+activeTex+", text0=" + GLEnums.getString(text0) +
                 ", blend=" + blend + ", blendMode=" + GLEnums.getString(blendSrc) + "," + GLEnums.getString(blendDst) +
                 ", depth=" + depth +
@@ -96,6 +98,7 @@ public class GLState {
         GL32.glBindTexture(GL32.GL_TEXTURE_2D, text);
         GL32.glBindVertexArray(vao);
         GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo);
+        GL32.glBindBuffer(GL32.GL_ELEMENT_ARRAY_BUFFER, ebo);
 
         GL32.glBlendFunc(blendSrc, blendDst);
         if (depth) {

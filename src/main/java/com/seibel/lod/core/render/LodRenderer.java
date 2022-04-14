@@ -26,10 +26,9 @@ import java.util.concurrent.TimeUnit;
 import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
-import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.Pos2D;
-import com.seibel.lod.core.objects.opengl.QuadIBO;
+import com.seibel.lod.core.render.objects.QuadElementBuffer;
 import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.*;
@@ -47,7 +46,6 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
-import com.seibel.lod.core.render.objects.LightmapTexture;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
@@ -73,6 +71,8 @@ public class LodRenderer
 	public static final boolean ENABLE_DRAW_LAG_SPIKE_LOGGING = false;
 	public static final boolean ENABLE_DUMP_GL_STATE = true;
 	public static final long DRAW_LAG_SPIKE_THRESHOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
+
+	public static final boolean ENABLE_IBO = true;
 	
 	public static class LagSpikeCatcher {
 
@@ -108,6 +108,7 @@ public class LodRenderer
 	
 	/** This is used to determine if the LODs should be regenerated */
 	private AbstractBlockPosWrapper lastUpdatedPos = null;
+	public QuadElementBuffer quadIBO = null;
 	
 	// these variables are used to determine if the buffers should be rebuilt
 	private int prevRenderDistance = 0;
@@ -319,8 +320,8 @@ public class LodRenderer
 		LagSpikeCatcher drawFillLightmap = new LagSpikeCatcher();
 		ILightMapWrapper lightmap = MC_RENDER.getLightmapWrapper();
 		lightmap.bind();
-		
-		QuadIBO.GLOBAL.bind();
+
+		if (ENABLE_IBO) quadIBO.bind();
 		
 		//lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
 		drawFillLightmap.end("drawFillLightmap");
@@ -376,7 +377,7 @@ public class LodRenderer
 		profiler.popPush("LOD cleanup");
 		LagSpikeCatcher drawCleanup = new LagSpikeCatcher();
 		lightmap.unbind();
-		QuadIBO.GLOBAL.unbind();
+		if (ENABLE_IBO) quadIBO.unbind();
 		
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 
@@ -410,6 +411,10 @@ public class LodRenderer
 		EVENT_LOGGER.info("Setting up renderer");
 		isSetupComplete = true;
 		shaderProgram = new LodRenderProgram(LodFogConfig.generateFogConfig());
+		if (ENABLE_IBO) {
+			quadIBO = new QuadElementBuffer();
+			quadIBO.reserve(LodBufferBuilderFactory.MAX_QUADS_PER_BUFFER);
+		}
 		EVENT_LOGGER.info("Renderer setup complete");
 	}
 	
@@ -492,6 +497,7 @@ public class LodRenderer
 		isSetupComplete = false;
 		EVENT_LOGGER.info("Renderer Cleanup Started");
 		shaderProgram.free();
+		if (quadIBO != null) quadIBO.destroy(false);
 		EVENT_LOGGER.info("Renderer Cleanup Complete");
 	}
 
