@@ -80,7 +80,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 			hasRendered = true;
 			GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, vbo.id);
 			shaderProgram.bindVertexBuffer(vbo.id);
-			QuadIBO.GLOBAL.bind(vbo.vertexCount/4);
+			QuadIBO.GLOBAL.resizeIfNecessary(vbo.vertexCount/4);
 			GL32.glDrawElements(GL32.GL_TRIANGLES, (vbo.vertexCount/4)*6, QuadIBO.GLOBAL.type, 0);
 			//LodRenderer.tickLogger.info("Vertex buffer: {}", vbo);
 		}
