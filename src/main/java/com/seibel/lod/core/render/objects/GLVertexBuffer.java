@@ -71,7 +71,8 @@ public class GLVertexBuffer extends GLBuffer
 	public ByteBuffer mapBuffer(int targetSize, GpuUploadMethod uploadMethod, int maxExpensionSize)
 	{
 		return super.mapBuffer(targetSize, uploadMethod, maxExpensionSize,
-				uploadMethod.useBufferStorage ? GL32.GL_MAP_WRITE_BIT : GL32.GL_STATIC_DRAW,
+				uploadMethod.useBufferStorage ? GL32.GL_MAP_WRITE_BIT :
+						uploadMethod.useEarlyMapping ? GL32.GL_DYNAMIC_DRAW : GL32.GL_STATIC_DRAW,
 				GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT);
 	}
 }
