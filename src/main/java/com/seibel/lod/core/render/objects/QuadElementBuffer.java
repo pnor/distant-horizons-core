@@ -90,6 +90,7 @@ public class QuadElementBuffer extends GLElementBuffer {
         if (quadCount < 0) {
             throw new IllegalArgumentException("quadCount must be greater than 0");
         }
+        if (quadCount == 0) return; // FIXME: This doesn't happens yet, but just add this since everything will break if it does
         indicesCount = quadCount * 6; // 2 triangles per quad
         if (indicesCount >= getCapacity() && indicesCount < getCapacity() * BUFFER_SHRINK_TRIGGER) {
             return;
@@ -107,17 +108,15 @@ public class QuadElementBuffer extends GLElementBuffer {
         ApiShared.LOGGER.info("Quad IBO Resizing from [" + getCapacity() + "] to [" + quadCount + "]" + " with type: " +
                 GLEnums.getString(type));
 
-        ByteBuffer buffer;
+        ByteBuffer buffer = ByteBuffer.allocateDirect(indicesCount * GLEnums.getTypeSize(type)).order(ByteOrder.nativeOrder());
+        buildBuffer(quadCount, buffer, type);
         if (!gl.bufferStorageSupported) {
+
             bind();
-            buffer = super.mapBuffer(indicesCount * GLEnums.getTypeSize(type), GpuUploadMethod.BUFFER_MAPPING,
-                    indicesCount * GLEnums.getTypeSize(type), GL32.GL_STATIC_DRAW,
-                    GL32.GL_MAP_WRITE_BIT | GL32.GL_MAP_INVALIDATE_BUFFER_BIT | GL32.GL_MAP_UNSYNCHRONIZED_BIT);
-            buildBuffer(quadCount, buffer, type);
+            super.uploadBuffer(buffer, GpuUploadMethod.DATA,
+                    indicesCount * GLEnums.getTypeSize(type), GL32.GL_STATIC_DRAW);
             super.unmapBuffer();
         } else {
-            buffer = ByteBuffer.allocateDirect(indicesCount * GLEnums.getTypeSize(type)).order(ByteOrder.nativeOrder());
-            buildBuffer(quadCount, buffer, type);
             bind();
             super.uploadBuffer(buffer, GpuUploadMethod.BUFFER_STORAGE,
                     indicesCount * GLEnums.getTypeSize(type), 0);

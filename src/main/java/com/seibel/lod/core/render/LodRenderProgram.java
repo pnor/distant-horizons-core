@@ -42,6 +42,8 @@ public class LodRenderProgram extends ShaderProgram {
 
 	public final int mircoOffsetUniform;
 
+	public final int earthRadiusUniform;
+
 	public final int lightMapUniform;
 	// Fog Uniforms
 	public final int fogColorUniform;
@@ -64,6 +66,7 @@ public class LodRenderProgram extends ShaderProgram {
 		modelOffsetUniform = getUniformLocation("modelOffset");
 		worldYOffsetUniform = tryGetUniformLocation("worldYOffset");
 		mircoOffsetUniform = getUniformLocation("mircoOffset");
+		earthRadiusUniform = tryGetUniformLocation("earthRadius");
 
 		lightMapUniform = getUniformLocation("lightMap");
 
@@ -141,6 +144,9 @@ public class LodRenderProgram extends ShaderProgram {
 		setUniform(lightMapUniform, lightmapBindPoint);
 
 		if (worldYOffsetUniform != -1) setUniform(worldYOffsetUniform, (float)worldYOffset);
+		if (earthRadiusUniform != -1) setUniform(earthRadiusUniform,
+				63710f); //radio of 1 to 100 to Earth radius (6,371 KM)
+				// (float)lodDrawDistance);
 
 		// Fog
 		setUniform(fullFogModeUniform, fullFogMode ? 1 : 0);

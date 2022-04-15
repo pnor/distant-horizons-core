@@ -157,6 +157,7 @@ public class GLBuffer implements AutoCloseable {
                 GL32.glDeleteBuffers(id);
                 id = GL32.glGenBuffers();
                 GL32.glBindBuffer(getBufferBindingTarget(), id);
+                GL32.glBindBuffer(getBufferBindingTarget(), id);
                 GL44.glBufferStorage(getBufferBindingTarget(), newSize, bufferHint);
             } else {
                 GL32.glBufferData(GL32.GL_ARRAY_BUFFER, newSize, bufferHint);
