@@ -115,7 +115,6 @@ public class QuadElementBuffer extends GLElementBuffer {
             bind();
             super.uploadBuffer(buffer, GpuUploadMethod.DATA,
                     indicesCount * GLEnums.getTypeSize(type), GL32.GL_STATIC_DRAW);
-            super.unmapBuffer();
         } else {
             bind();
             super.uploadBuffer(buffer, GpuUploadMethod.BUFFER_STORAGE,

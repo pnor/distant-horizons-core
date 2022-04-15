@@ -228,10 +228,10 @@ public class BufferQuad
 			otherParallelCompareWidth = quad.widthEastWest;
 		}
 
-		// TEMP: Hard limit for width
-		if (thisPerpendicularCompareWidth >= 8) return false;
-		if (Math.floorDiv(otherPerpendicularCompareStartPos, 8)
-				!= Math.floorDiv(thisPerpendicularCompareStartPos, 8)) return false;
+		// FIXME: TEMP: Hard limit for width
+		if (thisPerpendicularCompareWidth >= 16) return false;
+		if (Math.floorDiv(otherPerpendicularCompareStartPos, 16)
+				!= Math.floorDiv(thisPerpendicularCompareStartPos, 16)) return false;
 		
 		// check if these quads are adjacent
 		if (thisPerpendicularCompareStartPos + thisPerpendicularCompareWidth < otherPerpendicularCompareStartPos ||

@@ -138,7 +138,7 @@ public class LodRenderProgram extends ShaderProgram {
 		vanillaDrawDistance += 32; // Give it a 2 chunk boundary for near fog.
 		// uniforms
 		setUniform(combinedMatUniform, combinedMatrix);
-		setUniform(mircoOffsetUniform, 0.005f); // 0.005 block offset
+		setUniform(mircoOffsetUniform, 0.01f); // 0.01 block offset
 
 		// setUniform(skyLightUniform, skyLight);
 		setUniform(lightMapUniform, lightmapBindPoint);
