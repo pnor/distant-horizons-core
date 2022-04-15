@@ -19,7 +19,23 @@
  
 package com.seibel.lod.core.enums.rendering;
 
-public enum HeightFogMixMode {
+/**
+ * basic                        <br>
+ * Ignore_Height                <br>
+ * Addition                     <br>
+ * Max                          <br>
+ * Multiply                     <br>
+ * Inverse_Multiply             <br>
+ * Limited_Addition             <br>
+ * Multiply_Addition            <br>
+ * Inverse_Multiply_Addition    <br>
+ * Average                      <br>
+ *
+ * @author Leetom
+ * @version 2022-4-14
+ */
+public enum HeightFogMixMode
+{
     BASIC,
     IGNORE_HEIGHT,
     ADDITION,

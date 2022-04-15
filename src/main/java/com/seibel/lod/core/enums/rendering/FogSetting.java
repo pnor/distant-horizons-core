@@ -21,8 +21,17 @@ package com.seibel.lod.core.enums.rendering;
 
 import java.util.Objects;
 
+/**
+ * Contains all configurable options related to fog.
+ *
+ * @version 2022-4-13
+ */
 public class FogSetting
 {
+    /** a FogSetting object with 0 for every value */
+    public static final FogSetting EMPTY = new FogSetting(0, 0, 0, 0,0, FogSetting.FogType.LINEAR);
+    
+    
 	public final double start;
 	public final double end;
 	public final double min;

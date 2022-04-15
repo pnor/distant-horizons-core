@@ -33,11 +33,12 @@ import java.util.Objects;
 import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 /**
- * This object is just a replacement for an array
- * to make things easier to understand in the LodRenderer.
+ * This holds fog related settings and
+ * creates the fog related shader code.
+ *
  * @author Leetom
  * @author James Seibel
- * @version 2022-4-13
+ * @version 2022-4-14
  */
 public class LodFogConfig
 {
@@ -54,62 +55,79 @@ public class LodFogConfig
 	
 	final boolean drawNearFog;
 	
+	
 	public static LodFogConfig generateFogConfig()
 	{
-		FogDrawMode doDraw = CONFIG.client().graphics().fogQuality().getFogDrawMode();
-		if (doDraw == FogDrawMode.USE_OPTIFINE_SETTING)
-			doDraw = REFLECTION_HANDLER.getFogDrawMode();
-		return new LodFogConfig(doDraw);
+		FogDrawMode fogMode = CONFIG.client().graphics().fogQuality().getFogDrawMode();
+		if (fogMode == FogDrawMode.USE_OPTIFINE_SETTING)
+			fogMode = REFLECTION_HANDLER.getFogDrawMode();
+		
+		return new LodFogConfig(fogMode);
 	}
 	
+	/** sets all fog options from the config */
 	private LodFogConfig(FogDrawMode fogDrawMode)
 	{
-		if (fogDrawMode == FogDrawMode.FOG_DISABLED)
+		if (fogDrawMode != FogDrawMode.FOG_DISABLED)
 		{
-			drawNearFog = false;
-			farFogSetting = null;
-			heightFogMixMode = null;
-			heightFogMode = null;
-			heightFogSetting = null;
-			heightFogHeight = 0.f;
-		}
-		else
-		{
-			ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality setting = CONFIG.client().graphics().fogQuality();
-			FogDistance fogDistance = setting.getFogDistance();
+			ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality fogSettings = CONFIG.client().graphics().fogQuality();
+			
+			FogDistance fogDistance = fogSettings.getFogDistance();
 			drawNearFog = (fogDistance == FogDistance.NEAR || fogDistance == FogDistance.NEAR_AND_FAR);
+			
 			if (fogDistance == FogDistance.FAR || fogDistance == FogDistance.NEAR_AND_FAR)
 			{
-				farFogSetting = setting.advancedFog().computeFarFogSetting();
-				heightFogMixMode = setting.advancedFog().heightFog().getHeightFogMixMode();
-				if (heightFogMixMode != HeightFogMixMode.IGNORE_HEIGHT && heightFogMixMode != HeightFogMixMode.BASIC)
+				// far fog should be drawn
+				
+				farFogSetting = fogSettings.advancedFog().computeFarFogSetting();
+				
+				heightFogMixMode = fogSettings.advancedFog().heightFog().getHeightFogMixMode();
+				if (heightFogMixMode == HeightFogMixMode.IGNORE_HEIGHT || heightFogMixMode == HeightFogMixMode.BASIC)
 				{
-					heightFogSetting = setting.advancedFog().heightFog().computeHeightFogSetting();
-					heightFogMode = setting.advancedFog().heightFog().getHeightFogMode();
+					// basic fog mixing
+					
+					heightFogSetting = null;
+					heightFogMode = null;
+					heightFogHeight = 0.f;
+				}
+				else
+				{
+					// advanced fog mixing
+					
+					heightFogSetting = fogSettings.advancedFog().heightFog().computeHeightFogSetting();
+					heightFogMode = fogSettings.advancedFog().heightFog().getHeightFogMode();
+					
 					if (heightFogMode.basedOnCamera)
 					{
 						heightFogHeight = 0.f;
 					}
 					else
 					{
-						heightFogHeight = (float) setting.advancedFog().heightFog().getHeightFogHeight();
+						heightFogHeight = (float) fogSettings.advancedFog().heightFog().getHeightFogHeight();
 					}
-				}
-				else
-				{
-					heightFogSetting = null;
-					heightFogMode = null;
-					heightFogHeight = 0.f;
 				}
 			}
 			else
 			{
+				// far fog should not be drawn
+				
 				farFogSetting = null;
 				heightFogSetting = null;
 				heightFogMode = null;
 				heightFogMixMode = null;
 				heightFogHeight = 0.f;
 			}
+		}
+		else
+		{
+			// fog disabled
+			
+			drawNearFog = false;
+			farFogSetting = null;
+			heightFogMixMode = null;
+			heightFogMode = null;
+			heightFogSetting = null;
+			heightFogHeight = 0.f;
 		}
 	}
 	
@@ -132,66 +150,106 @@ public class LodFogConfig
 		return str;
 	}
 	
-	private StringBuilder makeRuntimeDefine()
+	/** Generates the necessary constants for a fragment shader */
+	private void generateRuntimeShaderCode(StringBuilder str)
 	{
-		StringBuilder str = new StringBuilder();
-		str.append("// =======RUNTIME GENERATED DEFINE SECTION========\n#version 150 core\n");
+		str.append("// =======RUNTIME GENERATED CODE SECTION======== //\n");
+		
+		// Generate method: float getNearFogThickness(float dist);
+		str.append("" +
+			"float getNearFogThickness(float dist) \n" +
+			"{ \n" +
+			"	return linearFog(dist, nearFogStart, nearFogLength, 0.0, 1.0); \n" +
+			"} \n");
+		
 		
 		if (farFogSetting == null)
 		{
 			str.append("\n" +
-					"#define farFogStart 0.0\n" +
-					"#define farFogLength 0.0\n" +
-					"#define farFogMin 0.0\n" +
-					"#define farFogRange 0.0\n" +
-					"#define farFogDensity 0.0\n" +
-					"#define heightFogStart 0.0\n" +
-					"#define heightFogLength 0.0\n" +
-					"#define heightFogMin 0.0\n" +
-					"#define heightFogRange 0.0\n" +
-					"#define heightFogDensity 0.0\n" +
-					"\n");
+				"float getFarFogThickness(float dist) { return 0.0; } \n" +
+				"float getHeightFogThickness(float dist) { return 0.0; } \n" +
+				"float calculateFarFogDepth(float horizontal, float dist, float nearFogStart) { return 0.0; } \n" +
+				"float calculateHeightFogDepth(float vertical, float realY) { return 0.0; } \n" +
+				"float mixFogThickness(float near, float far, float height) \n" +
+				"{ \n" +
+					(drawNearFog ? "return 1.0-near;" : "return 0.0;") +
+				"} \n\n");
 		}
 		else
 		{
-			str.append("\n#define farFogStart ");
-			str.append(farFogSetting.start);
-			str.append("\n#define farFogLength ");
-			str.append(farFogSetting.end - farFogSetting.start);
-			str.append("\n#define farFogMin ");
-			str.append(farFogSetting.min);
-			str.append("\n#define farFogRange ");
-			str.append(farFogSetting.max - farFogSetting.min);
-			str.append("\n#define farFogDensity ");
-			str.append(farFogSetting.density);
-			str.append("\n");
+			// Generate method: float getFarFogThickness(float dist);
+			str.append("" +
+				"float getFarFogThickness(float dist) \n" +
+				"{ \n" +
+					getFarFogMethod(farFogSetting.fogType) + "\n" +
+				"} \n");
 			
-			if (heightFogSetting == null)
-			{
-				str.append("\n" +
-						"#define heightFogStart 0.0\n" +
-						"#define heightFogLength 0.0\n" +
-						"#define heightFogMin 0.0\n" +
-						"#define heightFogRange 0.0\n" +
-						"#define heightFogDensity 0.0\n" +
-						"\n");
-			}
-			else
-			{
-				str.append("\n#define heightFogStart ");
-				str.append(heightFogSetting.start);
-				str.append("\n#define heightFogLength ");
-				str.append(heightFogSetting.end - heightFogSetting.start);
-				str.append("\n#define heightFogMin ");
-				str.append(heightFogSetting.min);
-				str.append("\n#define heightFogRange ");
-				str.append(heightFogSetting.max - heightFogSetting.min);
-				str.append("\n#define heightFogDensity ");
-				str.append(heightFogSetting.density);
-				str.append("\n");
-			}
+			
+			// Generate method: float getHeightFogThickness(float dist);
+			str.append("" +
+				"float getHeightFogThickness(float dist) \n" +
+				"{ \n"+
+					(heightFogSetting != null ? getHeightFogMethod(heightFogSetting.fogType) : "	return 0.0;") + "\n" +
+				"} \n");
+			
+			
+			// Generate method: float calculateHeightFogDepth(float vertical, float realY);
+			str.append("" +
+				"float calculateHeightFogDepth(float vertical, float realY) \n" +
+				"{ \n" +
+					(heightFogSetting != null ? getHeightDepthMethod(heightFogMode, heightFogHeight) : "	return 0.0;") + "\n" +
+				"} \n");
+			
+			
+			// Generate method: calculateFarFogDepth(float horizontal, float dist, float nearFogStart);
+			str.append("" +
+				"float calculateFarFogDepth(float horizontal, float dist, float nearFogStart) \n" +
+				"{ \n" +
+				"	return " + (heightFogMixMode == HeightFogMixMode.BASIC ?
+								"(dist - nearFogStart)/(1.0 - nearFogStart);" :
+								"(horizontal - nearFogStart)/(1.0 - nearFogStart);") +
+				"} \n");
+			
+			// Generate method: float mixFogThickness(float near, float far, float height);
+			str.append("" +
+				"float mixFogThickness(float near, float far, float height) \n" +
+				"{ \n" +
+					getMixFogLine(heightFogMixMode, drawNearFog) + "\n" +
+				"} \n");
 		}
-		str.append("// =======RUNTIME END========\n");
+	}
+	
+	
+	
+	//=================//
+	// shader creation //
+	// helper methods  //
+	//=================//
+	
+	private StringBuilder makeRuntimeDefine()
+	{
+		StringBuilder str = new StringBuilder();
+		str.append("// =======RUNTIME GENERATED DEFINE SECTION======== //\n");
+		str.append("#version 150 core\n");
+		
+		FogSetting activeFarFogSetting = this.farFogSetting != null ? this.farFogSetting : FogSetting.EMPTY;
+		FogSetting activeHeightFogSetting = this.heightFogSetting != null ? this.heightFogSetting : FogSetting.EMPTY;
+		
+		str.append("\n" +
+			"#define farFogStart " + activeFarFogSetting.start + "\n" +
+			"#define farFogLength " + (activeFarFogSetting.end - activeFarFogSetting.start) + "\n" +
+			"#define farFogMin " + activeFarFogSetting.min + "\n" +
+			"#define farFogRange " + (activeFarFogSetting.max - activeFarFogSetting.min) + "\n" +
+			"#define farFogDensity " + activeFarFogSetting.density + "\n" +
+			"\n" +
+			"#define heightFogStart " + activeHeightFogSetting.start + "\n" +
+			"#define heightFogLength " + (activeHeightFogSetting.end - activeHeightFogSetting.start) + "\n" +
+			"#define heightFogMin " + activeHeightFogSetting.min + "\n" +
+			"#define heightFogRange " + (activeHeightFogSetting.max - activeHeightFogSetting.min) + "\n" +
+			"#define heightFogDensity " + activeHeightFogSetting.density + "\n" +
+			"\n");
+		
+		str.append("// =======RUNTIME END======== //\n");
 		return str;
 	}
 	
@@ -200,31 +258,34 @@ public class LodFogConfig
 		switch (fogType)
 		{
 		case LINEAR:
-			return "	return linearFog(dist, farFogStart, farFogLength, farFogMin, farFogRange);\n";
+			return "return linearFog(dist, farFogStart, farFogLength, farFogMin, farFogRange);\n";
 		case EXPONENTIAL:
-			return "	return exponentialFog(dist, farFogStart, farFogLength, farFogMin, farFogRange, farFogDensity);\n";
+			return "return exponentialFog(dist, farFogStart, farFogLength, farFogMin, farFogRange, farFogDensity);\n";
 		case EXPONENTIAL_SQUARED:
-			return "	return exponentialSquaredFog(dist, farFogStart, farFogLength, farFogMin, farFogRange, farFogDensity);\n";
+			return "return exponentialSquaredFog(dist, farFogStart, farFogLength, farFogMin, farFogRange, farFogDensity);\n";
+		
+		default:
+			throw new IllegalArgumentException("FogType [" + fogType + "] not implemented for [getFarFogMethod].");
 		}
-		throw new IllegalArgumentException();
 	}
 	
-	private static String getHeightDepthMethod(HeightFogMode mode, float heightFogHeight)
+	private static String getHeightDepthMethod(HeightFogMode heightMode, float heightFogHeight)
 	{
 		String str = "";
-		if (!mode.basedOnCamera)
+		if (!heightMode.basedOnCamera)
 		{
-			str = "	vertical = realY - (" + heightFogHeight + ");\n";
+			str =  "	vertical = realY - (" + heightFogHeight + ");\n";
 		}
-		if (mode.below && mode.above)
+		
+		if (heightMode.below && heightMode.above)
 		{
 			str += "	return abs(vertical);\n";
 		}
-		else if (mode.below)
+		else if (heightMode.below)
 		{
 			str += "	return -vertical;\n";
 		}
-		else if (mode.above)
+		else if (heightMode.above)
 		{
 			str += "	return vertical;\n";
 		}
@@ -235,6 +296,11 @@ public class LodFogConfig
 		return str;
 	}
 	
+	/**
+	 * Returns the method call for the given fog type. <br>
+	 * Example: <br>
+	 * <code>"	return linearFog(dist, heightFogStart, heightFogLength, heightFogMin, heightFogRange);"</code>
+	 */
 	private static String getHeightFogMethod(FogSetting.FogType fogType)
 	{
 		switch (fogType)
@@ -245,131 +311,101 @@ public class LodFogConfig
 			return "	return exponentialFog(dist, heightFogStart, heightFogLength, heightFogMin, heightFogRange, heightFogDensity);\n";
 		case EXPONENTIAL_SQUARED:
 			return "	return exponentialSquaredFog(dist, heightFogStart, heightFogLength, heightFogMin, heightFogRange, heightFogDensity);\n";
+		
+		default:
+			throw new IllegalArgumentException("FogType [" + fogType + "] not implemented for [getHeightFogMethod].");
 		}
-		throw new IllegalArgumentException();
 	}
 	
-	private static String getMixFogMethod(HeightFogMixMode mode, boolean drawNearFog)
+	/**
+	 * creates a line in the format <br>
+	 * <code>"	return max(1.0-near, far);" </code>
+	 */
+	private static String getMixFogLine(HeightFogMixMode heightFogMode, boolean drawNearFog)
 	{
-		if (drawNearFog)
+		String str = "	return ";
+		
+		switch (heightFogMode)
 		{
-			switch (mode)
-			{
-			case BASIC:
-			case IGNORE_HEIGHT:
-				return "	return max(1.0-near, far);\n";
-			case ADDITION:
-				return "	return max(1.0-near, far + height);\n";
-			case MAX:
-				return "	return max(1.0-near, max(far, height));\n";
-			case INVERSE_MULTIPLY:
-				return "	return max(1.0-near, 1.0 - (1.0-far)*(1.0-height));\n";
-			case MULTIPLY:
-				return "	return max(1.0-near, far*height);\n";
-			case LIMITED_ADDITION:
-				return "	return max(1.0-near, far + max(far, height));\n";
-			case MULTIPLY_ADDITION:
-				return "	return max(1.0-near, far + far*height);\n";
-			case INVERSE_MULTIPLY_ADDITION:
-				return "	return max(1.0-near, far + 1.0 - (1.0-far)*(1.0-height));\n";
-			case AVERAGE:
-				return "	return max(1.0-near, far*0.5 + height*0.5);\n";
-			}
-		}
-		else
-		{
-			switch (mode)
-			{
-			case BASIC:
-			case IGNORE_HEIGHT:
-				return "	return near * far;\n";
-			case ADDITION:
-				return "	return near * (far + height);\n";
-			case MAX:
-				return "	return near * max(far, height);\n";
-			case INVERSE_MULTIPLY:
-				return "	return near * (1.0 - (1.0-far)*(1.0-height));\n";
-			case MULTIPLY:
-				return "	return near * far*height);\n";
-			case LIMITED_ADDITION:
-				return "	return near * (far + max(far, height));\n";
-			case MULTIPLY_ADDITION:
-				return "	return near * (far + far*height);\n";
-			case INVERSE_MULTIPLY_ADDITION:
-				return "	return near * (far + 1.0 - (1.0-far)*(1.0-height));\n";
-			case AVERAGE:
-				return "	return near * (far*0.5 + height*0.5);\n";
-			}
+		case BASIC:
+		case IGNORE_HEIGHT:
+			if (drawNearFog)
+				str += "max(1.0-near, far);\n";
+			else
+				str += "near * far;\n";
+			break;
+		
+		case ADDITION:
+			if (drawNearFog)
+				str += "max(1.0-near, far + height);\n";
+			else
+				str += "near * (far + height);\n";
+			break;
+		
+		case MAX:
+			if (drawNearFog)
+				str += "max(1.0-near, max(far, height));\n";
+			else
+				str += "near * max(far, height);\n";
+			break;
+		
+		case INVERSE_MULTIPLY:
+			if (drawNearFog)
+				str += "max(1.0-near, 1.0 - (1.0-far)*(1.0-height));\n";
+			else
+				str += "near * (1.0 - (1.0-far)*(1.0-height));\n";
+			break;
+		
+		case MULTIPLY:
+			if (drawNearFog)
+				str += "max(1.0-near, far*height);\n";
+			else
+				str += "near * far*height);\n";
+			break;
+		
+		case LIMITED_ADDITION:
+			if (drawNearFog)
+				str += "max(1.0-near, far + max(far, height));\n";
+			else
+				str += "near * (far + max(far, height));\n";
+			break;
+		
+		case MULTIPLY_ADDITION:
+			if (drawNearFog)
+				str += "max(1.0-near, far + far*height);\n";
+			else
+				str += "near * (far + far*height);\n";
+			break;
+		
+		case INVERSE_MULTIPLY_ADDITION:
+			if (drawNearFog)
+				str += "max(1.0-near, far + 1.0 - (1.0-far)*(1.0-height));\n";
+			else
+				str += "near * (far + 1.0 - (1.0-far)*(1.0-height));\n";
+			break;
+		
+		case AVERAGE:
+			if (drawNearFog)
+				str += "max(1.0-near, far*0.5 + height*0.5);\n";
+			else
+				str += "near * (far*0.5 + height*0.5);\n";
+			break;
+		
+		default:
+			throw new IllegalArgumentException("FogType [" + heightFogMode + "] not implemented for [getMixFogMethod].");
 		}
 		
-		throw new IllegalArgumentException();
+		return str;
 	}
 	
-	private void generateRuntimeShaderCode(StringBuilder str)
-	{
-		str.append("// =======RUNTIME GENERATED CODE SECTION========\n");
-		
-		// Generate method: float getNearFogThickness(float dist);
-		str.append("" +
-				"float getNearFogThickness(float dist) {\n" +
-				"	return linearFog(dist, nearFogStart, nearFogLength, 0.0, 1.0);\n" +
-				"}\n" + "\n");
-		
-		if (farFogSetting == null)
-		{
-			str.append("\n" +
-					"float getFarFogThickness(float dist) { return 0.0; }\n" +
-					"float getHeightFogThickness(float dist) { return 0.0; }\n" +
-					"float calculateFarFogDepth(float horizontal, float dist, float nearFogStart) { return 0.0; }\n" +
-					"float calculateHeightFogDepth(float vertical, float realY) { return 0.0; }\n" +
-					"float mixFogThickness(float near, float far, float height) {" +
-					(drawNearFog ? "return 1.0-near;" : "return 0.0;") +
-					"}\n" +
-					"\n");
-		}
-		else
-		{
-			// Generate method: float getFarFogThickness(float dist);
-			str.append("float getFarFogThickness(float dist) {\n");
-			str.append(getFarFogMethod(farFogSetting.fogType));
-			str.append("\n}\n");
-			
-			// Generate method: float getHeightFogThickness(float dist);
-			if (heightFogSetting == null)
-			{
-				str.append("\n" +
-						"float getHeightFogThickness(float dist) { return 0.0; }\n" +
-						"float calculateHeightFogDepth(float vertical, float realY) { return 0.0; }\n" +
-						"\n");
-			}
-			else
-			{
-				str.append("float getHeightFogThickness(float dist) {\n");
-				str.append(getHeightFogMethod(heightFogSetting.fogType));
-				str.append("\n}\n");
-				str.append("float calculateHeightFogDepth(float vertical, float realY) {\n");
-				str.append(getHeightDepthMethod(heightFogMode, heightFogHeight));
-				str.append("\n}\n");
-			}
-			
-			// Generate method: calculateFarFogDepth(float horizontal, float dist, float nearFogStart);
-			str.append("float calculateFarFogDepth(float horizontal, float dist, float nearFogStart) {\n");
-			if (heightFogMixMode == HeightFogMixMode.BASIC)
-			{
-				str.append("	return (dist - nearFogStart)/(1.0 - nearFogStart);\n");
-			}
-			else
-			{
-				str.append("	return (horizontal - nearFogStart)/(1.0 - nearFogStart);\n");
-			}
-			str.append("}\n");
-			
-			// Generate method: float mixFogThickness(float near, float far, float height);
-			str.append("float mixFogThickness(float near, float far, float height) {\n");
-			str.append(getMixFogMethod(heightFogMixMode, drawNearFog));
-			str.append("}\n");
-		}
-	}
+	
+	
+	
+	
+	
+	//========================//
+	// default object methods //
+	//========================//
 	
 	@Override
 	public boolean equals(Object o)
