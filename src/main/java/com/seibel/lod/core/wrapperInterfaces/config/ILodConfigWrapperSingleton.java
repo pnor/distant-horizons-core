@@ -542,6 +542,22 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " At what Y value should cave culling start? \n";
 				int getCaveCullingHeight();
 				void setCaveCullingHeight(int newCaveCullingHeight);
+
+
+				MinDefaultMax<Integer> EARTH_CURVE_RATIO_MIN_DEFAULT_MAX = new MinDefaultMax<>(0,0,10000);
+				String EARTH_CURVE_RATIO_DESC = ""
+						+ " This is the earth size ratio when applying the curvature shader effect. \n"
+						+ "\n"
+						+ " NOTE: This feature is just for fun and is VERY experimental! \n"
+						+ "Please don't report any issues related to this feature. \n"
+						+ "\n"
+						+ " 0 = flat/disabled \n"
+						+ " 1 = 1 to 1 (6,371,000 blocks) \n"
+						+ " 100 = 1 to 100 (63,710 blocks) \n"
+						+ " 10000 = 1 to 10000 (637.1 blocks) \n";
+				int getEarthCurveRatio();
+				void setEarthCurveRatio(int newEarthCurveRatio);
+
 			}
 		}
 		

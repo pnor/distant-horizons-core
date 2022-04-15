@@ -54,7 +54,9 @@ public class LodFogConfig
 	public final float heightFogHeight;
 	
 	final boolean drawNearFog;
-	
+
+	final int earthCurveRatio; // FIXME: Move this out of here
+
 	
 	public static LodFogConfig generateFogConfig()
 	{
@@ -68,6 +70,8 @@ public class LodFogConfig
 	/** sets all fog options from the config */
 	private LodFogConfig(FogDrawMode fogDrawMode)
 	{
+		earthCurveRatio = CONFIG.client().graphics().advancedGraphics().getEarthCurveRatio(); //FIXME: Move this out of here
+
 		if (fogDrawMode != FogDrawMode.FOG_DISABLED)
 		{
 			ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality fogSettings = CONFIG.client().graphics().fogQuality();
@@ -415,12 +419,15 @@ public class LodFogConfig
 		if (o == null || getClass() != o.getClass())
 			return false;
 		LodFogConfig that = (LodFogConfig) o;
-		return Float.compare(that.heightFogHeight, heightFogHeight) == 0 && drawNearFog == that.drawNearFog && Objects.equals(farFogSetting, that.farFogSetting) && Objects.equals(heightFogSetting, that.heightFogSetting) && heightFogMixMode == that.heightFogMixMode && heightFogMode == that.heightFogMode;
+		return Float.compare(that.heightFogHeight, heightFogHeight) == 0 &&
+				drawNearFog == that.drawNearFog && Objects.equals(farFogSetting, that.farFogSetting) &&
+				Objects.equals(heightFogSetting, that.heightFogSetting) && heightFogMixMode == that.heightFogMixMode &&
+				heightFogMode == that.heightFogMode && earthCurveRatio == that.earthCurveRatio;
 	}
 	
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(farFogSetting, heightFogSetting, heightFogMixMode, heightFogMode, heightFogHeight, drawNearFog);
+		return Objects.hash(farFogSetting, heightFogSetting, heightFogMixMode, heightFogMode, heightFogHeight, drawNearFog, earthCurveRatio);
 	}
 }

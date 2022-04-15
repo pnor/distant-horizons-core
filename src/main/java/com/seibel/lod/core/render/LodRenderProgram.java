@@ -30,6 +30,7 @@ import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 
 public class LodRenderProgram extends ShaderProgram {
 	public static final String VERTEX_SHADER_PATH = "shaders/standard.vert";
+	public static final String VERTEX_CURVE_SHADER_PATH = "shaders/curve.vert";
 	public static final String FRAGMENT_SHADER_PATH = "shaders/flat_shaded.frag";
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
@@ -57,7 +58,8 @@ public class LodRenderProgram extends ShaderProgram {
 
 	// This will bind  VertexAttribute
 	public LodRenderProgram(LodFogConfig fogConfig) {
-		super(() -> Shader.loadFile(VERTEX_SHADER_PATH, false, new StringBuilder()).toString(),
+		super(() -> Shader.loadFile(fogConfig.earthCurveRatio!=0 ? VERTEX_CURVE_SHADER_PATH : VERTEX_SHADER_PATH,
+						false, new StringBuilder()).toString(),
 				() -> fogConfig.loadAndProcessFragShader(FRAGMENT_SHADER_PATH, false).toString(),
 				"fragColor", new String[] { "vPosition", "color" });
 		this.fogConfig = fogConfig;
@@ -97,6 +99,9 @@ public class LodRenderProgram extends ShaderProgram {
 			System.out.println(LodUtil.LOD_VERTEX_FORMAT);
 			throw e;
 		}
+
+		if (earthRadiusUniform != -1) setUniform(earthRadiusUniform,
+				/*6371KM*/ 6371000.0f / fogConfig.earthCurveRatio);
 	}
 
 	// If not usable, return a new LodFogConfig to be constructed
@@ -144,9 +149,6 @@ public class LodRenderProgram extends ShaderProgram {
 		setUniform(lightMapUniform, lightmapBindPoint);
 
 		if (worldYOffsetUniform != -1) setUniform(worldYOffsetUniform, (float)worldYOffset);
-		if (earthRadiusUniform != -1) setUniform(earthRadiusUniform,
-				63710f); //radio of 1 to 100 to Earth radius (6,371 KM)
-				// (float)lodDrawDistance);
 
 		// Fog
 		setUniform(fullFogModeUniform, fullFogMode ? 1 : 0);
