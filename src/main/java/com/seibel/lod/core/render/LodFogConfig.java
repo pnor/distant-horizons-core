@@ -360,7 +360,7 @@ public class LodFogConfig
 			if (drawNearFog)
 				str += "max(1.0-near, far*height);\n";
 			else
-				str += "near * far*height);\n";
+				str += "near * far * height;\n";
 			break;
 		
 		case LIMITED_ADDITION:

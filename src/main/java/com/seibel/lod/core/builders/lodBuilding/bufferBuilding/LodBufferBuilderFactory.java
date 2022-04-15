@@ -31,6 +31,7 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.LodRenderer;
+import com.seibel.lod.core.render.objects.GLBuffer;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -291,12 +292,14 @@ public class LodBufferBuilderFactory {
 		
 		if (renderRegions == null) {
 			ramLogger.info("Buildable VBOs are null!");
-		} else
+		} else {
 			for (RenderRegion buffers : renderRegions) {
 				if (buffers == null)
 					continue;
 				buffers.debugDumpStats(statsMap);
 			}
+		}
+		statsMap.incStat("Total Buffers", GLBuffer.count.get());
 		ramLogger.info("================================================");
 		ramLogger.info("Stats: {}", statsMap);
 		ramLogger.info("================================================");

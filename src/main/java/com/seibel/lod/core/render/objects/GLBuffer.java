@@ -9,11 +9,12 @@ import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL44;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GLBuffer implements AutoCloseable {
     public static final double BUFFER_EXPANSION_MULTIPLIER = 1.3;
     public static final double BUFFER_SHRINK_TRIGGER = BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER;
-    public static int count = 0;
+    public static AtomicInteger count = new AtomicInteger(0);
     protected int id;
     public final int getId() {
         return id;
@@ -50,23 +51,25 @@ public class GLBuffer implements AutoCloseable {
             throw new IllegalStateException("Thread [" +Thread.currentThread().getName() + "] tried to create a GLBuffer outside a OpenGL context.");
         this.id = GL32.glGenBuffers();
         this.bufferStorage = asBufferStorage;
-        count++;
+        count.getAndIncrement();
     }
 
+    //DEBUG USE
+    //private StackTraceElement[] firstCloseCallStack = null;
     protected void destroy(boolean async) {
         if (this.id == 0) {
-            ApiShared.LOGGER.warn("Buffer double close!");
-            return;
+            //ApiShared.LOGGER.warn("Buffer double close! First close call stack: {}", Arrays.toString(firstCloseCallStack));
+            throw new IllegalStateException("Buffer double close!");
         }
         if (async && GLProxy.getInstance().getGlContext() != GLProxyContext.PROXY_WORKER) {
             GLProxy.getInstance().recordOpenGlCall(() -> destroy((false)));
         } else {
             GL32.glDeleteBuffers(id);
+            //firstCloseCallStack = Thread.currentThread().getStackTrace();
+            id = 0;
+            size = 0;
+            if (count.decrementAndGet()==0) ApiShared.LOGGER.info("All GLBuffer is freed.");
         }
-        id = 0;
-        size = 0;
-        count--;
-        if (count==0) ApiShared.LOGGER.info("All GLBuffer is freed.");
     }
 
     // Requires already binded

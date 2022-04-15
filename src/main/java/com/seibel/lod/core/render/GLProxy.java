@@ -436,9 +436,10 @@ public class GLProxy
 	 */
 	public void recordOpenGlCall(Runnable renderCall)
 	{
-		workerThread.execute(() -> runnableContainer(renderCall));
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		workerThread.execute(() -> runnableContainer(renderCall, stackTrace));
 	}
-	private void runnableContainer(Runnable renderCall)
+	private void runnableContainer(Runnable renderCall, StackTraceElement[] stackTrace)
 	{
 		try
 		{
@@ -449,8 +450,9 @@ public class GLProxy
 		}
 		catch (Exception e)
 		{
-			GL_LOGGER.error(Thread.currentThread().getName() + " ran into a issue: " + e.getMessage());
-			e.printStackTrace();
+			RuntimeException error = new RuntimeException("Uncaught Exception during execution:", e);
+			error.setStackTrace(stackTrace);
+			GL_LOGGER.error(Thread.currentThread().getName() + " ran into a issue: ", error);
 		}
 		finally
 		{

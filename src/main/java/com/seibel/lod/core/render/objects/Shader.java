@@ -81,7 +81,9 @@ public class Shader
 		// check if the shader compiled
 		int status = GL32.glGetShaderi(id, GL32.GL_COMPILE_STATUS);
 		if (status != GL32.GL_TRUE) {
+
 			String message = "Shader compiler error. Details: "+GL32.glGetShaderInfoLog(id);
+			message += "\nSource:\n"+sourceString;
 			free(); // important!
 			throw new RuntimeException(message);
 		}

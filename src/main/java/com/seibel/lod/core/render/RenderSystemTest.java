@@ -58,6 +58,7 @@ public class RenderSystemTest {
         logger.info("init");
         init = true;
         va = VertexAttribute.create();
+        va.bind();
         // Pos
         va.setVertexAttribute(0, 0, VertexAttribute.VertexPointer.addVec2Pointer(false));
         // Color
@@ -78,12 +79,13 @@ public class RenderSystemTest {
     };
 
     private static GLVertexBuffer createTextingBuffer() {
-        GLVertexBuffer vbo = new GLVertexBuffer(false);
         ByteBuffer buffer = ByteBuffer.allocateDirect(vertices.length * Float.BYTES);
         // Fill buffer with the vertices.
         buffer = buffer.order(ByteOrder.nativeOrder());
         buffer.asFloatBuffer().put(vertices);
         buffer.rewind();
+        GLVertexBuffer vbo = new GLVertexBuffer(false);
+        vbo.bind();
         vbo.uploadBuffer(buffer, 4, GpuUploadMethod.DATA, vertices.length * Float.BYTES);
         return vbo;
     }

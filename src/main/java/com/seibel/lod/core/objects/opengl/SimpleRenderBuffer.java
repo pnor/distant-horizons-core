@@ -125,6 +125,9 @@ public class SimpleRenderBuffer extends RenderBuffer
 		int i = 0;
 		Iterator<ByteBuffer> iter = builder.makeVertexBuffers();
 		while (iter.hasNext()) {
+			if (i >= vbos.length) {
+				throw new RuntimeException("Too many vertex buffers!!");
+			}
 			ByteBuffer bb = iter.next();
 			GLVertexBuffer vbo = getOrMakeVbo(i++, method.useBufferStorage);
 			int size = bb.limit() - bb.position();
@@ -149,6 +152,9 @@ public class SimpleRenderBuffer extends RenderBuffer
 				}
 				remainingNS = 0;
 			}
+		}
+		if (i < vbos.length) {
+			throw new RuntimeException("Too few vertex buffers!!");
 		}
 	}
 
