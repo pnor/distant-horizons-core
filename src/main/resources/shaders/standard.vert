@@ -1,6 +1,6 @@
 #version 150 core
 
-in vec4 vPosition;
+in uvec4 vPosition;
 in vec4 color;
 
 out vec4 vertexColor;
@@ -13,6 +13,7 @@ uniform float worldYOffset;
 
 uniform int worldSkyLight;
 uniform sampler2D lightMap;
+uniform float mircoOffset;
 
 
 /** 
@@ -27,11 +28,28 @@ uniform sampler2D lightMap;
 void main()
 {
     vertexWorldPos = vPosition.xyz + modelOffset;
+
     vertexYPos = vPosition.y + worldYOffset;
 
-	float light2 = (mod(vPosition.a, 16)+0.5) / 16.0;
-	float light = (floor(vPosition.a/16)+0.5) / 16.0;
+    uint meta = vPosition.a;
+
+    uint mirco = (meta & 0xFF00u) >> 8u; // mirco offset which is a xyz 2bit value
+    // 0b00 = no offset
+    // 0b01 = positive offset
+    // 0b11 = negative offset
+    // format is: 0b00zzyyxx
+    float mx = (mirco & 1u)!=0u ? mircoOffset : 0.0;
+    mx = (mirco & 2u)!=0u ? -mx : mx;
+    float my = (mirco & 4u)!=0u ? mircoOffset : 0.0;
+    my = (mirco & 8u)!=0u ? -my : my;
+    float mz = (mirco & 16u)!=0u ? mircoOffset : 0.0;
+    mz = (mirco & 32u)!=0u ? -mz : mz;
+
+    uint lights = meta & 0xFFu;
+
+	float light2 = (mod(float(lights), 16.0)+0.5) / 16.0;
+	float light = (float(lights/16u)+0.5) / 16.0;
 	vertexColor = color * vec4(texture(lightMap, vec2(light, light2)).xyz, 1.0);
 
-    gl_Position = combinedMatrix * vec4(vertexWorldPos, 1.0);
+    gl_Position = combinedMatrix * vec4(vertexWorldPos + vec3(mx, my, mz), 1.0);
 }

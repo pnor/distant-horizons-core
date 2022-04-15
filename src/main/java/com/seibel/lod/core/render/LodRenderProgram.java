@@ -40,6 +40,8 @@ public class LodRenderProgram extends ShaderProgram {
 	public final int modelOffsetUniform;
 	public final int worldYOffsetUniform;
 
+	public final int mircoOffsetUniform;
+
 	public final int lightMapUniform;
 	// Fog Uniforms
 	public final int fogColorUniform;
@@ -61,6 +63,7 @@ public class LodRenderProgram extends ShaderProgram {
 		combinedMatUniform = getUniformLocation("combinedMatrix");
 		modelOffsetUniform = getUniformLocation("modelOffset");
 		worldYOffsetUniform = tryGetUniformLocation("worldYOffset");
+		mircoOffsetUniform = getUniformLocation("mircoOffset");
 
 		lightMapUniform = getUniformLocation("lightMap");
 
@@ -81,9 +84,9 @@ public class LodRenderProgram extends ShaderProgram {
 			vao = new VertexAttributePreGL43(); // also binds VertexAttribute
 		vao.bind();
 		// Now a pos+light.
-		vao.setVertexAttribute(0, 0, VertexAttribute.VertexPointer.addUnsignedShortsPointer(4, false)); // 2+2+2+2
+		vao.setVertexAttribute(0, 0, VertexAttribute.VertexPointer.addUnsignedShortsPointer(4, false, true)); // 2+2+2+2
 		//vao.setVertexAttribute(0, posAttrib, VertexAttribute.VertexPointer.addVec3Pointer(false)); // 4+4+4
-		vao.setVertexAttribute(0, 1, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true)); // +4
+		vao.setVertexAttribute(0, 1, VertexAttribute.VertexPointer.addUnsignedBytesPointer(4, true, false)); // +4
 		//vao.setVertexAttribute(0, lightAttrib, VertexAttribute.VertexPointer.addUnsignedBytesPointer(2, false)); // +4 due to how it aligns
 		try {
 		vao.completeAndCheck(vertexByteCount);
@@ -132,6 +135,7 @@ public class LodRenderProgram extends ShaderProgram {
 		vanillaDrawDistance += 32; // Give it a 2 chunk boundary for near fog.
 		// uniforms
 		setUniform(combinedMatUniform, combinedMatrix);
+		setUniform(mircoOffsetUniform, 0.005f); // 0.005 block offset
 
 		// setUniform(skyLightUniform, skyLight);
 		setUniform(lightMapUniform, lightmapBindPoint);

@@ -92,8 +92,11 @@ public class LodBufferBuilderFactory {
 	 * when need be to fit the larger sizes.
 	 */
 	public static final int DEFAULT_MEMORY_ALLOCATION = (LodUtil.LOD_VERTEX_FORMAT.getByteSize() * 3) * 8;
+	public static final int QUADS_BYTE_SIZE = LodUtil.LOD_VERTEX_FORMAT.getByteSize() * (LodRenderer.ENABLE_IBO ? 4 : 6);
 	public static final int MAX_TRIANGLES_PER_BUFFER = (1024 * 1024 * 1)
 			/ (LodUtil.LOD_VERTEX_FORMAT.getByteSize() * 3);
+	public static final int MAX_QUADS_PER_BUFFER = (1024 * 1024 * 1) / QUADS_BYTE_SIZE;
+	public static final int FULL_SIZED_BUFFER = MAX_QUADS_PER_BUFFER * QUADS_BYTE_SIZE;
 
 	public static int skyLightPlayer = 15;
 

@@ -25,7 +25,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
-import com.seibel.lod.core.objects.opengl.LodVertexBuffer;
+import com.seibel.lod.core.render.objects.GLVertexBuffer;
 import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.render.objects.ShaderProgram;
 import com.seibel.lod.core.render.objects.VertexAttribute;
@@ -48,8 +48,8 @@ public class RenderSystemTest {
     private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 
     ShaderProgram basicShader;
-    LodVertexBuffer sameContextBuffer;
-    LodVertexBuffer sharedContextBuffer;
+    GLVertexBuffer sameContextBuffer;
+    GLVertexBuffer sharedContextBuffer;
     VertexAttribute va;
     boolean init = false;
 
@@ -77,8 +77,8 @@ public class RenderSystemTest {
         -0.2f, 0.2f, 0.0f, 1.0f, 1.0f, 1.0f
     };
 
-    private static LodVertexBuffer createTextingBuffer() {
-        LodVertexBuffer vbo = new LodVertexBuffer(false);
+    private static GLVertexBuffer createTextingBuffer() {
+        GLVertexBuffer vbo = new GLVertexBuffer(false);
         ByteBuffer buffer = ByteBuffer.allocateDirect(vertices.length * Float.BYTES);
         // Fill buffer with the vertices.
         buffer = buffer.order(ByteOrder.nativeOrder());
@@ -113,12 +113,12 @@ public class RenderSystemTest {
 
         // Switch between the two buffers per second
         if (System.currentTimeMillis() % 2000 < 1000) {
-            GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, sameContextBuffer.id);
-            va.bindBufferToAllBindingPoint(sameContextBuffer.id);
+            sameContextBuffer.bind();
+            va.bindBufferToAllBindingPoint(sameContextBuffer.getId());
             spamLogger.debug("same context buffer");
         } else {
-            GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, sharedContextBuffer.id);
-            va.bindBufferToAllBindingPoint(sharedContextBuffer.id);
+            sameContextBuffer.bind();
+            va.bindBufferToAllBindingPoint(sharedContextBuffer.getId());
             spamLogger.debug("shared context buffer");
         }
         // Render the square
