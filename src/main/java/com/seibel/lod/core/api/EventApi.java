@@ -70,9 +70,11 @@ public class EventApi
 	// tick events //
 	// =============//
 	public BatchGenerator batchGenerator = null;
-	
+
+	private int lastWorldGenTickDelta = 0;
 	public void serverTickEvent()
 	{
+		lastWorldGenTickDelta--;
 		if (!MC.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
 			return;
 		
@@ -81,19 +83,19 @@ public class EventApi
 			return;
 		if (ApiShared.isShuttingDown)
 			return;
-		
+
 		if (CONFIG.client().worldGenerator().getEnableDistantGeneration())
 		{
-			try
-			{
-				if (batchGenerator == null)
-					batchGenerator = new BatchGenerator(ApiShared.lodBuilder, lodDim);
-				batchGenerator.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
-			}
-			catch (Exception e)
-			{
-				// Exception may happen if world got unloaded unorderly
-				e.printStackTrace();
+			if (lastWorldGenTickDelta <= 0) {
+				lastWorldGenTickDelta = 20; // 20 ticks is 1 second. We don't need to refresh world gen status every tick.
+				try {
+					if (batchGenerator == null)
+						batchGenerator = new BatchGenerator(ApiShared.lodBuilder, lodDim);
+					batchGenerator.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
+				} catch (Exception e) {
+					// Exception may happen if world got unloaded unorderly
+					e.printStackTrace();
+				}
 			}
 		}
 		else

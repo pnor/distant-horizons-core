@@ -175,7 +175,7 @@
   "DistantHorizons.config.client.graphics.advancedGraphics.earthCurveRatio":
   "Earth Curve Ratio §6(EXPERIMENTAL)§r",
   "DistantHorizons.config.client.graphics.advancedGraphics.earthCurveRatio.@tooltip":
-  "This is the earth size ratio when applying the curvature shader effect. \n\n§6NOTE§r: This feature is just for fun and is VERY experimental! \nPlease don't report any issues related to this feature. \n\n0 = flat/disabled \n1 = 1 to 1 (6,371,000 blocks) \n100 = 1 to 100 (63,710 blocks) \n10000 = 1 to 10000 (637.1 blocks) \n",
+  "This is the earth size ratio when applying the curvature shader effect. \n\n§6NOTE§r: This feature is just for fun and is VERY experimental! \nPlease don't report any issues related to this feature. \n\n0 = flat/disabled \n1 = 1 to 1 (6,371,000 blocks) \n100 = 1 to 100 (63,710 blocks) \n10000 = 1 to 10000 (637.1 blocks) \n\n§6NOTE§r: due to current limitations, the min value is 50 \n and the max value is 5000. Any values outside this range \n will be set to 0(disabled).",
   "DistantHorizons.config.client.worldGenerator":
 	"World generator",
   "DistantHorizons.config.client.worldGenerator.generationPriority":
@@ -219,7 +219,7 @@
   "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads":
 	"NO. of world generation threads",
   "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads.@tooltip":
-	"The number of threads used to generate fake chunks\noutside the normal render distance.\nIf you experience stuttering when generating fake chunks: decrease this number.\nIf you want to increase LOD generation speed: increase this number.\n\nCan only be between 1 and your CPU's processor count.",
+	"How many threads should be used when generating fake \nchunks outside the normal render distance? \n\nIf it's less than 1, it will be treated as a percentage \nof time single thread can run before going to idle. \n\nIf you experience stuttering when generating distant LODs, \ndecrease  this number. If you want to increase LOD \ngeneration speed, increase this number. \n\nThis and the number of buffer builder threads are independent, \nso if they add up to more threads than your CPU has cores, \nthat shouldn't cause an issue.",
   "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads":
 	"NO. of buffer builder threads",
   "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads.@tooltip":

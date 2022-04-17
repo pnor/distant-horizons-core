@@ -79,8 +79,8 @@ public class LodBufferBuilderFactory {
 	/** The threads used to generate buffers. */
 	private static LodThreadFactory bufferBuilderThreadFactory = new LodThreadFactory("BufferBuilder",
 			Thread.NORM_PRIORITY - 2);
-	public static ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(
-			CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(), bufferBuilderThreadFactory);
+	private static int previousBufferBuilderThreads = CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads();
+	public static ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(previousBufferBuilderThreads, bufferBuilderThreadFactory);
 
 	/** The thread used to upload buffers. */
 	private static LodThreadFactory bufferUploadThreadFactory = new LodThreadFactory(
@@ -170,11 +170,9 @@ public class LodBufferBuilderFactory {
 		}
 		bufferBuilderThreads.shutdownNow();
 		bufferUploadThread.shutdownNow();
-		
+		previousBufferBuilderThreads = CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads();
 		bufferBuilderThreadFactory = new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY - 2);
-		bufferBuilderThreads = Executors.newFixedThreadPool(
-				CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads(),
-				bufferBuilderThreadFactory);
+		bufferBuilderThreads = Executors.newFixedThreadPool(previousBufferBuilderThreads, bufferBuilderThreadFactory);
 		
 		bufferUploadThreadFactory = new LodThreadFactory(
 				LodBufferBuilderFactory.class.getSimpleName() + " - upload", Thread.NORM_PRIORITY - 1);
@@ -186,6 +184,8 @@ public class LodBufferBuilderFactory {
 			int playerZ, boolean fullRegen) {
 		//ArrayList<RenderRegion> regionsToCleanup = new ArrayList<RenderRegion>();
 		try {
+			if (previousBufferBuilderThreads != CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads())
+				resetThreadPools(false);
 			regionsListLock.lockInterruptibly();
 			if (ENABLE_EVENT_LOGGING)
 				ApiShared.LOGGER.info("BufferBuilderStarter locked the region lock! LodDim: [{}], RenderRegion: [{}]",
@@ -206,28 +206,28 @@ public class LodBufferBuilderFactory {
 				// minCullingRange);
 				// int cullingRangeZ = Math.max((int)(1.5 * Math.abs(lastZ - playerZ)),
 				// minCullingRange);
-				
+
 				Pos2D minPos = renderRegions.getMinInRange();
 				Pos2D maxPos = renderRegions.getMaxInRange();
 				CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-				
+
 				try {
 					int numOfJobs = 0;
 					for (int regX = minPos.x; regX < maxPos.x; regX++) {
 						for (int regZ = minPos.y; regZ < maxPos.y; regZ++) {
 							RenderRegion r = renderRegions.get(regX, regZ);
 							RegionPos regPos = new RegionPos(regX, regZ);
-							if (r!=null && !r.canRender(lodDim, regPos)) {
+							if (r != null && !r.canRender(lodDim, regPos)) {
 								renderRegions.set(regX, regZ, null);
 								r.close();
 								r = null;
 							}
-							
-							if (r==null) {
+
+							if (r == null) {
 								r = new RenderRegion(regPos, lodDim);
 								renderRegions.set(regX, regZ, r);
 							}
-							
+
 							CompletableFuture<Void> newFuture =
 									r.updateStatus(bufferUploadThread, bufferBuilderThreads, fullRegen, playerX, playerZ).orElse(null);
 							if (newFuture != null) {
@@ -240,19 +240,17 @@ public class LodBufferBuilderFactory {
 					// ================================//
 					//        wait on completion       //
 					// ================================//
-					
+
 					long executeStart = System.currentTimeMillis();
 					try {
 						future.get(1, TimeUnit.MINUTES);
-					} catch (InterruptedException | TimeoutException ie) {
-						throw ie;
 					} catch (CancellationException ce) {
 						throw new InterruptedException("Future interrupted");
 					} catch (ExecutionException ee) {
 						ApiShared.LOGGER.error("LodBufferBuilder ran into trouble: ", ee.getCause());
 					}
 					long executeEnd = System.currentTimeMillis();
-					
+
 					long endTime = System.currentTimeMillis();
 					long buildTime = endTime - startTime;
 					long executeTime = executeEnd - executeStart;
@@ -260,22 +258,24 @@ public class LodBufferBuilderFactory {
 						ApiShared.LOGGER.info("Thread Build&Upload(" + numOfJobs + "/"
 								+ (lodDim.getWidth() * lodDim.getWidth()) + (fullRegen ? "FULL" : "") + ") time: " + buildTime
 								+ " ms" + '\n' + "thread execute time: " + executeTime + " ms");
-				
+
 				} catch (InterruptedException ie) {
 					resetThreadPools(false);
 					try {
 						future.get();
-					} catch (Throwable t) {}
-					throw ie;
+					} catch (Throwable ignored) {
+					}
 				} catch (TimeoutException te) {
 					ApiShared.LOGGER.error("LodBufferBuilder timed out: ", te);
 					resetThreadPools(true);
 				}
-			} catch (Exception e) {
+			}
+			catch (RuntimeException e) {
 				ApiShared.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
 			}
-		} catch (InterruptedException ie) {
-		} finally {
+		}
+		catch (InterruptedException ignored) { }
+		finally {
 			regionsListLock.unlock();
 			if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("BufferBuilderStarter unlocked the region lock!");
 			builderThreadRunning = false;
@@ -321,12 +321,15 @@ public class LodBufferBuilderFactory {
 		ApiShared.LOGGER.info("Destroying LodBufferBuilder...");
 		mainGenThread.shutdownNow();
 		mainGenThread = Executors.newSingleThreadExecutor(mainGenThreadFactory);
-		regionsListLock.lock();
+		boolean locked = false;
+		try {
+			locked = regionsListLock.tryLock(5, TimeUnit.SECONDS); // FIXME: For some reason we get a deadlock here sometimes
+		} catch (InterruptedException ignored) {}
 		try {
 			if (renderRegions != null) renderRegions.clear(RenderRegion::close);
 			renderRegions = null;
 		} finally {
-			regionsListLock.unlock();
+			if (locked) regionsListLock.unlock();
 		}
 		ApiShared.LOGGER.info("LodBufferBuilder destroyed.");
 	}

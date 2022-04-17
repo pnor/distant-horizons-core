@@ -38,7 +38,7 @@ public abstract class AbstractBatchGenerationEnvionmentWrapper {
 
 	public abstract int getEventCount();
 
-	public abstract boolean tryAddPoint(int chunkX, int chunkZ, int genSize, Steps targetStep, boolean genAllDetails);
+	public abstract boolean tryAddPoint(int chunkX, int chunkZ, int genSize, Steps targetStep, boolean genAllDetails, double runTimeRatio);
 
 	public abstract void stop(boolean blocking);
 }

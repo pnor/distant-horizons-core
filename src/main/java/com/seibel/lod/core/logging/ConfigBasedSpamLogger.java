@@ -79,7 +79,7 @@ public class ConfigBasedSpamLogger {
         if (mode.levelForChat.isLessSpecificThan(level)) {
             if (param.length > 0 && param[param.length - 1] instanceof Throwable)
                 ClientApi.logToChat(level, msgStr + "\nat\n" + Arrays.toString(((Throwable) param[param.length - 1]).getStackTrace()));
-            ClientApi.logToChat(level, msgStr);
+            else ClientApi.logToChat(level, msgStr);
         }
     }
 
@@ -117,7 +117,7 @@ public class ConfigBasedSpamLogger {
         if (mode.levelForChat.isLessSpecificThan(level)) {
             if (param.length > 0 && param[param.length - 1] instanceof Throwable)
                 ClientApi.logToChat(level, msgStr + "\nat\n" + Arrays.toString(((Throwable) param[param.length - 1]).getStackTrace()));
-            ClientApi.logToChat(level, msgStr);
+            else ClientApi.logToChat(level, msgStr);
         }
     }
 

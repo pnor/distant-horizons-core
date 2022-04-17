@@ -544,7 +544,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				void setCaveCullingHeight(int newCaveCullingHeight);
 
 
-				MinDefaultMax<Integer> EARTH_CURVE_RATIO_MIN_DEFAULT_MAX = new MinDefaultMax<>(0,0,10000);
+				MinDefaultMax<Integer> EARTH_CURVE_RATIO_MIN_DEFAULT_MAX = new MinDefaultMax<>(0,0,5000);
 				String EARTH_CURVE_RATIO_DESC = ""
 						+ " This is the earth size ratio when applying the curvature shader effect. \n"
 						+ "\n"
@@ -554,7 +554,11 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " 0 = flat/disabled \n"
 						+ " 1 = 1 to 1 (6,371,000 blocks) \n"
 						+ " 100 = 1 to 100 (63,710 blocks) \n"
-						+ " 10000 = 1 to 10000 (637.1 blocks) \n";
+						+ " 10000 = 1 to 10000 (637.1 blocks) \n"
+						+ "\n"
+						+ " NOTE: Due to current limitations, the min value is 50 \n"
+						+ " and the max value is 5000. Any values outside this range \n"
+						+ " will be set to 0(disabled).";
 				int getEarthCurveRatio();
 				void setEarthCurveRatio(int newEarthCurveRatio);
 
@@ -763,26 +767,36 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			{
 				String DESC = "These settings control how many CPU threads the mod uses for different tasks.";
 				
-				MinDefaultMax<Integer> NUMBER_OF_WORLD_GENERATION_THREADS_DEFAULT
-					= new MinDefaultMax<Integer>(1, 
-							Math.min(Runtime.getRuntime().availableProcessors()/2, 4),
-							Runtime.getRuntime().availableProcessors());
+				MinDefaultMax<Double> NUMBER_OF_WORLD_GENERATION_THREADS_DEFAULT
+					= new MinDefaultMax<Double>(0.1,
+						(double) Math.min(Runtime.getRuntime().availableProcessors()/2, 4),
+						(double) Runtime.getRuntime().availableProcessors());
 				String NUMBER_OF_WORLD_GENERATION_THREADS_DESC = ""
-						+ " How many threads should be used when generating fake chunks outside \n"
-						+ " the normal render distance? \n"
+						+ " How many threads should be used when generating fake \n"
+						+ " chunks outside the normal render distance? \n"
 						+ "\n"
-						+ " If you experience stuttering when generating distant LODs, decrease \n"
-						+ " this number. If you want to increase LOD generation speed, \n"
-						+ " increase this number. \n"
+						+ " If it's less than 1, it will be treated as a percentage \n"
+						+ " of time single thread can run before going to idle. \n"
+						+ "\n"
+						+ " If you experience stuttering when generating distant LODs, \n"
+						+ " decrease  this number. If you want to increase LOD \n"
+						+ " generation speed, increase this number. \n"
 						+ "\n"
 						+ " This and the number of buffer builder threads are independent, \n"
 						+ " so if they add up to more threads than your CPU has cores, \n"
-						+ " that shouldn't cause an issue. \n"
-						+ "\n"
-						+ " The maximum value is the number of logical processors on your CPU. \n"
-						+ " Requires a restart to take effect. \n";
-				int getNumberOfWorldGenerationThreads();
-				void setNumberOfWorldGenerationThreads(int newNumberOfWorldGenerationThreads);
+						+ " that shouldn't cause an issue. \n";
+				double getNumberOfWorldGenerationThreads();
+				void setNumberOfWorldGenerationThreads(double newNumberOfWorldGenerationThreads);
+				default int _getWorldGenerationThreadPoolSize()
+				{
+					return getNumberOfWorldGenerationThreads()<1 ? 1 :
+							(int) Math.ceil(getNumberOfWorldGenerationThreads());
+				}
+				default double _getWorldGenerationPartialRunTime()
+				{
+					return getNumberOfWorldGenerationThreads()>1 ? 1.0 : getNumberOfWorldGenerationThreads();
+				}
+
 				
 				MinDefaultMax<Integer> NUMBER_OF_BUFFER_BUILDER_THREADS_MIN_DEFAULT_MAX
 					= new MinDefaultMax<Integer>(1, 
@@ -800,8 +814,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " so if they add up to more threads than your CPU has cores, \n"
 						+ " that shouldn't cause an issue. \n"
 						+ "\n"
-						+ " The maximum value is the number of logical processors on your CPU. \n"
-						+ " Requires a restart to take effect. \n";
+						+ " The maximum value is the number of logical processors on your CPU. \n";
 				int getNumberOfBufferBuilderThreads();
 				void setNumberOfBufferBuilderThreads(int newNumberOfWorldBuilderThreads);
 			}

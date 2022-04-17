@@ -45,7 +45,7 @@ public class BatchGenerator {
 	public AbstractBatchGenerationEnvionmentWrapper generationGroup;
 	public LodDimension targetLodDim;
 	public static final int generationGroupSize = 4;
-	public static int previousThreadCount = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads();
+	public static int previousThreadCount = CONFIG.client().advanced().threading()._getWorldGenerationThreadPoolSize();
 
 	private int estimatedSampleNeeded = 128;
 	private int estimatedPointsToQueue = 1;
@@ -69,7 +69,7 @@ public class BatchGenerator {
 		}
 
 		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
-		int newThreadCount = CONFIG.client().advanced().threading().getNumberOfWorldGenerationThreads();
+		int newThreadCount = CONFIG.client().advanced().threading()._getWorldGenerationThreadPoolSize();
 		if (newThreadCount != previousThreadCount) {
 			generationGroup.resizeThreadPool(newThreadCount);
 			previousThreadCount = newThreadCount;
@@ -102,6 +102,7 @@ public class BatchGenerator {
 		// round the player's block position down to the nearest chunk BlockPos
 		int playerPosX = MC.getPlayerBlockPos().getX();
 		int playerPosZ = MC.getPlayerBlockPos().getZ();
+		double runTimeRatio = CONFIG.client().advanced().threading()._getWorldGenerationPartialRunTime();
 
 		PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(estimatedSampleNeeded, playerPosX, playerPosZ,
 				priority, mode);
@@ -160,7 +161,7 @@ public class BatchGenerator {
 					int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, false));
 					int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, false));
 					int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, false)) {
+					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, false, runTimeRatio)) {
 						toGenerate--;
 					}
 				}
@@ -174,7 +175,7 @@ public class BatchGenerator {
 					int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, true));
 					int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, true));
 					int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, true)) {
+					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, true, runTimeRatio)) {
 						toGenerate--;
 					}
 				}
@@ -193,7 +194,7 @@ public class BatchGenerator {
 					int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, true));
 					int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, true));
 					int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, true)) {
+					if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, true, runTimeRatio)) {
 						toGenerate--;
 					}
 					if (toGenerate <= 0)
@@ -212,7 +213,7 @@ public class BatchGenerator {
 						int chunkX = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosX(i, false));
 						int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posToGenerate.getNthPosZ(i, false));
 						int genSize = detailLevel > LodUtil.CHUNK_DETAIL_LEVEL ? 0 : generationGroupSize;
-						if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, false)) {
+						if (generationGroup.tryAddPoint(chunkX, chunkZ, genSize, targetStep, false, runTimeRatio)) {
 							toGenerate--;
 						}
 					}
