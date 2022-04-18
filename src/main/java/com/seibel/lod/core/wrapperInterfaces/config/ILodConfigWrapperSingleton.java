@@ -842,7 +842,10 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " " + DebugMode.SHOW_DETAIL + ": Fake chunks color will be based on their detail level. \n"
 						+ " " + DebugMode.SHOW_DETAIL_WIREFRAME + ": Fake chunks color will be based on their detail level, drawn as a wireframe. \n"
 						+ " " + DebugMode.SHOW_GENMODE + ": Fake chunks color will be based on their distant generation mode. \n"
-						+ " " + DebugMode.SHOW_GENMODE_WIREFRAME + ": Fake chunks color will be based on their distant generation mode, drawn as a wireframe. \n";
+						+ " " + DebugMode.SHOW_GENMODE_WIREFRAME + ": Fake chunks color will be based on their distant generation mode, drawn as a wireframe. \n"
+						+ " " + DebugMode.SHOW_OVERLAPPING_QUADS + ": Fake chunks will be drawn with total white, but overlapping quads will be drawn with red. \n"
+						+ " " + DebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME + ": Fake chunks will be drawn with total white, \n"
+						+ " but overlapping quads will be drawn with red, drawn as a wireframe. \n";
 				DebugMode getDebugMode();
 				void setDebugMode(DebugMode newDebugMode);
 				

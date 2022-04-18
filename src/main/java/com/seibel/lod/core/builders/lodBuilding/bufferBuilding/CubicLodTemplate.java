@@ -53,36 +53,54 @@ public class CubicLodTemplate
 		}
 		
 		int color;
-		if (debugging != DebugMode.OFF && debugging != DebugMode.SHOW_WIREFRAME)
-		{
-			if (debugging == DebugMode.SHOW_DETAIL || debugging == DebugMode.SHOW_DETAIL_WIREFRAME)
-				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel];
-			else /// if (debugging == DebugMode.SHOW_GENMODE || debugging ==
-				/// DebugMode.SHOW_GENMODE_WIREFRAME)
-				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[DataPointUtil.getGenerationMode(data)];
-		}
-		else
-		{
-			float saturationMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getSaturationMultiplier();
-			float brightnessMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getBrightnessMultiplier();
-
-			if (saturationMultiplier == 1.0 && brightnessMultiplier == 1.0) {
-				color = DataPointUtil.getColor(data);
-			} else {
-				float[] ahsv = ColorUtil.argbToAhsv(DataPointUtil.getColor(data));
-				color = ColorUtil.ahsvToArgb(ahsv[0], ahsv[1], ahsv[2] * saturationMultiplier, ahsv[3] * brightnessMultiplier);
-				//ApiShared.LOGGER.info("Raw color:[{}], AHSV:{}, Out color:[{}]",
-				//		ColorUtil.toString(DataPointUtil.getColor(data)),
-				//		ahsv, ColorUtil.toString(color));
+		boolean fullBright = false;
+		switch (debugging) {
+			case OFF:
+			case SHOW_WIREFRAME:
+			{
+				float saturationMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getSaturationMultiplier();
+				float brightnessMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getBrightnessMultiplier();
+				if (saturationMultiplier == 1.0 && brightnessMultiplier == 1.0) {
+					color = DataPointUtil.getColor(data);
+				} else {
+					float[] ahsv = ColorUtil.argbToAhsv(DataPointUtil.getColor(data));
+					color = ColorUtil.ahsvToArgb(ahsv[0], ahsv[1], ahsv[2] * saturationMultiplier, ahsv[3] * brightnessMultiplier);
+					//ApiShared.LOGGER.info("Raw color:[{}], AHSV:{}, Out color:[{}]",
+					//		ColorUtil.toString(DataPointUtil.getColor(data)),
+					//		ahsv, ColorUtil.toString(color));
+				}
+				break;
 			}
+			case SHOW_DETAIL:
+			case SHOW_DETAIL_WIREFRAME:
+			{
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel];
+				fullBright = true;
+				break;
+			}
+			case SHOW_GENMODE:
+			case SHOW_GENMODE_WIREFRAME:
+			{
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[DataPointUtil.getGenerationMode(data)];
+				fullBright = true;
+				break;
+			}
+			case SHOW_OVERLAPPING_QUADS:
+			case SHOW_NON_OVERLAPPING_QUADS_WIREFRAME:
+			{
+				color = ColorUtil.WHITE;
+				fullBright = true;
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unknown debug mode: " + debugging);
 		}
-		
-		
 		LodBox.addBoxQuadsToBuilder(quadBuilder, // buffer
 				width, dy, width, // setWidth
 				x, y, z, // setOffset
 				color, // setColor
-				DataPointUtil.getLightSky(data), DataPointUtil.getLightBlock(data), // setLights
+				DataPointUtil.getLightSky(data), // setSkyLights
+				fullBright ? 15 : DataPointUtil.getLightBlock(data), // setBlockLights
 				topData, botData, adjData, adjFillBlack); // setAdjData
 	}
 }

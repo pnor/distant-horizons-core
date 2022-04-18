@@ -54,7 +54,7 @@ public class LodRegion {
 	private static final byte POSSIBLE_LOD = LodUtil.DETAIL_OPTIONS;
 
 	/** Holds the lowest (least detailed) detail level in this region */
-	private byte minDetailLevel;
+	private volatile byte minDetailLevel;
 	public byte lastMaxDetailLevel = LodUtil.REGION_DETAIL_LEVEL;
 
 	/**
@@ -161,9 +161,12 @@ public class LodRegion {
 		// detailLevel changes.
 		if (this.dataContainer[detailLevel] == null)
 			return false;// this.dataContainer[detailLevel] = new VerticalLevelContainer(detailLevel);
-		if (this.dataContainer[detailLevel].getVerticalSize() != verticalSize)
-			throw new RuntimeException("Provided data's verticalSize is different from current storage's verticalSize!");
-		
+		if (this.dataContainer[detailLevel].getVerticalSize() != verticalSize) {
+			throw new RuntimeException(
+					String.format("Provided data's verticalSize [%d]" +
+							" is different from current storage's verticalSize [%d] at detail [%d]",
+							verticalSize, this.dataContainer[detailLevel].getVerticalSize(), detailLevel));
+		}
 		boolean updated = this.dataContainer[detailLevel].addChunkOfData(data, posX, posZ, widthX, widthZ, override);
 		//ApiShared.LOGGER.info("addChunkOfData(region:{}, level:{}, x:{}, z:{}, wx:{}, wz:{}, override:{}, updated:{})",
 		//		getRegionPos(), detailLevel, posX, posZ, widthX, widthZ, override, updated);
@@ -501,7 +504,7 @@ public class LodRegion {
 	
 	
 	
-	
+
 	/**
 	 * Updates all children.
 	 * <p>
@@ -646,10 +649,10 @@ public class LodRegion {
 					+ "only allows adding LevelContainers with a " + "detail level of [" + (minDetailLevel - 1) + "]");
 		}
 
+		dataContainer[levelContainer.getDetailLevel()] = levelContainer;
 		if (levelContainer.getDetailLevel() == minDetailLevel - 1)
 			minDetailLevel = levelContainer.getDetailLevel();
 
-		dataContainer[levelContainer.getDetailLevel()] = levelContainer;
 		needRecheckGenPoint = true;
 	}
 
@@ -662,10 +665,9 @@ public class LodRegion {
 	 */
 	public void cutTree(byte detailLevel) {
 		if (detailLevel > minDetailLevel) {
+			minDetailLevel = detailLevel;
 			for (byte detailLevelIndex = 0; detailLevelIndex < detailLevel; detailLevelIndex++)
 				dataContainer[detailLevelIndex] = null;
-
-			minDetailLevel = detailLevel;
 		}
 	}
 

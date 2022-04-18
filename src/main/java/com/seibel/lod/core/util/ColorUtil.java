@@ -38,6 +38,8 @@ public class ColorUtil
 	public static final int BLACK = rgbToInt(0,0,0);
 	public static final int WHITE = rgbToInt(255,255,255);
 	public static final int TRANSPARENT = rgbToInt(0, 0, 0, 0);
+
+	public static final int RED = rgbToInt(255,0,0);
 	
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	

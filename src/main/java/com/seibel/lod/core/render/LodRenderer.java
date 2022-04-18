@@ -250,7 +250,8 @@ public class LodRenderer
 		LagSpikeCatcher drawSetPolygon = new LagSpikeCatcher();
 		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME
 			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_GENMODE_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_WIREFRAME) {
+			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_WIREFRAME
+			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
 			//GL32.glDisable(GL32.GL_CULL_FACE);
 		}

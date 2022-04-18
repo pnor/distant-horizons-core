@@ -294,6 +294,7 @@ public class LodDimension
 					detail = DetailDistanceUtil.getDetailLevelFromDistance(minDistance);
 					if (region.getMinDetailLevel() < detail) {
 						if (region.needSaving) return; // FIXME: A crude attempt at lowering chance of race condition!
+						if (region.isWriting.get()!=0) return;
 						region.cutTree(detail);
 						region.needSignalToRegenBuffer = true;
 					}

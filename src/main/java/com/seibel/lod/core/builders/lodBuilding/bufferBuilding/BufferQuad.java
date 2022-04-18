@@ -31,7 +31,7 @@ import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
  * @author ?
  * @version 4-9-2022
  */
-public class BufferQuad
+public final class BufferQuad
 {
 	final short x;
 	final short y;
@@ -39,11 +39,12 @@ public class BufferQuad
 	short widthEastWest;
 	/** This is both North/South and Up/Down since the merging logic is the same either way */
 	short widthNorthSouthOrUpDown;
-	int color;
+	final int color;
 	final byte skyLight;
 	final byte blockLight;
 	final LodDirection direction;
-	
+
+	boolean hasError = false;
 	
 	BufferQuad(short x, short y, short z, short widthEastWest, short widthNorthSouthOrUpDown,
 			int color, byte skylight, byte blocklight,
@@ -64,15 +65,12 @@ public class BufferQuad
 		this.blockLight = blocklight;
 		this.direction = direction;
 	}
-	
-	
-	
+
 	/** a rough but fast calculation */
 	double calculateDistance(double relativeX, double relativeY, double relativeZ)
 	{
 		return Math.pow(relativeX - x, 2) + Math.pow(relativeY - y, 2) + Math.pow(relativeZ - z, 2);
 	}
-	
 	
 	/** compares this quad's position to the given quad */
 	public int compare(BufferQuad quad, BufferMergeDirectionEnum compareDirection)
@@ -131,6 +129,7 @@ public class BufferQuad
 	 */
 	public boolean tryMerge(BufferQuad quad, BufferMergeDirectionEnum mergeDirection)
 	{
+		if (quad.hasError || this.hasError) return false;
 		// only merge quads that are in the same direction
 		if (direction != quad.direction)
 			return false;
@@ -244,7 +243,8 @@ public class BufferQuad
 		{
 			// these quads are overlapping, they can't be merged
 			EVENT_LOGGER.warn("Overlapping quads detected!");
-			quad.color = ColorUtil.rgbToInt(255, 0, 0);
+			quad.hasError = true;
+			this.hasError = true;
 			return false;
 		}
 		

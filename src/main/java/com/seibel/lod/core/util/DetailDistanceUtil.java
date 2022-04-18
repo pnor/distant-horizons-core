@@ -104,7 +104,7 @@ public class DetailDistanceUtil
 	
 	public static int getMaxVerticalData(int detail)
 	{
-		return CONFIG.client().graphics().quality().getVerticalQuality().maxVerticalData[LodUtil.clamp(minDetail, detail, LodUtil.REGION_DETAIL_LEVEL)];
+		return CONFIG.client().graphics().quality().getVerticalQuality().maxVerticalData[detail];
 	}
 	
 }

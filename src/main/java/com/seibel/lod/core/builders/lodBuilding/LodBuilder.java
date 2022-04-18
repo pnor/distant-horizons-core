@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.builders.lodBuilding;
 
+import java.util.ConcurrentModificationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -287,6 +288,10 @@ public class LodBuilder
 			
 			//ApiShared.LOGGER.info("Generate chunk: {}, {} ({}, {}) at genMode {}",
 			//		chunk.getChunkPosX(), chunk.getChunkPosZ(), chunk.getMinX(), chunk.getMinZ(), config.distanceGenerationMode);
+			if (targetLevel != region.getMinDetailLevel()) {
+				//Concurrency issues happened.
+				throw new ConcurrentModificationException("Min detail level changed while writing data");
+			}
 			region.addChunkOfData(targetLevel,
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkX, targetLevel),
 					LevelPosUtil.convert(LodUtil.CHUNK_DETAIL_LEVEL, chunkZ, targetLevel),
