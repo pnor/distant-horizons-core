@@ -86,7 +86,7 @@ public class CubicLodTemplate
 				break;
 			}
 			case SHOW_OVERLAPPING_QUADS:
-			case SHOW_NON_OVERLAPPING_QUADS_WIREFRAME:
+			case SHOW_OVERLAPPING_QUADS_WIREFRAME:
 			{
 				color = ColorUtil.WHITE;
 				fullBright = true;
