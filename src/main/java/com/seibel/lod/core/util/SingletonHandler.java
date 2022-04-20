@@ -86,10 +86,11 @@ public class SingletonHandler
 	public static <T> T get(Class<T> objectClass) throws NullPointerException, ClassCastException
 	{
 		// throw an error if the given singleton doesn't exist.
-		if (!singletons.containsKey(objectClass))
-		{
-			throw new NullPointerException("The singleton [" + objectClass.getSimpleName() + "] was never bound. If you are calling [bind], make sure it is happening before you call [get].");
-		}
+		// FIXME: Why is this not allowing the code to run
+//		if (!singletons.containsKey(objectClass))
+//		{
+//			throw new NullPointerException("The singleton [" + objectClass.getSimpleName() + "] was never bound. If you are calling [bind], make sure it is happening before you call [get].");
+//		}
 		
 		
 		return (T) singletons.get(objectClass);
