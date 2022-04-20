@@ -25,7 +25,7 @@ public class ConfigBase {
         Double
         Float
         Byte
-        Map<String, Boolean> or MultiOption
+        Map<String, ?>
      */
     public static final List<Class<?>> acceptableInputs = new ArrayList<>();
     private static void addAcceptableInputs() {

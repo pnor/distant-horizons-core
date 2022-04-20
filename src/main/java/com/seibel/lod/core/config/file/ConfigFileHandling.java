@@ -24,6 +24,7 @@ public class ConfigFileHandling {
     public static final Path ConfigPath = SingletonHandler.get(IMinecraftWrapper.class).getGameDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");
     public static final CommentedFileConfig config = CommentedFileConfig.builder(ConfigPath.toFile()).autosave().build();
 
+    /** Saves the config to the file */
     public static void saveToFile() {
         if (!Files.exists(ConfigPath))
             try {
@@ -40,8 +41,9 @@ public class ConfigFileHandling {
 
         config.close();
     }
-
+    /** Loads the config from the file */
     public static void loadFromFile() {
+        // Attempt to load the file and if it fails then save config to file
         try {
             if (Files.exists(ConfigPath))
                 config.load();
@@ -54,6 +56,7 @@ public class ConfigFileHandling {
             return;
         }
 
+        // Load all the entries
         for (ConfigEntry<?> entry : ConfigBase.entries) {
             createComment(entry, config);
             loadEntry(entry, config);
@@ -62,11 +65,13 @@ public class ConfigFileHandling {
         config.close();
     }
 
+    // Save an entry when only given the entry
     public static void saveEntry(ConfigEntry<?> entry) {
         loadConfig(config);
         saveEntry(entry, config);
         config.close();
     }
+    // Save an entry
     @SuppressWarnings("unchecked")
     public static void saveEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
         if (!entry.get().getClass().isAssignableFrom(HashMap.class)) {
@@ -75,13 +80,15 @@ public class ConfigFileHandling {
             workConfig.set(entry.getNameWCategory(), getStringFromHashMap((HashMap<String, ?>) entry.get()));
         }
     }
+
+    // Loads an entry when only given the entry
     public static void loadEntry(ConfigEntry<?> entry) {
         loadConfig(config);
         loadEntry(entry, config);
         config.close();
 
     }
-    
+    // Loads an entry
     @SuppressWarnings("unchecked") // Suppress due to its always safe. (I think. See reasons below.)
 	public static <T> void loadEntry(ConfigEntry<T> entry, CommentedFileConfig workConfig) {
         if (workConfig.contains(entry.getNameWCategory())) {
@@ -102,11 +109,13 @@ public class ConfigFileHandling {
         }
     }
 
+    // Creates the comment for an entry when only given the entry
     public static void createComment(ConfigEntry<?> entry) {
         loadConfig(config);
         createComment(entry, config);
         config.close();
     }
+    // Creates a comment for an entry
     public static void createComment(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
         workConfig.setComment(entry.getNameWCategory(), entry.getComment());
     }
@@ -131,7 +140,7 @@ public class ConfigFileHandling {
 
 
 
-    // Stuff for converting HashMap's and String's
+    // Stuff for converting HashMap's and String's (uses json)
     public static String getStringFromHashMap(HashMap<String, ?> item) {
         JSONObject jsonObject = new JSONObject();
 
@@ -141,9 +150,8 @@ public class ConfigFileHandling {
 
         return jsonObject.toJSONString();
     }
-
-    public static <type> HashMap<String, ?> getHashMapFromString(String s) {
-        HashMap<String, type> map = new HashMap<>();
+    public static <T> HashMap<String, ?> getHashMapFromString(String s) {
+        HashMap<String, T> map = new HashMap<>();
 
         JSONObject jsonObject = null;
         try {
@@ -153,7 +161,7 @@ public class ConfigFileHandling {
         }
 
         for (int i = 0; i < jsonObject.keySet().toArray().length; i++) {
-            map.put((String) jsonObject.keySet().toArray()[i], (type) jsonObject.get(jsonObject.keySet().toArray()[i]));
+            map.put((String) jsonObject.keySet().toArray()[i], (T) jsonObject.get(jsonObject.keySet().toArray()[i]));
         }
         return map;
     }

@@ -21,7 +21,10 @@ public class ConfigAnnotations {
 
     }
 
-    /** Makes text (looks like @Entry but doesn't save and has no button) */
+    /**
+     * Makes text (looks like normal entry but doesn't save and has no button)
+     * Accepts string and the text is the value
+     */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface Comment

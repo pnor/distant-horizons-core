@@ -12,6 +12,7 @@ public class ConfigEntry<T> {
     public String name;            // This should only be set once in the init
 
     private T value;
+    private T defaultValue;
     private String comment;
     private T min;
     private T max;
@@ -20,10 +21,17 @@ public class ConfigEntry<T> {
     /** Creates the entry */
     private ConfigEntry(T value, String comment, T min, T max, boolean show) {
         this.value = value;
+        this.defaultValue = value;
         this.comment = comment;
         this.min = min;
         this.max = max;
         this.show = show;
+    }
+
+
+    /** Gets the default value of the option */
+    public T getDefaultValue() {
+        return this.defaultValue;
     }
 
     /** Gets the value */

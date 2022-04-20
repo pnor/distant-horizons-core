@@ -1,10 +1,7 @@
 package com.seibel.lod.core.config.gui;
 
-import com.seibel.lod.core.wrapperInterfaces.AbstractScreen;
-
 /**
  * @author coolGi2007
- * @author leetom?
  */
 public class ConfigScreen extends AbstractScreen {
     @Override
@@ -14,6 +11,11 @@ public class ConfigScreen extends AbstractScreen {
 
     @Override
     public void render(float delta) {
-        System.out.println(delta);
+        System.out.println("Updated config screen with the delta of " + delta);
+    }
+
+    @Override
+    public void tick() {
+        System.out.println("Ticked");
     }
 }
