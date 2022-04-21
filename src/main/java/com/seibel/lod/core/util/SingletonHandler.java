@@ -47,10 +47,10 @@ public class SingletonHandler
 	public static void bind(Class<?> interfaceClass, Object singletonReference) throws IllegalStateException
 	{
 		// make sure we haven't already bound this singleton
-		if (singletons.containsKey(interfaceClass))
-		{
-			throw new IllegalStateException("The singleton [" + interfaceClass.getSimpleName() + "] has already been bound.");
-		}
+//		if (singletons.containsKey(interfaceClass))
+//		{
+//			throw new IllegalStateException("The singleton [" + interfaceClass.getSimpleName() + "] has already been bound.");
+//		}
 		
 		
 		// make sure the given singleton implements the interface
