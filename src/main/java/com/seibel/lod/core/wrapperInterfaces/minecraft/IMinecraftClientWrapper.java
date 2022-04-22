@@ -97,6 +97,8 @@ public interface IMinecraftClientWrapper extends IBindable
 	float getSkyDarken(float partialTicks);
 	
 	boolean connectedToServer();
+
+	int getPlayerSkylight();
 	
 	/** Returns all worlds available to the server */
 	ArrayList<IWorldWrapper> getAllServerWorlds();

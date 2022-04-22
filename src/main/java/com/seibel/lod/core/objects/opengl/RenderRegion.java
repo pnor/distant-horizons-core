@@ -96,7 +96,7 @@ public class RenderRegion implements AutoCloseable
 		needRegen.set(2);
 	} 
 	
-	public Optional<CompletableFuture<Void>> updateStatus(Executor bufferUploader, Executor bufferBuilder, boolean alwaysRegen, int playerPosX, int playerPosZ) {
+	public Optional<CompletableFuture<Void>> updateStatus(Executor bufferUploader, Executor bufferBuilder, boolean alwaysRegen, int playerPosX, int playerPosZ, boolean doCaveCulling) {
 		if (alwaysRegen) setNeedRegen();
 		
 		BackState state = backState.get();
@@ -120,7 +120,7 @@ public class RenderRegion implements AutoCloseable
 			return Optional.empty();
 		}
 		needRegen.decrementAndGet();
-		return Optional.of(startBuid(bufferUploader, bufferBuilder, r, lodDim, playerPosX, playerPosZ));
+		return Optional.of(startBuid(bufferUploader, bufferBuilder, r, lodDim, playerPosX, playerPosZ, doCaveCulling));
 	}
 	
 	public boolean render(LodDimension renderDim,
@@ -167,7 +167,7 @@ public class RenderRegion implements AutoCloseable
 				: null; //new ComplexRenderRegion(regPos);
 	}
 	
-	private CompletableFuture<Void> startBuid(Executor bufferUploader, Executor bufferBuilder, LodRegion region, LodDimension lodDim, int playerPosX, int playerPosZ) {
+	private CompletableFuture<Void> startBuid(Executor bufferUploader, Executor bufferBuilder, LodRegion region, LodDimension lodDim, int playerPosX, int playerPosZ, boolean doCaveCulling) {
 		EVENT_LOGGER.trace("RenderRegion startBuild @ {}", regionPos);
 		LodRegion[] adjRegions = new LodRegion[4];
 		try {
@@ -187,13 +187,10 @@ public class RenderRegion implements AutoCloseable
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				EVENT_LOGGER.trace("RenderRegion start QuadBuild @ {}", regionPos);
-				boolean useSkylightCulling = CONFIG.client().graphics().advancedGraphics().getEnableCaveCulling();
-				useSkylightCulling &= !lodDim.dimension.hasCeiling();
-				useSkylightCulling &= lodDim.dimension.hasSkyLight();
 				int skyLightCullingBelow = CONFIG.client().graphics().advancedGraphics().getCaveCullingHeight();
 				// FIXME: Clamp also to the max world height.
 				skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
-				LodQuadBuilder builder = new LodQuadBuilder(useSkylightCulling, skyLightCullingBelow);
+				LodQuadBuilder builder = new LodQuadBuilder(doCaveCulling, skyLightCullingBelow);
 				Runnable buildRun = ()->{
 					makeLodRenderData(builder, region, adjRegions, playerPosX, playerPosZ);
 				};

@@ -192,6 +192,13 @@ public class LodBufferBuilderFactory {
 					lodDim, renderRegions==null ? "NULL" : renderRegions.toString());
 			long startTime = System.currentTimeMillis();
 
+			boolean doCaveCulling = CONFIG.client().graphics().advancedGraphics().getEnableCaveCulling();
+			doCaveCulling &= !lodDim.dimension.hasCeiling();
+			doCaveCulling &= lodDim.dimension.hasSkyLight();
+			doCaveCulling &= playerY > CONFIG.client().graphics().advancedGraphics().getCaveCullingHeight() + 5;
+			int playerSkylight = MC.getPlayerSkylight(); // if fail returns -1.
+			doCaveCulling &= playerSkylight > 7;
+
 			try {
 				updateRingList(playerX, playerZ, lodDim.getWidth());
 
@@ -229,7 +236,8 @@ public class LodBufferBuilderFactory {
 							}
 
 							CompletableFuture<Void> newFuture =
-									r.updateStatus(bufferUploadThread, bufferBuilderThreads, fullRegen, playerX, playerZ).orElse(null);
+									r.updateStatus(bufferUploadThread, bufferBuilderThreads, fullRegen,
+											playerX, playerZ, doCaveCulling).orElse(null);
 							if (newFuture != null) {
 								future = CompletableFuture.allOf(future, newFuture);
 								numOfJobs++;
