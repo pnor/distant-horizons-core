@@ -89,7 +89,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				HorizontalResolution getDrawResolution();
 				void setDrawResolution(HorizontalResolution newHorizontalResolution);
 				
-				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(16, 64, 2048);
+				MinDefaultMax<Integer> LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(32, 128, 2048);
 				String LOD_CHUNK_RENDER_DISTANCE_DESC = ""
 						+ " The radius of the mod's render distance. (measured in chunks) \n";
 				int getLodChunkRenderDistance();
@@ -111,7 +111,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				VerticalQuality getVerticalQuality();
 				void setVerticalQuality(VerticalQuality newVerticalQuality);
 				
-				MinDefaultMax<Integer> HORIZONTAL_SCALE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(2, 8, 32);
+				MinDefaultMax<Integer> HORIZONTAL_SCALE_MIN_DEFAULT_MAX = new MinDefaultMax<Integer>(2, 12, 64);
 				String HORIZONTAL_SCALE_DESC = ""
 						+ " This indicates how quickly fake chunks decrease in quality the further away they are. \n"
 						+ " Higher settings will render higher quality fake chunks farther away, \n"
@@ -523,7 +523,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				double getSaturationMultiplier();
 				void setSaturationMultiplier(double newSaturationMultiplier);
 
-				boolean ENABLE_CAVE_CULLING_DEFAULT = false;
+				boolean ENABLE_CAVE_CULLING_DEFAULT = true;
 				String ENABLE_CAVE_CULLING_DESC = ""
 						+ " If enabled caves will be culled \n"
 						+ "\n"
