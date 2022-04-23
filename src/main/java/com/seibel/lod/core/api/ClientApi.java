@@ -152,7 +152,7 @@ public class ClientApi
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		// comment out when creating a release
-		applyConfigOverrides();
+		//applyConfigOverrides();
 
 		// clear any out of date objects
 		MC.clearFrameObjectCache();
