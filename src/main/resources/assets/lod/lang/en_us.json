@@ -219,7 +219,7 @@
   "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads":
 	"NO. of world generation threads",
   "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads.@tooltip":
-	"How many threads should be used when generating fake \nchunks outside the normal render distance? \n\nIf it's less than 1, it will be treated as a percentage \nof time single thread can run before going to idle. \n\nIf you experience stuttering when generating distant LODs, \ndecrease  this number. If you want to increase LOD \ngeneration speed, increase this number. \n\nThis and the number of buffer builder threads are independent, \nso if they add up to more threads than your CPU has cores, \nthat shouldn't cause an issue.",
+	"How many threads should be used when generating fake \nchunks outside the normal render distance? \n\nIf it this is less than 1, it will be treated as a percentage \nof time a single thread can run before going idle. \n\nIf you experience stuttering when generating distant fake chunks, \ndecrease  this number. If you want to increase fake chunk \ngeneration speed, increase this number. \n\nThis and the number of buffer builder threads are independent, \nif they add up to more threads than your CPU has cores \nthat is ok.",
   "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads":
 	"NO. of buffer builder threads",
   "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads.@tooltip":
