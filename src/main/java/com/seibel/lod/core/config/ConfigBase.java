@@ -2,8 +2,11 @@ package com.seibel.lod.core.config;
 
 import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
+import com.seibel.lod.core.config.gui.AbstractScreen;
+import com.seibel.lod.core.config.types.AbstractConfigType;
+import com.seibel.lod.core.config.types.ConfigCategory;
+import com.seibel.lod.core.config.types.ConfigEntry;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,12 +23,14 @@ public class ConfigBase {
             What the config works with
 
         Enum
-        Integer
         Boolean
-        Double
-        Float
         Byte
-        Map<String, ?>
+        Integer
+        Double
+        Long
+        // Float (to be tested)
+        String
+        Map<String, ?> // The ? should be another value from above
      */
     public static final List<Class<?>> acceptableInputs = new ArrayList<>();
     private static void addAcceptableInputs() {
@@ -33,14 +38,14 @@ public class ConfigBase {
         acceptableInputs.add(Byte.class);
         acceptableInputs.add(Short.class);
         acceptableInputs.add(Integer.class);
+        acceptableInputs.add(Double.class);
         acceptableInputs.add(Long.class);
-        acceptableInputs.add(Float.class);
+//        acceptableInputs.add(Float.class);
         acceptableInputs.add(String.class);
         acceptableInputs.add(HashMap.class);
     }
 
-    public static final List<ConfigEntry<?>> entries = new ArrayList<ConfigEntry<?>>();
-    public static final List<String> categories = new ArrayList<>();
+    public static final List<AbstractConfigType<?>> entries = new ArrayList<>();
 
     public static void init(Class<?> config) {
         addAcceptableInputs(); // Add all of the acceptable stuff to the acceptableInputs list
@@ -55,25 +60,27 @@ public class ConfigBase {
         // Put all the entries in entries
 
         for (Field field : config.getFields()) {
-            if (ConfigEntry.class.isAssignableFrom(field.getType())) { // If item is type ConfigEntry
+            if (AbstractConfigType.class.isAssignableFrom(field.getType())) {
                 try {
-                    if (isAcceptableType(((ConfigEntry<?>) field.get(field.getType())).get().getClass())) {
-                        entries.add((ConfigEntry<?>) field.get(field.getType())); // Add to entries
-                        entries.get(entries.size() - 1).category = category;
-                        entries.get(entries.size() - 1).name = field.getName();
-                    } else {
-                        ClientApi.LOGGER.error("Invalid variable type at [" + (category.isEmpty() ? "" : category + ".") + field.getName() + "].");
-                        ClientApi.LOGGER.error("Type [" + ((ConfigEntry<?>) field.get(field.getType())).get().getClass() + "] is not one of these types [" + acceptableInputs.toString() + "]");
-                    }
+                    entries.add((AbstractConfigType<?>) field.get(field.getType()));
                 } catch (IllegalAccessException exception) {
                     exception.printStackTrace();
                 }
-            }
 
-            if (field.isAnnotationPresent(ConfigAnnotations.Category.class)) { // If it's a category then init the stuff inside it and put it in the category list
-                String NCategory = (category.isEmpty() ? "" : category + ".") + field.getName();
-                categories.add(NCategory);
-                initNestedClass(field.getType(), NCategory);
+                AbstractConfigType<?> entry = entries.get(entries.size() - 1);
+                entry.category = category;
+                entry.name = field.getName();
+
+                if (ConfigEntry.class.isAssignableFrom(field.getType())) { // If item is type ConfigEntry
+                    if (!isAcceptableType(((ConfigEntry<?>) entry).get().getClass())) {
+                        ClientApi.LOGGER.error("Invalid variable type at [" + (category.isEmpty() ? "" : category + ".") + field.getName() + "].");
+                        ClientApi.LOGGER.error("Type [" + ((ConfigEntry<?>) entry).get().getClass() + "] is not one of these types [" + acceptableInputs.toString() + "]");
+                    }
+                }
+
+                if (ConfigCategory.class.isAssignableFrom(field.getType())) { // If it's a category then init the stuff inside it and put it in the category list
+                    initNestedClass((entry.getType()), ((ConfigCategory) entry).getDestination());
+                }
             }
         }
     }

@@ -3,7 +3,8 @@ package com.seibel.lod.core.config.file;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.config.ConfigBase;
-import com.seibel.lod.core.config.ConfigEntry;
+import com.seibel.lod.core.config.types.AbstractConfigType;
+import com.seibel.lod.core.config.types.ConfigEntry;
 import com.seibel.lod.core.util.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
 import org.json.simple.JSONObject;
@@ -34,9 +35,11 @@ public class ConfigFileHandling {
             }
         loadConfig(config);
 
-        for (ConfigEntry<?> entry : ConfigBase.entries) {
-            createComment(entry, config);
-            saveEntry(entry, config);
+        for (AbstractConfigType<?> entry : ConfigBase.entries) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass())) {
+                createComment((ConfigEntry<?>) entry, config);
+                saveEntry((ConfigEntry<?>) entry, config);
+            }
         }
 
         config.close();
@@ -57,9 +60,11 @@ public class ConfigFileHandling {
         }
 
         // Load all the entries
-        for (ConfigEntry<?> entry : ConfigBase.entries) {
-            createComment(entry, config);
-            loadEntry(entry, config);
+        for (AbstractConfigType<?> entry : ConfigBase.entries) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass())) {
+                createComment((ConfigEntry<?>) entry, config);
+                loadEntry((ConfigEntry<?>) entry, config);
+            }
         }
 
         config.close();
@@ -74,6 +79,8 @@ public class ConfigFileHandling {
     // Save an entry
     @SuppressWarnings("unchecked")
     public static void saveEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
+        if (!entry.getAppearance().showInFile)
+            return;
         if (!entry.get().getClass().isAssignableFrom(HashMap.class)) {
             workConfig.set(entry.getNameWCategory(), entry.get());
         } else {
@@ -91,6 +98,8 @@ public class ConfigFileHandling {
     // Loads an entry
     @SuppressWarnings("unchecked") // Suppress due to its always safe. (I think. See reasons below.)
 	public static <T> void loadEntry(ConfigEntry<T> entry, CommentedFileConfig workConfig) {
+        if (!entry.getAppearance().showInFile)
+            return;
         if (workConfig.contains(entry.getNameWCategory())) {
             if (entry.get().getClass().isEnum()) {
                 // Safe cast due to above checking that <T> is indeed a Enum

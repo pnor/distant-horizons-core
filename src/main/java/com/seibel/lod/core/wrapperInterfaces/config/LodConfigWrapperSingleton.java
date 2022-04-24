@@ -49,12 +49,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		@Override
 		public boolean getOptionsButton()
 		{
-			return Config.client.optionsButton.get();
+			return Config.Client.optionsButton.get();
 		}
 		@Override
 		public void setOptionsButton(boolean newOptionsButton)
 		{
-			Config.client.optionsButton.set(newOptionsButton);
+			Config.Client.optionsButton.set(newOptionsButton);
 		}
 
 

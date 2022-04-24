@@ -1,12 +1,13 @@
 package com.seibel.lod.core;
 
 import com.seibel.lod.core.config.*;
+import com.seibel.lod.core.config.types.ConfigCategory;
+import com.seibel.lod.core.config.types.ConfigEntry;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This handles any configuration the user has access to.
@@ -30,19 +31,15 @@ public class Config
     //				|-> Buffers
     //				|-> Debugging
 
-    @ConfigAnnotations.Category
-    public static Client client;
+    public static ConfigCategory<Client> client = new ConfigCategory.Builder<Client>().set(new Client()).build();
 
     public static class Client
     {
-        @ConfigAnnotations.Category
-        public static Graphics graphics;
+        public static ConfigCategory<Graphics> graphics = new ConfigCategory.Builder<Graphics>().set(new Graphics()).build();
 
-        @ConfigAnnotations.Category
-        public static WorldGenerator worldGenerator;
+        public static ConfigCategory<WorldGenerator> worldGenerator = new ConfigCategory.Builder<WorldGenerator>().set(new WorldGenerator()).build();
 
-        @ConfigAnnotations.Category
-        public static Advanced advanced;
+        public static ConfigCategory<Advanced> advanced = new ConfigCategory.Builder<Advanced>().set(new Advanced()).build();
 
 
         public static ConfigEntry<Boolean> optionsButton = new ConfigEntry.Builder<Boolean>()
@@ -57,14 +54,11 @@ public class Config
 
         public static class Graphics
         {
-            @ConfigAnnotations.Category
-            public static Quality quality;
+            public static ConfigCategory<Quality> quality = new ConfigCategory.Builder<Quality>().set(new Quality()).build();
 
-            @ConfigAnnotations.Category
-            public static FogQuality fogQuality;
+            public static ConfigCategory<FogQuality> fogQuality = new ConfigCategory.Builder<FogQuality>().set(new FogQuality()).build();
 
-            @ConfigAnnotations.Category
-            public static AdvancedGraphics advancedGraphics;
+            public static ConfigCategory<AdvancedGraphics> advancedGraphics = new ConfigCategory.Builder<AdvancedGraphics>().set(new AdvancedGraphics()).build();
 
 
             public static class Quality
@@ -182,14 +176,11 @@ public class Config
 
         public static class Advanced
         {
-            @ConfigAnnotations.Category
-            public static Threading threading;
+            public static ConfigCategory<Threading> threading = new ConfigCategory.Builder<Threading>().set(new Threading()).build();
 
-            @ConfigAnnotations.Category
-            public static Debugging debugging;
+            public static ConfigCategory<Debugging> debugging = new ConfigCategory.Builder<Debugging>().set(new Debugging()).build();
 
-            @ConfigAnnotations.Category
-            public static Buffers buffers;
+            public static ConfigCategory<Buffers> buffers = new ConfigCategory.Builder<Buffers>().set(new Buffers()).build();
 
 
             public static class Threading

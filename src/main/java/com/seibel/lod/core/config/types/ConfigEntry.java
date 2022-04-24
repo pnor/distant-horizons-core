@@ -1,5 +1,6 @@
-package com.seibel.lod.core.config;
+package com.seibel.lod.core.config.types;
 
+import com.seibel.lod.core.config.ConfigEntryAppearance;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
 
 /**
@@ -7,25 +8,20 @@ import com.seibel.lod.core.config.file.ConfigFileHandling;
  *
  * @author coolGi2007
  */
-public class ConfigEntry<T> {
-    public String category = "";    // This should only be set once in the init
-    public String name;            // This should only be set once in the init
+public class ConfigEntry<T> extends AbstractConfigType<T> {
 
-    private T value;
     private T defaultValue;
     private String comment;
     private T min;
     private T max;
-    private boolean show; // Show the option
 
     /** Creates the entry */
-    private ConfigEntry(T value, String comment, T min, T max, boolean show) {
-        this.value = value;
+    private ConfigEntry(ConfigEntryAppearance appearance, T value, String comment, T min, T max) {
+        super(appearance, value);
         this.defaultValue = value;
         this.comment = comment;
         this.min = min;
         this.max = max;
-        this.show = show;
     }
 
 
@@ -34,18 +30,15 @@ public class ConfigEntry<T> {
         return this.defaultValue;
     }
 
-    /** Gets the value */
-    public T get() {
-        return this.value;
-    }
-    /** Sets the value */
-    public void set(T new_value) {
-        this.value = new_value;
+    @Override
+    public void set(T newValue) {
+        this.value = newValue;
         save();
     }
+
     /** Sets the value without saving */
-    public void setWTSave(T new_value) {
-        this.value = new_value;
+    public void setWTSave(T newValue) {
+        this.value = newValue;
     }
 
     /** Gets the min value */
@@ -64,14 +57,6 @@ public class ConfigEntry<T> {
     public void setMax(T newMax) {
         this.max = newMax;
     }
-    /** Checks weather it should be shown */
-    public boolean getShow() {
-        return this.show;
-    }
-    /** Says to show the option */
-    public void setShow(boolean newShow) {
-        this.show = newShow;
-    }
 
     /** Gets the comment */
     public String getComment() {
@@ -80,20 +65,6 @@ public class ConfigEntry<T> {
     /** Sets the comment */
     public void setComment(String newComment) {
         this.comment = newComment;
-    }
-
-
-    /** Should not be needed for anything other than the gui/file handling */
-    public String getCategory() {
-        return this.category;
-    }
-    /** Should not be needed for anything other than the gui/file handling */
-    public String getName() {
-        return this.name;
-    }
-    /** Should not be needed for anything other than the gui/file handling */
-    public String getNameWCategory() {
-        return (this.category.isEmpty() ? "" : this.category + ".") + this.name;
     }
 
 
@@ -142,18 +113,10 @@ public class ConfigEntry<T> {
         }
     }
 
-    // Use this so it dost do file handling stuff
-    public static class Builder<T> {
-        private T tmpValue;
+    public static class Builder<T> extends AbstractConfigType.Builder<T> {
         private String tmpComment;
         private T tmpMin;
         private T tmpMax;
-        private boolean tmpShow = true;
-
-        public Builder<T> set(T newValue) {
-            this.tmpValue = newValue;
-            return this;
-        }
 
         public Builder<T> comment(String newComment) {
             this.tmpComment = newComment;
@@ -166,14 +129,9 @@ public class ConfigEntry<T> {
             return this;
         }
 
-        public Builder<T> showOption(boolean newShow) {
-            this.tmpShow = newShow;
-            return this;
-        }
-
 
         public ConfigEntry<T> build() {
-            return new ConfigEntry<T>(tmpValue, tmpComment, tmpMin, tmpMax, tmpShow);
+            return new ConfigEntry<T>(tmpAppearance, tmpValue, tmpComment, tmpMin, tmpMax);
         }
     }
 }
