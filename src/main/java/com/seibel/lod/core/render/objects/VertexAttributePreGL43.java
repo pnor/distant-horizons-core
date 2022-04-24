@@ -26,8 +26,6 @@ import java.util.TreeSet;
 
 import org.lwjgl.opengl.GL32;
 
-import com.seibel.lod.core.api.ClientApi;
-
 import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 
