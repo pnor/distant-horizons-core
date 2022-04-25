@@ -19,11 +19,12 @@
 
 package com.seibel.lod.core.builders.worldGeneration;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LevelPosUtil;
@@ -34,9 +35,12 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper.Steps;
+import org.apache.logging.log4j.Logger;
 
-public class BatchGenerator {
+import java.lang.invoke.MethodHandles;
 
+public class BatchGenerator
+{
 	public static final boolean ENABLE_GENERATOR_STATS_LOGGING = false;
 
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
@@ -46,7 +50,8 @@ public class BatchGenerator {
 	public LodDimension targetLodDim;
 	public static final int generationGroupSize = 4;
 	public static int previousThreadCount = CONFIG.client().advanced().threading()._getWorldGenerationThreadPoolSize();
-
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+	
 	private int estimatedSampleNeeded = 128;
 	private int estimatedPointsToQueue = 1;
 
@@ -55,7 +60,7 @@ public class BatchGenerator {
 		targetLodDim = newLodDimension;
 		generationGroup = FACTORY.createBatchGenerator(newLodBuilder, newLodDimension, world);
 		MC.sendChatMessage("NOTE: You are currently using Distant Horizon's Batch Chunk Pre-Generator.");
-		ApiShared.LOGGER.info("Batch Chunk Generator initialized");
+		LOGGER.info("Batch Chunk Generator initialized");
 	}
 
 	@SuppressWarnings("unused")
@@ -65,7 +70,7 @@ public class BatchGenerator {
 			IWorldWrapper dim = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 			generationGroup = FACTORY.createBatchGenerator(lodBuilder, lodDim, dim);
 			targetLodDim = lodDim;
-			ApiShared.LOGGER.info("1.18 Experimental Chunk Generator reinitialized");
+			LOGGER.info("1.18 Experimental Chunk Generator reinitialized");
 		}
 
 		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
@@ -143,14 +148,14 @@ public class BatchGenerator {
 		}
 
 		if (ENABLE_GENERATOR_STATS_LOGGING)
-			ApiShared.LOGGER.info("WorldGen. Near:" + posToGenerate.getNumberOfNearPos() + " Far:"
+			LOGGER.info("WorldGen. Near:" + posToGenerate.getNumberOfNearPos() + " Far:"
 					+ posToGenerate.getNumberOfFarPos());
 		if (priority == GenerationPriority.FAR_FIRST || priority == GenerationPriority.BALANCED) {
 
 			int nearCount = posToGenerate.getNumberOfNearPos();
 			int farCount = posToGenerate.getNumberOfFarPos();
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				ApiShared.LOGGER.info("WorldGen. Near:" + nearCount + " Far:" + farCount);
+				LOGGER.info("WorldGen. Near:" + nearCount + " Far:" + farCount);
 			int maxIteration = Math.max(nearCount, farCount);
 			for (int i = 0; i < maxIteration; i++) {
 
@@ -225,11 +230,11 @@ public class BatchGenerator {
 
 		if (targetToGenerate != toGenerate && ENABLE_GENERATOR_STATS_LOGGING) {
 			if (toGenerate <= 0) {
-				ApiShared.LOGGER.info(
+				LOGGER.info(
 						"WorldGenerator: Sampled " + posToGenerate.getNumberOfPos() + " out of " + estimatedSampleNeeded
 								+ " points, started all targeted " + targetToGenerate + " generations.");
 			} else {
-				ApiShared.LOGGER.info("WorldGenerator: Sampled " + posToGenerate.getNumberOfPos() + " out of "
+				LOGGER.info("WorldGenerator: Sampled " + posToGenerate.getNumberOfPos() + " out of "
 						+ estimatedSampleNeeded + " points, started " + (targetToGenerate - toGenerate)
 						+ " out of targeted " + targetToGenerate + " generations.");
 			}
@@ -243,7 +248,7 @@ public class BatchGenerator {
 			if (estimatedSampleNeeded > 32768)
 				estimatedSampleNeeded = 32768;
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				ApiShared.LOGGER.info("WorldGenerator: Increasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
+				LOGGER.info("WorldGenerator: Increasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
 
 		} else if (toGenerate <= 0 && positionGoneThough * 1.5 < posToGenerate.getNumberOfPos()) {
 			// We haven't gone though half of them and it's already enough.
@@ -253,13 +258,13 @@ public class BatchGenerator {
 			if (estimatedSampleNeeded < 4)
 				estimatedSampleNeeded = 4;
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				ApiShared.LOGGER.info("WorldGenerator: Decreasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
+				LOGGER.info("WorldGenerator: Decreasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
 		}
 
 	}
 
 	public void stop(boolean blocking) {
-		ApiShared.LOGGER.info("1.18 Experimental Chunk Generator shutting down...");
+		LOGGER.info("1.18 Experimental Chunk Generator shutting down...");
 		generationGroup.stop(blocking);
 	}
 

@@ -19,12 +19,14 @@
 
 package com.seibel.lod.core.builders.lodBuilding.bufferBuilding;
 
+import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -36,6 +38,7 @@ import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This object creates the buffers that are rendered by the LodRenderer.
@@ -63,14 +66,15 @@ public class LodBufferBuilderFactory {
 				return;
 			timer = System.nanoTime() - timer;
 			if (timer > LAG_SPIKE_THRESOLD_NS) {
-				ApiShared.LOGGER.info("LagSpikeCatcher: " + source + " took " + Duration.ofNanos(timer) + "!");
+				LOGGER.info("LagSpikeCatcher: " + source + " took " + Duration.ofNanos(timer) + "!");
 			}
 		}
 	}
-
+	
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+	
 	/** The thread used to generate new LODs off the main thread. */
 	private static LodThreadFactory mainGenThreadFactory = new LodThreadFactory(
 			LodBufferBuilderFactory.class.getSimpleName() + " - main", Thread.NORM_PRIORITY - 2);
@@ -156,7 +160,7 @@ public class LodBufferBuilderFactory {
 			renderRegions = new MovableGridRingList<RenderRegion>(regionWidth/2,
 					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerX),
 					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerZ));
-			ApiShared.LOGGER.info("============Render Regions rebuilt============");
+			LOGGER.info("============Render Regions rebuilt============");
 		} else {
 			renderRegions.move(LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerX),
 					LevelPosUtil.getRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerZ), RenderRegion::close);
@@ -188,7 +192,7 @@ public class LodBufferBuilderFactory {
 				resetThreadPools(false);
 			regionsListLock.lockInterruptibly();
 			if (ENABLE_EVENT_LOGGING)
-				ApiShared.LOGGER.info("BufferBuilderStarter locked the region lock! LodDim: [{}], RenderRegion: [{}]",
+				LOGGER.info("BufferBuilderStarter locked the region lock! LodDim: [{}], RenderRegion: [{}]",
 					lodDim, renderRegions==null ? "NULL" : renderRegions.toString());
 			long startTime = System.currentTimeMillis();
 
@@ -255,7 +259,7 @@ public class LodBufferBuilderFactory {
 					} catch (CancellationException ce) {
 						throw new InterruptedException("Future interrupted");
 					} catch (ExecutionException ee) {
-						ApiShared.LOGGER.error("LodBufferBuilder ran into trouble: ", ee.getCause());
+						LOGGER.error("LodBufferBuilder ran into trouble: ", ee.getCause());
 					}
 					long executeEnd = System.currentTimeMillis();
 
@@ -263,7 +267,7 @@ public class LodBufferBuilderFactory {
 					long buildTime = endTime - startTime;
 					long executeTime = executeEnd - executeStart;
 					if (ENABLE_BUFFER_PERF_LOGGING)
-						ApiShared.LOGGER.info("Thread Build&Upload(" + numOfJobs + "/"
+						LOGGER.info("Thread Build&Upload(" + numOfJobs + "/"
 								+ (lodDim.getWidth() * lodDim.getWidth()) + (fullRegen ? "FULL" : "") + ") time: " + buildTime
 								+ " ms" + '\n' + "thread execute time: " + executeTime + " ms");
 
@@ -274,18 +278,18 @@ public class LodBufferBuilderFactory {
 					} catch (Throwable ignored) {
 					}
 				} catch (TimeoutException te) {
-					ApiShared.LOGGER.error("LodBufferBuilder timed out: ", te);
+					LOGGER.error("LodBufferBuilder timed out: ", te);
 					resetThreadPools(true);
 				}
 			}
 			catch (RuntimeException e) {
-				ApiShared.LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
+				LOGGER.error("\"LodNodeBufferBuilder.generateLodBuffersAsync\" ran into trouble: ", e);
 			}
 		}
 		catch (InterruptedException ignored) { }
 		finally {
 			regionsListLock.unlock();
-			if (ENABLE_EVENT_LOGGING) ApiShared.LOGGER.info("BufferBuilderStarter unlocked the region lock!");
+			if (ENABLE_EVENT_LOGGING) LOGGER.info("BufferBuilderStarter unlocked the region lock!");
 			builderThreadRunning = false;
 		}
 	}
@@ -326,7 +330,7 @@ public class LodBufferBuilderFactory {
 	 * May have to wait for the bufferLock to open.
 	 */
 	public void destroyBuffers() {
-		ApiShared.LOGGER.info("Destroying LodBufferBuilder...");
+		LOGGER.info("Destroying LodBufferBuilder...");
 		mainGenThread.shutdownNow();
 		mainGenThread = Executors.newSingleThreadExecutor(mainGenThreadFactory);
 		boolean locked = false;
@@ -339,7 +343,7 @@ public class LodBufferBuilderFactory {
 		} finally {
 			if (locked) regionsListLock.unlock();
 		}
-		ApiShared.LOGGER.info("LodBufferBuilder destroyed.");
+		LOGGER.info("LodBufferBuilder destroyed.");
 	}
 
 	/** Get the newly created VBOs

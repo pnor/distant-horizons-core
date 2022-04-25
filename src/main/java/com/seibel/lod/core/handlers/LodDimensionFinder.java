@@ -21,7 +21,7 @@ package com.seibel.lod.core.handlers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.handlers.dimensionFinder.PlayerData;
 import com.seibel.lod.core.handlers.dimensionFinder.SubDimCompare;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -133,11 +132,11 @@ public class LodDimensionFinder
 				if (saveDir == null)
 					return;
 				
-				foundLodDimension = new LodDimension(dimensionTypeWrapper, ApiShared.lodBuilder.defaultDimensionWidthInRegions, saveDir);
+				foundLodDimension = new LodDimension(dimensionTypeWrapper, InternalApiShared.lodBuilder.defaultDimensionWidthInRegions, saveDir);
 			}
 			catch (IOException e)
 			{
-				ApiShared.LOGGER.error("Unable to set the dimension file handler for dimension type [" + dimensionTypeWrapper.getDimensionName() + "]. Error: " + e.getMessage(), e);
+				LOGGER.error("Unable to set the dimension file handler for dimension type [" + dimensionTypeWrapper.getDimensionName() + "]. Error: " + e.getMessage(), e);
 			}
 			finally
 			{
@@ -242,7 +241,7 @@ public class LodDimensionFinder
 		newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
 		
 		// generate a LOD to test against
-		boolean lodGenerated = ApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(DistanceGenerationMode.FULL), true, true);
+		boolean lodGenerated = InternalApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(DistanceGenerationMode.FULL), true, true);
 		if (!lodGenerated)
 			return null;
 		
@@ -341,7 +340,7 @@ public class LodDimensionFinder
 				
 				// check if the block positions are close
 				int playerBlockDist = testPlayerData.playerBlockPos.getManhattanDistance(playerData.playerBlockPos);
-				ApiShared.LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + playerBlockDist + "]");
+				LOGGER.info("Player block position distance between saved sub dimension and first seen is [" + playerBlockDist + "]");
 				
 				
 				// check if the chunk is actually empty

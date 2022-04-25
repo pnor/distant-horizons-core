@@ -19,14 +19,15 @@
 
 package com.seibel.lod.core.objects.lod;
 
-import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
@@ -35,8 +36,10 @@ import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,6 +64,7 @@ public class LodDimension
 {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	
 	public final IDimensionTypeWrapper dimension;
 	
@@ -167,14 +171,14 @@ public class LodDimension
 	public synchronized void move(RegionPos regionOffset)
 	{
 		if (this.logEvents)
-			ApiShared.LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
+			LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
 		
 		saveDirtyRegionsToFile(false); //async add dirty regions to be saved.
 		Pos2D p = regions.getCenter();
 		regions.move(p.x+regionOffset.x, p.y+regionOffset.z);
 		
 		if (this.logEvents)
-			ApiShared.LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
+			LOGGER.info("LodDim MOVE complete. Offset: "+regionOffset);
 	}
 	
 	
@@ -326,7 +330,7 @@ public class LodDimension
 			if (LodUtil.checkRamUsage(0.2, 128))
 			{
 				if (this.logEvents)
-					ApiShared.LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
+					LOGGER.info("Enough ram for expandOrLoadThread. Restarting...");
 				
 				expandOrLoadPaused = false;
 			}
@@ -353,7 +357,7 @@ public class LodDimension
 					if (!LodUtil.checkRamUsage(0.2, 128))
 					{
 						if (this.logEvents)
-							ApiShared.LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
+							LOGGER.warn("Not enough ram for expandOrLoadThread. Pausing until Ram is freed...");
 						
 						// We have less than 10% or 64MB ram left. Don't expend.
 						expandOrLoadPaused = true;
@@ -388,7 +392,7 @@ public class LodDimension
 					{
 						if (this.logEvents)
 						{
-							ApiShared.LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
+							LOGGER.error("MinDistance/MaxDistance is WRONG!!! minDist: [{}], maxDist: [{}], centerDist: [{}]\n"
 											+ "At center block pos: {} {}, region pos: {}",
 									minDistance, maxDistance, debugDistance, debugRPosX, debugRPosZ, regionPos);
 						}
@@ -698,7 +702,7 @@ public class LodDimension
 			if (r.isWriting.get() != 0) writingRegionCount++;
 			LevelContainer[] container = r.debugGetDataContainers().clone();
 			if (container == null || container.length != LodUtil.DETAIL_OPTIONS) {
-				ApiShared.LOGGER.warn("DumpRamUsage encountered an invalid region!");
+				LOGGER.warn("DumpRamUsage encountered an invalid region!");
 				continue;
 			}
 			for (int i = 0; i < LodUtil.DETAIL_OPTIONS; i++) {
@@ -743,11 +747,11 @@ public class LodDimension
 			boolean worked = cutAndExpandThread.awaitTermination(5, TimeUnit.SECONDS);
 			
 			if (!worked)
-				ApiShared.LOGGER.error("Cut And Expend threads timed out! May cause crash on game exit due to cleanup failure.");
+				LOGGER.error("Cut And Expend threads timed out! May cause crash on game exit due to cleanup failure.");
 		}
 		catch (InterruptedException e)
 		{
-			ApiShared.LOGGER.error("Cut And Expend threads shutdown is interrupted! May cause crash on game exit due to cleanup failure: ", e);
+			LOGGER.error("Cut And Expend threads shutdown is interrupted! May cause crash on game exit due to cleanup failure: ", e);
 		}
 		
 	}

@@ -19,11 +19,14 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Hashtable;
 import java.util.Map;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This stores all LODs for a given world.
@@ -33,6 +36,9 @@ import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
  */
 public class LodWorld
 {
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+	
+	
 	/** name of this world */
 	private String worldName;
 	
@@ -64,7 +70,7 @@ public class LodWorld
 	 */
 	public void selectWorld(String newWorldName)
 	{
-		ApiShared.LOGGER.info("Selecting world {} while in world {}", newWorldName, worldName);
+		LOGGER.info("Selecting world {} while in world {}", newWorldName, worldName);
 		if (worldName.equals(newWorldName))
 			// don't recreate everything if we
 			// didn't actually change worlds
@@ -85,7 +91,7 @@ public class LodWorld
 	 */
 	public void deselectWorld()
 	{
-		ApiShared.LOGGER.info("Deselecting world {}", worldName);
+		LOGGER.info("Deselecting world {}", worldName);
 		worldName = NO_WORLD_LOADED;
 		saveAllDimensions(true); // Make sure all dims are saved. This will block threads
 		lodDimensions = null;
@@ -101,7 +107,7 @@ public class LodWorld
 	{
 		if (lodDimensions == null)
 			return;
-		ApiShared.LOGGER.info("Adding dim {} to world {}", newDimension, worldName);
+		LOGGER.info("Adding dim {} to world {}", newDimension, worldName);
 		
 		LodDimension oldDim = lodDimensions.put(newDimension.dimension, newDimension);
 		if (oldDim != null)
@@ -144,7 +150,7 @@ public class LodWorld
 		
 		// TODO we should only print this if lods were actually saved to file
 		// but that requires a LodDimension.hasDirtyRegions() method or something similar
-		ApiShared.LOGGER.info("Saving LODs");
+		LOGGER.info("Saving LODs");
 		
 		for (IDimensionTypeWrapper key : lodDimensions.keySet())
 		{

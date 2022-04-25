@@ -19,8 +19,10 @@
 
 package com.seibel.lod.core.handlers;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +40,7 @@ import com.seibel.lod.core.enums.rendering.FogDrawMode;
  */
 public class ReflectionHandler implements IReflectionHandler
 {
-	private static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME + "-" + ReflectionHandler.class.getSimpleName());
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	
 	public static ReflectionHandler instance;
 	

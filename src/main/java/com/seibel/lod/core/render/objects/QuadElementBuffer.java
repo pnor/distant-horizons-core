@@ -1,15 +1,21 @@
 package com.seibel.lod.core.render.objects;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.GLProxy;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL32;
 
+import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class QuadElementBuffer extends GLElementBuffer {
-
+public class QuadElementBuffer extends GLElementBuffer
+{
+    private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+    
+    
     public QuadElementBuffer() {
         super(GLProxy.getInstance().bufferStorageSupported);
     }
@@ -105,7 +111,7 @@ public class QuadElementBuffer extends GLElementBuffer {
         } else {
             type = GL32.GL_UNSIGNED_INT;
         }
-        ApiShared.LOGGER.info("Quad IBO Resizing from [" + getCapacity() + "] to [" + quadCount + "]" + " with type: " +
+        LOGGER.info("Quad IBO Resizing from [" + getCapacity() + "] to [" + quadCount + "]" + " with type: " +
                 GLEnums.getString(type));
 
         ByteBuffer buffer = ByteBuffer.allocateDirect(indicesCount * GLEnums.getTypeSize(type)).order(ByteOrder.nativeOrder());

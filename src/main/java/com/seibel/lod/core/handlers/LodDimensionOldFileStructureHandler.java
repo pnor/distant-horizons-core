@@ -23,28 +23,27 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantLock;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.seibel.lod.core.api.ClientApi;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.core.util.LodUtil;
+import org.apache.logging.log4j.Logger;
 
 public class LodDimensionOldFileStructureHandler
 {
-
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+	
 	/** This is the dimension that owns this file handler */
 	private final File dimensionDataSaveFolder;
 	private final LodDimensionFileHandler newFileHandler;
@@ -119,7 +118,7 @@ public class LodDimensionOldFileStructureHandler
 					// the file we are reading is too old.
 					// close the reader and delete the file.
 					inputStream.close();
-					ApiShared.LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Outdated LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". this region file will not be read and merged into the new save structure.");
@@ -131,7 +130,7 @@ public class LodDimensionOldFileStructureHandler
 					// close the reader and ignore the file, we don't
 					// want to accidentally delete anything the user may want.
 					inputStream.close();
-					ApiShared.LOGGER.info("Unexpected newer LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.info("Unexpected newer LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ " this region file will not be read and merged into the new save structure.");
@@ -139,7 +138,7 @@ public class LodDimensionOldFileStructureHandler
 				}
 				else if (fileVersion < LOD_SAVE_FILE_VERSION)
 				{
-					ApiShared.LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
+					LOGGER.debug("Old LOD region file for region: (" + regionX + "," + regionZ + ")"
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". this region file be read, updated, and merged into the new save structure.");
@@ -154,7 +153,7 @@ public class LodDimensionOldFileStructureHandler
 			}
 			catch (IOException ioEx)
 			{
-				ApiShared.LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "] error [" + ioEx.getMessage() + "]: ");
+				LOGGER.error("LOD file read error. Unable to read xz compressed file [" + file + "] error [" + ioEx.getMessage() + "]: ");
 				ioEx.printStackTrace();
 			}
 		}
@@ -169,18 +168,18 @@ public class LodDimensionOldFileStructureHandler
 	
 	private void loadAndMergeAndSaveRegion(VerticalQuality verticalQuality, RegionPos regionPos)
 	{
-		ApiShared.LOGGER.info("Merging region "+regionPos+" at "+verticalQuality+"...");
+		LOGGER.info("Merging region "+regionPos+" at "+verticalQuality+"...");
 		TempLodRegion region = new TempLodRegion(verticalQuality, regionPos);
-		ApiShared.LOGGER.info("Reading data...");
+		LOGGER.info("Reading data...");
 		loadGenModeToRegion(region, OldDistanceGenerationMode.FULL);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.FEATURES);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.SURFACE);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.BIOME_ONLY);
 		loadGenModeToRegion(region, OldDistanceGenerationMode.NONE);
-		ApiShared.LOGGER.info("Writing data...");
+		LOGGER.info("Writing data...");
 		saveRegion(region);
-		ApiShared.LOGGER.info("region "+regionPos+" at "+verticalQuality+" merged");
+		LOGGER.info("region "+regionPos+" at "+verticalQuality+" merged");
 	}
 	
 	
@@ -269,7 +268,7 @@ public class LodDimensionOldFileStructureHandler
 		}
 		catch (IOException e)
 		{
-			ApiShared.LOGGER.warn("Unable to get the base save file path. Error: " + e.getMessage(), e);
+			LOGGER.warn("Unable to get the base save file path. Error: " + e.getMessage(), e);
 			throw new RuntimeException("DistantHorizons Get Save File Path Failure");
 		}
 	}

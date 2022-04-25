@@ -19,12 +19,14 @@
 
 package com.seibel.lod.core.util;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadFactory;
 
-import com.seibel.lod.core.api.ApiShared;
-import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Just a simple ThreadFactory to name ExecutorService
@@ -34,6 +36,8 @@ import com.seibel.lod.core.api.ClientApi;
  */
 public class LodThreadFactory implements ThreadFactory
 {
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+	
 	public final String threadName;
 	public final int priority;
 	private int threadCount = 0;
@@ -74,7 +78,7 @@ public class LodThreadFactory implements ThreadFactory
 			if (t != null) {
 				StackTraceElement[] stacks = t.getStackTrace();
 				if (stacks.length != 0) {
-					ApiShared.LOGGER.info("===========================================\n"
+					LOGGER.info("===========================================\n"
 							+ "Thread: "+t.getName()+"\n"+StackTraceToString(stacks));
 				}
 			}

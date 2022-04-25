@@ -19,11 +19,14 @@
 
 package com.seibel.lod.core.objects;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Holds a levelPos that needs to be rendered.
@@ -33,6 +36,8 @@ import com.seibel.lod.core.util.LodUtil;
  */
 public class PosToRenderContainer
 {
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+	
 	public byte minDetail;
 	private int regionPosX;
 	private int regionPosZ;
@@ -60,7 +65,7 @@ public class PosToRenderContainer
 		{
 			// This is might be due to dimensions having a different width
 			// when first loading in
-			ApiShared.LOGGER.error("Unable to addPosToRender. numberOfPosToRender [" + numberOfPosToRender + "] detailLevel [" + detailLevel + "] Pos [" + posX + "," + posZ + "]");
+			LOGGER.error("Unable to addPosToRender. numberOfPosToRender [" + numberOfPosToRender + "] detailLevel [" + detailLevel + "] Pos [" + posX + "," + posZ + "]");
 			numberOfPosToRender++; // incrementing so we can see how many pos over the limit we would go
 			return;
 		}

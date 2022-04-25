@@ -19,13 +19,18 @@
  
 package com.seibel.lod.core.util;
 
-import com.seibel.lod.core.api.ApiShared;
-import org.lwjgl.system.CallbackI;
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
+import org.apache.logging.log4j.Logger;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.function.Function;
 
-public final class GLMessage {
+public final class GLMessage
+{
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+	
 	static final String HEADER = "[LWJGL] OpenGL debug message";
 	public final GLMessage.Type type;
 	public final GLMessage.Severity severity;
@@ -176,7 +181,7 @@ public final class GLMessage {
 					return msg;
 				}
 			} else if (!b) {
-				ApiShared.LOGGER.warn("Failed to parse GLMessage line '{}' at stage {}", str, stage);
+				LOGGER.warn("Failed to parse GLMessage line '{}' at stage {}", str, stage);
 			}
 			return null;
 		}

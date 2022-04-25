@@ -1,20 +1,27 @@
 package com.seibel.lod.core.render.objects;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.util.UnitBytes;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL44;
 
+import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class GLBuffer implements AutoCloseable {
+public class GLBuffer implements AutoCloseable
+{
+    private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
+    
     public static final double BUFFER_EXPANSION_MULTIPLIER = 1.3;
     public static final double BUFFER_SHRINK_TRIGGER = BUFFER_EXPANSION_MULTIPLIER * BUFFER_EXPANSION_MULTIPLIER;
     public static AtomicInteger count = new AtomicInteger(0);
+    
     protected int id;
     public final int getId() {
         return id;
@@ -29,11 +36,13 @@ public class GLBuffer implements AutoCloseable {
     }
     protected boolean isMapped = false;
 
+    
     public GLBuffer(boolean isBufferStorage)
     {
         create(isBufferStorage);
     }
 
+    
     // Should be override by subclasses
     public int getBufferBindingTarget() {
         return GL32.GL_COPY_READ_BUFFER;
@@ -68,7 +77,8 @@ public class GLBuffer implements AutoCloseable {
             //firstCloseCallStack = Thread.currentThread().getStackTrace();
             id = 0;
             size = 0;
-            if (count.decrementAndGet()==0) ApiShared.LOGGER.info("All GLBuffer is freed.");
+            if (count.decrementAndGet()==0)
+                LOGGER.info("All GLBuffer is freed.");
         }
     }
 

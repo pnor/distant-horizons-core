@@ -19,17 +19,20 @@
  
 package com.seibel.lod.core.objects.opengl;
 
+import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.api.internal.ClientApi;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL32;
 
-import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -44,6 +47,7 @@ import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 public class SimpleRenderBuffer extends RenderBuffer
 {
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = 1_000_000;
 
@@ -137,7 +141,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 			} catch (Exception e) {
 				vbos[i-1] = null;
 				vbo.close();
-				ApiShared.LOGGER.error("Failed to upload buffer: ", e);
+				LOGGER.error("Failed to upload buffer: ", e);
 			}
 			if (BPerNS<=0) continue;
 			// upload buffers over an extended period of time

@@ -21,13 +21,15 @@ package com.seibel.lod.core.render;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.seibel.lod.core.api.ApiShared;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -66,12 +68,12 @@ public class GLProxy
 {
 	public static final boolean OVERWIDE_VANILLA_GL_LOGGER = true;
 	
-	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-
-	private ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
-
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-
+	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
+	
+	private ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
+	
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	public static final ConfigBasedLogger GL_LOGGER = new ConfigBasedLogger(LogManager.getLogger(GLProxy.class),
 			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererGLEvent());
 
@@ -463,18 +465,18 @@ public class GLProxy
 	
 	public static void ensureAllGLJobCompleted() { // Uses global logger since it's a cleanup method
 		if (!hasInstance()) return;
-		ApiShared.LOGGER.info("Blocking until GL jobs finished...");
+		LOGGER.info("Blocking until GL jobs finished...");
 		try {
 			instance.workerThread.shutdown();
 			boolean worked = instance.workerThread.awaitTermination(30, TimeUnit.SECONDS);
 			if (!worked)
-				ApiShared.LOGGER.error("GLWorkerThread shutdown timed out! Game may crash on exit due to cleanup failure!");
+				LOGGER.error("GLWorkerThread shutdown timed out! Game may crash on exit due to cleanup failure!");
 		} catch (InterruptedException e) {
-			ApiShared.LOGGER.error("GLWorkerThread shutdown is interrupted! Game may crash on exit due to cleanup failure!");
+			LOGGER.error("GLWorkerThread shutdown is interrupted! Game may crash on exit due to cleanup failure!");
 			e.printStackTrace();
 		} finally {
 			instance.workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 		}
-		ApiShared.LOGGER.info("All GL jobs finished!");
+		LOGGER.info("All GL jobs finished!");
 	}
 }

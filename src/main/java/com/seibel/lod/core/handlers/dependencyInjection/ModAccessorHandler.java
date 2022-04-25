@@ -19,8 +19,12 @@
 
 package com.seibel.lod.core.handlers.dependencyInjection;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.wrapperInterfaces.modAccessor.IModAccessor;
+import org.apache.logging.log4j.Logger;
+
+import java.lang.invoke.MethodHandles;
 
 /**
  * This class takes care of dependency injection for mods accessors. (for mod compatibility
@@ -37,6 +41,7 @@ import com.seibel.lod.core.wrapperInterfaces.modAccessor.IModAccessor;
 public class ModAccessorHandler
 {
 	private static final DependencyHandler dependencyHandler = new DependencyHandler();
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	
 	
 	/**
@@ -51,7 +56,7 @@ public class ModAccessorHandler
 			throws IllegalStateException
 	{
 		dependencyHandler.bind(interfaceClass, modAccessor);
-		ApiShared.LOGGER.info("Registored mod comatibility accessor for " + modAccessor.getModName());
+		LOGGER.info("Registored mod comatibility accessor for " + modAccessor.getModName());
 	}
 	
 	/**
@@ -60,7 +65,7 @@ public class ModAccessorHandler
 	 * 
 	 * @param <T> class of the mod accessor
 	 *            (inferred from the objectClass parameter)
-	 * @param interfaceClass Interface of the mod accessor
+	 * @param objectClass class of the mod accessor, must extend IModAccessor
 	 * @return the dependency of type T
 	 * @throws ClassCastException If the mod accessor isn't able to be cast to type T. 
 	 *                            (this shouldn't normally happen, unless the bound object changed somehow)
