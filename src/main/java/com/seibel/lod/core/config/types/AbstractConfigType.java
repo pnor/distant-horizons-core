@@ -7,7 +7,7 @@ import com.seibel.lod.core.config.ConfigEntryAppearance;
  *
  * @author coolGi2007
  */
-public abstract class AbstractConfigType<T> {
+public abstract class AbstractConfigType<T, S> { // The S is the class that is extending this
     public String category = "";    // This should only be set once in the init
     public String name;            // This should only be set once in the init
     protected T value;
@@ -55,18 +55,20 @@ public abstract class AbstractConfigType<T> {
     public Class<?> getType() {
         return value.getClass();
     }
-    protected static abstract class Builder<T> {
+
+    protected static abstract class Builder<T, S> {
         protected ConfigEntryAppearance tmpAppearance = ConfigEntryAppearance.ALL;
         protected T tmpValue;
 
-        public this setAppearance(ConfigEntryAppearance newAppearance) {
-            this.tmpAppearance = newAppearance;
-            return this;
-        }
 
-        public this set(T newValue) {
+        // Put this into your own builder
+        public S setAppearance(ConfigEntryAppearance newAppearance) {
+            this.tmpAppearance = newAppearance;
+            return (S) this;
+        }
+        public S set(T newValue) {
             this.tmpValue = newValue;
-            return this;
+            return (S) this;
         }
     }
 }

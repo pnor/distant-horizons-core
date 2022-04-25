@@ -8,7 +8,7 @@ import com.seibel.lod.core.config.file.ConfigFileHandling;
  *
  * @author coolGi2007
  */
-public class ConfigEntry<T> extends AbstractConfigType<T> {
+public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
 
     private T defaultValue;
     private String comment;
@@ -113,7 +113,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T> {
         }
     }
 
-    public static class Builder<T> extends AbstractConfigType.Builder<T> {
+    public static class Builder<T> extends AbstractConfigType.Builder<T, Builder> {
         private String tmpComment;
         private T tmpMin;
         private T tmpMax;

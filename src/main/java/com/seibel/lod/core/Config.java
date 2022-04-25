@@ -31,15 +31,15 @@ public class Config
     //				|-> Buffers
     //				|-> Debugging
 
-    public static ConfigCategory<Client> client = new ConfigCategory.Builder<Client>().set(new Client()).build();
+    public static ConfigCategory client = new ConfigCategory.Builder().set(Client.class).build();
 
     public static class Client
     {
-        public static ConfigCategory<Graphics> graphics = new ConfigCategory.Builder<Graphics>().set(new Graphics()).build();
+        public static ConfigCategory graphics = new ConfigCategory.Builder().set(Graphics.class).build();
 
-        public static ConfigCategory<WorldGenerator> worldGenerator = new ConfigCategory.Builder<WorldGenerator>().set(new WorldGenerator()).build();
+        public static ConfigCategory worldGenerator = new ConfigCategory.Builder().set(WorldGenerator.class).build();
 
-        public static ConfigCategory<Advanced> advanced = new ConfigCategory.Builder<Advanced>().set(new Advanced()).build();
+        public static ConfigCategory advanced = new ConfigCategory.Builder().set(Advanced.class).build();
 
 
         public static ConfigEntry<Boolean> optionsButton = new ConfigEntry.Builder<Boolean>()
@@ -47,18 +47,18 @@ public class Config
                 .set(ILodConfigWrapperSingleton.IClient.OPTIONS_BUTTON_DEFAULT)
                 .build();
 
-        public static ConfigEntry<HashMap<String, Boolean>> testMultiOption = new ConfigEntry.Builder<HashMap<String, Boolean>>()
-                .set(new HashMap<String, Boolean>() {{put("overworld", true); put("nether", false);}})
-                .build();
+//        public static ConfigEntry<HashMap<String, Boolean>> testMultiOption = new ConfigEntry.Builder<HashMap<String, Boolean>>()
+//                .set(new HashMap<>() {{put("overworld", true); put("nether", false);}})
+//                .build();
 
 
         public static class Graphics
         {
-            public static ConfigCategory<Quality> quality = new ConfigCategory.Builder<Quality>().set(new Quality()).build();
+            public static ConfigCategory quality = new ConfigCategory.Builder().set(Quality.class).build();
 
-            public static ConfigCategory<FogQuality> fogQuality = new ConfigCategory.Builder<FogQuality>().set(new FogQuality()).build();
+            public static ConfigCategory fogQuality = new ConfigCategory.Builder().set(FogQuality.class).build();
 
-            public static ConfigCategory<AdvancedGraphics> advancedGraphics = new ConfigCategory.Builder<AdvancedGraphics>().set(new AdvancedGraphics()).build();
+            public static ConfigCategory advancedGraphics = new ConfigCategory.Builder().set(AdvancedGraphics.class).build();
 
 
             public static class Quality
@@ -176,11 +176,11 @@ public class Config
 
         public static class Advanced
         {
-            public static ConfigCategory<Threading> threading = new ConfigCategory.Builder<Threading>().set(new Threading()).build();
+            public static ConfigCategory threading = new ConfigCategory.Builder().set(Threading.class).build();
 
-            public static ConfigCategory<Debugging> debugging = new ConfigCategory.Builder<Debugging>().set(new Debugging()).build();
+            public static ConfigCategory debugging = new ConfigCategory.Builder().set(Debugging.class).build();
 
-            public static ConfigCategory<Buffers> buffers = new ConfigCategory.Builder<Buffers>().set(new Buffers()).build();
+            public static ConfigCategory buffers = new ConfigCategory.Builder().set(Buffers.class).build();
 
 
             public static class Threading

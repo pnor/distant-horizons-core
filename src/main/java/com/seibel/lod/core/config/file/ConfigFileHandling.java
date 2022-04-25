@@ -23,29 +23,32 @@ import java.util.HashMap;
  */
 public class ConfigFileHandling {
     public static final Path ConfigPath = SingletonHandler.get(IMinecraftWrapper.class).getGameDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");
-    public static final CommentedFileConfig config = CommentedFileConfig.builder(ConfigPath.toFile()).autosave().build();
 
     /** Saves the config to the file */
     public static void saveToFile() {
-        if (!Files.exists(ConfigPath))
+        CommentedFileConfig config = CommentedFileConfig.builder(ConfigPath.toFile()).build();
+        if (!Files.exists(ConfigPath)) // Try to check if the config exists
             try {
                 Files.createFile(ConfigPath);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+
         loadConfig(config);
 
-        for (AbstractConfigType<?> entry : ConfigBase.entries) {
+        for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
             if (ConfigEntry.class.isAssignableFrom(entry.getClass())) {
                 createComment((ConfigEntry<?>) entry, config);
                 saveEntry((ConfigEntry<?>) entry, config);
             }
         }
 
+        config.save();
         config.close();
     }
     /** Loads the config from the file */
     public static void loadFromFile() {
+        CommentedFileConfig config = CommentedFileConfig.builder(ConfigPath.toFile()).build();
         // Attempt to load the file and if it fails then save config to file
         try {
             if (Files.exists(ConfigPath))
@@ -55,25 +58,32 @@ public class ConfigFileHandling {
                 return;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             saveToFile();
             return;
         }
 
         // Load all the entries
-        for (AbstractConfigType<?> entry : ConfigBase.entries) {
+        for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
             if (ConfigEntry.class.isAssignableFrom(entry.getClass())) {
                 createComment((ConfigEntry<?>) entry, config);
                 loadEntry((ConfigEntry<?>) entry, config);
             }
         }
 
+        config.save();
         config.close();
     }
 
+
+
+
     // Save an entry when only given the entry
     public static void saveEntry(ConfigEntry<?> entry) {
+        CommentedFileConfig config = CommentedFileConfig.builder(ConfigPath.toFile()).build();
         loadConfig(config);
         saveEntry(entry, config);
+        config.save();
         config.close();
     }
     // Save an entry
@@ -90,6 +100,7 @@ public class ConfigFileHandling {
 
     // Loads an entry when only given the entry
     public static void loadEntry(ConfigEntry<?> entry) {
+        CommentedFileConfig config = CommentedFileConfig.builder(ConfigPath.toFile()).autosave().build();
         loadConfig(config);
         loadEntry(entry, config);
         config.close();
@@ -112,7 +123,6 @@ public class ConfigFileHandling {
             } else {
                 entry.setWTSave(workConfig.get(entry.getNameWCategory()));
             }
-//            entry.setWTSave(workConfig.get(entry.getNameWCategory()));
         } else {
             saveEntry(entry, workConfig);
         }
@@ -120,21 +130,28 @@ public class ConfigFileHandling {
 
     // Creates the comment for an entry when only given the entry
     public static void createComment(ConfigEntry<?> entry) {
+        CommentedFileConfig config = CommentedFileConfig.builder(ConfigPath.toFile()).autosave().build();
         loadConfig(config);
         createComment(entry, config);
         config.close();
     }
     // Creates a comment for an entry
     public static void createComment(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
+        if (!entry.getAppearance().showInFile)
+            return;
         workConfig.setComment(entry.getNameWCategory(), entry.getComment());
     }
 
+
+
+
+    /** Does config.load(); but with error checking */
     public static void loadConfig(CommentedFileConfig config) {
         try {
             config.load();
         } catch (Exception e) {
             System.out.println("Loading file failed because of this expectation:\n"+e);
-            try { // Now try remaking the file
+            try { // Now try remaking the file and loading it
                 Files.deleteIfExists(ConfigPath);
                 Files.createFile(ConfigPath);
                 config.load();
@@ -145,9 +162,6 @@ public class ConfigFileHandling {
             }
         }
     }
-
-
-
 
     // Stuff for converting HashMap's and String's (uses json)
     public static String getStringFromHashMap(HashMap<String, ?> item) {
