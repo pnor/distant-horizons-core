@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.api;
+package com.seibel.lod.core.api.internal;
 
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
@@ -28,15 +28,18 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * This stores objects and variables that
- * are shared between the different Core api classes.
- * 
+ * are shared between the different Core internal api classes. <br> <br>
+ *
+ * The internal api package is designed to hold any code that
+ * interfaces between Distant Horizons and the host mod loader
+ * (IE Fabric or Forge).
+ *
  * @author James Seibel
- * @version 11-12-2021
+ * @version 2022-4-24
  */
-public class ApiShared
+public class InternalApiShared
 {
-	public static final Logger LOGGER = LogManager.getLogger(ModInfo.NAME);
-	public ApiShared INSTANCE = new ApiShared();
+	public InternalApiShared INSTANCE = new InternalApiShared();
 	
 	public static final LodWorld lodWorld = new LodWorld();
 	public static final LodBuilder lodBuilder = new LodBuilder();
@@ -50,7 +53,9 @@ public class ApiShared
 	/** Signal whether a world is shutting down */
 	public static volatile boolean isShuttingDown = false;
 
-	private ApiShared()
+	
+	
+	private InternalApiShared()
 	{
 
 	}

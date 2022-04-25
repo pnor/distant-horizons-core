@@ -17,8 +17,9 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.api;
+package com.seibel.lod.core.api.internal;
 
+import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -28,9 +29,10 @@ import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.render.RenderSystemTest;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import org.apache.logging.log4j.Level;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
@@ -60,7 +62,8 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * @version 2022-3-26
  */
 public class ClientApi
-{	
+{
+	public static final Logger LOGGER = LogManager.getLogger(ClientApi.class.getSimpleName());
 	public static boolean prefLoggerEnabled = false;
 	
 	public static final ClientApi INSTANCE = new ClientApi();
@@ -90,7 +93,7 @@ public class ClientApi
 			if (!ENABLE_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
 			if (timer > LAG_SPIKE_THRESOLD_NS) {
-				ApiShared.LOGGER.info("LagSpikeCatcher: "+source+" took "+Duration.ofNanos(timer)+"!");
+				LOGGER.info("LagSpikeCatcher: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 		}
 	}
@@ -167,8 +170,8 @@ public class ClientApi
 			ConfigBasedLogger.updateAll();
 			ConfigBasedSpamLogger.updateAll(doFlush);
 
-			if (ApiShared.previousVertQual != CONFIG.client().graphics().quality().getVerticalQuality()) {
-				ApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
+			if (InternalApiShared.previousVertQual != CONFIG.client().graphics().quality().getVerticalQuality()) {
+				InternalApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
 				EventApi.INSTANCE.worldUnloadEvent(MC.getWrappedServerWorld());
 				EventApi.INSTANCE.worldLoadEvent(MC.getWrappedClientWorld());
 				return;
@@ -178,13 +181,13 @@ public class ClientApi
 			if (!firstTimeSetupComplete)
 				firstFrameSetup();
 
-			if (!MC.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
+			if (!MC.playerExists() || InternalApiShared.lodWorld.getIsWorldNotLoaded())
 				return;
 			
 			IWorldWrapper world = MC.getWrappedClientWorld();
 			if (world == null)
 				return;
-			LodDimension lodDim = ApiShared.lodWorld.getLodDimension(world.getDimensionType());
+			LodDimension lodDim = InternalApiShared.lodWorld.getLodDimension(world.getDimensionType());
 			
 			// Make sure the player's data is up-to-date
 			DIMENSION_FINDER.updatePlayerData();
@@ -195,7 +198,7 @@ public class ClientApi
 				if (DIMENSION_FINDER.isDone())
 				{
 					lodDim = DIMENSION_FINDER.getAndClearFoundLodDimension();
-					ApiShared.lodWorld.addLodDimension(lodDim);
+					InternalApiShared.lodWorld.addLodDimension(lodDim);
 				}
 				else
 				{
@@ -226,7 +229,7 @@ public class ClientApi
 				toBeLoaded.remove(pos);
 				generating.add(pos);
 				//ApiShared.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
-				ApiShared.lodBuilder.generateLodNodeAsync(chunk, ApiShared.lodWorld,
+				InternalApiShared.lodBuilder.generateLodNodeAsync(chunk, InternalApiShared.lodWorld,
 						world.getDimensionType(), DistanceGenerationMode.FULL, true, true, () -> {
 							generating.remove(pos);
 							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} done. Remaining queue: {}", FACTORY.createChunkPos(pos), toBeLoaded.size());
@@ -272,7 +275,7 @@ public class ClientApi
 						ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks, MC.getProfiler());
 					} catch (RuntimeException e) {
 						rendererDisabledBecauseOfExceptions = true;
-						ApiShared.LOGGER.error("Renderer thrown an uncaught exception: ",e);
+						LOGGER.error("Renderer thrown an uncaught exception: ",e);
 						try {
 							MC.sendChatMessage("\u00A74\u00A7l\u00A7uERROR: Distant Horizons"
 									+ " renderer has encountered an exception!");
@@ -294,12 +297,12 @@ public class ClientApi
 
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
-			ApiShared.previousChunkRenderDistance = MC_RENDER.getRenderDistance();
-			ApiShared.previousLodRenderDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance();
+			InternalApiShared.previousChunkRenderDistance = MC_RENDER.getRenderDistance();
+			InternalApiShared.previousLodRenderDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance();
 		}
 		catch (Exception e)
 		{
-			ApiShared.LOGGER.error("client proxy uncaught exception: ", e);
+			LOGGER.error("client proxy uncaught exception: ", e);
 		}
 	}
 	
@@ -335,24 +338,29 @@ public class ClientApi
 	//=================//
 	//    DUBUG USE    //
 	//=================//
+	
 	// Trigger once on key press, with CLIENT PLAYER.
-	public void keyPressedEvent(int glfwKey) {
-
-		if (!CONFIG.client().advanced().debugging().getDebugKeybindingsEnabled()) return;
-
-		if (glfwKey == GLFW.GLFW_KEY_F8) {
-					CONFIG.client().advanced().debugging()
+	public void keyPressedEvent(int glfwKey)
+	{
+		if (!CONFIG.client().advanced().debugging().getDebugKeybindingsEnabled())
+			return;
+		
+		if (glfwKey == GLFW.GLFW_KEY_F8)
+		{
+			CONFIG.client().advanced().debugging()
 					.setDebugMode(CONFIG.client().advanced().debugging().getDebugMode().getNext());
 			MC.sendChatMessage("F8: Set debug mode to " + CONFIG.client().advanced().debugging().getDebugMode());
 		}
 		
-		if (glfwKey == GLFW.GLFW_KEY_F6) {
+		if (glfwKey == GLFW.GLFW_KEY_F6)
+		{
 			CONFIG.client().advanced().debugging()
 					.setRendererType(RendererType.next(CONFIG.client().advanced().debugging().getRendererType()));
 			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getRendererType());
 		}
-
-		if (glfwKey == GLFW.GLFW_KEY_P) {
+		
+		if (glfwKey == GLFW.GLFW_KEY_P)
+		{
 			prefLoggerEnabled = !prefLoggerEnabled;
 			MC.sendChatMessage("P: Debug Pref Logger is " + (prefLoggerEnabled ? "enabled" : "disabled"));
 		}

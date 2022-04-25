@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import com.seibel.lod.core.api.ApiShared;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.objects.BoolType;
@@ -564,7 +564,7 @@ public class LodRenderer
 		boolean tryFullGen = false;
 
 		// check if the view distance or config changed
-		if (ApiShared.previousLodRenderDistance != CONFIG.client().graphics().quality().getLodChunkRenderDistance()
+		if (InternalApiShared.previousLodRenderDistance != CONFIG.client().graphics().quality().getLodChunkRenderDistance()
 					|| chunkRenderDistance != prevRenderDistance
 					|| prevFogDistance != CONFIG.client().graphics().fogQuality().getFogDistance())
 		{

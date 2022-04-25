@@ -17,13 +17,13 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.api;
+package com.seibel.lod.core.api.internal;
 
-import com.seibel.lod.core.api.ClientApi.LagSpikeCatcher;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
 import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.render.GLProxy;
@@ -36,18 +36,23 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import org.apache.logging.log4j.Logger;
+
+import java.lang.invoke.MethodHandles;
 
 /**
  * This holds the methods that should be called by the host mod loader (Fabric,
  * Forge, etc.). Specifically server and client events.
+ *
  * @author James Seibel
- * @version 11-12-2021
+ * @version 2021-11-12
  */
 public class EventApi
 {
 	public static final boolean ENABLE_STACK_DUMP_LOGGING = false;
 	public static final EventApi INSTANCE = new EventApi();
 	
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
@@ -75,13 +80,13 @@ public class EventApi
 	public void serverTickEvent()
 	{
 		lastWorldGenTickDelta--;
-		if (!MC.playerExists() || ApiShared.lodWorld.getIsWorldNotLoaded())
+		if (!MC.playerExists() || InternalApiShared.lodWorld.getIsWorldNotLoaded())
 			return;
 		
-		LodDimension lodDim = ApiShared.lodWorld.getLodDimension(MC.getCurrentDimension());
+		LodDimension lodDim = InternalApiShared.lodWorld.getLodDimension(MC.getCurrentDimension());
 		if (lodDim == null)
 			return;
-		if (ApiShared.isShuttingDown)
+		if (InternalApiShared.isShuttingDown)
 			return;
 
 		if (CONFIG.client().worldGenerator().getEnableDistantGeneration())
@@ -90,8 +95,8 @@ public class EventApi
 				lastWorldGenTickDelta = 20; // 20 ticks is 1 second. We don't need to refresh world gen status every tick.
 				try {
 					if (batchGenerator == null)
-						batchGenerator = new BatchGenerator(ApiShared.lodBuilder, lodDim);
-					batchGenerator.queueGenerationRequests(lodDim, ApiShared.lodBuilder);
+						batchGenerator = new BatchGenerator(InternalApiShared.lodBuilder, lodDim);
+					batchGenerator.queueGenerationRequests(lodDim, InternalApiShared.lodBuilder);
 				} catch (Exception e) {
 					// Exception may happen if world got unloaded unorderly
 					e.printStackTrace();
@@ -114,14 +119,14 @@ public class EventApi
 	
 	public void worldSaveEvent()
 	{
-		ApiShared.lodWorld.saveAllDimensions(false); // Do an async save.
+		InternalApiShared.lodWorld.saveAllDimensions(false); // Do an async save.
 	}
 	
 	/** This is also called when a new dimension loads */
 	public void worldLoadEvent(IWorldWrapper world)
 	{
 		if (ENABLE_STACK_DUMP_LOGGING)
-			ApiShared.LOGGER.info(
+			LOGGER.info(
 					"WorldLoadEvent called here for "
 							+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"),
 					new RuntimeException());
@@ -129,9 +134,9 @@ public class EventApi
 		if (world.getWorldType() == WorldType.ServerWorld)
 			return;
 		isCurrentlyOnSinglePlayerServer = MC.hasSinglePlayerServer();
-		if (!ApiShared.isShuttingDown) ApiShared.LOGGER.warn("WorldLoadEvent called on {} while another world is loaded!",
+		if (!InternalApiShared.isShuttingDown) LOGGER.warn("WorldLoadEvent called on {} while another world is loaded!",
 				(world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"));
-		ApiShared.isShuttingDown = false;
+		InternalApiShared.isShuttingDown = false;
 		//DataPointUtil.WORLD_HEIGHT = world.getHeight();
 		LodBuilder.MIN_WORLD_HEIGHT = world.getMinHeight(); // This updates the World height
 		
@@ -140,21 +145,21 @@ public class EventApi
 		
 		// the player just loaded a new world/dimension
 		String worldID = LodUtil.getWorldID(world);
-		ApiShared.LOGGER.info("Loading new world/dimension: {}",worldID);
-		ApiShared.lodWorld.selectWorld(worldID);
-		ApiShared.LOGGER.info("World/dimension loaded: {}",worldID);
+		LOGGER.info("Loading new world/dimension: {}",worldID);
+		InternalApiShared.lodWorld.selectWorld(worldID);
+		LOGGER.info("World/dimension loaded: {}",worldID);
 		
 		// make sure the correct LODs are being rendered
 		// (if this isn't done the previous world's LODs may be drawn)
 		ClientApi.renderer.regenerateLODsNextFrame();
-		ApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
+		InternalApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
 	}
 	
 	/** This is also called when the user disconnects from a server+ */
 	public void worldUnloadEvent(IWorldWrapper world)
 	{
 		if (ENABLE_STACK_DUMP_LOGGING)
-			ApiShared.LOGGER.info(
+			LOGGER.info(
 					"WorldUnloadEvent called here for "
 							+ (world.getWorldType() == WorldType.ClientWorld ? "clientLevel" : "serverLevel"),
 					new RuntimeException());
@@ -167,15 +172,15 @@ public class EventApi
 
 		// if this isn't done unfinished tasks may be left in the queue
 		// preventing new LodChunks form being generated
-		if (ApiShared.isShuttingDown) return; // Don't do this if we're already shutting down
-		ApiShared.isShuttingDown = true;
+		if (InternalApiShared.isShuttingDown) return; // Don't do this if we're already shutting down
+		InternalApiShared.isShuttingDown = true;
 		
 		// TODO Better report on when world gen is stuck and timeout
 		if (batchGenerator != null)
 			batchGenerator.stop(true);
 		batchGenerator = null;
 		
-		ApiShared.lodWorld.deselectWorld(); // This force a save and shutdown lodDim properly
+		InternalApiShared.lodWorld.deselectWorld(); // This force a save and shutdown lodDim properly
 		
 		// prevent issues related to the buffer builder
 		// breaking or retaining previous data when changing worlds.
@@ -183,12 +188,12 @@ public class EventApi
 		ClientApi.renderer.requestCleanup();
 		GLProxy.ensureAllGLJobCompleted();
 		recalculateWidths = true;
-		ApiShared.previousVertQual = null;
+		InternalApiShared.previousVertQual = null;
 		
 		// TODO: Check if after the refactoring, is this still needed
 		ClientApi.renderer = new LodRenderer(ClientApi.lodBufferBuilderFactory);
 		ClientApi.INSTANCE.rendererDisabledBecauseOfExceptions = false;
-		ApiShared.LOGGER.info("Distant Horizon unloaded");
+		LOGGER.info("Distant Horizon unloaded");
 	}
 	
 	public void blockChangeEvent(IChunkWrapper chunk, IDimensionTypeWrapper dimType)
@@ -196,7 +201,7 @@ public class EventApi
 		if (dimType != MC.getCurrentDimension())
 			return;
 		// recreate the LOD where the blocks were changed
-		LagSpikeCatcher blockChangeUpdate = new LagSpikeCatcher();
+		ClientApi.LagSpikeCatcher blockChangeUpdate = new ClientApi.LagSpikeCatcher();
 		ClientApi.INSTANCE.toBeLoaded.add(chunk.getLongChunkPos());
 		blockChangeUpdate.end("clientChunkLoad");
 	}
@@ -238,11 +243,11 @@ public class EventApi
 		newWidth += (newWidth & 1) == 0 ? 1 : 0;
 		
 		// do the dimensions need to change in size?
-		if (ApiShared.lodBuilder.defaultDimensionWidthInRegions != newWidth || recalculateWidths)
+		if (InternalApiShared.lodBuilder.defaultDimensionWidthInRegions != newWidth || recalculateWidths)
 		{
 			// update the dimensions to fit the new width
-			ApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
-			ApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
+			InternalApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
+			InternalApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
 			ClientApi.renderer.setupBuffers();
 			
 			recalculateWidths = false;
