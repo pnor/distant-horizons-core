@@ -2,6 +2,7 @@ package com.seibel.lod.core.config.file;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.ModInfo;
+import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.types.AbstractConfigType;
 import com.seibel.lod.core.config.types.ConfigEntry;
@@ -112,16 +113,28 @@ public class ConfigFileHandling {
         if (!entry.getAppearance().showInFile)
             return;
         if (workConfig.contains(entry.getNameWCategory())) {
-            if (entry.get().getClass().isEnum()) {
-                // Safe cast due to above checking that <T> is indeed a Enum
-                // And the second cast back to <T> is safe due to the template
-                entry.setWTSave((T) (
-                        workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.get().getClass())
-                ));
-            } else if (entry.get().getClass().isAssignableFrom(HashMap.class)) {
-                entry.setWTSave((T) getHashMapFromString(workConfig.get(entry.getNameWCategory())));
-            } else {
-                entry.setWTSave(workConfig.get(entry.getNameWCategory()));
+            try {
+                if (entry.get().getClass().isEnum()) {
+                    // Safe cast due to above checking that <T> is indeed a Enum
+                    // And the second cast back to <T> is safe due to the template
+                    entry.setWTSave((T) (
+                            workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.get().getClass())
+                    ));
+                } else if (entry.getType().isAssignableFrom(HashMap.class)) {
+                    entry.setWTSave((T) getHashMapFromString(workConfig.get(entry.getNameWCategory())));
+                } else { // TODO: Made a way to make the number be castable to the correct type
+                    entry.setWTSave((T) workConfig.get(entry.getNameWCategory()));
+                    if (entry.isValid() == 0)
+                        return;
+                    else if (entry.isValid() == -1)
+                        entry.setWTSave(entry.getMin());
+                    else if (entry.isValid() == 1)
+                        entry.setWTSave(entry.getMax());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                ClientApi.LOGGER.warn("Entry ["+entry.getNameWCategory()+"] had an invalid value when loading the config");
+                saveEntry(entry, workConfig);
             }
         } else {
             saveEntry(entry, workConfig);

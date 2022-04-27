@@ -15,6 +15,13 @@ public class ConfigCategory extends AbstractConfigType<Class, ConfigCategory> {
         return this.destination;
     }
 
+    @Override
+    @Deprecated
+    /** Use get() instead for category */
+    public Class<?> getType() {
+        return value;
+    }
+
     public static class Builder extends AbstractConfigType.Builder<Class, Builder> {
         private String tmpDestination = null;
 

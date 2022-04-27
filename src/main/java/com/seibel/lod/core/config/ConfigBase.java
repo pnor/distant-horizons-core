@@ -46,11 +46,11 @@ public class ConfigBase {
         acceptableInputs.add(HashMap.class); // TODO[CONFIG]: This is handled separately to check the first input is String and the second input is valid
     }
 
+    public static boolean disableMinMax = false;
     public static final List<AbstractConfigType<?, ?>> entries = new ArrayList<>();
 
     public static void init(Class<?> config) {
         addAcceptableInputs(); // Add all of the acceptable stuff to the acceptableInputs list
-//        categories.add(""); // Add root category to category list
         initNestedClass(config, ""); // Init root category
 
         // File handling (load from file)

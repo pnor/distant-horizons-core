@@ -5,6 +5,7 @@ import com.seibel.lod.core.jar.JarDependencySetup;
 import javax.swing.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 /**
  * The main class when you run the standalone jar
@@ -12,7 +13,13 @@ import java.nio.charset.StandardCharsets;
  * @author coolGi
  */
 public class JarMain {
-    public static void main(String[] args){
+    public static void main(String[] args) {
+        // Sets up the local
+        if (JarMain.accessFile("assets/lod/lang/"+Locale.getDefault().toString().toLowerCase()+".json") == null) {
+            System.out.println("The language setting ["+Locale.getDefault().toString().toLowerCase()+"] isn't allowed yet. Defaulting to ["+Locale.US.toString().toLowerCase()+"].");
+            Locale.setDefault(Locale.US);
+        }
+
         JarDependencySetup.createInitialBindings();
         System.out.println("WARNING: The standalone jar still work in progress");
         JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);

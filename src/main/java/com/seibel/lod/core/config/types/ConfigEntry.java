@@ -1,5 +1,6 @@
 package com.seibel.lod.core.config.types;
 
+import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.ConfigEntryAppearance;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
 
@@ -9,19 +10,22 @@ import com.seibel.lod.core.config.file.ConfigFileHandling;
  * @author coolGi2007
  */
 public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
-
     private T defaultValue;
     private String comment;
     private T min;
     private T max;
+    // Stuff for server overwrites
+    private final boolean useApiOverwrite;
+    private T apiValue;
 
     /** Creates the entry */
-    private ConfigEntry(ConfigEntryAppearance appearance, T value, String comment, T min, T max) {
+    private ConfigEntry(ConfigEntryAppearance appearance, T value, String comment, T min, T max, boolean useApiOverwrite) {
         super(appearance, value);
         this.defaultValue = value;
         this.comment = comment;
         this.min = min;
         this.max = max;
+        this.useApiOverwrite = useApiOverwrite;
     }
 
 
@@ -34,6 +38,12 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
     public void set(T newValue) {
         this.value = newValue;
         save();
+    }
+    @Override
+    public T get() {
+        if (useApiOverwrite && apiValue != null)
+            return apiValue;
+        return value;
     }
 
     /** Sets the value without saving */
@@ -76,6 +86,8 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
      * -1 == number too low
      */
     public byte isValid() {
+        if (ConfigBase.disableMinMax)
+            return 0;
         if (Number.class.isAssignableFrom(this.value.getClass())) { // Only check min max if it is a number
             if (this.max != null && (Double) this.value > (Double) this.max)
                 return 1;
@@ -117,6 +129,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
         private String tmpComment;
         private T tmpMin;
         private T tmpMax;
+        private boolean tmpUseApiOverwrite;
 
         public Builder<T> comment(String newComment) {
             this.tmpComment = newComment;
@@ -129,9 +142,14 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
             return this;
         }
 
+        public Builder<T> setUseApiOverwrite(boolean newUseApiOverwrite) {
+            this.tmpUseApiOverwrite = newUseApiOverwrite;
+            return this;
+        }
+
 
         public ConfigEntry<T> build() {
-            return new ConfigEntry<T>(tmpAppearance, tmpValue, tmpComment, tmpMin, tmpMax);
+            return new ConfigEntry<T>(tmpAppearance, tmpValue, tmpComment, tmpMin, tmpMax, tmpUseApiOverwrite);
         }
     }
 }
