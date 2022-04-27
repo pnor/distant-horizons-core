@@ -29,7 +29,7 @@ package com.seibel.lod.core;
  * 
  * @author James Seibel
  * @author Ran
- * @version 11-29-2021
+ * @version 2022-4-25
  */
 public final class ModInfo
 {
@@ -40,6 +40,11 @@ public final class ModInfo
 	public static final String NAME = "DistantHorizons";
 	/** Human readable version of NAME */
 	public static final String READABLE_NAME = "Distant Horizons";
-	public static final String API = "LodAPI";
 	public static final String VERSION = "1.7.0a-dev";
+	
+	/** This version should only be updated when breaking changes are introduced to the DH API */
+	public static final int API_MAJOR_VERSION = 1;
+	/** This version should be updated whenever new methods are added to the DH API */
+	public static final int API_MINOR_VERSION = 1;
+	
 }

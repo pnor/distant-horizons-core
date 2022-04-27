@@ -1,5 +1,8 @@
 package com.seibel.lod.core.api.external;
 
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+
 /**
  * This stores objects and variables that
  * are shared between the different Core external api classes. <br> <br>
@@ -15,5 +18,7 @@ package com.seibel.lod.core.api.external;
  */
 public class ExternalApiShared
 {
-
+	public static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+	
+	
 }

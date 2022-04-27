@@ -99,7 +99,7 @@ public class ReflectionHandler implements IReflectionHandler
 		// we didn't find the field,
 		// either optifine isn't installed, or
 		// optifine changed the name of the variable
-		LOGGER.info(ReflectionHandler.class.getSimpleName() + ": unable to find the Optifine fog field. If Optifine isn't installed this can be ignored.");
+		LOGGER.info("Unable to find the Optifine fog field. If Optifine isn't installed this can be ignored.");
 	}
 	
 	
