@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.api.internal;
 
-import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +58,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * Specifically for the client.
  * 
  * @author James Seibel
- * @version 2022-3-26
+ * @version 2022-4-26
  */
 public class ClientApi
 {
@@ -154,9 +153,12 @@ public class ClientApi
 	
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
-		// comment out when creating a release
-		applyConfigOverrides();
-
+		#if DEV_BUILD
+		// config overrides should only be used in the developer builds
+		applyDeveloperConfigOverrides();
+		#endif
+		
+		
 		// clear any out of date objects
 		MC.clearFrameObjectCache();
 		
@@ -307,9 +309,9 @@ public class ClientApi
 	}
 	
 	/** used in a development environment to change settings on the fly */
-	private void applyConfigOverrides()
+	private void applyDeveloperConfigOverrides()
 	{
-		// remind the developer(s) that the config override is active
+		// remind the user that the config override is active
 		if (!configOverrideReminderPrinted)
 		{
 			MC.sendChatMessage(ModInfo.READABLE_NAME + " experimental build " + ModInfo.VERSION);
