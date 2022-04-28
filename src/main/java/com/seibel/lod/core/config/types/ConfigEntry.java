@@ -98,7 +98,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
         }
         return 0;
     }
-    /** */ Checks if a value is valid */
+    /** Checks if a value is valid */
     public byte isValid(T value) {
         if (ConfigBase.disableMinMax)
             return 0;
