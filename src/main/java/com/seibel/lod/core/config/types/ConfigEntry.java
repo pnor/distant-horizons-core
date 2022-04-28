@@ -89,9 +89,23 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
         if (ConfigBase.disableMinMax)
             return 0;
         if (Number.class.isAssignableFrom(this.value.getClass())) { // Only check min max if it is a number
-            if (this.max != null && (Double) this.value > (Double) this.max)
+            if (this.max != null && Double.valueOf(this.value.toString()) > Double.valueOf(this.max.toString()))
                 return 1;
-            if (this.min != null && (Double) this.value < (Double) this.min)
+            if (this.min != null && Double.valueOf(this.value.toString()) < Double.valueOf(this.min.toString()))
+                return -1;
+
+            return 0;
+        }
+        return 0;
+    }
+    /** */ Checks if a value is valid */
+    public byte isValid(T value) {
+        if (ConfigBase.disableMinMax)
+            return 0;
+        if (Number.class.isAssignableFrom(value.getClass())) { // Only check min max if it is a number
+            if (this.max != null && Double.valueOf(value.toString()) > Double.valueOf(max.toString()))
+                return 1;
+            if (this.min != null && Double.valueOf(value.toString()) < Double.valueOf(min.toString()))
                 return -1;
 
             return 0;

@@ -12,6 +12,8 @@ public abstract class AbstractConfigType<T, S> { // The S is the class that is e
     public String name;            // This should only be set once in the init
     protected T value;
 
+    public Object guiValue; // This can be set by whatever gui you are using
+
     protected ConfigEntryAppearance appearance;
 
     public AbstractConfigType(ConfigEntryAppearance appearance, T value) {
