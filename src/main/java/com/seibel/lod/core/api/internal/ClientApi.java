@@ -58,7 +58,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * Specifically for the client.
  * 
  * @author James Seibel
- * @version 2022-4-26
+ * @version 2022-4-27
  */
 public class ClientApi
 {
@@ -153,11 +153,11 @@ public class ClientApi
 	
 	public void renderLods(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
-		#if DEV_BUILD
-		// config overrides should only be used in the developer builds
-		applyDeveloperConfigOverrides();
-		#endif
-		
+		if (ModInfo.IS_DEV_BUILD)
+		{
+			// config overrides should only be used in the developer builds
+			applyDeveloperConfigOverrides();
+		}
 		
 		// clear any out of date objects
 		MC.clearFrameObjectCache();

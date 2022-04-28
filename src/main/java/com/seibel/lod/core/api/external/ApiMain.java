@@ -8,7 +8,7 @@ import com.seibel.lod.core.handlers.LodDimensionFileHandler;
  * This shouldn't change between API versions.
  *
  * @author James Seibel
- * @version 2022-4-26
+ * @version 2022-4-27
  */
 public class ApiMain
 {
@@ -31,7 +31,7 @@ public class ApiMain
 	/** Returns true if the mod is a development version, false if it is a release version. */
 	public static boolean getIsDevVersion()
 	{
-		return #if DEV_BUILD true; #else false; #endif
+		return ModInfo.IS_DEV_BUILD;
 	}
 	
 	/** Returns the network protocol version. */
