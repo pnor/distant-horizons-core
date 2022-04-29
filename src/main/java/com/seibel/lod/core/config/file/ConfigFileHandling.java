@@ -90,12 +90,12 @@ public class ConfigFileHandling {
     // Save an entry
     @SuppressWarnings("unchecked")
     public static void saveEntry(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
-        if (!entry.getAppearance().showInFile)
-            return;
-        if (!entry.get().getClass().isAssignableFrom(HashMap.class)) {
-            workConfig.set(entry.getNameWCategory(), entry.get());
+        if (!entry.getAppearance().showInFile) return;
+
+        if (ConfigTypeConverters.convertObjects.containsKey(entry.getType())) {
+            workConfig.set(entry.getNameWCategory(), ConfigTypeConverters.convertToString(entry.getType(), entry.getTrueValue()));
         } else {
-            workConfig.set(entry.getNameWCategory(), getStringFromHashMap((HashMap<String, ?>) entry.get()));
+            workConfig.set(entry.getNameWCategory(), entry.getTrueValue());
         }
     }
 
@@ -108,28 +108,21 @@ public class ConfigFileHandling {
 
     }
     // Loads an entry
-    @SuppressWarnings("unchecked") // Suppress due to its always safe. (I think. See reasons below.)
+    @SuppressWarnings("unchecked") // Suppress due to its always safe
 	public static <T> void loadEntry(ConfigEntry<T> entry, CommentedFileConfig workConfig) {
-        if (!entry.getAppearance().showInFile)
-            return;
+        if (!entry.getAppearance().showInFile) return;
+
         if (workConfig.contains(entry.getNameWCategory())) {
             try {
-                if (entry.get().getClass().isEnum()) {
-                    // Safe cast due to above checking that <T> is indeed a Enum
-                    // And the second cast back to <T> is safe due to the template
-                    entry.setWTSave((T) (
-                            workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.get().getClass())
-                    ));
-                } else if (entry.getType().isAssignableFrom(HashMap.class)) {
-                    entry.setWTSave((T) getHashMapFromString(workConfig.get(entry.getNameWCategory())));
+                if (entry.getType().isEnum()) {
+                    entry.setWTSave((T) ( workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.getType()) ));
+                } else if (ConfigTypeConverters.convertObjects.containsKey(entry.getType())) {
+                    entry.setWTSave((T) ConfigTypeConverters.convertFromString(entry.getType(), workConfig.get(entry.getNameWCategory())));
                 } else {
                     entry.setWTSave((T) workConfig.get(entry.getNameWCategory()));
-                    if (entry.isValid() == 0)
-                        return;
-                    else if (entry.isValid() == -1)
-                        entry.setWTSave(entry.getMin());
-                    else if (entry.isValid() == 1)
-                        entry.setWTSave(entry.getMax());
+                    if (entry.isValid() == 0) return;
+                    else if (entry.isValid() == -1) entry.setWTSave(entry.getMin());
+                    else if (entry.isValid() == 1) entry.setWTSave(entry.getMax());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -176,29 +169,53 @@ public class ConfigFileHandling {
         }
     }
 
-    // Stuff for converting HashMap's and String's (uses json)
-    public static String getStringFromHashMap(HashMap<String, ?> item) {
-        JSONObject jsonObject = new JSONObject();
 
-        for (int i=0; i< item.size(); i++) {
-            jsonObject.put(item.keySet().toArray()[i], item.get(item.keySet().toArray()[i]));
+    // ========== API (server) STUFF ========== //
+    @SuppressWarnings("unchecked")
+    /** ALWAYS CLEAR WHEN NOT ON SERVER!!!! */
+    public static void clearApiValues() {
+        for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).useApiOverwrite) {
+                ((ConfigEntry) entry).setApiValue(null);
+            }
         }
-
+    }
+    @SuppressWarnings("unchecked")
+    public static String exportApiValues() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("configVersion", ConfigBase.configVersion);
+        for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).useApiOverwrite) {
+                if (ConfigTypeConverters.convertObjects.containsKey(entry.getType())) {
+                    jsonObject.put(entry.getNameWCategory(), ConfigTypeConverters.convertToString(entry.getType(), ((ConfigEntry<?>) entry).getTrueValue()));
+                } else {
+                    jsonObject.put(entry.getNameWCategory(), ((ConfigEntry<?>) entry).getTrueValue());
+                }
+            }
+        }
         return jsonObject.toJSONString();
     }
-    public static <T> HashMap<String, ?> getHashMapFromString(String s) {
-        HashMap<String, T> map = new HashMap<>();
-
+    @SuppressWarnings("unchecked") // Suppress due to its always safe
+    public static void importApiValues(String values) {
         JSONObject jsonObject = null;
         try {
-            jsonObject = (JSONObject) new JSONParser().parse(s);
+            jsonObject = (JSONObject) new JSONParser().parse(values);
         } catch (ParseException p) {
             p.printStackTrace();
         }
 
-        for (int i = 0; i < jsonObject.keySet().toArray().length; i++) {
-            map.put((String) jsonObject.keySet().toArray()[i], (T) jsonObject.get(jsonObject.keySet().toArray()[i]));
+        // Importing code
+        for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).useApiOverwrite) {
+                Object jsonItem = jsonObject.get(entry.getNameWCategory());
+                if (entry.getType().isEnum()) {
+                    ((ConfigEntry) entry).setApiValue(Enum.valueOf((Class<? extends Enum>) entry.getType(), jsonItem.toString()));
+                } else if (ConfigTypeConverters.convertObjects.containsKey(entry.getType())) {
+                    ((ConfigEntry) entry).setApiValue(ConfigTypeConverters.convertFromString(entry.getType(), jsonItem.toString()));
+                } else {
+                    ((ConfigEntry) entry).setApiValue(jsonItem);
+                }
+            }
         }
-        return map;
     }
 }

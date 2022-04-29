@@ -16,7 +16,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     private T min;
     private T max;
     // Stuff for server overwrites
-    private final boolean useApiOverwrite;
+    public final boolean useApiOverwrite;
     private T apiValue;
 
     /** Creates the entry */
@@ -35,6 +35,9 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
         return this.defaultValue;
     }
 
+    public void setApiValue(T newApiValue) {
+        this.apiValue = newApiValue;
+    }
     @Override
     public void set(T newValue) {
         this.value = newValue;
@@ -44,6 +47,9 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     public T get() {
         if (useApiOverwrite && apiValue != null)
             return apiValue;
+        return value;
+    }
+    public T getTrueValue() {
         return value;
     }
 

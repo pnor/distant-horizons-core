@@ -17,5 +17,8 @@ It should be automatically included when pulling the full mod.
 XZ for Java (data compression)\
 https://tukaani.org/xz/java.html
 
-Toml for Java (config handeling)\
+Toml for Java (config handling)\
 https://github.com/TheElectronWill/night-config
+
+Json for Java (config handling)\
+https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple

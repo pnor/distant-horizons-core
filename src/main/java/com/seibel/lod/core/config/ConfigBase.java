@@ -9,7 +9,6 @@ import com.seibel.lod.core.config.types.ConfigEntry;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,12 +42,14 @@ public class ConfigBase {
         acceptableInputs.add(Long.class);
 //        acceptableInputs.add(Float.class);
         acceptableInputs.add(String.class);
-        acceptableInputs.add(HashMap.class); // TODO[CONFIG]: This is handled separately to check the first input is String and the second input is valid
+        acceptableInputs.add(Map.class); // TODO[CONFIG]: This is handled separately to check the first input is String and the second input is valid
     }
 
     /** Disables the minimum and maximum of a variable */
     public static boolean disableMinMax = false; // Very fun to use
     public static final List<AbstractConfigType<?, ?>> entries = new ArrayList<>();
+
+    public static final int configVersion = 1;
 
     public static void init(Class<?> config) {
         addAcceptableInputs(); // Add all of the acceptable stuff to the acceptableInputs list
