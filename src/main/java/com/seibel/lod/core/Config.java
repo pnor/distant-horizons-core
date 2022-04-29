@@ -1,0 +1,241 @@
+package com.seibel.lod.core;
+
+import com.seibel.lod.core.config.*;
+import com.seibel.lod.core.config.types.ConfigCategory;
+import com.seibel.lod.core.config.types.ConfigEntry;
+import com.seibel.lod.core.enums.config.*;
+import com.seibel.lod.core.enums.rendering.*;
+import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+
+import java.util.HashMap;
+
+/**
+ * This handles any configuration the user has access to.
+ * @author coolGi2007
+ * @version 02-07-2022
+ */
+public class Config
+{
+    // CONFIG STRUCTURE
+    // 	-> Client
+    //		|
+    //		|-> Graphics
+    //		|		|-> Quality
+    //		|		|-> FogQuality
+    //		|		|-> AdvancedGraphics
+    //		|
+    //		|-> World Generation
+    //		|
+    //		|-> Advanced
+    //				|-> Threads
+    //				|-> Buffers
+    //				|-> Debugging
+
+    public static ConfigCategory client = new ConfigCategory.Builder().set(Client.class).build();
+
+    public static class Client
+    {
+        public static ConfigCategory graphics = new ConfigCategory.Builder().set(Graphics.class).build();
+
+        public static ConfigCategory worldGenerator = new ConfigCategory.Builder().set(WorldGenerator.class).build();
+
+        public static ConfigCategory advanced = new ConfigCategory.Builder().set(Advanced.class).build();
+
+
+        public static ConfigEntry<Boolean> optionsButton = new ConfigEntry.Builder<Boolean>()
+                .comment(ILodConfigWrapperSingleton.IClient.OPTIONS_BUTTON_DESC)
+                .set(ILodConfigWrapperSingleton.IClient.OPTIONS_BUTTON_DEFAULT)
+                .build();
+
+//        public static ConfigEntry<HashMap<String, Boolean>> testMultiOption = new ConfigEntry.Builder<HashMap<String, Boolean>>()
+//                .set(new HashMap<>() {{put("overworld", true); put("nether", false);}})
+//                .build();
+
+
+        public static class Graphics
+        {
+            public static ConfigCategory quality = new ConfigCategory.Builder().set(Quality.class).build();
+
+            public static ConfigCategory fogQuality = new ConfigCategory.Builder().set(FogQuality.class).build();
+
+            public static ConfigCategory advancedGraphics = new ConfigCategory.Builder().set(AdvancedGraphics.class).build();
+
+
+            public static class Quality
+            {
+                public static ConfigEntry<HorizontalResolution> drawResolution =  new ConfigEntry.Builder<HorizontalResolution>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.DRAW_RESOLUTION_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.DRAW_RESOLUTION_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<Integer> lodChunkRenderDistance = new ConfigEntry.Builder<Integer>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.LOD_CHUNK_RENDER_DISTANCE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX.defaultValue)
+                        .setMinMax(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX.minValue, ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.LOD_CHUNK_RENDER_DISTANCE_MIN_DEFAULT_MAX.maxValue)
+                        .build();
+
+                public static ConfigEntry<VerticalQuality> verticalQuality = new ConfigEntry.Builder<VerticalQuality>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.VERTICAL_QUALITY_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.VERTICAL_QUALITY_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<Integer> horizontalScale = new ConfigEntry.Builder<Integer>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.HORIZONTAL_SCALE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.HORIZONTAL_SCALE_MIN_DEFAULT_MAX.defaultValue)
+                        .setMinMax(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.HORIZONTAL_SCALE_MIN_DEFAULT_MAX.minValue, ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.HORIZONTAL_SCALE_MIN_DEFAULT_MAX.maxValue)
+                        .build();
+
+                public static ConfigEntry<HorizontalQuality> horizontalQuality = new ConfigEntry.Builder<HorizontalQuality>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.HORIZONTAL_SCALE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.HORIZONTAL_QUALITY_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<DropoffQuality> dropoffQuality = new ConfigEntry.Builder<DropoffQuality>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.DROPOFF_QUALITY_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IQuality.DROPOFF_QUALITY_DEFAULT)
+                        .build();
+            }
+
+
+            public static class FogQuality
+            {
+                public static ConfigEntry<FogDistance> fogDistance = new ConfigEntry.Builder<FogDistance>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.FOG_DISTANCE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.FOG_DISTANCE_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<FogDrawMode> fogDrawMode = new ConfigEntry.Builder<FogDrawMode>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.FOG_DRAW_MODE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.FOG_DRAW_MODE_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<FogColorMode> fogColorMode = new ConfigEntry.Builder<FogColorMode>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.FOG_COLOR_MODE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.FOG_COLOR_MODE_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<Boolean> disableVanillaFog = new ConfigEntry.Builder<Boolean>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.DISABLE_VANILLA_FOG_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.DISABLE_VANILLA_FOG_DEFAULT)
+                        .build();
+            }
+
+
+            public static class AdvancedGraphics
+            {
+                public static ConfigEntry<Boolean> disableDirectionalCulling = new ConfigEntry.Builder<Boolean>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IAdvancedGraphics.DISABLE_DIRECTIONAL_CULLING_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IAdvancedGraphics.DISABLE_DIRECTIONAL_CULLING_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<VanillaOverdraw> vanillaOverdraw = new ConfigEntry.Builder<VanillaOverdraw>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IAdvancedGraphics.VANILLA_OVERDRAW_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IAdvancedGraphics.VANILLA_OVERDRAW_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<Boolean> useExtendedNearClipPlane = new ConfigEntry.Builder<Boolean>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IGraphics.IAdvancedGraphics.USE_EXTENDED_NEAR_CLIP_PLANE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IGraphics.IAdvancedGraphics.USE_EXTENDED_NEAR_CLIP_PLANE_DEFAULT)
+                        .build();
+
+				/*
+				@ConfigAnnotations.Entry(minValue = 0, maxValue = 512)
+				public static int backsideCullingRange = IAdvancedGraphics.VANILLA_CULLING_RANGE_MIN_DEFAULT_MAX.defaultValue;
+				*/
+            }
+        }
+
+
+        public static class WorldGenerator
+        {
+            public static ConfigEntry<Boolean> enableDistantGeneration = new ConfigEntry.Builder<Boolean>()
+                    .comment(ILodConfigWrapperSingleton.IClient.IWorldGenerator.ENABLE_DISTANT_GENERATION_DESC)
+                    .set(ILodConfigWrapperSingleton.IClient.IWorldGenerator.ENABLE_DISTANT_GENERATION_DEFAULT)
+                    .build();
+
+            public static ConfigEntry<DistanceGenerationMode> distanceGenerationMode = new ConfigEntry.Builder<DistanceGenerationMode>()
+                    //.comment(ILodConfigWrapperSingleton.IClient.IWorldGenerator.getDistanceGenerationModeDesc())
+                    .set(ILodConfigWrapperSingleton.IClient.IWorldGenerator.DISTANCE_GENERATION_MODE_DEFAULT)
+                    .build();
+
+            public static ConfigEntry<LightGenerationMode> lightGenerationMode = new ConfigEntry.Builder<LightGenerationMode>()
+                    .comment(ILodConfigWrapperSingleton.IClient.IWorldGenerator.LIGHT_GENERATION_MODE_DESC)
+                    .set(ILodConfigWrapperSingleton.IClient.IWorldGenerator.LIGHT_GENERATION_MODE_DEFAULT)
+                    .build();
+
+            public static ConfigEntry<GenerationPriority> generationPriority = new ConfigEntry.Builder<GenerationPriority>()
+                    .comment(ILodConfigWrapperSingleton.IClient.IWorldGenerator.GENERATION_PRIORITY_DESC)
+                    .set(ILodConfigWrapperSingleton.IClient.IWorldGenerator.GENERATION_PRIORITY_DEFAULT)
+                    .build();
+
+            public static ConfigEntry<BlocksToAvoid> blocksToAvoid = new ConfigEntry.Builder<BlocksToAvoid>()
+                    .comment(ILodConfigWrapperSingleton.IClient.IWorldGenerator.BLOCKS_TO_AVOID_DESC)
+                    .set(ILodConfigWrapperSingleton.IClient.IWorldGenerator.BLOCKS_TO_AVOID_DEFAULT)
+                    .build();
+        }
+
+        public static class Advanced
+        {
+            public static ConfigCategory threading = new ConfigCategory.Builder().set(Threading.class).build();
+
+            public static ConfigCategory debugging = new ConfigCategory.Builder().set(Debugging.class).build();
+
+            public static ConfigCategory buffers = new ConfigCategory.Builder().set(Buffers.class).build();
+
+
+            public static class Threading
+            {
+                public static ConfigEntry<Integer> numberOfWorldGenerationThreads = new ConfigEntry.Builder<Integer>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_WORLD_GENERATION_THREADS_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_WORLD_GENERATION_THREADS_DEFAULT.defaultValue)
+                        .setMinMax(ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_WORLD_GENERATION_THREADS_DEFAULT.minValue, ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_WORLD_GENERATION_THREADS_DEFAULT.maxValue)
+                        .build();
+
+                public static ConfigEntry<Integer> numberOfBufferBuilderThreads = new ConfigEntry.Builder<Integer>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_BUFFER_BUILDER_THREADS_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_BUFFER_BUILDER_THREADS_MIN_DEFAULT_MAX.defaultValue)
+                        .setMinMax(ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_BUFFER_BUILDER_THREADS_MIN_DEFAULT_MAX.minValue, ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading.NUMBER_OF_BUFFER_BUILDER_THREADS_MIN_DEFAULT_MAX.maxValue)
+                        .build();
+            }
+
+
+            public static class Debugging
+            {
+                public static ConfigEntry<Boolean> drawLods = new ConfigEntry.Builder<Boolean>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IDebugging.DRAW_LODS_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IDebugging.DRAW_LODS_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<DebugMode> debugMode = new ConfigEntry.Builder<DebugMode>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IDebugging.DEBUG_MODE_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IDebugging.DEBUG_MODE_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<Boolean> enableDebugKeybindings = new ConfigEntry.Builder<Boolean>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IDebugging.DEBUG_KEYBINDINGS_ENABLED_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IDebugging.DEBUG_KEYBINDINGS_ENABLED_DEFAULT)
+                        .build();
+            }
+
+
+            public static class Buffers
+            {
+                public static ConfigEntry<GpuUploadMethod> gpuUploadMethod = new ConfigEntry.Builder<GpuUploadMethod>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.GPU_UPLOAD_METHOD_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.GPU_UPLOAD_METHOD_DEFAULT)
+                        .build();
+
+                public static ConfigEntry<Integer> gpuUploadPerMegabyteInMilliseconds = new ConfigEntry.Builder<Integer>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DEFAULT.defaultValue)
+                        .setMinMax(ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DEFAULT.minValue, ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.GPU_UPLOAD_PER_MEGABYTE_IN_MILLISECONDS_DEFAULT.maxValue)
+                        .build();
+
+                public static ConfigEntry<BufferRebuildTimes> rebuildTimes = new ConfigEntry.Builder<BufferRebuildTimes>()
+                        .comment(ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.REBUILD_TIMES_DESC)
+                        .set(ILodConfigWrapperSingleton.IClient.IAdvanced.IBuffers.REBUILD_TIMES_DEFAULT)
+                        .build();
+            }
+        }
+    }
+}

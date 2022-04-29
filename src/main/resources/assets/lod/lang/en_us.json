@@ -1,489 +1,489 @@
 {
   "lod.title":
 	"Distant Horizons",
-  "DistantHorizons.config.title":
+  "lod.config.title":
 	"Distant Horizons config",
-  "DistantHorizons.config.optionsButton":
+  "lod.config.optionsButton":
 	"Show options button",
-  "DistantHorizons.config.optionsButton.@tooltip":
+  "lod.config.optionsButton.@tooltip":
 	"Show the config button to the left of the fov button",
-  "DistantHorizons.config.client":
+  "lod.config.client":
 	"Client",
-  "DistantHorizons.config.client.graphics":
+  "lod.config.client.graphics":
 	"Graphics",
-  "DistantHorizons.config.client.graphics.quality":
+  "lod.config.client.graphics.quality":
 	"Quality options",
-  "DistantHorizons.config.client.graphics.quality.drawResolution":
+  "lod.config.client.graphics.quality.drawResolution":
 	"Draw resolution",
-  "DistantHorizons.config.client.graphics.quality.drawResolution.@tooltip":
+  "lod.config.client.graphics.quality.drawResolution.@tooltip":
 	"The maximum detail fake chunks are rendered at.\n\n§6Fastest:§r Chunk\n§6Fanciest:§r Block",
-  "DistantHorizons.config.client.graphics.quality.lodChunkRenderDistance":
+  "lod.config.client.graphics.quality.lodChunkRenderDistance":
 	"Chunk render distance",
-  "DistantHorizons.config.client.graphics.quality.lodChunkRenderDistance.@tooltip":
+  "lod.config.client.graphics.quality.lodChunkRenderDistance.@tooltip":
 	"The mod's render distance, measured in chunks.",
-  "DistantHorizons.config.client.graphics.quality.verticalQuality":
+  "lod.config.client.graphics.quality.verticalQuality":
 	"Vertical quality",
-  "DistantHorizons.config.client.graphics.quality.verticalQuality.@tooltip":
+  "lod.config.client.graphics.quality.verticalQuality.@tooltip":
 	"How well fake chunks represent overhangs, caves, cliffsides, etc.\n\nHigher options will increase memory and GPU usage.",
-  "DistantHorizons.config.client.graphics.quality.horizontalScale":
+  "lod.config.client.graphics.quality.horizontalScale":
 	"Horizontal scale",
-  "DistantHorizons.config.client.graphics.quality.horizontalScale.@tooltip":
+  "lod.config.client.graphics.quality.horizontalScale.@tooltip":
 	"How quickly fake chunks drop off in quality.\n\nLarger numbers will improve how distant terrain looks\nbut will increase memory and GPU usage.",
-  "DistantHorizons.config.client.graphics.quality.horizontalQuality":
+  "lod.config.client.graphics.quality.horizontalQuality":
 	"Horizontal quality",
-  "DistantHorizons.config.client.graphics.quality.horizontalQuality.@tooltip":
+  "lod.config.client.graphics.quality.horizontalQuality.@tooltip":
 	"How far apart drops in quality are.\n\nHigher settings will increase the distance between drops\nbut will increase memory and GPU usage.",
-  "DistantHorizons.config.client.graphics.quality.dropoffQuality":
+  "lod.config.client.graphics.quality.dropoffQuality":
 	"Dropoff quality",
-  "DistantHorizons.config.client.graphics.quality.dropoffQuality.@tooltip":
+  "lod.config.client.graphics.quality.dropoffQuality.@tooltip":
 	"How detail dropoff is calculated.\n\nHigher settings will make the drop-off less noticeable\nbut will increase how often the geometry has to be rebuilt,\nincreasing CPU usage and the chance of stuttering.",
-  "DistantHorizons.config.client.graphics.quality.lodBiomeBlending":
+  "lod.config.client.graphics.quality.lodBiomeBlending":
     "Biome Blending",
-  "DistantHorizons.config.client.graphics.quality.lodBiomeBlending.@tooltip":
+  "lod.config.client.graphics.quality.lodBiomeBlending.@tooltip":
     "This is the same as vanilla Biome Blending settings for Lod area. \n\nNote that anything other than '0' will greatly effect Lod building time\nand increase triangle count. The cost on chunk generation speed is also \nquite large if set to too high.\n\n'0' equals to Vanilla Biome Blending of '1x1', \n'1' equals to Vanilla Biome Blending of '3x3', \n'2' equals to Vanilla Biome Blending of '5x5'... \n",
-  "DistantHorizons.config.client.graphics.fogQuality":
+  "lod.config.client.graphics.fogQuality":
 	"Fog options",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDistance":
+  "lod.config.client.graphics.fogQuality.fogDistance":
 	"Fog distance",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDistance.@tooltip":
+  "lod.config.client.graphics.fogQuality.fogDistance.@tooltip":
 	"The distance(s) Fog will be rendered on fake chunks.",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDrawMode":
+  "lod.config.client.graphics.fogQuality.fogDrawMode":
 	"Fog draw mode",
-  "DistantHorizons.config.client.graphics.fogQuality.fogDrawMode.@tooltip":
+  "lod.config.client.graphics.fogQuality.fogDrawMode.@tooltip":
 	"When fog will be rendered on fake chunks.",
-  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode":
+  "lod.config.client.graphics.fogQuality.fogColorMode":
 	"Fog color mode",
-  "DistantHorizons.config.client.graphics.fogQuality.fogColorMode.@tooltip":
+  "lod.config.client.graphics.fogQuality.fogColorMode.@tooltip":
 	"The color of the fog on fake chunks.",
-  "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog":
+  "lod.config.client.graphics.fogQuality.disableVanillaFog":
 	"Disable vanilla fog",
-  "DistantHorizons.config.client.graphics.fogQuality.disableVanillaFog.@tooltip":
+  "lod.config.client.graphics.fogQuality.disableVanillaFog.@tooltip":
 	"§6True:§r disables Minecraft's fog on vanilla chunks.\n§6False:§r Minecraft renders fog like normal.\n\nMay cause issues with other mods that edit fog.\nDisable if vanilla chunks are completely covered in fog.",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog":
+  "lod.config.client.graphics.fogQuality.advancedFog":
     "Advanced Fog Options",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogStart":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogStart":
     "Far Fog Start",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogEnd":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogEnd":
     "Far Fog End",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMin":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogMin":
     "Far Fog Min",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMax":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogMax":
     "Far Fog Max",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogType":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogType":
     "Far Fog Type",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogDensity":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogDensity":
     "Far Fog Density",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog":
     "Height Fog Options",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMixMode":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMixMode":
     "Height Fog Mix Mode",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMode":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMode":
     "Height Fog Mode",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogHeight":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogHeight":
     "Height Fog Set Height",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogStart":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogStart":
     "Height Fog Start",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogEnd":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogEnd":
     "Height Fog End",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMin":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMin":
     "Height Fog Min",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMax":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMax":
     "Height Fog Max",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogType":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogType":
     "Height Fog Type",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogDensity":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogDensity":
     "Height Fog Density",
 
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogStart.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogStart.@tooltip":
     "Where should the far fog start? \n\n  '0.0': Fog start at player's position.\n  '1.0': The fog-start's circle fit just in the lod render distance square.\n'1.414': The lod render distance square fit just in the fog-start's circle.\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogEnd.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogEnd.@tooltip":
     "Where should the far fog end? \n\n  '0.0': Fog end at player's position.\n  '1.0': The fog-end's circle fit just in the lod render distance square.\n'1.414': The lod render distance square fit just in the fog-end's circle.\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMin.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogMin.@tooltip":
     "What is the minimum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogMax.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogMax.@tooltip":
     "What is the maximum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogType.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogType.@tooltip":
     "How the fog thickness should be calculated from distance?\n\nLINEAR: Linear based on distance (will ignore 'density')\nEXPONENTIAL: 1/(e^(distance*density)) \nEXPONENTIAL_SQUARED: 1/(e^((distance*density)^2) \n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.farFogDensity.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.farFogDensity.@tooltip":
     "What is the fog density? ",
 
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMixMode.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMixMode.@tooltip":
     "How the height should effect the fog thickness combined with the normal function? \n\nBASIC: No special height fog effect. Fog is calculated based on camera distance \nIGNORE_HEIGHT: Ignore height completely. Fog is calculated based on horizontal distance \nADDITION: heightFog + farFog \nMAX: max(heightFog, farFog) \nMULTIPLY: heightFog * farFog \nINVERSE_MULTIPLY: 1 - (1-heightFog) * (1-farFog) \nLIMITED_ADDITION: farFog + max(farFog, heightFog) \nMULTIPLY_ADDITION: farFog + farFog * heightFog \nINVERSE_MULTIPLY_ADDITION: farFog + 1 - (1-heightFog) * (1-farFog) \nAVERAGE: farFog*0.5 + heightFog*0.5 \n\nNote that for 'BASIC' mode and 'IGNORE_HEIGHT' mode, fog settings for height fog has no effect.\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMode.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMode.@tooltip":
     "Where should the height fog be located? \n\nABOVE_CAMERA: Height fog starts from camera to the sky \nBELOW_CAMERA: Height fog starts from camera to the void \nABOVE_AND_BELOW_CAMERA: Height fog starts from camera to both the sky and the void \nABOVE_SET_HEIGHT: Height fog starts from a set height to the sky \nBELOW_SET_HEIGHT: Height fog starts from a set height to the void \nABOVE_AND_BELOW_SET_HEIGHT: Height fog starts from a set height to both the sky and the void \n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogHeight.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogHeight.@tooltip":
     "If the height fog is calculated around a set height, what is that height position? ",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogStart.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogStart.@tooltip":
     "How far the start of height fog should offset? \n\n  '0.0': Fog start with no offset.\n  '1.0': Fog start with offset of the entire world's height. (Include depth)\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogEnd.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogEnd.@tooltip":
     "How far the end of height fog should offset? \n\n  '0.0': Fog end with no offset.\n  '1.0': Fog end with offset of the entire world's height. (Include depth)\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMin.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMin.@tooltip":
     "What is the minimum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMax.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogMax.@tooltip":
     "What is the maximum fog thickness? \n\n  '0.0': No fog at all.\n  '1.0': Fully fog color.\n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogType.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogType.@tooltip":
     "How the fog thickness should be calculated from height? \n\nLINEAR: Linear based on height (will ignore 'density')\nEXPONENTIAL: 1/(e^(height*density)) \nEXPONENTIAL_SQUARED: 1/(e^((height*density)^2) \n",
-  "DistantHorizons.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogDensity.@tooltip":
+  "lod.config.client.graphics.fogQuality.advancedFog.heightFog.heightFogDensity.@tooltip":
     "What is the fog density? ",
 
-  "DistantHorizons.config.client.graphics.advancedGraphics":
+  "lod.config.client.graphics.advancedGraphics":
 	"Advanced quality option",
-  "DistantHorizons.config.client.graphics.advancedGraphics.lodTemplate":
+  "lod.config.client.graphics.advancedGraphics.lodTemplate":
 	"LOD template",
-  "DistantHorizons.config.client.graphics.advancedGraphics.lodTemplate.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.lodTemplate.@tooltip":
 	"How should the LODs be rendered?\nNOTE: Currently only CUBIC is implemented!",
-  "DistantHorizons.config.client.graphics.advancedGraphics.disableDirectionalCulling":
+  "lod.config.client.graphics.advancedGraphics.disableDirectionalCulling":
 	"Disable directional culling",
-  "DistantHorizons.config.client.graphics.advancedGraphics.disableDirectionalCulling.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.disableDirectionalCulling.@tooltip":
 	"§6False:§r fake chunks behind the player's camera aren't rendered, improving performance.\n§6True:§r fake chunks are always rendered.\n\nLeave False unless you see fake chunks disappearing at the edge of your vision.",
-  "DistantHorizons.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality":
+  "lod.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality":
 	"Always draw at max quality",
-  "DistantHorizons.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.alwaysDrawAtMaxQuality.@tooltip":
 	"§6False:§r fake chunks will drop off in quality the farther from the player they are, improving performance.\n§6True:§r all fake chunks will be rendered at the highest available detail level.\n\nEnabling this will drastically increase memory and GPU usage.",
-  "DistantHorizons.config.client.graphics.advancedGraphics.vanillaOverdraw":
+  "lod.config.client.graphics.advancedGraphics.vanillaOverdraw":
 	"Vanilla overdraw",
-  "DistantHorizons.config.client.graphics.advancedGraphics.vanillaOverdraw.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.vanillaOverdraw.@tooltip":
 	"Determines how often fake chunks will be rendered on top of regular chunks.\n\n§6Dynamic:§r attempts to pick the best option based on vanilla render distance and dimension.\n§6Always:§r prevents holes in the world, but may look odd for transparent blocks or in caves.\n§6Border:§r renders fake chunks on the border of the vanilla render distance, preventing gaps when the player isn't moving.\n§6Never:§r fake chunks will never overlap the vanilla render distance, but there may be holes in the world.",
-  "DistantHorizons.config.client.graphics.advancedGraphics.overdrawOffset":
+  "lod.config.client.graphics.advancedGraphics.overdrawOffset":
     "Overdraw Offset",
-  "DistantHorizons.config.client.graphics.advancedGraphics.overdrawOffset.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.overdrawOffset.@tooltip":
     "If on Vanilla Overdraw mode of NEVER, how much should should the border be offset? \n\n '1': The start of lods will be shifted inwards by 1 chunk, causing 1 chunk of overdraw. \n'-1': The start fo lods will be shifted outwards by 1 chunk, causing 1 chunk of gap. \n\nThis setting can be used to deal with gaps due to our vanilla rendered chunk \n  detection not being perfect. \n",
-  "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane":
+  "lod.config.client.graphics.advancedGraphics.useExtendedNearClipPlane":
 	"Use extended near clip plane",
-  "DistantHorizons.config.client.graphics.advancedGraphics.useExtendedNearClipPlane.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.useExtendedNearClipPlane.@tooltip":
 	"Will prevent some overdraw issues,\nbut may cause nearby fake chunks to render incorrectly, especially when near fancy leaves.\nLess noticeable with a longer vanilla render distance.",
-  "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange":
+  "lod.config.client.graphics.advancedGraphics.backsideCullingRange":
 	"Backside Culling Range",
-  "DistantHorizons.config.client.graphics.advancedGraphics.backsideCullingRange.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.backsideCullingRange.@tooltip":
 	"The distance where the back side of fake chunks aren't rendered to improve performance.",
-  "DistantHorizons.config.client.graphics.advancedGraphics.brightnessMultiplier":
+  "lod.config.client.graphics.advancedGraphics.brightnessMultiplier":
     "Brightness Multiplier",
-  "DistantHorizons.config.client.graphics.advancedGraphics.brightnessMultiplier.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.brightnessMultiplier.@tooltip":
     "How bright fake chunk colors are.\n\n0 = black \n1 = normal \n2 = near white",
-  "DistantHorizons.config.client.graphics.advancedGraphics.saturationMultiplier":
+  "lod.config.client.graphics.advancedGraphics.saturationMultiplier":
     "Saturation Multiplier",
-  "DistantHorizons.config.client.graphics.advancedGraphics.saturationMultiplier.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.saturationMultiplier.@tooltip":
     "How saturated fake chunk colors are.\n\n0 = black and white \n1 = normal \n2 = vibrant",
-  "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling":
+  "lod.config.client.graphics.advancedGraphics.enableCaveCulling":
   "Cave Culling §6(EXPERIMENTAL)§r",
-  "DistantHorizons.config.client.graphics.advancedGraphics.enableCaveCulling.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.enableCaveCulling.@tooltip":
   "If enabled caves will be culled \n\n§6NOTE§r: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature. \n\nAdditional Info: Currently this cull all faces \n with skylight value of 0 under the cave culling height in dimensions that \n do not have a ceiling. \n",
-  "DistantHorizons.config.client.graphics.advancedGraphics.caveCullingHeight":
+  "lod.config.client.graphics.advancedGraphics.caveCullingHeight":
   "Cave Culling Height §6(EXPERIMENTAL)§r",
-  "DistantHorizons.config.client.graphics.advancedGraphics.caveCullingHeight.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.caveCullingHeight.@tooltip":
   "At what Y value should cave culling start? \n\n§6NOTE§r: This feature is under development and \n it is VERY experimental! Please don't report \nany issues related to this feature.",
-  "DistantHorizons.config.client.graphics.advancedGraphics.earthCurveRatio":
+  "lod.config.client.graphics.advancedGraphics.earthCurveRatio":
   "Earth Curve Ratio §6(EXPERIMENTAL)§r",
-  "DistantHorizons.config.client.graphics.advancedGraphics.earthCurveRatio.@tooltip":
+  "lod.config.client.graphics.advancedGraphics.earthCurveRatio.@tooltip":
   "This is the earth size ratio when applying the curvature shader effect. \n\n§6NOTE§r: This feature is just for fun and is VERY experimental! \nPlease don't report any issues related to this feature. \n\n0 = flat/disabled \n1 = 1 to 1 (6,371,000 blocks) \n100 = 1 to 100 (63,710 blocks) \n10000 = 1 to 10000 (637.1 blocks) \n\n§6NOTE§r: due to current limitations, the min value is 50 \n and the max value is 5000. Any values outside this range \n will be set to 0(disabled).",
-  "DistantHorizons.config.client.worldGenerator":
+  "lod.config.client.worldGenerator":
 	"World generator",
-  "DistantHorizons.config.client.worldGenerator.generationPriority":
+  "lod.config.client.worldGenerator.generationPriority":
 	"Generation priority",
-  "DistantHorizons.config.client.worldGenerator.generationPriority.@tooltip":
+  "lod.config.client.worldGenerator.generationPriority.@tooltip":
 	"The priority for chunks being generated around the player.",
-  "DistantHorizons.config.client.worldGenerator.distanceGenerationMode":
+  "lod.config.client.worldGenerator.distanceGenerationMode":
 	"Distance generation mode",
-  "DistantHorizons.config.client.worldGenerator.distanceGenerationMode.@tooltip":
+  "lod.config.client.worldGenerator.distanceGenerationMode.@tooltip":
 	"How complicated the generation should be when generating fake chunks outside the vanilla render distance.\n\n§6§6Fastest:§r Biome only\n§6Best Quality:§r Features (suggested)\n§6Best compatibility:§r Full (Very slow, don't use unless the fake chunks generate incorrectly.)",
-  "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration":
+  "lod.config.client.worldGenerator.allowUnstableFeatureGeneration":
 	"Allow unstable feature generation",
-  "DistantHorizons.config.client.worldGenerator.allowUnstableFeatureGeneration.@tooltip":
+  "lod.config.client.worldGenerator.allowUnstableFeatureGeneration.@tooltip":
 	"Some features may not be thread safe.\nCould cause instability and crashes",
-  "DistantHorizons.config.client.worldGenerator.blocksToAvoid":
+  "lod.config.client.worldGenerator.blocksToAvoid":
 	"Block to avoid",
-  "DistantHorizons.config.client.worldGenerator.blocksToAvoid.@tooltip":
+  "lod.config.client.worldGenerator.blocksToAvoid.@tooltip":
 	"Defines the types of blocks to ignore when generating fake chunks.",
-  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration":
+  "lod.config.client.worldGenerator.enableDistantGeneration":
 	"Enable Distant Generation",
-  "DistantHorizons.config.client.worldGenerator.enableDistantGeneration.@tooltip":
+  "lod.config.client.worldGenerator.enableDistantGeneration.@tooltip":
 	"§6True:§r in single player fake chunks will be generated outside the vanilla render distance.\nNote: this can use a large amount of CPU.\n\n§6False:§r fake chunks will only generate within the vanilla render distance.",
-  "DistantHorizons.config.client.worldGenerator.lightGenerationMode":
+  "lod.config.client.worldGenerator.lightGenerationMode":
 	"Light Generation Mode",
-  "DistantHorizons.config.client.worldGenerator.lightGenerationMode.@tooltip":
+  "lod.config.client.worldGenerator.lightGenerationMode.@tooltip":
 	"§6Fancy:§r use Minecraft's lighting engine, gives accurate lighting.\n§6Fast:§r estimate block lighting, shadows won't be as smooth.\n\nIf the fake chunks appear black, set this to §6Fast:§r.",
-  "DistantHorizons.config.client.multiplayer":
+  "lod.config.client.multiplayer":
 	"Multiplayer",
-  "DistantHorizons.config.client.multiplayer.serverFolderNameMode":
+  "lod.config.client.multiplayer.serverFolderNameMode":
 	"Server Folder Mode",
-  "DistantHorizons.config.client.multiplayer.serverFolderNameMode.@tooltip":
+  "lod.config.client.multiplayer.serverFolderNameMode.@tooltip":
     "Determines the folder format for local multiplayer data.\n\n§6Auto:§r\nUses \"Name, IP\" for LAN worlds and \"Name, IP, Port\" for standard multiplayer.\n§6Name Only:§r\nUses the server browser name. Ex: \"Minecraft Server\"\n§6Name IP:§r\n\"Minecraft Server, IP 192.168.1.40\"\n§6Name, IP, Port:§r\n\"Minecraft Server, IP 192.168.1.40:25565\"\n§6Name, IP, Port, MC Version:§r\n\"Minecraft Server, IP 192.168.1.40:25565, GameVersion 1.18.1\"\n\n§c§lCaution:§r changing while connected to a multiplayer server may cause glitches.",
-  "DistantHorizons.config.client.multiplayer.multiDimensionRequiredSimilarity":
+  "lod.config.client.multiplayer.multiDimensionRequiredSimilarity":
     "Multi Dimension Required Similarity",
-  "DistantHorizons.config.client.multiplayer.multiDimensionRequiredSimilarity.@tooltip":
+  "lod.config.client.multiplayer.multiDimensionRequiredSimilarity.@tooltip":
     "When matching worlds of the same dimension type the\ntested chunks must be at least this percent the same\nin order to be considered the same world.\n\nNote: If you use portals to enter a dimension at two\ndifferent locations this system may think it is two different worlds.\n\n§61.0:§r the chunks must be identical.\n§60.5:§r the chunks must be half the same.\n§60.0:§r disables multi-dimension support\n     only one world will be used per dimension.",
-  "DistantHorizons.config.client.advanced":
+  "lod.config.client.advanced":
 	"Advance options",
-  "DistantHorizons.config.client.advanced.threading":
+  "lod.config.client.advanced.threading":
 	"Threading",
-  "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads":
+  "lod.config.client.advanced.threading.numberOfWorldGenerationThreads":
 	"NO. of world generation threads",
-  "DistantHorizons.config.client.advanced.threading.numberOfWorldGenerationThreads.@tooltip":
+  "lod.config.client.advanced.threading.numberOfWorldGenerationThreads.@tooltip":
 	"How many threads should be used when generating fake \nchunks outside the normal render distance? \n\nIf it this is less than 1, it will be treated as a percentage \nof time a single thread can run before going idle. \n\nIf you experience stuttering when generating distant fake chunks, \ndecrease  this number. If you want to increase fake chunk \ngeneration speed, increase this number. \n\nThis and the number of buffer builder threads are independent, \nif they add up to more threads than your CPU has cores \nthat is ok.",
-  "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads":
+  "lod.config.client.advanced.threading.numberOfBufferBuilderThreads":
 	"NO. of buffer builder threads",
-  "DistantHorizons.config.client.advanced.threading.numberOfBufferBuilderThreads.@tooltip":
+  "lod.config.client.advanced.threading.numberOfBufferBuilderThreads.@tooltip":
 	"The number of threads used when building vertex buffers\n(The things sent to your GPU to draw the fake chunks).\nCan only be between 1 and your CPU's processor count.",
-  "DistantHorizons.config.client.advanced.buffers":
+  "lod.config.client.advanced.buffers":
 	"Buffers",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod":
+  "lod.config.client.advanced.buffers.gpuUploadMethod":
 	"GPU upload method",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadMethod.@tooltip":
+  "lod.config.client.advanced.buffers.gpuUploadMethod.@tooltip":
 	"The method for uploading geometry to the GPU.\n\nIf you experience stuttering while your CPU and GPU usage is low, try changing this setting.\nNote: if you are in a world you may have to leaving and rejoin to see the full effect.",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds":
+  "lod.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds":
 	"GPU upload speed (milliseconds)",
-  "DistantHorizons.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds.@tooltip":
+  "lod.config.client.advanced.buffers.gpuUploadPerMegabyteInMilliseconds.@tooltip":
 	"How long should a buffer wait per Megabyte of data uploaded?\nMay be increased if there is frame stuttering.",
-  "DistantHorizons.config.client.advanced.buffers.rebuildTimes":
+  "lod.config.client.advanced.buffers.rebuildTimes":
 	"Rebuild times",
-  "DistantHorizons.config.client.advanced.buffers.rebuildTimes.@tooltip":
+  "lod.config.client.advanced.buffers.rebuildTimes.@tooltip":
 	"How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU?",
-  "DistantHorizons.config.client.advanced.debugging":
+  "lod.config.client.advanced.debugging":
 	"Debug",
-  "DistantHorizons.config.client.advanced.debugging.rendererType":
+  "lod.config.client.advanced.debugging.rendererType":
     "Renderer type",
-  "DistantHorizons.config.client.advanced.debugging.rendererType.@tooltip":
+  "lod.config.client.advanced.debugging.rendererType.@tooltip":
     "TODO",
-  "DistantHorizons.config.client.advanced.debugging.debugMode":
+  "lod.config.client.advanced.debugging.debugMode":
 	"Debug mode",
-  "DistantHorizons.config.client.advanced.debugging.debugMode.@tooltip":
+  "lod.config.client.advanced.debugging.debugMode.@tooltip":
 	"The active debug mode.",
-  "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings":
+  "lod.config.client.advanced.debugging.enableDebugKeybindings":
 	"Enable debug keybindings",
-  "DistantHorizons.config.client.advanced.debugging.enableDebugKeybindings.@tooltip":
+  "lod.config.client.advanced.debugging.enableDebugKeybindings.@tooltip":
 	"§6True:§r debug keybindings can be used to change the Debug mode in game.",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch":
+  "lod.config.client.advanced.debugging.debugSwitch":
     "Debug switch",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.@tooltip":
+  "lod.config.client.advanced.debugging.debugSwitch.@tooltip":
     "The debug switch to use when logging.",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logWorldGenEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logWorldGenEvent":
     "World Gen Event Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logWorldGenPerformance":
+  "lod.config.client.advanced.debugging.debugSwitch.logWorldGenPerformance":
     "World Gen Performance Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logWorldGenLoadEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logWorldGenLoadEvent":
     "World Gen Load Event Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logLodBuilderEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logLodBuilderEvent":
     "Lod Builder Event Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logRendererBufferEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logRendererBufferEvent":
     "Renderer Buffer Event Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logRendererGLEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logRendererGLEvent":
     "Renderer GL Event Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logFileReadWriteEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logFileReadWriteEvent":
     "File Read Write Event Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logFileSubDimEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logFileSubDimEvent":
     "File Sub Dim Event Logging",
-  "DistantHorizons.config.client.advanced.debugging.debugSwitch.logNetworkEvent":
+  "lod.config.client.advanced.debugging.debugSwitch.logNetworkEvent":
     "Network Event Logging",
-  "DistantHorizons.config.client.advanced.lodOnlyMode":
+  "lod.config.client.advanced.lodOnlyMode":
   "Lod Only Mode §6(ONLY FOR FUN)§r",
-  "DistantHorizons.config.client.advanced.lodOnlyMode.@tooltip":
+  "lod.config.client.advanced.lodOnlyMode.@tooltip":
   "Due to some demand for playing without vanilla terrains, \nwe decided to add this mode for fun. \n\n§6NOTE§r: Do not report any issues when this mode is on! \n  Again, this setting is only for fun, and mod \n  compatibility is not guaranteed. \n",
-  "DistantHorizons.config.enum.HorizontalResolution.BLOCK":
+  "lod.config.enum.HorizontalResolution.BLOCK":
 	"Block",
-  "DistantHorizons.config.enum.HorizontalResolution.TWO_BLOCKS":
+  "lod.config.enum.HorizontalResolution.TWO_BLOCKS":
 	"2 blocks",
-  "DistantHorizons.config.enum.HorizontalResolution.FOUR_BLOCKS":
+  "lod.config.enum.HorizontalResolution.FOUR_BLOCKS":
 	"4 blocks",
-  "DistantHorizons.config.enum.HorizontalResolution.HALF_CHUNK":
+  "lod.config.enum.HorizontalResolution.HALF_CHUNK":
 	"Half a chunk",
-  "DistantHorizons.config.enum.HorizontalResolution.CHUNK":
+  "lod.config.enum.HorizontalResolution.CHUNK":
 	"Chunk",
-  "DistantHorizons.config.enum.VerticalQuality.LOW":
+  "lod.config.enum.VerticalQuality.LOW":
 	"Low",
-  "DistantHorizons.config.enum.VerticalQuality.MEDIUM":
+  "lod.config.enum.VerticalQuality.MEDIUM":
 	"Medium",
-  "DistantHorizons.config.enum.VerticalQuality.HIGH":
+  "lod.config.enum.VerticalQuality.HIGH":
 	"High",
-  "DistantHorizons.config.enum.VerticalQuality.ULTRA":
+  "lod.config.enum.VerticalQuality.ULTRA":
   "Ultra",
-  "DistantHorizons.config.enum.HorizontalScale.LOW":
+  "lod.config.enum.HorizontalScale.LOW":
 	"Low",
-  "DistantHorizons.config.enum.HorizontalScale.MEDIUM":
+  "lod.config.enum.HorizontalScale.MEDIUM":
 	"Medium",
-  "DistantHorizons.config.enum.HorizontalScale.HIGH":
+  "lod.config.enum.HorizontalScale.HIGH":
 	"High",
-  "DistantHorizons.config.enum.HorizontalQuality.LOWEST":
+  "lod.config.enum.HorizontalQuality.LOWEST":
 	"Lowest",
-  "DistantHorizons.config.enum.HorizontalQuality.LOW":
+  "lod.config.enum.HorizontalQuality.LOW":
 	"Low",
-  "DistantHorizons.config.enum.HorizontalQuality.MEDIUM":
+  "lod.config.enum.HorizontalQuality.MEDIUM":
 	"Medium",
-  "DistantHorizons.config.enum.HorizontalQuality.HIGH":
+  "lod.config.enum.HorizontalQuality.HIGH":
 	"High",
-  "DistantHorizons.config.enum.FogDistance.NEAR":
+  "lod.config.enum.FogDistance.NEAR":
 	"Near",
-  "DistantHorizons.config.enum.FogDistance.FAR":
+  "lod.config.enum.FogDistance.FAR":
 	"Far",
-  "DistantHorizons.config.enum.FogDistance.NEAR_AND_FAR":
+  "lod.config.enum.FogDistance.NEAR_AND_FAR":
 	"Near and far",
-  "DistantHorizons.config.enum.FogDrawMode.USE_OPTIFINE_SETTING":
+  "lod.config.enum.FogDrawMode.USE_OPTIFINE_SETTING":
 	"Use modded settings",
-  "DistantHorizons.config.enum.FogDrawMode.FOG_ENABLED":
+  "lod.config.enum.FogDrawMode.FOG_ENABLED":
 	"Enabled",
-  "DistantHorizons.config.enum.FogDrawMode.FOG_DISABLED":
+  "lod.config.enum.FogDrawMode.FOG_DISABLED":
 	"Disabled",
-  "DistantHorizons.config.enum.FogColorMode.USE_WORLD_FOG_COLOR":
+  "lod.config.enum.FogColorMode.USE_WORLD_FOG_COLOR":
 	"Use world fog",
-  "DistantHorizons.config.enum.FogColorMode.USE_SKY_COLOR":
+  "lod.config.enum.FogColorMode.USE_SKY_COLOR":
 	"Use sky color",
-  "DistantHorizons.config.enum.FogType.LINEAR":
+  "lod.config.enum.FogType.LINEAR":
     "Linear",
-  "DistantHorizons.config.enum.FogType.EXPONENTIAL":
+  "lod.config.enum.FogType.EXPONENTIAL":
     "Exponential",
-  "DistantHorizons.config.enum.FogType.EXPONENTIAL_SQUARED":
+  "lod.config.enum.FogType.EXPONENTIAL_SQUARED":
     "Exponential Squared",
-  "DistantHorizons.config.enum.HeightFogMode.ABOVE_CAMERA":
+  "lod.config.enum.HeightFogMode.ABOVE_CAMERA":
   "Above Camera",
-  "DistantHorizons.config.enum.HeightFogMode.BELOW_CAMERA":
+  "lod.config.enum.HeightFogMode.BELOW_CAMERA":
   "Below Camera",
-  "DistantHorizons.config.enum.HeightFogMode.ABOVE_AND_BELOW_CAMERA":
+  "lod.config.enum.HeightFogMode.ABOVE_AND_BELOW_CAMERA":
   "Above And Below Camera",
-  "DistantHorizons.config.enum.HeightFogMode.ABOVE_SET_HEIGHT":
+  "lod.config.enum.HeightFogMode.ABOVE_SET_HEIGHT":
   "Above Set Height",
-  "DistantHorizons.config.enum.HeightFogMode.BELOW_SET_HEIGHT":
+  "lod.config.enum.HeightFogMode.BELOW_SET_HEIGHT":
   "Below Set Height",
-  "DistantHorizons.config.enum.HeightFogMode.ABOVE_AND_BELOW_SET_HEIGHT":
+  "lod.config.enum.HeightFogMode.ABOVE_AND_BELOW_SET_HEIGHT":
   "Above And Below Set Height",
-  "DistantHorizons.config.enum.HeightFogMixMode.BASIC":
+  "lod.config.enum.HeightFogMixMode.BASIC":
   "Basic",
-  "DistantHorizons.config.enum.HeightFogMixMode.IGNORE_HEIGHT":
+  "lod.config.enum.HeightFogMixMode.IGNORE_HEIGHT":
   "Ignore Height",
-  "DistantHorizons.config.enum.HeightFogMixMode.ADDITION":
+  "lod.config.enum.HeightFogMixMode.ADDITION":
   "Addition",
-  "DistantHorizons.config.enum.HeightFogMixMode.MAX":
+  "lod.config.enum.HeightFogMixMode.MAX":
   "Max",
-  "DistantHorizons.config.enum.HeightFogMixMode.MULTIPLY":
+  "lod.config.enum.HeightFogMixMode.MULTIPLY":
   "Multiply",
-  "DistantHorizons.config.enum.HeightFogMixMode.INVERSE_MULTIPLY":
+  "lod.config.enum.HeightFogMixMode.INVERSE_MULTIPLY":
   "Inverse Multiply",
-  "DistantHorizons.config.enum.HeightFogMixMode.LIMITED_ADDITION":
+  "lod.config.enum.HeightFogMixMode.LIMITED_ADDITION":
   "Limited Addition",
-  "DistantHorizons.config.enum.HeightFogMixMode.MULTIPLY_ADDITION":
+  "lod.config.enum.HeightFogMixMode.MULTIPLY_ADDITION":
   "Multiply Addition",
-  "DistantHorizons.config.enum.HeightFogMixMode.INVERSE_MULTIPLY_ADDITION":
+  "lod.config.enum.HeightFogMixMode.INVERSE_MULTIPLY_ADDITION":
   "Inverse Multiply Addition",
-  "DistantHorizons.config.enum.HeightFogMixMode.AVERAGE":
+  "lod.config.enum.HeightFogMixMode.AVERAGE":
   "Average",
-  "DistantHorizons.config.enum.LodTemplate.CUBIC":
+  "lod.config.enum.LodTemplate.CUBIC":
 	"Cubic",
-  "DistantHorizons.config.enum.LodTemplate.TRIANGULAR":
+  "lod.config.enum.LodTemplate.TRIANGULAR":
 	"Triangular",
-  "DistantHorizons.config.enum.LodTemplate.DYNAMIC":
+  "lod.config.enum.LodTemplate.DYNAMIC":
 	"Dynamic",
-  "DistantHorizons.config.enum.VanillaOverdraw.NEVER":
+  "lod.config.enum.VanillaOverdraw.NEVER":
 	"Never",
-  "DistantHorizons.config.enum.VanillaOverdraw.DYNAMIC":
+  "lod.config.enum.VanillaOverdraw.DYNAMIC":
 	"Dynamic",
-  "DistantHorizons.config.enum.VanillaOverdraw.ALWAYS":
+  "lod.config.enum.VanillaOverdraw.ALWAYS":
 	"Always",
-  "DistantHorizons.config.enum.VanillaOverdraw.BORDER":
+  "lod.config.enum.VanillaOverdraw.BORDER":
 	"Border",
-  "DistantHorizons.config.enum.GenerationPriority.AUTO":
+  "lod.config.enum.GenerationPriority.AUTO":
 	"Auto",
-  "DistantHorizons.config.enum.GenerationPriority.NEAR_FIRST":
+  "lod.config.enum.GenerationPriority.NEAR_FIRST":
 	"Near first",
-  "DistantHorizons.config.enum.GenerationPriority.BALANCED":
+  "lod.config.enum.GenerationPriority.BALANCED":
 	"Balanced",
-  "DistantHorizons.config.enum.GenerationPriority.FAR_FIRST":
+  "lod.config.enum.GenerationPriority.FAR_FIRST":
 	"Far first",
-  "DistantHorizons.config.enum.DistanceGenerationMode.NONE":
+  "lod.config.enum.DistanceGenerationMode.NONE":
 	"Existing Only",
-  "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY":
+  "lod.config.enum.DistanceGenerationMode.BIOME_ONLY":
 	"Biome only",
-  "DistantHorizons.config.enum.DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT":
+  "lod.config.enum.DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT":
 	"Biome only simulate height",
-  "DistantHorizons.config.enum.DistanceGenerationMode.SURFACE":
+  "lod.config.enum.DistanceGenerationMode.SURFACE":
 	"Surface",
-  "DistantHorizons.config.enum.DistanceGenerationMode.FEATURES":
+  "lod.config.enum.DistanceGenerationMode.FEATURES":
 	"Features",
-  "DistantHorizons.config.enum.DistanceGenerationMode.FULL":
+  "lod.config.enum.DistanceGenerationMode.FULL":
 	"Full",
-  "DistantHorizons.config.enum.BlocksToAvoid.NONE":
+  "lod.config.enum.BlocksToAvoid.NONE":
 	"None",
-  "DistantHorizons.config.enum.BlocksToAvoid.NON_FULL":
+  "lod.config.enum.BlocksToAvoid.NON_FULL":
 	"Non full",
-  "DistantHorizons.config.enum.BlocksToAvoid.NO_COLLISION":
+  "lod.config.enum.BlocksToAvoid.NO_COLLISION":
 	"No collision",
-  "DistantHorizons.config.enum.BlocksToAvoid.BOTH":
+  "lod.config.enum.BlocksToAvoid.BOTH":
 	"Both",
-  "DistantHorizons.config.enum.RendererType.DEFAULT":
+  "lod.config.enum.RendererType.DEFAULT":
     "Default",
-  "DistantHorizons.config.enum.RendererType.DEBUG":
+  "lod.config.enum.RendererType.DEBUG":
     "Debug",
-  "DistantHorizons.config.enum.RendererType.DISABLED":
+  "lod.config.enum.RendererType.DISABLED":
     "Disabled",
-  "DistantHorizons.config.enum.DebugMode.OFF":
+  "lod.config.enum.DebugMode.OFF":
 	"Off",
-  "DistantHorizons.config.enum.DebugMode.SHOW_WIREFRAME":
+  "lod.config.enum.DebugMode.SHOW_WIREFRAME":
 	"Show wireframe",
-  "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL":
+  "lod.config.enum.DebugMode.SHOW_DETAIL":
 	"Show detail",
-  "DistantHorizons.config.enum.DebugMode.SHOW_DETAIL_WIREFRAME":
+  "lod.config.enum.DebugMode.SHOW_DETAIL_WIREFRAME":
 	"Show detail with wireframe",
-  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE":
+  "lod.config.enum.DebugMode.SHOW_GENMODE":
 	"Show generation mode",
-  "DistantHorizons.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME":
+  "lod.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME":
 	"Show generation mode with wireframe",
-  "DistantHorizons.config.enum.LoggerMode.DISABLED":
+  "lod.config.enum.LoggerMode.DISABLED":
     "Disabled",
-  "DistantHorizons.config.enum.LoggerMode.LOG_ALL_TO_FILE":
+  "lod.config.enum.LoggerMode.LOG_ALL_TO_FILE":
     "File: All, Chat: Off",
-  "DistantHorizons.config.enum.LoggerMode.LOG_ERROR_TO_CHAT":
+  "lod.config.enum.LoggerMode.LOG_ERROR_TO_CHAT":
     "File: All, Chat: Error",
-  "DistantHorizons.config.enum.LoggerMode.LOG_WARNING_TO_CHAT":
+  "lod.config.enum.LoggerMode.LOG_WARNING_TO_CHAT":
     "File: All, Chat: Warning",
-  "DistantHorizons.config.enum.LoggerMode.LOG_INFO_TO_CHAT":
+  "lod.config.enum.LoggerMode.LOG_INFO_TO_CHAT":
     "File: All, Chat: Info",
-  "DistantHorizons.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT":
+  "lod.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT":
     "File: All, Chat: Debug",
-  "DistantHorizons.config.enum.LoggerMode.LOG_ALL_TO_CHAT":
+  "lod.config.enum.LoggerMode.LOG_ALL_TO_CHAT":
     "File: All, Chat: All",
-  "DistantHorizons.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_FILE":
+  "lod.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_FILE":
     "File: Error, Chat: Error",
-  "DistantHorizons.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE":
+  "lod.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE":
     "File: Warning, Chat: Warning",
-  "DistantHorizons.config.enum.LoggerMode.LOG_INFO_TO_CHAT_AND_FILE":
+  "lod.config.enum.LoggerMode.LOG_INFO_TO_CHAT_AND_FILE":
     "File: Info, Chat: Info",
-  "DistantHorizons.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT_AND_FILE":
+  "lod.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT_AND_FILE":
     "File: Debug, Chat: Debug",
-  "DistantHorizons.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE":
+  "lod.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE":
     "File: Info, Chat: Warning",
-  "DistantHorizons.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_INFO_TO_FILE":
+  "lod.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_INFO_TO_FILE":
     "File: Info, Chat: Error",
-  "DistantHorizons.config.enum.GpuUploadMethod.AUTO":
+  "lod.config.enum.GpuUploadMethod.AUTO":
 	"Auto",
-  "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_STORAGE":
+  "lod.config.enum.GpuUploadMethod.BUFFER_STORAGE":
 	"Buffer storage",
-  "DistantHorizons.config.enum.GpuUploadMethod.SUB_DATA":
+  "lod.config.enum.GpuUploadMethod.SUB_DATA":
 	"Sub data",
-  "DistantHorizons.config.enum.GpuUploadMethod.BUFFER_MAPPING":
+  "lod.config.enum.GpuUploadMethod.BUFFER_MAPPING":
 	"Buffer mapping",
-  "DistantHorizons.config.enum.GpuUploadMethod.DATA":
+  "lod.config.enum.GpuUploadMethod.DATA":
 	"Data",
-  "DistantHorizons.config.enum.BufferRebuildTimes.FREQUENT":
+  "lod.config.enum.BufferRebuildTimes.FREQUENT":
 	"Frequent",
-  "DistantHorizons.config.enum.BufferRebuildTimes.NORMAL":
+  "lod.config.enum.BufferRebuildTimes.NORMAL":
 	"Normal",
-  "DistantHorizons.config.enum.BufferRebuildTimes.RARE":
+  "lod.config.enum.BufferRebuildTimes.RARE":
 	"Rare",
-  "DistantHorizons.config.enum.DropoffQuality.AUTO":
+  "lod.config.enum.DropoffQuality.AUTO":
 	"Auto",
-  "DistantHorizons.config.enum.DropoffQuality.SMOOTH_DROPOFF":
+  "lod.config.enum.DropoffQuality.SMOOTH_DROPOFF":
 	"Smooth dropoff",
-  "DistantHorizons.config.enum.DropoffQuality.PERFORMANCE_FOCUSED":
+  "lod.config.enum.DropoffQuality.PERFORMANCE_FOCUSED":
 	"Performance focused",
-  "DistantHorizons.config.enum.LightGenerationMode.FAST":
+  "lod.config.enum.LightGenerationMode.FAST":
 	"Fast",
-  "DistantHorizons.config.enum.LightGenerationMode.FANCY":
+  "lod.config.enum.LightGenerationMode.FANCY":
 	"Fancy",
-  "DistantHorizons.config.enum.ServerFolderNameMode.AUTO":
+  "lod.config.enum.ServerFolderNameMode.AUTO":
 	"Auto",
-  "DistantHorizons.config.enum.ServerFolderNameMode.NAME_ONLY":
+  "lod.config.enum.ServerFolderNameMode.NAME_ONLY":
 	"Name Only",
-  "DistantHorizons.config.enum.ServerFolderNameMode.NAME_IP":
+  "lod.config.enum.ServerFolderNameMode.NAME_IP":
 	"Name and IP",
-  "DistantHorizons.config.enum.ServerFolderNameMode.NAME_IP_PORT":
+  "lod.config.enum.ServerFolderNameMode.NAME_IP_PORT":
 	"Name, IP, Port",
-  "DistantHorizons.config.enum.ServerFolderNameMode.NAME_IP_PORT_MC_VERSION":
+  "lod.config.enum.ServerFolderNameMode.NAME_IP_PORT_MC_VERSION":
 	"Name, IP, Port, MC version"
 }

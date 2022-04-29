@@ -33,9 +33,9 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
  * the options that should be implemented in a configWrapperSingleton.
  * 
  * @author James Seibel
- * @version 3-7-2022
+ * @version 12-14-2021
  */
-public interface ILodConfigWrapperSingleton extends IBindable
+public interface ILodConfigWrapperSingleton
 {
 	IClient client();
 	
@@ -502,7 +502,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " This setting shouldn't affect performance. \n";
 				boolean getUseExtendedNearClipPlane();
 				void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane);
-				
+
 				double BRIGHTNESS_MULTIPLIER_DEFAULT = 1.0;
 				String BRIGHTNESS_MULTIPLIER_DESC = ""
 						+ " How bright fake chunk colors are. \n"
@@ -512,7 +512,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						+ " 2 = near white \n";
 				double getBrightnessMultiplier();
 				void setBrightnessMultiplier(double newBrightnessMultiplier);
-				
+
 				double SATURATION_MULTIPLIER_DEFAULT = 1.0;
 				String SATURATION_MULTIPLIER_DESC = ""
 						+ " How saturated fake chunk colors are. \n"
@@ -564,17 +564,17 @@ public interface ILodConfigWrapperSingleton extends IBindable
 
 			}
 		}
-		
-		
-		
-		
+
+
+
+
 		//=====================//
 		// Multiplayer Configs //
 		//=====================//
 		interface IMultiplayer
 		{
 			String DESC = "These settings control how different systems work when connected to a multiplayer world.";
-			
+
 			ServerFolderNameMode SERVER_FOLDER_NAME_MODE_DEFAULT = ServerFolderNameMode.AUTO;
 			String SERVER_FOLDER_NAME_MODE_DESC = ""
 					+ " What multiplayer save folders should be named. \n"
@@ -586,7 +586,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					+ "\n";
 			ServerFolderNameMode getServerFolderNameMode();
 			void setServerFolderNameMode(ServerFolderNameMode newServerFolderNameMode);
-			
+
 			MinDefaultMax<Double> MULTI_DIMENSION_REQUIRED_SIMILARITY_MIN_DEFAULT_MAX = new MinDefaultMax<Double>(0.0, 0.0, 1.0);
 			String MULTI_DIMENSION_REQUIRED_SIMILARITY_DESC = ""
 					+ " When matching worlds of the same dimension type the \n"
@@ -604,8 +604,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			double getMultiDimensionRequiredSimilarity();
 			void setMultiDimensionRequiredSimilarity(double newMultiDimensionMinimumSimilarityPercent);
 		}
-		
-		
+
+
 		
 		
 		
@@ -730,7 +730,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.BALANCED;
 				return priority;
 			}
-			
+
 			BlocksToAvoid BLOCKS_TO_AVOID_DEFAULT = BlocksToAvoid.BOTH;
 			String BLOCKS_TO_AVOID_DESC = ""
 					+ " When generating fake chunks, what blocks should be ignored? \n"

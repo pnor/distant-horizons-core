@@ -1,26 +1,61 @@
-/*
- *    This file is part of the Distant Horizons mod (formerly the LOD Mod),
- *    licensed under the GNU LGPL v3 License.
- *
- *    Copyright (C) 2020-2022  James Seibel
- *
- *    This program is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU Lesser General Public License as published by
- *    the Free Software Foundation, version 3.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public License
- *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
- 
 package com.seibel.lod.core;
 
+import com.seibel.lod.core.jar.JarDependencySetup;
+
+import javax.swing.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+
+/**
+ * The main class when you run the standalone jar
+ *
+ * @author coolGi
+ */
 public class JarMain {
-    public static void main(String[] args){
-        System.out.println("Why are you running the jar, this isn't done yet  >:(");
+    public static void main(String[] args) {
+        // Sets up the local
+        if (JarMain.accessFile("assets/lod/lang/"+Locale.getDefault().toString().toLowerCase()+".json") == null) {
+            System.out.println("The language setting ["+Locale.getDefault().toString().toLowerCase()+"] isn't allowed yet. Defaulting to ["+Locale.US.toString().toLowerCase()+"].");
+            Locale.setDefault(Locale.US);
+        }
+
+        JarDependencySetup.createInitialBindings();
+        System.out.println("WARNING: The standalone jar still work in progress");
+        JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);
+    }
+
+
+
+    /** Get a file within the mods resources */
+    public static InputStream accessFile(String resource) {
+
+        // this is the path within the jar file
+        InputStream input = JarMain.class.getResourceAsStream("/resources/" + resource);
+        if (input == null) {
+            // this is how we load file within editor (eg eclipse)
+            input = JarMain.class.getClassLoader().getResourceAsStream(resource);
+        }
+
+        return input;
+    }
+
+    /** Convert inputStream to String. Usefull for reading .txt or .json that are inside the jar file */
+    public static String convertInputStreamToString(InputStream inputStream) {
+        final char[] buffer = new char[8192];
+        final StringBuilder result = new StringBuilder();
+
+        // InputStream -> Reader
+        try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+            int charsRead;
+            while ((charsRead = reader.read(buffer, 0, buffer.length)) > 0) {
+                result.append(buffer, 0, charsRead);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result.toString();
+
     }
 }

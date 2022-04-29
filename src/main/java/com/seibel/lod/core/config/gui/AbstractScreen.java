@@ -1,0 +1,34 @@
+package com.seibel.lod.core.config.gui;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.List;
+
+/**
+ * The base for all screens
+ *
+ * @author coolGi
+ */
+public abstract class AbstractScreen {
+    public int width;
+    public int height;
+    public int mouseX = 0;
+    public int mouseY = 0;
+    /** Weather it should close when you press the escape key */
+    public boolean shouldCloseOnEsc = true;
+    public boolean close = false;
+
+
+    /** Called once when the screen is opened */
+    public abstract void init();
+    /** Called every frame */
+    public abstract void render(float delta);
+    public void tick() {}
+
+    /** What happens when the user closes the screen*/
+    public void onClose() {}
+
+    // ---------- Random stuff that might be needed later on ---------- //
+    /** File dropped into the screen */
+    public void onFilesDrop(List<Path> list) {}
+}
