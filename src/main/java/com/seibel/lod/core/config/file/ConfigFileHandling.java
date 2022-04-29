@@ -2,12 +2,12 @@ package com.seibel.lod.core.config.file;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.types.AbstractConfigType;
 import com.seibel.lod.core.config.types.ConfigEntry;
-import com.seibel.lod.core.util.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftWrapper;
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -23,7 +23,7 @@ import java.util.HashMap;
  * @author coolGi2007
  */
 public class ConfigFileHandling {
-    public static final Path ConfigPath = SingletonHandler.get(IMinecraftWrapper.class).getGameDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");
+    public static final Path ConfigPath = SingletonHandler.get(IMinecraftClientWrapper.class).getGameDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");
 
     /** Saves the config to the file */
     public static void saveToFile() {
@@ -122,7 +122,7 @@ public class ConfigFileHandling {
                     ));
                 } else if (entry.getType().isAssignableFrom(HashMap.class)) {
                     entry.setWTSave((T) getHashMapFromString(workConfig.get(entry.getNameWCategory())));
-                } else { // TODO: Made a way to make the number be castable to the correct type
+                } else {
                     entry.setWTSave((T) workConfig.get(entry.getNameWCategory()));
                     if (entry.isValid() == 0)
                         return;
@@ -171,7 +171,7 @@ public class ConfigFileHandling {
             } catch (IOException ex) {
                 System.out.println("Creating file failed");
                 ex.printStackTrace();
-                SingletonHandler.get(IMinecraftWrapper.class).crashMinecraft("Loading file and resetting config file failed at path ["+ConfigPath+"]. Please check the file is ok and you have the permissions", ex);
+                SingletonHandler.get(IMinecraftClientWrapper.class).crashMinecraft("Loading file and resetting config file failed at path ["+ConfigPath+"]. Please check the file is ok and you have the permissions", ex);
             }
         }
     }

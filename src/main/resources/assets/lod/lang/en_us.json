@@ -3,12 +3,12 @@
 	"Distant Horizons",
   "lod.config.title":
 	"Distant Horizons config",
-  "lod.config.optionsButton":
-	"Show options button",
-  "lod.config.optionsButton.@tooltip":
-	"Show the config button to the left of the fov button",
   "lod.config.client":
 	"Client",
+  "lod.config.client.optionsButton":
+	"Show options button",
+  "lod.config.client.optionsButton.@tooltip":
+	"Show the config button to the left of the fov button",
   "lod.config.client.graphics":
 	"Graphics",
   "lod.config.client.graphics.quality":

@@ -26,6 +26,7 @@ package com.seibel.lod.core.objects;
  * @version 11-14-2021
  * @param <T> The data type this object is storing
  */
+@Deprecated
 public class MinDefaultMax<T>
 {
 	public final T minValue;

@@ -3,13 +3,14 @@ package com.seibel.lod.core.config.types;
 import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.ConfigEntryAppearance;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
+import com.seibel.lod.core.objects.MinDefaultMax;
 
 /**
  * Use for making the config variables
  *
  * @author coolGi2007
  */
-public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
+public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     private T defaultValue;
     private String comment;
     private T min;
@@ -46,6 +47,13 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
         return value;
     }
 
+    public MinDefaultMax<T> getMinValueMax() {
+        return new MinDefaultMax<T>(min, value, max);
+    }
+    public MinDefaultMax<T> getMinDefaultMax() {
+        return new MinDefaultMax<T>(min, defaultValue, max);
+    }
+
     /** Sets the value without saving */
     public void setWTSave(T newValue) {
         this.value = newValue;
@@ -67,6 +75,11 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
     public void setMax(T newMax) {
         this.max = newMax;
     }
+    /** Sets the min and max in 1 setter */
+    public void setMinMax(T newMin, T newMax) {
+        this.max = newMin;
+        this.min = newMax;
+    }
 
     /** Gets the comment */
     public String getComment() {
@@ -86,17 +99,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
      * -1 == number too low
      */
     public byte isValid() {
-        if (ConfigBase.disableMinMax)
-            return 0;
-        if (Number.class.isAssignableFrom(this.value.getClass())) { // Only check min max if it is a number
-            if (this.max != null && Double.valueOf(this.value.toString()) > Double.valueOf(this.max.toString()))
-                return 1;
-            if (this.min != null && Double.valueOf(this.value.toString()) < Double.valueOf(this.min.toString()))
-                return -1;
-
-            return 0;
-        }
-        return 0;
+        return isValid(value);
     }
     /** Checks if a value is valid */
     public byte isValid(T value) {
@@ -139,7 +142,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
         }
     }
 
-    public static class Builder<T> extends AbstractConfigType.Builder<T, Builder> {
+    public static class Builder<T> extends AbstractConfigType.Builder<T, Builder<T>> {
         private String tmpComment;
         private T tmpMin;
         private T tmpMax;
@@ -150,8 +153,23 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry> {
             return this;
         }
 
+        public Builder<T> setMinDefaultMax(MinDefaultMax<T> newMinDefaultMax) {
+            this.set(newMinDefaultMax.defaultValue);
+            this.setMinMax(newMinDefaultMax.minValue, newMinDefaultMax.maxValue);
+            return this;
+        }
+
         public Builder<T> setMinMax(T newMin, T newMax) {
             this.tmpMin = newMin;
+            this.tmpMax = newMax;
+            return this;
+        }
+
+        public Builder<T> setMin(T newMin) {
+            this.tmpMin = newMin;
+            return this;
+        }
+        public Builder<T> setMax(T newMax) {
             this.tmpMax = newMax;
             return this;
         }

@@ -1,6 +1,5 @@
 package com.seibel.lod.core.config.types;
 
-import com.seibel.lod.core.api.ClientApi;
 import com.seibel.lod.core.config.ConfigEntryAppearance;
 
 public class ConfigCategory extends AbstractConfigType<Class, ConfigCategory> {

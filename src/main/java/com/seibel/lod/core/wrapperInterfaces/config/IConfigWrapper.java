@@ -1,6 +1,8 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
-public interface IConfigWrapper {
+import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+
+public interface IConfigWrapper extends IBindable {
 
     boolean langExists(String str);
 

@@ -28,7 +28,7 @@ import java.util.Locale;
  * know where to start.
  * Go to the api/lod package (folder) and take a look at the ClientApi.java file,
  * Pretty much all of the mod stems from there.
- * 
+ *
  * @author James Seibel
  * @author Ran
  * @version 2022-4-27
@@ -40,16 +40,16 @@ public final class ModInfo
 	public static final int PROTOCOL_VERSION = 1;
 	/** The internal mod name */
 	public static final String NAME = "DistantHorizons";
-	/** Human-readable version of NAME */
+	/** Human readable version of NAME */
 	public static final String READABLE_NAME = "Distant Horizons";
 	public static final String VERSION = "1.7.0a-dev";
 	/** Returns true if the current build is an unstable developer build, false otherwise. */
 	public static boolean IS_DEV_BUILD = VERSION.toLowerCase().contains("dev");
-	
+
 	/** This version should only be updated when breaking changes are introduced to the DH API */
 	public static final int API_MAJOR_VERSION = 1;
 	/** This version should be updated whenever new methods are added to the DH API */
 	public static final int API_MINOR_VERSION = 1;
-	
-	
+
+
 }

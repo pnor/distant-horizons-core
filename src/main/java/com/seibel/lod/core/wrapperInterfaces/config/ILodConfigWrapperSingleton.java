@@ -28,14 +28,10 @@ import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 /**
- * This holds the config defaults, setters/getters
- * that should be hooked into the host mod loader (Fabric, Forge, etc.), and
- * the options that should be implemented in a configWrapperSingleton.
- * 
- * @author James Seibel
- * @version 12-14-2021
+ * Use the real config rather than these getters
  */
-public interface ILodConfigWrapperSingleton
+@Deprecated
+public interface ILodConfigWrapperSingleton extends IBindable
 {
 	IClient client();
 	

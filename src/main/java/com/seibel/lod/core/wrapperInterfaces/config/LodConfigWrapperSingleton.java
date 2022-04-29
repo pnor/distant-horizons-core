@@ -1,11 +1,11 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
+import com.seibel.lod.core.Config;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
-import com.seibel.lod.core.Config;
 
 /**
- * Will be removed
+ * Use config getters rather than this
  */
 @Deprecated
 public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
@@ -24,6 +24,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 	{
 		public final IGraphics graphics;
 		public final IWorldGenerator worldGenerator;
+		public final IMultiplayer multiplayer;
 		public final IAdvanced advanced;
 
 
@@ -37,6 +38,11 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		public IWorldGenerator worldGenerator()
 		{
 			return worldGenerator;
+		}
+
+		@Override
+		public IMultiplayer multiplayer() {
+			return multiplayer;
 		}
 
 		@Override
@@ -65,6 +71,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		{
 			graphics = new Graphics();
 			worldGenerator = new WorldGenerator();
+			multiplayer = new Multiplayer();
 			advanced = new Advanced();
 		}
 
@@ -176,11 +183,28 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				public void setDropoffQuality(DropoffQuality newDropoffQuality) {
 					Config.Client.Graphics.Quality.dropoffQuality.set(newDropoffQuality);
 				}
+
+				@Override
+				public int getLodBiomeBlending() {
+					return Config.Client.Graphics.Quality.lodBiomeBlending.get();
+				}
+
+				@Override
+				public void setLodBiomeBlending(int newLodBiomeBlending) {
+					Config.Client.Graphics.Quality.lodBiomeBlending.set(newLodBiomeBlending);
+				}
 			}
 
 
 			public static class FogQuality implements IFogQuality
 			{
+				public final IAdvancedFog advancedFog;
+
+				FogQuality()
+				{
+					advancedFog = new AdvancedFog();
+				}
+
 				@Override
 				public FogDistance getFogDistance()
 				{
@@ -229,6 +253,152 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				{
 					Config.Client.Graphics.FogQuality.disableVanillaFog.set(newDisableVanillaFog);
 				}
+
+				@Override
+				public IAdvancedFog advancedFog() {
+					return advancedFog;
+				}
+
+				public static class AdvancedFog implements IAdvancedFog {
+					public final IHeightFog heightFog;
+
+					public AdvancedFog() {
+						heightFog = new HeightFog();
+					}
+
+					@Override
+					public double getFarFogStart() {
+						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogStart.get();
+					}
+					@Override
+					public double getFarFogEnd() {
+						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogEnd.get();
+					}
+					@Override
+					public double getFarFogMin() {
+						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogMin.get();
+					}
+					@Override
+					public double getFarFogMax() {
+						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogMax.get();
+					}
+					@Override
+					public FogSetting.FogType getFarFogType() {
+						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogType.get();
+					}
+					@Override
+					public double getFarFogDensity() {
+						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogDensity.get();
+					}
+
+					@Override
+					public void setFarFogStart(double newFarFogStart) {
+						Config.Client.Graphics.FogQuality.AdvancedFog.farFogStart.set(newFarFogStart);
+					}
+					@Override
+					public void setFarFogEnd(double newFarFogEnd) {
+						Config.Client.Graphics.FogQuality.AdvancedFog.farFogEnd.set(newFarFogEnd);
+					}
+					@Override
+					public void setFarFogMin(double newFarFogMin) {
+						Config.Client.Graphics.FogQuality.AdvancedFog.farFogMin.set(newFarFogMin);
+					}
+					@Override
+					public void setFarFogMax(double newFarFogMax) {
+						Config.Client.Graphics.FogQuality.AdvancedFog.farFogMax.set(newFarFogMax);
+					}
+					@Override
+					public void setFarFogType(FogSetting.FogType newFarFogType) {
+						Config.Client.Graphics.FogQuality.AdvancedFog.farFogType.set(newFarFogType);
+					}
+					@Override
+					public void setFarFogDensity(double newFarFogDensity) {
+						Config.Client.Graphics.FogQuality.AdvancedFog.farFogDensity.set(newFarFogDensity);
+					}
+
+					@Override
+					public IHeightFog heightFog() {
+						return heightFog;
+					}
+
+					public static class HeightFog implements IHeightFog {
+
+						@Override
+						public HeightFogMixMode getHeightFogMixMode() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMixMode.get();
+						}
+						@Override
+						public HeightFogMode getHeightFogMode() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMode.get();
+						}
+						@Override
+						public double getHeightFogHeight() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogHeight.get();
+						}
+						@Override
+						public double getHeightFogStart() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogStart.get();
+						}
+						@Override
+						public double getHeightFogEnd() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogEnd.get();
+						}
+						@Override
+						public double getHeightFogMin() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMin.get();
+						}
+						@Override
+						public double getHeightFogMax() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMax.get();
+						}
+						@Override
+						public FogSetting.FogType getHeightFogType() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogType.get();
+						}
+						@Override
+						public double getHeightFogDensity() {
+							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogDensity.get();
+						}
+
+						@Override
+						public void setHeightFogMixMode(HeightFogMixMode newHeightFogMixMode) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMixMode.set(newHeightFogMixMode);
+						}
+						@Override
+						public void setHeightFogMode(HeightFogMode newHeightFogMode) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMode.set(newHeightFogMode);
+						}
+						@Override
+						public void setHeightFogHeight(double newHeightFogHeight) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogHeight.set(newHeightFogHeight);
+						}
+						@Override
+						public void setHeightFogStart(double newHeightFogStart) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogStart.set(newHeightFogStart);
+						}
+						@Override
+						public void setHeightFogEnd(double newHeightFogEnd) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogEnd.set(newHeightFogEnd);
+						}
+						@Override
+						public void setHeightFogMin(double newHeightFogMin) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMin.set(newHeightFogMin);
+						}
+						@Override
+						public void setHeightFogMax(double newHeightFogMax) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMax.set(newHeightFogMax);
+						}
+						@Override
+						public void setHeightFogType(FogSetting.FogType newHeightFogType) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogType.set(newHeightFogType);
+						}
+						@Override
+						public void setHeightFogDensity(double newHeightFogDensity) {
+							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogDensity.set(newHeightFogDensity);
+						}
+					}
+				}
+
 			}
 
 
@@ -257,6 +427,27 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 					Config.Client.Graphics.AdvancedGraphics.vanillaOverdraw.set(newVanillaOverdraw);
 				}
 
+				@Override
+				public int getOverdrawOffset() {
+					return Config.Client.Graphics.AdvancedGraphics.overdrawOffset.get();
+				}
+
+				@Override
+				public void setOverdrawOffset(int newOverdrawOffset) {
+					Config.Client.Graphics.AdvancedGraphics.overdrawOffset.set(newOverdrawOffset);
+				}
+				/*
+				@Override
+				public int getBacksideCullingRange()
+				{
+					return Config.Client.Graphics.AdvancedGraphics.backsideCullingRange;
+				}
+				@Override
+				public void setBacksideCullingRange(int newBacksideCullingRange)
+				{
+					ConfigGui.editSingleOption.getEntry("client.graphics.advancedGraphics.backsideCullingRange").value = newBacksideCullingRange;
+					ConfigGui.editSingleOption.saveOption("client.graphics.advancedGraphics.backsideCullingRange");
+				}*/
 
 				@Override
 				public boolean getUseExtendedNearClipPlane()
@@ -267,6 +458,62 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				public void setUseExtendedNearClipPlane(boolean newUseExtendedNearClipPlane)
 				{
 					Config.Client.Graphics.AdvancedGraphics.useExtendedNearClipPlane.set(newUseExtendedNearClipPlane);
+				}
+
+				@Override
+				public double getBrightnessMultiplier()
+				{
+					return Config.Client.Graphics.AdvancedGraphics.brightnessMultiplier.get();
+				}
+				@Override
+				public void setBrightnessMultiplier(double newBrightnessMultiplier)
+				{
+					Config.Client.Graphics.AdvancedGraphics.brightnessMultiplier.set(newBrightnessMultiplier);
+				}
+
+				@Override
+				public double getSaturationMultiplier()
+				{
+					return Config.Client.Graphics.AdvancedGraphics.saturationMultiplier.get();
+				}
+				@Override
+				public void setSaturationMultiplier(double newSaturationMultiplier)
+				{
+					Config.Client.Graphics.AdvancedGraphics.saturationMultiplier.set(newSaturationMultiplier);
+				}
+
+				@Override
+				public boolean getEnableCaveCulling() {
+					return Config.Client.Graphics.AdvancedGraphics.enableCaveCulling.get();
+				}
+
+				@Override
+				public void setEnableCaveCulling(boolean newEnableCaveCulling) {
+					Config.Client.Graphics.AdvancedGraphics.enableCaveCulling.set(newEnableCaveCulling);
+
+				}
+
+				@Override
+				public int getCaveCullingHeight() {
+					return Config.Client.Graphics.AdvancedGraphics.caveCullingHeight.get();
+				}
+
+				@Override
+				public void setCaveCullingHeight(int newCaveCullingHeight) {
+					Config.Client.Graphics.AdvancedGraphics.caveCullingHeight.set(newCaveCullingHeight);
+
+				}
+
+				@Override
+				public int getEarthCurveRatio()
+				{
+					return Config.Client.Graphics.AdvancedGraphics.earthCurveRatio.get();
+				}
+				@Override
+				public void setEarthCurveRatio(int newEarthCurveRatio)
+				{
+//					if (newEarthCurveRatio < 50) newEarthCurveRatio = 0; // TODO: Leetom can you please remove this
+					Config.Client.Graphics.AdvancedGraphics.earthCurveRatio.set(newEarthCurveRatio);
 				}
 			}
 		}
@@ -350,6 +597,36 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 
 
 
+		//=====================//
+		// Multiplayer Configs //
+		//=====================//
+		public static class Multiplayer implements IMultiplayer
+		{
+			@Override
+			public ServerFolderNameMode getServerFolderNameMode()
+			{
+				return Config.Client.Multiplayer.serverFolderNameMode.get();
+			}
+			@Override
+			public void setServerFolderNameMode(ServerFolderNameMode newServerFolderNameMode)
+			{
+				Config.Client.Multiplayer.serverFolderNameMode.set(newServerFolderNameMode);
+			}
+
+			@Override
+			public double getMultiDimensionRequiredSimilarity()
+			{
+				return Config.Client.Multiplayer.multiDimensionRequiredSimilarity.get();
+			}
+
+			@Override
+			public void setMultiDimensionRequiredSimilarity(double newMultiDimensionMinimumSimilarityPercent)
+			{
+				Config.Client.Multiplayer.multiDimensionRequiredSimilarity.set(newMultiDimensionMinimumSimilarityPercent);
+			}
+		}
+
+
 
 		//============================//
 		// AdvancedModOptions Configs //
@@ -392,12 +669,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			public static class Threading implements IThreading
 			{
 				@Override
-				public int getNumberOfWorldGenerationThreads()
+				public double getNumberOfWorldGenerationThreads()
 				{
 					return Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get();
 				}
 				@Override
-				public void setNumberOfWorldGenerationThreads(int newNumberOfWorldGenerationThreads)
+				public void setNumberOfWorldGenerationThreads(double newNumberOfWorldGenerationThreads)
 				{
 					Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.set(newNumberOfWorldGenerationThreads);
 				}
@@ -423,17 +700,27 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			//===============//
 			public static class Debugging implements IDebugging
 			{
+				public final IDebugSwitch debugSwitch;
+
 				@Override
-				public boolean getDrawLods()
+				public IDebugSwitch debugSwitch()
 				{
-					return Config.Client.Advanced.Debugging.drawLods.get();
-				}
-				@Override
-				public void setDrawLods(boolean newDrawLods)
-				{
-					Config.Client.Advanced.Debugging.drawLods.set(newDrawLods);
+					return debugSwitch;
 				}
 
+				/* RendererType:
+				 * DEFAULT
+				 * DEBUG
+				 * DISABLED
+				 * */
+				@Override
+				public RendererType getRendererType() {
+					return Config.Client.Advanced.Debugging.rendererType.get();
+				}
+				@Override
+				public void setRendererType(RendererType newRenderType) {
+					Config.Client.Advanced.Debugging.rendererType.set(newRenderType);
+				}
 
 				@Override
 				public DebugMode getDebugMode()
@@ -456,6 +743,107 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				public void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings)
 				{
 					Config.Client.Advanced.Debugging.enableDebugKeybindings.set(newEnableDebugKeybindings);
+				}
+
+				public Debugging()
+				{
+					debugSwitch = new DebugSwitch();
+				}
+
+				public static class DebugSwitch implements IDebugSwitch {
+
+					/* The logging switches available:
+					 * WorldGenEvent
+					 * WorldGenPerformance
+					 * WorldGenLoadEvent
+					 * LodBuilderEvent
+					 * RendererBufferEvent
+					 * RendererGLEvent
+					 * FileReadWriteEvent
+					 * FileSubDimEvent
+					 * NetworkEvent //NOT IMPL YET
+					 */
+
+					@Override
+					public LoggerMode getLogWorldGenEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenEvent.get();
+					}
+					@Override
+					public void setLogWorldGenEvent(LoggerMode newLogWorldGenEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenEvent.set(newLogWorldGenEvent);
+					}
+
+					@Override
+					public LoggerMode getLogWorldGenPerformance() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenPerformance.get();
+					}
+					@Override
+					public void setLogWorldGenPerformance(LoggerMode newLogWorldGenPerformance) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenPerformance.set(newLogWorldGenPerformance);
+					}
+
+					@Override
+					public LoggerMode getLogWorldGenLoadEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenLoadEvent.get();
+					}
+					@Override
+					public void setLogWorldGenLoadEvent(LoggerMode newLogWorldGenLoadEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenLoadEvent.set(newLogWorldGenLoadEvent);
+					}
+
+					@Override
+					public LoggerMode getLogLodBuilderEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logLodBuilderEvent.get();
+					}
+					@Override
+					public void setLogLodBuilderEvent(LoggerMode newLogLodBuilderEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logLodBuilderEvent.set(newLogLodBuilderEvent);
+					}
+
+					@Override
+					public LoggerMode getLogRendererBufferEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logRendererBufferEvent.get();
+					}
+					@Override
+					public void setLogRendererBufferEvent(LoggerMode newLogRendererBufferEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logRendererBufferEvent.set(newLogRendererBufferEvent);
+					}
+
+					@Override
+					public LoggerMode getLogRendererGLEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logRendererGLEvent.get();
+					}
+					@Override
+					public void setLogRendererGLEvent(LoggerMode newLogRendererGLEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logRendererGLEvent.set(newLogRendererGLEvent);
+					}
+
+					@Override
+					public LoggerMode getLogFileReadWriteEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logFileReadWriteEvent.get();
+					}
+					@Override
+					public void setLogFileReadWriteEvent(LoggerMode newLogFileReadWriteEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logFileReadWriteEvent.set(newLogFileReadWriteEvent);
+					}
+
+					@Override
+					public LoggerMode getLogFileSubDimEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.get();
+					}
+					@Override
+					public void setLogFileSubDimEvent(LoggerMode newLogFileSubDimEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.set(newLogFileSubDimEvent);
+					}
+
+					@Override
+					public LoggerMode getLogNetworkEvent() {
+						return Config.Client.Advanced.Debugging.DebugSwitch.logNetworkEvent.get();
+					}
+					@Override
+					public void setLogNetworkEvent(LoggerMode newLogNetworkEvent) {
+						Config.Client.Advanced.Debugging.DebugSwitch.logNetworkEvent.set(newLogNetworkEvent);
+					}
 				}
 			}
 
@@ -496,6 +884,16 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				{
 					Config.Client.Advanced.Buffers.rebuildTimes.set(newBufferRebuildTimes);
 				}
+			}
+
+			@Override
+			public boolean getLodOnlyMode() {
+				return Config.Client.Advanced.lodOnlyMode.get();
+			}
+
+			@Override
+			public void setLodOnlyMode(boolean newLodOnlyMode) {
+				Config.Client.Advanced.lodOnlyMode.set(newLodOnlyMode);
 			}
 		}
 	}

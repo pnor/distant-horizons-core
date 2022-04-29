@@ -1,6 +1,6 @@
 package com.seibel.lod.core.config;
 
-import com.seibel.lod.core.api.ClientApi;
+import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
 import com.seibel.lod.core.config.gui.AbstractScreen;
 import com.seibel.lod.core.config.types.AbstractConfigType;
@@ -46,7 +46,8 @@ public class ConfigBase {
         acceptableInputs.add(HashMap.class); // TODO[CONFIG]: This is handled separately to check the first input is String and the second input is valid
     }
 
-    public static boolean disableMinMax = false;
+    /** Disables the minimum and maximum of a variable */
+    public static boolean disableMinMax = false; // Very fun to use
     public static final List<AbstractConfigType<?, ?>> entries = new ArrayList<>();
 
     public static void init(Class<?> config) {
