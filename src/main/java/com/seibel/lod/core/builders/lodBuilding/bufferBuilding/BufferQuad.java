@@ -211,19 +211,22 @@ public final class BufferQuad
 		// get the width of this quad in the relevant axis
 		short thisPerpendicularCompareWidth;
 		short thisParallelCompareWidth;
+		short otherPerpendicularCompareWidth;
 		short otherParallelCompareWidth;
 		if (mergeDirection == BufferMergeDirectionEnum.EastWest)
 		{
 			thisPerpendicularCompareWidth = this.widthEastWest;
-			
 			thisParallelCompareWidth = this.widthNorthSouthOrUpDown;
+
+			otherPerpendicularCompareWidth = quad.widthEastWest;
 			otherParallelCompareWidth = quad.widthNorthSouthOrUpDown;
 		}
 		else
 		{
 			thisPerpendicularCompareWidth = this.widthNorthSouthOrUpDown;
-			
 			thisParallelCompareWidth = this.widthEastWest;
+
+			otherPerpendicularCompareWidth = quad.widthNorthSouthOrUpDown;
 			otherParallelCompareWidth = quad.widthEastWest;
 		}
 
@@ -241,14 +244,15 @@ public final class BufferQuad
 		}
 		else if (thisPerpendicularCompareStartPos + thisPerpendicularCompareWidth > otherPerpendicularCompareStartPos)
 		{
-			// these quads are overlapping, they can't be merged
-			EVENT_LOGGER.warn("Overlapping quads detected!");
-			quad.hasError = true;
-			this.hasError = true;
+			if (thisPerpendicularCompareStartPos < otherPerpendicularCompareStartPos + otherPerpendicularCompareWidth) {
+				// these quads are overlapping, they can't be merged
+				//EVENT_LOGGER.warn("Overlapping quads detected!");
+				quad.hasError = true;
+				this.hasError = true;
+			}
 			return false;
 		}
-		
-		
+
 		// only merge quads that have the same width edges
 		if (thisParallelCompareWidth != otherParallelCompareWidth)
 		{

@@ -20,6 +20,7 @@
 package com.seibel.lod.core.objects;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.seibel.lod.core.api.internal.InternalApiShared;
@@ -44,6 +45,14 @@ public class PosToRenderContainer
 	private int numberOfPosToRender;
 	private int[] posToRender;
 	private byte[][] population;
+
+	static class LodPos {
+		byte detail;
+		int posX;
+		int posZ;
+	}
+
+	private LodPos[] lodPosList;
 	
 	public PosToRenderContainer(byte minDetail, int regionPosX, int regionPosZ)
 	{
@@ -54,6 +63,7 @@ public class PosToRenderContainer
 		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - minDetail);
 		posToRender = new int[size * size * 3];
 		population = new byte[size][size];
+		lodPosList = new LodPos[size * size];
 	}
 	
 	public void addPosToRender(byte detailLevel, int posX, int posZ)
@@ -72,9 +82,13 @@ public class PosToRenderContainer
 		
 		//if(numberOfPosToRender >= posToRender.length)
 		//	posToRender = Arrays.copyOf(posToRender, posToRender.length*2);
-		posToRender[numberOfPosToRender * 3] = detailLevel;
-		posToRender[numberOfPosToRender * 3 + 1] = posX;
-		posToRender[numberOfPosToRender * 3 + 2] = posZ;
+		lodPosList[numberOfPosToRender] = new LodPos();
+		lodPosList[numberOfPosToRender].detail = detailLevel;
+		lodPosList[numberOfPosToRender].posX = posX;
+		lodPosList[numberOfPosToRender].posZ = posZ;
+		//posToRender[numberOfPosToRender * 3] = detailLevel;
+		//posToRender[numberOfPosToRender * 3 + 1] = posX;
+		//posToRender[numberOfPosToRender * 3 + 2] = posZ;
 		numberOfPosToRender++;
 		population[LevelPosUtil.getRegionModule(minDetail, LevelPosUtil.convert(detailLevel, posX, minDetail))]
 				[LevelPosUtil.getRegionModule(minDetail, LevelPosUtil.convert(detailLevel, posZ, minDetail))] = (byte) (detailLevel + 1);
@@ -94,6 +108,7 @@ public class PosToRenderContainer
 		this.numberOfPosToRender = 0;
 		this.regionPosX = regionPosX;
 		this.regionPosZ = regionPosZ;
+		int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - minDetail);
 		if (this.minDetail == minDetail)
 		{
 			Arrays.fill(posToRender, 0);
@@ -103,10 +118,10 @@ public class PosToRenderContainer
 		else
 		{
 			this.minDetail = minDetail;
-			int size = 1 << (LodUtil.REGION_DETAIL_LEVEL - minDetail);
 			posToRender = new int[size * size * 3];
 			population = new byte[size][size];
 		}
+		lodPosList = new LodPos[size * size];
 	}
 	
 	public int getNumberOfPos()
@@ -116,19 +131,32 @@ public class PosToRenderContainer
 	
 	public byte getNthDetailLevel(int n)
 	{
-		return (byte) posToRender[n * 3];
+		return lodPosList[n].detail;
+		//return (byte) posToRender[n * 3];
 	}
 	
 	public int getNthPosX(int n)
 	{
-		return posToRender[n * 3 + 1];
+		return lodPosList[n].posX;
+		//return posToRender[n * 3 + 1];
 	}
 	
 	public int getNthPosZ(int n)
 	{
-		return posToRender[n * 3 + 2];
+		return lodPosList[n].posZ;
+		//eturn posToRender[n * 3 + 2];
 	}
-	
+
+	public void sort() {
+		Arrays.sort(lodPosList, 0, numberOfPosToRender,
+				(a,b) -> {
+					if (a.detail != b.detail) return a.detail - b.detail;
+					if (a.posX != b.posX) return a.posX - b.posX;
+					return a.posZ - b.posZ;
+				}
+				);
+	}
+
 	@Override
 	public String toString()
 	{

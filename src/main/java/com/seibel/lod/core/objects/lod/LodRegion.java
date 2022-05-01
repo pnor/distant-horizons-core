@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,6 +30,7 @@ import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.LodDataView;
+import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.util.DataPointUtil;

@@ -274,6 +274,7 @@ public class RenderRegion implements AutoCloseable
 		// position
 		PosToRenderContainer posToRender = new PosToRenderContainer(minDetail, region.regionPosX, region.regionPosZ);
 		region.getPosToRender(posToRender, playerX, playerZ);
+		posToRender.sort();
 		PosArrayGridList<BoolType> chunkGrid = ClientApi.renderer.vanillaChunks;
 
 		for (int index = 0; index < posToRender.getNumberOfPos(); index++) {

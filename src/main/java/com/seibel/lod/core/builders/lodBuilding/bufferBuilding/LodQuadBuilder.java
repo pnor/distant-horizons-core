@@ -25,16 +25,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import com.seibel.lod.core.api.internal.EventApi;
+import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.enums.LodDirection.Axis;
 import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import net.minecraft.core.Direction;
 
 import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
@@ -163,7 +167,8 @@ public class LodQuadBuilder
 					},
 			};
 	
-	
+	private int premergeCount = 0;
+
 	public LodQuadBuilder(boolean enableSkylightCulling, int skyLightCullingBelow)
 	{
 		for (int i = 0; i < 6; i++)
@@ -184,7 +189,16 @@ public class LodQuadBuilder
 			throw new IllegalArgumentException("addQuadAdj() is only for adj direction! Not UP or Down!");
 		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
 			return;
-		quads[dir.ordinal()].add(new BufferQuad(x, y, z, widthEastWest, widthNorthSouthOrUpDown, color, skylight, blocklight, dir));
+		BufferQuad quad = new BufferQuad(x, y, z, widthEastWest, widthNorthSouthOrUpDown, color, skylight, blocklight, dir);
+		ArrayList<BufferQuad> qs = quads[dir.ordinal()];
+		if (!qs.isEmpty() &&
+				(qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.EastWest)
+				|| qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.NorthSouthOrUpDown))
+			) {
+			premergeCount++;
+			return;
+		}
+		qs.add(quad);
 	}
 	
 	// XZ
@@ -192,47 +206,33 @@ public class LodQuadBuilder
 	{
 		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
 			return;
-		quads[LodDirection.UP.ordinal()].add(new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, LodDirection.UP));
+		BufferQuad quad = new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, LodDirection.UP);
+		ArrayList<BufferQuad> qs = quads[LodDirection.UP.ordinal()];
+		if (!qs.isEmpty() &&
+				(qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.EastWest)
+						|| qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.NorthSouthOrUpDown))
+		) {
+			premergeCount++;
+			return;
+		}
+		qs.add(quad);
 	}
 	
 	public void addQuadDown(short x, short y, short z, short width, short wz, int color, byte skylight, byte blocklight)
 	{
 		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
 			return;
-		quads[LodDirection.DOWN.ordinal()].add(new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, LodDirection.DOWN));
-	}
-	
-	// XY
-	public void addQuadN(short x, short y, short z, short width, short wy, int color, byte skylight, byte blocklight)
-	{
-		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
+		BufferQuad quad = new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, LodDirection.DOWN);
+		ArrayList<BufferQuad> qs = quads[LodDirection.DOWN.ordinal()];
+		if (!qs.isEmpty() &&
+				(qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.EastWest)
+						|| qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.NorthSouthOrUpDown))
+		) {
+			premergeCount++;
 			return;
-		quads[LodDirection.NORTH.ordinal()].add(new BufferQuad(x, y, z, width, wy, color, skylight, blocklight, LodDirection.NORTH));
+		}
+		qs.add(quad);
 	}
-	
-	public void addQuadS(short x, short y, short z, short width, short wy, int color, byte skylight, byte blocklight)
-	{
-		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
-			return;
-		quads[LodDirection.SOUTH.ordinal()].add(new BufferQuad(x, y, z, width, wy, color, skylight, blocklight, LodDirection.SOUTH));
-	}
-	
-	// ZY
-	public void addQuadW(short x, short y, short z, short width, short wy, int color, byte skylight, byte blocklight)
-	{
-		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
-			return;
-		quads[LodDirection.WEST.ordinal()].add(new BufferQuad(x, y, z, width, wy, color, skylight, blocklight, LodDirection.WEST));
-	}
-	
-	public void addQuadE(short x, short y, short z, short width, short wy, int color, byte skylight, byte blocklight)
-	{
-		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
-			return;
-		quads[LodDirection.EAST.ordinal()].add(new BufferQuad(x, y, z, width, wy, color, skylight, blocklight, LodDirection.EAST));
-	}
-	
-	
 	
 	private static void putVertex(ByteBuffer bb, short x, short y, short z, int color, byte skylight, byte blocklight, int mx, int my, int mz)
 	{
@@ -321,22 +321,22 @@ public class LodQuadBuilder
 		long preQuadsCount = getCurrentQuadsCount();
 		if (preQuadsCount <= 1)
 			return;
-		
+
 		for (int directionIndex = 0; directionIndex < 6; directionIndex++)
 		{
 			mergeCount += mergeQuadsInternal(directionIndex, BufferMergeDirectionEnum.EastWest);
-			
-			// only merge after the top has been merged
-			if (directionIndex == 1)
-			{
-				long pass2 = mergeQuadsInternal(directionIndex, BufferMergeDirectionEnum.NorthSouthOrUpDown);
-				mergeCount += pass2;
-			}
+			// only run the second merge if the face is the top or bottom
+			//if (directionIndex == LodDirection.UP.ordinal() || directionIndex == LodDirection.DOWN.ordinal())
+			//{
+			//	long pass2 = mergeQuadsInternal(directionIndex, BufferMergeDirectionEnum.NorthSouthOrUpDown);
+			//	mergeCount += pass2;
+			//}
 		}
 		long postQuadsCount = getCurrentQuadsCount();
 		//if (mergeCount != 0)
 		EVENT_LOGGER.debug("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount / (double) preQuadsCount);
 	}
+
 	/** Merges all of this builder's quads for the given directionIndex (up, down, left, etc.) in the given direction */
 	private long mergeQuadsInternal(int directionIndex, BufferMergeDirectionEnum mergeDirection)
 	{
