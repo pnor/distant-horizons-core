@@ -573,6 +573,17 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			{
 				Config.Client.WorldGenerator.blocksToAvoid.set(newBlockToAvoid);
 			}
+
+
+			@Override
+			public Boolean getTintWithAvoidedBlocks() {
+				return Config.Client.WorldGenerator.tintWithAvoidedBlocks.get();
+			}
+			@Override
+			public void setTintWithAvoidedBlocks(Boolean shouldTint) {
+				Config.Client.WorldGenerator.tintWithAvoidedBlocks.set(shouldTint);
+			}
+
 			@Override
 			public boolean getEnableDistantGeneration()
 			{

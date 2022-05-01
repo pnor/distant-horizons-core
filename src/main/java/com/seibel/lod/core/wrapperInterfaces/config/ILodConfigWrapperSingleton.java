@@ -742,6 +742,15 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					+ " This wont't affect performance.";
 			BlocksToAvoid getBlocksToAvoid();
 			void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
+
+			//TODO: improve wording
+			Boolean TINT_WITH_AVOIDED_BLOCKS_DEFAULT = true;
+			String TINT_WITH_AVOIDED_BLOCKS_DESC = ""
+					+ " Should the blocks underneath avoided blocks gain the color of the avoided block? \n"
+					+ " True: a red flower on grass will tint the grass below it red"
+					+ " False: skipped blocks will not change color of surface below them";
+			Boolean getTintWithAvoidedBlocks();
+			void setTintWithAvoidedBlocks(Boolean shouldTint);
 		}
 		
 		

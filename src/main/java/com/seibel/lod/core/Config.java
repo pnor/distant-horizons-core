@@ -322,6 +322,11 @@ public class Config
                     .comment(IWorldGenerator.BLOCKS_TO_AVOID_DESC)
                     .set(IWorldGenerator.BLOCKS_TO_AVOID_DEFAULT)
                     .build();
+
+            public static ConfigEntry<Boolean> tintWithAvoidedBlocks = new ConfigEntry.Builder<Boolean>()
+                    .comment(IWorldGenerator.TINT_WITH_AVOIDED_BLOCKS_DESC)
+                    .set(IWorldGenerator.TINT_WITH_AVOIDED_BLOCKS_DEFAULT)
+                    .build();
         }
 
 

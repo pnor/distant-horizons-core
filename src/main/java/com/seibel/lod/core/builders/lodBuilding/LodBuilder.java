@@ -393,8 +393,8 @@ public class LodBuilder
 		if (strictEdge)
 		{
 			IBlockDetailWrapper blockAbove = chunk.getBlockDetail(xAbs, yAbs + 1, zAbs);
-			if (blockAbove != null && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
-			{ // The above block is skipped. Lets use its skipped color for currrent block
+			if (blockAbove != null && config.client().worldGenerator().getTintWithAvoidedBlocks() && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
+			{ // The above block is skipped. Lets use its skipped color for current block
 				currentBlockDetail = blockAbove;
 			}
 			if (currentBlockDetail == null) currentBlockDetail = chunk.getBlockDetail(xAbs, yAbs, zAbs);
@@ -457,7 +457,7 @@ public class LodBuilder
 			colorInt = 0;
 			if (chunk.blockPosInsideChunk(x, y+1, z)) {
 				IBlockDetailWrapper blockAbove = chunk.getBlockDetail(x, y+1, z);
-				if (blockAbove != null && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
+				if (blockAbove != null && config.client().worldGenerator().getTintWithAvoidedBlocks() && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
 				{  // The above block is skipped. Lets use its skipped color for currrent block
 					colorInt = blockAbove.getAndResolveFaceColor(null, chunk, FACTORY.createBlockPos(x, y+1, z));
 				}
