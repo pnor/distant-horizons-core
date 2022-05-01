@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.objects.lod;
 
+import com.seibel.lod.core.objects.LodDataView;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -32,11 +34,11 @@ public interface LevelContainer
 	 * @param data actual data to add in an array of long format.
 	 * @param posX x position in the detail level
 	 * @param posZ z position in the detail level
-	 * @param index z position in the detail level
+	 * @param index vertical position in the detail level
 	 * @return true if correctly added, false otherwise
 	 */
 	boolean addData(long data, int posX, int posZ, int index);
-	
+
 	/**
 	 * With this you can add data to the level container
 	 * @param data actual data to add in an array of long[] format.
@@ -44,23 +46,18 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return true if correctly changed, false otherwise
 	 */
+	@Deprecated
 	boolean addVerticalData(long[] data, int posX, int posZ, boolean override);
+	boolean copyVerticalData(LodDataView data, int posX, int posZ, boolean override);
 	
 	/**
 	 * With this you can add a square of data to the level container
 	 * @return true if anything changed, false otherwise
 	 */
+	@Deprecated
 	boolean addChunkOfData(long[] data, int posX, int posZ, int widthX, int widthZ, boolean override);
-	
-	/**
-	 * With this you can add data to the level container
-	 * @param data actual data to add in an array of long format.
-	 * @param posX x position in the detail level
-	 * @param posZ z position in the detail level
-	 * @return true if correctly added, false otherwise
-	 */
-	boolean addSingleData(long data, int posX, int posZ);
-	
+	boolean copyChunkOfData(LodDataView data, int posX, int posZ, int widthX, int widthZ, boolean override);
+
 	/**
 	 * With this you can get data from the level container
 	 * @param posX x position in the detail level
@@ -75,7 +72,9 @@ public interface LevelContainer
 	 * @param posZ z position in the detail level
 	 * @return the data in long array format
 	 */
+	@Deprecated
 	long[] getAllData(int posX, int posZ);
+	LodDataView getVerticalDataView(int posX, int posZ);
 	
 	/**
 	 * With this you can get data from the level container

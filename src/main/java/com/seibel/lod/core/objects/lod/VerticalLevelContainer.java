@@ -27,6 +27,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
@@ -37,6 +38,8 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
  */
 public class VerticalLevelContainer implements LevelContainer
 {
+	public static final boolean DO_SAFETY_CHECKS = true;
+
 	private final short minHeight;
 	public final byte detailLevel;
 	public final int size;
@@ -107,15 +110,36 @@ public class VerticalLevelContainer implements LevelContainer
 		forceWriteVerticalData(data, posX, posZ);
 		return true;
 	}
-	
+
+	@Override
+	public boolean copyVerticalData(LodDataView data, int posX, int posZ, boolean override) {
+		if (DO_SAFETY_CHECKS) {
+			if (data.size() != verticalSize)
+				throw new IllegalArgumentException("data size not the same as vertical size");
+			if (posX < 0 || posX >= size)
+				throw new IllegalArgumentException("X position is out of bounds");
+			if (posZ < 0 || posZ >= size)
+				throw new IllegalArgumentException("Z position is out of bounds");
+		}
+		int index = posX * size * verticalSize + posZ * verticalSize;
+		int compare = DataPointUtil.compareDatapointPriority(data.get(0), dataContainer[index]);
+		if (override) {
+			if (compare<0) return false;
+		} else {
+			if (compare<=0) return false;
+		}
+		data.copyTo(dataContainer, index);
+		return true;
+	}
+
 	@Override
 	public boolean addChunkOfData(long[] data, int posX, int posZ, int widthX, int widthZ, boolean override)
 	{
 		boolean anyChange = false;
 		if (posX+widthX > size || posZ+widthZ > size)
 			throw new IndexOutOfBoundsException("addChunkOfData param not inside valid range");
-		if (widthX*widthZ*verticalSize > data.length)
-			throw new IndexOutOfBoundsException("addChunkOfData data array not long enough to contain the data to be copied");
+		if (widthX*widthZ*verticalSize != data.length)
+			throw new IndexOutOfBoundsException("addChunkOfData data array not sized correctly to contain the data to be copied");
 		if (posX<0 || posZ<0 || widthX<0 || widthZ<0)
 			throw new IndexOutOfBoundsException("addChunkOfData param is negative");
 		
@@ -127,18 +151,31 @@ public class VerticalLevelContainer implements LevelContainer
 		}
 		return anyChange;
 	}
-	
+
 	@Override
-	public boolean addSingleData(long data, int posX, int posZ)
-	{
-		return addData(data, posX, posZ, 0);
+	public boolean copyChunkOfData(LodDataView data, int posX, int posZ, int widthX, int widthZ, boolean override) {
+		boolean anyChange = false;
+		if (posX+widthX > size || posZ+widthZ > size)
+			throw new IndexOutOfBoundsException("addChunkOfData param not inside valid range");
+		if (widthX*widthZ*verticalSize != data.size())
+			throw new IndexOutOfBoundsException("addChunkOfData data array not sized correctly to contain the data to be copied");
+		if (posX<0 || posZ<0 || widthX<0 || widthZ<0)
+			throw new IndexOutOfBoundsException("addChunkOfData param is negative");
+
+		for (int ox=0; ox<widthX; ox++) {
+			anyChange |= new LodDataView(dataContainer, widthX*verticalSize,
+							((ox+posX)*size+posZ) * verticalSize)
+					.mergeWith(data, verticalSize, override);
+		}
+		return anyChange;
 	}
-	
+
 	@Override
 	public long getData(int posX, int posZ, int verticalIndex)
 	{
 		return dataContainer[posX * size * verticalSize + posZ * verticalSize + verticalIndex];
 	}
+
 	
 	public short getPositionData(int posX, int posZ)
 	{
@@ -194,7 +231,12 @@ public class VerticalLevelContainer implements LevelContainer
 		System.arraycopy(dataContainer, index, result, 0, verticalSize);
 		return result;
 	}
-	
+
+	@Override
+	public LodDataView getVerticalDataView(int posX, int posZ) {
+		return new LodDataView(dataContainer, verticalSize, posX * size * verticalSize + posZ * verticalSize);
+	}
+
 	@Override
 	public int getVerticalSize()
 	{

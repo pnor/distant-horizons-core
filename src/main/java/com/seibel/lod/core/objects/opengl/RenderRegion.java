@@ -36,6 +36,7 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.BoolType;
+import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
@@ -294,13 +295,12 @@ public class RenderRegion implements AutoCloseable
 				// skip any chunks that Minecraft is going to render
 				if (chunkGrid != null && chunkGrid.get(chunkX, chunkZ) != null) continue;
 			}
-
-			long[] posData = region.getAllData(detailLevel, posX, posZ);
-			if (posData == null || posData.length == 0 || !DataPointUtil.doesItExist(posData[0])
-					|| DataPointUtil.isVoid(posData[0]))
+			LodDataView posData = region.getDataView(detailLevel, posX, posZ);
+			if (posData == null || posData.size() == 0 || !DataPointUtil.doesItExist(posData.get(0))
+					|| DataPointUtil.isVoid(posData.get(0)))
 				continue;
-			
-			long[][][] adjData = new long[4][][];
+
+			LodDataView[][] adjData = new LodDataView[4][];
 			boolean[] adjUseBlack = new boolean[4];
 
 			// We extract the adj data in the four cardinal direction
@@ -360,15 +360,15 @@ public class RenderRegion implements AutoCloseable
 					}
 
 					if (adjDetail == detailLevel || adjDetail > detailLevel) {
-						adjData[lodDirection.ordinal() - 2] = new long[1][];
-						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail,
+						adjData[lodDirection.ordinal() - 2] = new LodDataView[1];
+						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getDataView(adjDetail,
 								LevelPosUtil.convert(detailLevel, xAdj, adjDetail),
 								LevelPosUtil.convert(detailLevel, zAdj, adjDetail));
 					} else {
-						adjData[lodDirection.ordinal() - 2] = new long[2][];
-						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail,
+						adjData[lodDirection.ordinal() - 2] = new LodDataView[2];
+						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getDataView(adjDetail,
 								childXAdj, childZAdj);
-						adjData[lodDirection.ordinal() - 2][1] = adjRegion.getAllData(adjDetail,
+						adjData[lodDirection.ordinal() - 2][1] = adjRegion.getDataView(adjDetail,
 								childXAdj + (lodDirection.getAxis()==LodDirection.Axis.X ? 0 : 1),
 								childZAdj + (lodDirection.getAxis()==LodDirection.Axis.Z ? 0 : 1));
 					}
@@ -380,15 +380,15 @@ public class RenderRegion implements AutoCloseable
 			
 			// We render every vertical lod present in this position
 			// We only stop when we find a block that is void or non-existing block
-			for (int i = 0; i < posData.length; i++) {
-				long data = posData[i];
+			for (int i = 0; i < posData.size(); i++) {
+				long data = posData.get(i);
 				// If the data is not renderable (Void or non-existing) we stop since there is
 				// no data left in this position
 				if (DataPointUtil.isVoid(data) || !DataPointUtil.doesItExist(data))
 					break;
 
-				long adjDataTop = i - 1 >= 0 ? posData[i - 1] : DataPointUtil.EMPTY_DATA;
-				long adjDataBot = i + 1 < posData.length ? posData[i + 1] : DataPointUtil.EMPTY_DATA;
+				long adjDataTop = i - 1 >= 0 ? posData.get(i - 1) : DataPointUtil.EMPTY_DATA;
+				long adjDataBot = i + 1 < posData.size() ? posData.get(i + 1) : DataPointUtil.EMPTY_DATA;
 
 				// We send the call to create the vertices
 				CubicLodTemplate.addLodToBuffer(data, adjDataTop, adjDataBot, adjData, adjUseBlack, detailLevel,

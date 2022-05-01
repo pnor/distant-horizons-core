@@ -28,6 +28,7 @@ import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -205,10 +206,16 @@ public class LodRegion {
 	 * @return the data at the relative pos and detail level, 0 if the data doesn't
 	 *         exist.
 	 */
+	@Deprecated
 	public long[] getAllData(byte detailLevel, int posX, int posZ) {
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 		return dataContainer[detailLevel].getAllData(posX, posZ);
+	}
+	public LodDataView getDataView(byte detailLevel, int posX, int posZ) {
+		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
+		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
+		return dataContainer[detailLevel].getVerticalDataView(posX, posZ);
 	}
 
 	/**

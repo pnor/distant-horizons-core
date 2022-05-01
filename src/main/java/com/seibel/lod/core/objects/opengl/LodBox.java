@@ -22,6 +22,7 @@ package com.seibel.lod.core.objects.opengl;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
@@ -31,8 +32,8 @@ public class LodBox
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	
 	public static void addBoxQuadsToBuilder(LodQuadBuilder builder, short xSize, short ySize, short zSize, short x,
-			short y, short z, int color, byte skyLight, byte blockLight, long topData, long botData, long[][][] adjData,
-			boolean[] adjFillBlack)
+											short y, short z, int color, byte skyLight, byte blockLight, long topData, long botData, LodDataView[][] adjData,
+											boolean[] adjFillBlack)
 	{
 		short maxX = (short) (x + xSize);
 		short maxY = (short) (y + ySize);
@@ -57,7 +58,7 @@ public class LodBox
 		
 		//NORTH face vertex creation
 		{
-			long[][] adjDataNorth = adjData[LodDirection.NORTH.ordinal() - 2];
+			LodDataView[] adjDataNorth = adjData[LodDirection.NORTH.ordinal() - 2];
 			int adjOverlapNorth = adjFillBlack[LodDirection.NORTH.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjDataNorth == null)
 			{
@@ -79,7 +80,7 @@ public class LodBox
 		
 		//SOUTH face vertex creation
 		{
-			long[][] adjDataSouth = adjData[LodDirection.SOUTH.ordinal() - 2];
+			LodDataView[] adjDataSouth = adjData[LodDirection.SOUTH.ordinal() - 2];
 			int adjOverlapSouth = adjFillBlack[LodDirection.SOUTH.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjDataSouth == null)
 			{
@@ -102,7 +103,7 @@ public class LodBox
 		
 		//WEST face vertex creation
 		{
-			long[][] adjDataWest = adjData[LodDirection.WEST.ordinal() - 2];
+			LodDataView[] adjDataWest = adjData[LodDirection.WEST.ordinal() - 2];
 			int adjOverlapWest = adjFillBlack[LodDirection.WEST.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjDataWest == null)
 			{
@@ -124,7 +125,7 @@ public class LodBox
 		
 		//EAST face vertex creation
 		{
-			long[][] adjDataEast = adjData[LodDirection.EAST.ordinal() - 2];
+			LodDataView[] adjDataEast = adjData[LodDirection.EAST.ordinal() - 2];
 			int adjOverlapEast = adjFillBlack[LodDirection.EAST.ordinal() - 2] ? ColorUtil.BLACK : ColorUtil.TRANSPARENT;
 			if (adjData[LodDirection.EAST.ordinal() - 2] == null)
 			{
@@ -145,12 +146,12 @@ public class LodBox
 		}
 	}
 	
-	private static void makeAdjQuads(LodQuadBuilder builder, long[] adjData, LodDirection direction, short x, short y,
-			short z, short w0, short wy, int color, int overlapColor, byte upSkyLight, byte blockLight)
+	private static void makeAdjQuads(LodQuadBuilder builder, LodDataView adjData, LodDirection direction, short x, short y,
+									 short z, short w0, short wy, int color, int overlapColor, byte upSkyLight, byte blockLight)
 	{
 		color = ColorUtil.applyShade(color, MC.getShade(direction));
-		long[] dataPoint = adjData;
-		if (dataPoint == null || DataPointUtil.isVoid(dataPoint[0]))
+		LodDataView dataPoint = adjData;
+		if (dataPoint == null || DataPointUtil.isVoid(dataPoint.get(0)))
 		{
 			builder.addQuadAdj(direction, x, y, z, w0, wy, color, (byte) 15, blockLight);
 			return;
@@ -164,10 +165,10 @@ public class LodBox
 		
 		// TODO transparency ocean floor fix
 		// boolean isOpaque = ((colorMap[0] >> 24) & 0xFF) == 255;
-		for (i = 0; i < dataPoint.length && DataPointUtil.doesItExist(adjData[i])
-				&& !DataPointUtil.isVoid(adjData[i]); i++)
+		for (i = 0; i < dataPoint.size() && DataPointUtil.doesItExist(adjData.get(i))
+				&& !DataPointUtil.isVoid(adjData.get(i)); i++)
 		{
-			long adjPoint = adjData[i];
+			long adjPoint = adjData.get(i);
 			
 			// TODO transparency ocean floor fix
 			// if (isOpaque && DataPointUtil.getAlpha(singleAdjDataPoint) != 255)
@@ -291,8 +292,8 @@ public class LodBox
 			previousDepth = depth;
 			firstFace = false;
 			nextSkyLight = upSkyLight;
-			if (i + 1 < adjData.length && DataPointUtil.doesItExist(adjData[i + 1]))
-				nextSkyLight = DataPointUtil.getLightSky(adjData[i + 1]);
+			if (i + 1 < adjData.size() && DataPointUtil.doesItExist(adjData.get(i + 1)))
+				nextSkyLight = DataPointUtil.getLightSky(adjData.get(i + 1));
 		}
 		
 		if (allAbove)
