@@ -121,9 +121,8 @@ public class BatchGenerator
 		// ApiShared.LOGGER.info("PosToGenerate: {}", posToGenerate);
 
 		// Find the max number of iterations we need to go though.
-		// We are checking one FarPos, and one NearPos per iterations. This ensure we
-		// aren't just
-		// always picking one or the other.
+		// We are checking one FarPos, and one NearPos per iterations.
+		// This ensures we aren't just always picking one or the other.
 		Steps targetStep;
 		switch (mode) {
 		case NONE:
@@ -248,17 +247,17 @@ public class BatchGenerator
 			if (estimatedSampleNeeded > 32768)
 				estimatedSampleNeeded = 32768;
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				LOGGER.info("WorldGenerator: Increasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
+				LOGGER.info("WorldGenerator: Increasing estimatedSampleNeeded to " + estimatedSampleNeeded);
 
 		} else if (toGenerate <= 0 && positionGoneThough * 1.5 < posToGenerate.getNumberOfPos()) {
-			// We haven't gone though half of them and it's already enough.
-			// Let's shink the estimatedSampleNeeded.
+			// We haven't gone through half of them, and it's already enough.
+			// Let's shrink the estimatedSampleNeeded.
 			estimatedSampleNeeded /= 1.2;
-			// Ensure we don't go to near zero.
+			// Ensure we don't go near zero.
 			if (estimatedSampleNeeded < 4)
 				estimatedSampleNeeded = 4;
 			if (ENABLE_GENERATOR_STATS_LOGGING)
-				LOGGER.info("WorldGenerator: Decreasing estimatedSampleNeeeded to " + estimatedSampleNeeded);
+				LOGGER.info("WorldGenerator: Decreasing estimatedSampleNeeded to " + estimatedSampleNeeded);
 		}
 
 	}

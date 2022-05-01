@@ -92,8 +92,8 @@ public class LodVertexFormat
 		}
 		else if (obj != null && this.getClass() == obj.getClass())
 		{
-			LodVertexFormat vertexformat = (LodVertexFormat) obj;
-			return this.byteSize == vertexformat.byteSize && this.elements.equals(vertexformat.elements);
+			LodVertexFormat vertexFormat = (LodVertexFormat) obj;
+			return this.byteSize == vertexFormat.byteSize && this.elements.equals(vertexFormat.elements);
 		}
 		else
 		{

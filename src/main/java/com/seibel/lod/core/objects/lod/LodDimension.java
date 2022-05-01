@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.objects.lod;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.DropoffQuality;
@@ -232,11 +231,11 @@ public class LodDimension
 		regions[xIndex][zIndex] = newRegion;
 	}*/
 	
-	public interface PosComsumer {
+	public interface PosConsumer {
 		void run(int x, int z);
 	}
 	
-	public void iterateWithSpiral(PosComsumer r) {
+	public void iterateWithSpiral(PosConsumer r) {
 		int ox,oy,dx,dy;
 	    ox = oy = dx = 0;
 	    dy = -1;
@@ -258,7 +257,7 @@ public class LodDimension
 	        oy += dy;
 	    }
 	}
-	public void iterateByDistance(PosComsumer r) {
+	public void iterateByDistance(PosConsumer r) {
 		if (iteratorList==null) return;
 		for (RegionPos relativePos : iteratorList) {
 			r.run(relativePos.x+halfWidth, relativePos.z+halfWidth);
@@ -468,7 +467,7 @@ public class LodDimension
 		posToGenerate = new PosToGenerateContainer(maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
 		
 		
-		// This ensures that we don't spawn way too much regions without finish flushing them first.
+		// This ensures that we don't spawn way too many regions without finish flushing them first.
 		//if (dirtiedRegionsRoughCount > 16) return posToGenerate;
 		GenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? GenerationPriority.NEAR_FIRST : priority;
 		Pos2D minPos = regions.getMinInRange();

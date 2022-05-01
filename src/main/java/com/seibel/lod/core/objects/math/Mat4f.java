@@ -215,8 +215,8 @@ public class Mat4f
 		this.m33 = 1.0F;
 	}
 	
-	/** adjugate and determinate */
-	public float adjugateAndDet()
+	/** adjudicate and determinate */
+	public float adjudicateAndDet()
 	{
 		float f = this.m00 * this.m11 - this.m01 * this.m10;
 		float f1 = this.m00 * this.m12 - this.m02 * this.m10;
@@ -289,7 +289,7 @@ public class Mat4f
 	
 	public boolean invert()
 	{
-		float det = this.adjugateAndDet();
+		float det = this.adjudicateAndDet();
 		if (Math.abs(det) > 1.0E-6F)
 		{
 			this.multiply(det);

@@ -84,7 +84,7 @@ public interface IMinecraftClientWrapper extends IBindable
 	/** 
 	 * Attempts to get the ServerWorld for the dimension
 	 * the user is currently in.
-	 * @returns null if no ServerWorld is available
+	 * @return null if no ServerWorld is available
 	 */
 	IWorldWrapper getWrappedServerWorld();
 	

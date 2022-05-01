@@ -144,7 +144,7 @@ public class PosToRenderContainer
 	public int getNthPosZ(int n)
 	{
 		return lodPosList[n].posZ;
-		//eturn posToRender[n * 3 + 2];
+		//return posToRender[n * 3 + 2];
 	}
 
 	public void sort() {

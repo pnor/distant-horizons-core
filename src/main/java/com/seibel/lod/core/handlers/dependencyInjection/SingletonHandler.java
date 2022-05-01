@@ -30,12 +30,14 @@ public class SingletonHandler
 {
 	private static final DependencyHandler dependencyHandler = new DependencyHandler();
 		
-	
+	// TODO: FIX Javadoc
+	//  This is the exact same javadoc as in DependencyHandler.java
+	//  Ths method doesnt even use dependencyInterface or dependencyImplementation
 	/**
-	 * Links the given implementation object to an interface so it can be referenced later.
+	 * Links the given implementation object to an interface, so it can be referenced later.
 	 * 
-	 * @param depenencyInterface The interface the implementation object should implement.
-	 * @param dependencyImplementation A object that implements the depenencyInterface interface.
+	 * @param dependencyInterface The interface the implementation object should implement.
+	 * @param dependencyImplementation An object that implements the dependencyInterface interface.
 	 * @throws IllegalStateException if the implementation object doesn't implement 
 	 *                               the interface or the interface has already been bound.
 	 */

@@ -78,7 +78,7 @@ public class ClientApi
 	private static final EventApi EVENT_API = EventApi.INSTANCE;
 
 	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
-	public static final long LAG_SPIKE_THRESOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
+	public static final long LAG_SPIKE_THRESHOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
 	
 	public static final long SPAM_LOGGER_FLUSH_NS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 	
@@ -91,7 +91,7 @@ public class ClientApi
 		public void end(String source) {
 			if (!ENABLE_LAG_SPIKE_LOGGING) return;
 			timer = System.nanoTime() - timer;
-			if (timer > LAG_SPIKE_THRESOLD_NS) {
+			if (timer > LAG_SPIKE_THRESHOLD_NS) {
 				LOGGER.info("LagSpikeCatcher: "+source+" took "+Duration.ofNanos(timer)+"!");
 			}
 		}
@@ -217,7 +217,7 @@ public class ClientApi
 			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();
 			for (long pos : toBeLoaded) {
 				if (generating.size() >= 1) {
-					//ApiShared.LOGGER.info("Lod Generating Full! Remining: "+toBeLoaded.size());
+					//ApiShared.LOGGER.info("Lod Generating Full! Remaining: "+toBeLoaded.size());
 					break;
 				}
 				IChunkWrapper chunk = world.tryGetChunk(FACTORY.createChunkPos(pos));
@@ -230,7 +230,7 @@ public class ClientApi
 				if (!chunk.doesNearbyChunksExist()) continue;
 				toBeLoaded.remove(pos);
 				generating.add(pos);
-				//ApiShared.LOGGER.info("Lod Generation trying "+pos+". Remining: " +toBeLoaded.size());
+				//ApiShared.LOGGER.info("Lod Generation trying "+pos+". Remaining: " +toBeLoaded.size());
 				InternalApiShared.lodBuilder.generateLodNodeAsync(chunk, InternalApiShared.lodWorld,
 						world.getDimensionType(), DistanceGenerationMode.FULL, true, true, () -> {
 							generating.remove(pos);
@@ -281,7 +281,7 @@ public class ClientApi
 						try {
 							MC.sendChatMessage("\u00A74\u00A7l\u00A7uERROR: Distant Horizons"
 									+ " renderer has encountered an exception!");
-							MC.sendChatMessage("\u00A74Renderer is now disabled to prevent futher issues.");
+							MC.sendChatMessage("\u00A74Renderer is now disabled to prevent further issues.");
 							MC.sendChatMessage("\u00A74Exception detail: "+e.toString());
 						} catch (RuntimeException ignored) {}
 					}
@@ -338,7 +338,7 @@ public class ClientApi
 	}
 
 	//=================//
-	//    DUBUG USE    //
+	//    DEBUG USE    //
 	//=================//
 	
 	// Trigger once on key press, with CLIENT PLAYER.

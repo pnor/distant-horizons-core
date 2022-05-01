@@ -52,7 +52,7 @@ public class ConfigBase {
     public static final int configVersion = 1;
 
     public static void init(Class<?> config) {
-        addAcceptableInputs(); // Add all of the acceptable stuff to the acceptableInputs list
+        addAcceptableInputs(); // Add all the acceptable stuff to the acceptableInputs list
         initNestedClass(config, ""); // Init root category
 
         // File handling (load from file)

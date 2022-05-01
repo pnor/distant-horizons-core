@@ -32,10 +32,10 @@ import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
  */
 public interface IVersionConstants extends IBindable
 {
-	/** @returns the minimum height blocks can be generated */
+	/** @return the minimum height blocks can be generated */
 	int getMinimumWorldHeight();
 
-	/** @Returns the number of generations call per thread. */
+	/** @return the number of generations call per thread. */
 	default int getWorldGenerationCountPerThread() {
 		return 8;
 	}

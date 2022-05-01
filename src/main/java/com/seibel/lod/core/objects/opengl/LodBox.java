@@ -177,7 +177,7 @@ public class LodBox
 			short height = DataPointUtil.getHeight(adjPoint);
 			short depth = DataPointUtil.getDepth(adjPoint);
 			
-			// If the depth of said block is higher then our max Y, continue
+			// If the depth of said block is higher than our max Y, continue
 			// Basically: y < maxY <= _____ height
 			// _______&&: y < maxY <= depth
 			if (y + wy <= depth)

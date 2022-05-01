@@ -125,7 +125,7 @@ public final class BufferQuad
 	
 	/**
 	 * Attempts to merge the given quad into this one.
-	 * @returns true if the quads were merged, false otherwise.
+	 * @return true if the quads were merged, false otherwise.
 	 */
 	public boolean tryMerge(BufferQuad quad, BufferMergeDirectionEnum mergeDirection)
 	{

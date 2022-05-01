@@ -34,7 +34,7 @@ public enum ShadingMode
 	GAME_SHADING,
 	
 	/**
-	 * LODs will use ambient occlusion to mimic Minecarft's
+	 * LODs will use ambient occlusion to mimic Minecraft's
 	 * Fancy lighting.
 	 */
 	AMBIENT_OCCLUSION

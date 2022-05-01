@@ -45,7 +45,7 @@ public class ModAccessorHandler
 	
 	
 	/**
-	 * Links the given mod accessor to an interface so it can be referenced later.
+	 * Links the given mod accessor to an interface, so it can be referenced later.
 	 * 
 	 * @param interfaceClass The interface the mod accessor should implement.
 	 * @param modAccessor An object that implements the interfaceClass interface.
@@ -56,7 +56,7 @@ public class ModAccessorHandler
 			throws IllegalStateException
 	{
 		dependencyHandler.bind(interfaceClass, modAccessor);
-		LOGGER.info("Registored mod comatibility accessor for " + modAccessor.getModName());
+		LOGGER.info("Registered mod compatibility accessor for " + modAccessor.getModName());
 	}
 	
 	/**

@@ -111,7 +111,7 @@ public class LodRegion {
 	 * @return true if the data was added successfully
 	 */
 	public boolean addData(byte detailLevel, int posX, int posZ, int verticalIndex, long data) {
-		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been aquired!");
+		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been acquired!");
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 
@@ -132,7 +132,7 @@ public class LodRegion {
 	 * @return true if the data was added successfully
 	 */
 	public boolean addVerticalData(byte detailLevel, int posX, int posZ, long[] data, boolean override) {
-		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been aquired!");
+		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been acquired!");
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 
@@ -156,7 +156,7 @@ public class LodRegion {
 	 * @return true if the data was added successfully
 	 */
 	public boolean addChunkOfData(byte detailLevel, int posX, int posZ, int widthX, int widthZ, long[] data, int verticalSize, boolean override) {
-		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been aquired!");
+		if(isWriting.get()<=0) throw new ConcurrentModificationException("isWriting counter lock should have been acquired!");
 		posX = LevelPosUtil.getRegionModule(detailLevel, posX);
 		posZ = LevelPosUtil.getRegionModule(detailLevel, posZ);
 
@@ -183,7 +183,7 @@ public class LodRegion {
 					);*/
 			
 		}
-		if (!doesDataExist(detailLevel, posX, posZ, DistanceGenerationMode.values()[DataPointUtil.getGenerationMode(data[0]) - 1])) { //FIXME: -1 casue NONE has value of 1 but slot of 0
+		if (!doesDataExist(detailLevel, posX, posZ, DistanceGenerationMode.values()[DataPointUtil.getGenerationMode(data[0]) - 1])) { //FIXME: -1 case NONE has value of 1 but slot of 0
 			throw new RuntimeException("Data still doesn't exist after addChunkOfData!");
 		}
 		
@@ -419,8 +419,8 @@ public class LodRegion {
 	}
 
 	/**
-	 * This method will fill the posToRender array with all levelPos that are
-	 * render-able. But the entire region try use the same detail level.
+	 * This method will fill the posToRender array with all levelPos that are render-able,
+	 * but the entire region try to use the same detail level.
 	 */
 	private void getPosToRenderFlat(PosToRenderContainer posToRender, byte detailLevel, int offsetPosX, int offsetPosZ,
 			byte targetLevel, byte farModeSwitchLevel) {

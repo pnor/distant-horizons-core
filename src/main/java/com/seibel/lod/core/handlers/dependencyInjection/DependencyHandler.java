@@ -35,37 +35,37 @@ public class DependencyHandler
 	
 
 	/**
-	 * Links the given implementation object to an interface so it can be referenced later.
+	 * Links the given implementation object to an interface, so it can be referenced later.
 	 * 
-	 * @param depenencyInterface The interface the implementation object should implement.
-	 * @param dependencyImplementation A object that implements the depenencyInterface interface.
+	 * @param dependencyInterface The interface the implementation object should implement.
+	 * @param dependencyImplementation An object that implements the dependencyInterface interface.
 	 * @throws IllegalStateException if the implementation object doesn't implement 
 	 *                               the interface or the interface has already been bound.
 	 */
-	public void bind(Class<?> depenencyInterface, Object dependencyImplementation) throws IllegalStateException
+	public void bind(Class<?> dependencyInterface, Object dependencyImplementation) throws IllegalStateException
 	{
 		// only allow binding before the finishBinding method is called
 		if (bindingFinished)
 		{
-			throw new IllegalStateException("The dependency [" + depenencyInterface.getSimpleName() + "] cannot be bound, Binding is finished for [" + this.getClass().getSimpleName() + "]. Make sure your bindings are happening before the [bindingFinished] method is being called.");
+			throw new IllegalStateException("The dependency [" + dependencyInterface.getSimpleName() + "] cannot be bound, Binding is finished for [" + this.getClass().getSimpleName() + "]. Make sure your bindings are happening before the [bindingFinished] method is being called.");
 		}
 		
 		
 		// make sure we haven't already bound this dependency
-		if (dependencies.containsKey(depenencyInterface))
+		if (dependencies.containsKey(dependencyInterface))
 		{
-			throw new IllegalStateException("The dependency [" + depenencyInterface.getSimpleName() + "] has already been bound.");
+			throw new IllegalStateException("The dependency [" + dependencyInterface.getSimpleName() + "] has already been bound.");
 		}
 		
 		
 		// make sure the given dependency implements the necessary interfaces
-		boolean implementsInterface = checkIfClassImplements(dependencyImplementation.getClass(), depenencyInterface);
+		boolean implementsInterface = checkIfClassImplements(dependencyImplementation.getClass(), dependencyInterface);
 		boolean implementsBindable = checkIfClassImplements(dependencyImplementation.getClass(), IBindable.class);
 		
 		// display any errors
 		if (!implementsInterface)
 		{
-			throw new IllegalStateException("The dependency [" + dependencyImplementation.getClass().getSimpleName() + "] doesn't implement the interface [" + depenencyInterface.getSimpleName() + "].");
+			throw new IllegalStateException("The dependency [" + dependencyImplementation.getClass().getSimpleName() + "] doesn't implement the interface [" + dependencyInterface.getSimpleName() + "].");
 		}
 		if (!implementsBindable)
 		{
@@ -73,7 +73,7 @@ public class DependencyHandler
 		}
 		
 		
-		dependencies.put(depenencyInterface, dependencyImplementation);
+		dependencies.put(dependencyInterface, dependencyImplementation);
 	}
 	/**
 	 * Checks if classToTest (or one of its ancestors)

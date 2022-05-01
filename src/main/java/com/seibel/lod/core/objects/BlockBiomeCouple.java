@@ -29,8 +29,8 @@ import java.util.concurrent.ConcurrentMap;
 
 public class BlockBiomeCouple
 {
-	public static final ConcurrentMap<BlockDetail, BlockBiomeCouple> noBiomeIstanceCache = new ConcurrentHashMap<>();
-	public static ConcurrentMap<IBiomeWrapper, ConcurrentMap<BlockDetail, BlockBiomeCouple>> withBiomeIstanceCache = new ConcurrentHashMap<>();
+	public static final ConcurrentMap<BlockDetail, BlockBiomeCouple> noBiomeInstanceCache = new ConcurrentHashMap<>();
+	public static ConcurrentMap<IBiomeWrapper, ConcurrentMap<BlockDetail, BlockBiomeCouple>> withBiomeInstanceCache = new ConcurrentHashMap<>();
 	
 	String blockName;
 	String biomeName;
@@ -43,14 +43,14 @@ public class BlockBiomeCouple
 	}
 	
 	public static BlockBiomeCouple getBlockBiomeCouple(IBlockColorWrapper blockColor){
-		if(noBiomeIstanceCache.containsKey(blockColor))
+		if(noBiomeInstanceCache.containsKey(blockColor))
 		{
-			return noBiomeIstanceCache.get(blockColor);
+			return noBiomeInstanceCache.get(blockColor);
 		}
 		else
 		{
 			BlockBiomeCouple couple = new BlockBiomeCouple(blockColor);
-			noBiomeIstanceCache.put(blockColor,couple);
+			noBiomeInstanceCache.put(blockColor,couple);
 			return couple;
 		}
 	}
@@ -62,9 +62,9 @@ public class BlockBiomeCouple
 		}
 		else
 		{
-			if(withBiomeIstanceCache.containsKey(biomeColor))
+			if(withBiomeInstanceCache.containsKey(biomeColor))
 			{
-				withBiomeIstanceCache.put(biomeColor, new ConcurrentHashMap<>());
+				withBiomeInstanceCache.put(biomeColor, new ConcurrentHashMap<>());
 			}
 			ConcurrentMap<IBlockColorWrapper, BlockBiomeCouple> blockToCoupleMap = withBiomeIstanceCache.get(biomeColor);
 			if(blockToCoupleMap.containsKey(blockColor))

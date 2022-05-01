@@ -30,7 +30,7 @@ public interface IBindable
 	/**
 	 * Finish initializing this object. <br> <br>
 	 * 
-	 * Generally this should just used for getting other objects through
+	 * Generally this should just be used for getting other objects through
 	 * dependency injection and is specifically designed to allow 
 	 * for circular references. <br><br>
 	 * 

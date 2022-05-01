@@ -257,6 +257,7 @@ public class LodDimensionFileHandler
 							+ " version found: " + fileVersion
 							+ ", version requested: " + LOD_SAVE_FILE_VERSION
 							+ ". File has been deleted.");
+					//TODO: fix comment
 					// This should not break, but be continue to see whether other detail levels can be loaded or updated
 					region.addLevelContainer(new VerticalLevelContainer(tempDetailLevel));
 				}
@@ -481,7 +482,7 @@ public class LodDimensionFileHandler
 		boolean isStarted = isFileWritingThreadRunning.get();
 		
 		if (!isStarted)
-			throw new ConcurrentModificationException("WriterMain Triggered but the thead state is not started!?");
+			throw new ConcurrentModificationException("WriterMain Triggered but the thread state is not started!?");
 		
 		if (ENABLE_SAVE_THREAD_LOGGING)
 			LOGGER.info("Lod File Writer started. To-be-written-regions: " + regionToSave.size());
@@ -498,7 +499,7 @@ public class LodDimensionFileHandler
 				{
 					if (r.isWriting.getAndIncrement() > 0)
 						continue;
-					//Check if the data has been swapped out right under me. Otherwise remove it from the entry
+					//Check if the data has been swapped out right under me. Otherwise, remove it from the entry
 					if (!regionToSave.remove(r.getRegionPos(), r))
 						continue;
 					r.needSaving = false;

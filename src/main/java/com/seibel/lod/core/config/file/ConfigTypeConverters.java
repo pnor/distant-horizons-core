@@ -17,7 +17,7 @@ public class ConfigTypeConverters {
         try {
             return convertObjects.get(clazz).convertToString(value);
         } catch (Exception e) {
-            System.out.println("Type [" + clazz.toString() + "] isnt a convertable value in the config file handler");
+            System.out.println("Type [" + clazz.toString() + "] isnt a convertible value in the config file handler");
             return null;
         }
     }
@@ -25,7 +25,7 @@ public class ConfigTypeConverters {
         try {
             return convertObjects.get(clazz).convertFromString(value);
         } catch (Exception e) {
-            System.out.println("Type [" + clazz.toString() + "] isnt a convertable value in the config file handler");
+            System.out.println("Type [" + clazz.toString() + "] isnt a convertible value in the config file handler");
             return null;
         }
     }

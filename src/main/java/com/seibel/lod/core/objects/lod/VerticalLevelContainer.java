@@ -47,7 +47,7 @@ public class VerticalLevelContainer implements LevelContainer
 	
 	public final long[] dataContainer;
 	
-	//Currently these variable are not used. We are going to use them in the new data format
+	//Currently, these variable are not used. We are going to use them in the new data format
 	public final int[] verticalDataContainer = null;
 	public final int[] colorDataContainer = null;
 	public final byte[] lightDataContainer = null;

@@ -91,7 +91,7 @@ public abstract class RenderBuffer implements AutoCloseable
 	/* Called on being reused after the object is swapped to the back
 	 *  and a new build event is triggered. Used for cleaning up non
 	 *  reusable objects sooner.
-	 * Note: This is ran on BUILDER thread, and does not have access to
+	 * Note: This is run on BUILDER thread, and does not have access to
 	 *  GL Context, Use GLProxy.recordOpenGlCall() to access GL Context
 	 *  instead! */
 	public void onReuse() {}
@@ -111,11 +111,11 @@ public abstract class RenderBuffer implements AutoCloseable
 	
 	/* Called on buffer no longer being used. (Life ended)
 	 *  Return false if current object cannot be reused.
-	 * Note: This should not do too much stuff as it is ran on render thread!
+	 * Note: This should not do too much stuff as it is run on render thread!
 	 *  The corresponding cleanups should be done using the onReuse() to prevent
 	 *  lag spikes! If you want this buffer to not be reused, but cleanup is
 	 *  expensive, use onReuse() instead!
-	 * Note 2: This may not be triggered on some siturations like renderer being
+	 * Note 2: This may not be triggered on some situations like renderer being
 	 *  terminated, or dimension changed. So implementation should NEVER assume
 	 *  that onSwapToFront() will link to a call of onSwapToBack()! */
 	public boolean onSwapToBack() {return true;}

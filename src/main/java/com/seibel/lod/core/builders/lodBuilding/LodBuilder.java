@@ -223,7 +223,7 @@ public class LodBuilder
 		try {
 			if (region.getMinDetailLevel()!= 0) {
 				if (!LodUtil.checkRamUsage(0.05, 16)) {
-					EVENT_LOGGER.debug("LodBuilder: Not enough RAM avalible for loading files to build lods! Returning...");
+					EVENT_LOGGER.debug("LodBuilder: Not enough RAM available for loading files to build lods! Returning...");
 					return false;
 				}
 				
@@ -458,7 +458,7 @@ public class LodBuilder
 			if (chunk.blockPosInsideChunk(x, y+1, z)) {
 				IBlockDetailWrapper blockAbove = chunk.getBlockDetail(x, y+1, z);
 				if (blockAbove != null && config.client().worldGenerator().getTintWithAvoidedBlocks() && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
-				{  // The above block is skipped. Lets use its skipped color for currrent block
+				{  // The above block is skipped. Lets use its skipped color for current block
 					colorInt = blockAbove.getAndResolveFaceColor(null, chunk, FACTORY.createBlockPos(x, y+1, z));
 				}
 			}

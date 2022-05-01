@@ -78,7 +78,7 @@ public enum DistanceGenerationMode
 	 * This is the most compatible, but causes server/simulation lag.
 	 * This will also show player made structures if you
 	 * are adding the mod on a pre-existing world.
-	 * Singlethreaded - Slow (15-50 ms, with spikes up to 200 ms)
+	 * Single-threaded - Slow (15-50 ms, with spikes up to 200 ms)
 	 */
 	FULL((byte) 6);
 	
