@@ -64,6 +64,20 @@ public class ConfigBasedSpamLogger {
         mode = getter.get();
     }
 
+    private String _throwableToDetailString(Throwable t) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(t.toString()).append('\n');
+        StackTraceElement[] stacks = t.getStackTrace();
+
+        if (stacks==null || stacks.length == 0)
+            return sb.append("  at {Stack trace unavailable}").toString();
+
+        for (StackTraceElement stack : stacks) {
+            sb.append("  at ").append(stack.toString()).append("\n");
+        }
+        return sb.toString();
+    }
+
     public void log(Level level, String str, Object... param) {
         if (logTries.get() >= maxLogCount) return;
 
@@ -76,8 +90,9 @@ public class ConfigBasedSpamLogger {
             else logger.log(logLevel, msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
-            if (param.length > 0 && param[param.length - 1] instanceof Throwable)
-                ClientApi.logToChat(level, msgStr + "\nat\n" + Arrays.toString(((Throwable) param[param.length - 1]).getStackTrace()));
+            if (param.length > 0 && param[param.length-1] instanceof Throwable)
+                ClientApi.logToChat(level, msgStr + "\n" +
+                        _throwableToDetailString(((Throwable) param[param.length - 1])));
             else ClientApi.logToChat(level, msgStr);
         }
     }
@@ -114,8 +129,9 @@ public class ConfigBasedSpamLogger {
             else logger.log(logLevel, msgStr);
         }
         if (mode.levelForChat.isLessSpecificThan(level)) {
-            if (param.length > 0 && param[param.length - 1] instanceof Throwable)
-                ClientApi.logToChat(level, msgStr + "\nat\n" + Arrays.toString(((Throwable) param[param.length - 1]).getStackTrace()));
+            if (param.length > 0 && param[param.length-1] instanceof Throwable)
+                ClientApi.logToChat(level, msgStr + "\n" +
+                        _throwableToDetailString(((Throwable) param[param.length - 1])));
             else ClientApi.logToChat(level, msgStr);
         }
     }
