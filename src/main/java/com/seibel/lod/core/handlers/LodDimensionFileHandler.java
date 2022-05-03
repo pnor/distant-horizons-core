@@ -45,7 +45,7 @@ import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.lod.LevelContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
-import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.core.util.LodThreadFactory;
 import com.seibel.lod.core.util.LodUtil;
@@ -117,7 +117,7 @@ public class LodDimensionFileHandler
 	private ExecutorService fileWritingThreadPool = Executors.newSingleThreadExecutor(
 			new LodThreadFactory(this.getClass().getSimpleName(), Thread.NORM_PRIORITY + 1));
 	
-	private final ConcurrentHashMap<RegionPos, LodRegion> regionToSave = new ConcurrentHashMap<RegionPos, LodRegion>();
+	private final ConcurrentHashMap<DHRegionPos, LodRegion> regionToSave = new ConcurrentHashMap<DHRegionPos, LodRegion>();
 	
 	
 	public LodDimensionFileHandler(File newSaveFolder, LodDimension newLodDimension)
@@ -199,7 +199,7 @@ public class LodDimensionFileHandler
 	 * Returns a new LodRegion at the given coordinates.
 	 * Returns an empty region if the file doesn't exist.
 	 */
-	public LodRegion loadRegionFromFile(byte detailLevel, RegionPos regionPos, VerticalQuality verticalQuality)
+	public LodRegion loadRegionFromFile(byte detailLevel, DHRegionPos regionPos, VerticalQuality verticalQuality)
 	{
 		// Get one from the region hot cache
 		LodRegion region = regionToSave.get(regionPos);

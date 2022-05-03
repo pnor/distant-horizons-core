@@ -30,12 +30,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
 import com.seibel.lod.core.enums.config.VerticalQuality;
-import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
@@ -76,7 +75,7 @@ public class LodDimensionOldFileStructureHandler
 		final VerticalQuality vertQual;
 		final int posX;
 		final int posZ;
-		TempLodRegion(VerticalQuality vertQual, RegionPos pos) {
+		TempLodRegion(VerticalQuality vertQual, DHRegionPos pos) {
 			this.vertQual = vertQual;
 			posX = pos.x;
 			posZ = pos.z;
@@ -166,7 +165,7 @@ public class LodDimensionOldFileStructureHandler
 		}
 	}
 	
-	private void loadAndMergeAndSaveRegion(VerticalQuality verticalQuality, RegionPos regionPos)
+	private void loadAndMergeAndSaveRegion(VerticalQuality verticalQuality, DHRegionPos regionPos)
 	{
 		LOGGER.info("Merging region "+regionPos+" at "+verticalQuality+"...");
 		TempLodRegion region = new TempLodRegion(verticalQuality, regionPos);
@@ -184,20 +183,20 @@ public class LodDimensionOldFileStructureHandler
 	
 	
 	
-	private RegionPos parseFileName(String fileName) {
+	private DHRegionPos parseFileName(String fileName) {
 		if (!fileName.endsWith(FILE_EXTENSION)) return null;
 		if (!fileName.startsWith(FILE_NAME_PREFIX)) return null;
 		String[] array = fileName.split("\\."); // Array content: "lod", "-1", "1", ".xz"
 		if (array.length!=4) return null;
 		try {
-			return new RegionPos(Integer.parseInt(array[1]), Integer.parseInt(array[2]));
+			return new DHRegionPos(Integer.parseInt(array[1]), Integer.parseInt(array[2]));
 		} catch (NumberFormatException e) {
 			return null;
 		}
 	}
 	
-	private HashSet<RegionPos> scanOldRegionFiles(VerticalQuality vertQual, OldDistanceGenerationMode genMode) {
-		HashSet<RegionPos> result = new HashSet<RegionPos>();
+	private HashSet<DHRegionPos> scanOldRegionFiles(VerticalQuality vertQual, OldDistanceGenerationMode genMode) {
+		HashSet<DHRegionPos> result = new HashSet<DHRegionPos>();
 		File baseBaseFolder = new File(getFileBasePath() + vertQual + File.separatorChar + genMode);
 		if (!baseBaseFolder.exists()) return result;
 		for (byte detail=0; detail <= LodUtil.REGION_DETAIL_LEVEL; detail++) {
@@ -209,7 +208,7 @@ public class LodDimensionOldFileStructureHandler
 			for (File subFile : subFiles) {
 				if (!subFile.isFile()) continue;
 				if (!subFile.canRead()) continue;
-				RegionPos pos = parseFileName(subFile.getName());
+				DHRegionPos pos = parseFileName(subFile.getName());
 				if (pos != null) result.add(pos);
 			}
 		}
@@ -226,7 +225,7 @@ public class LodDimensionOldFileStructureHandler
 		File baseFile = new File(getFileBasePath() + vertQual);
 		if (!baseFile.exists()) return;
 		if (!baseFile.isDirectory()) return;
-		HashSet<RegionPos> totalPos = new HashSet<RegionPos>();
+		HashSet<DHRegionPos> totalPos = new HashSet<DHRegionPos>();
 		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.NONE));
 		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.BIOME_ONLY));
 		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT));
@@ -234,7 +233,7 @@ public class LodDimensionOldFileStructureHandler
 		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.FEATURES));
 		totalPos.addAll(scanOldRegionFiles(vertQual, OldDistanceGenerationMode.FULL));
 		ArrayList<Future<?>> futures = new ArrayList<Future<?>>();
-		for (RegionPos pos : totalPos) {
+		for (DHRegionPos pos : totalPos) {
 			futures.add(mergerThreads.submit(() -> {
 				loadAndMergeAndSaveRegion(vertQual, pos);
 				return true;

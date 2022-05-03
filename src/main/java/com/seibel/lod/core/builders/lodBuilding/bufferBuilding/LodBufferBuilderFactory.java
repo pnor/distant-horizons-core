@@ -24,13 +24,12 @@ import java.time.Duration;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLBuffer;
@@ -227,7 +226,7 @@ public class LodBufferBuilderFactory {
 					for (int regX = minPos.x; regX < maxPos.x; regX++) {
 						for (int regZ = minPos.y; regZ < maxPos.y; regZ++) {
 							RenderRegion r = renderRegions.get(regX, regZ);
-							RegionPos regPos = new RegionPos(regX, regZ);
+							DHRegionPos regPos = new DHRegionPos(regX, regZ);
 							if (r != null && !r.canRender(lodDim, regPos)) {
 								renderRegions.set(regX, regZ, null);
 								r.close();

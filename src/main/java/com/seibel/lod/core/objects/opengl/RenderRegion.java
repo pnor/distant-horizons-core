@@ -41,7 +41,7 @@ import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.PosToRenderContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
-import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.render.GLProxy;
@@ -75,7 +75,7 @@ public class RenderRegion implements AutoCloseable
 		Invalidated,
 	}
 	
-	final RegionPos regionPos;
+	final DHRegionPos regionPos;
 	RenderBuffer renderBufferBack = null;
 	AtomicReference<BackState> backState =
 			new AtomicReference<BackState>(BackState.Unused);
@@ -84,12 +84,12 @@ public class RenderRegion implements AutoCloseable
 	RenderBuffer renderBufferFront = null;
 	final LodDimension lodDim;
 	
-	public RenderRegion(RegionPos regPos, LodDimension lodDim) {
+	public RenderRegion(DHRegionPos regPos, LodDimension lodDim) {
 		regionPos = regPos;
 		this.lodDim = lodDim;
 	}
 	
-	public boolean canRender(LodDimension lodDim, RegionPos regPos) {
+	public boolean canRender(LodDimension lodDim, DHRegionPos regPos) {
 		return lodDim == this.lodDim && regPos.equals(regionPos);
 	}
 	

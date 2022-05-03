@@ -30,7 +30,7 @@ import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.ParsedIp;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
 import com.seibel.lod.core.util.gridList.EdgeDistanceBooleanGrid;
@@ -185,12 +185,12 @@ public class LodUtil
 	}
 	
 	/** Convert a 2D absolute position into a quad tree relative position. */
-	public static RegionPos convertGenericPosToRegionPos(int x, int z, int detailLevel)
+	public static DHRegionPos convertGenericPosToRegionPos(int x, int z, int detailLevel)
 	{
 		int relativePosX = Math.floorDiv(x, 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel));
 		int relativePosZ = Math.floorDiv(z, 1 << (LodUtil.REGION_DETAIL_LEVEL - detailLevel));
 		
-		return new RegionPos(relativePosX, relativePosZ);
+		return new DHRegionPos(relativePosX, relativePosZ);
 	}
 	
 	

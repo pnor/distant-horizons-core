@@ -26,7 +26,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.util.DetailDistanceUtil;
@@ -217,9 +217,9 @@ public class EventApi
 	public void playerMoveEvent(LodDimension lodDim)
 	{
 		// make sure the dimension is centered
-		RegionPos playerRegionPos = new RegionPos(MC.getPlayerBlockPos());
-		RegionPos center = lodDim.getCenterRegionPos();
-		RegionPos worldRegionOffset = new RegionPos(playerRegionPos.x - center.x, playerRegionPos.z - center.z);
+		DHRegionPos playerRegionPos = new DHRegionPos(MC.getPlayerBlockPos());
+		DHRegionPos center = lodDim.getCenterRegionPos();
+		DHRegionPos worldRegionOffset = new DHRegionPos(playerRegionPos.x - center.x, playerRegionPos.z - center.z);
 		if (worldRegionOffset.x != 0 || worldRegionOffset.z != 0)
 		{
 			lodDim.move(worldRegionOffset);

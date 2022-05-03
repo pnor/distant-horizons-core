@@ -30,6 +30,7 @@ import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
@@ -77,7 +78,7 @@ public class LodDimension
 	/** stores all the regions in this dimension */
 	public MovableGridRingList<LodRegion> regions;
 	//NOTE: This list pos is relative to center
-	private volatile RegionPos[] iteratorList = null;
+	private volatile DHRegionPos[] iteratorList = null;
 	
 	
 	private LodDimensionFileHandler fileHandler = null;
@@ -141,12 +142,12 @@ public class LodDimension
 	private void generateIteratorList()
 	{
 		iteratorList = null;
-		RegionPos[] list = new RegionPos[width*width];
+		DHRegionPos[] list = new DHRegionPos[width*width];
 		
 		int i = 0;
 		for (int ix=-halfWidth; ix<=halfWidth; ix++) {
 			for (int iz=-halfWidth; iz<=halfWidth; iz++) {
-				list[i] = new RegionPos(ix, iz);
+				list[i] = new DHRegionPos(ix, iz);
 				i++;
 			}
 		}
@@ -167,7 +168,7 @@ public class LodDimension
 	 * <p>
 	 * Synchronized to prevent multiple moves happening on top of each other.
 	 */
-	public synchronized void move(RegionPos regionOffset)
+	public synchronized void move(DHRegionPos regionOffset)
 	{
 		if (this.logEvents)
 			LOGGER.info("LodDim MOVE. Offset: "+regionOffset);
@@ -259,7 +260,7 @@ public class LodDimension
 	}
 	public void iterateByDistance(PosConsumer r) {
 		if (iteratorList==null) return;
-		for (RegionPos relativePos : iteratorList) {
+		for (DHRegionPos relativePos : iteratorList) {
 			r.run(relativePos.x+halfWidth, relativePos.z+halfWidth);
 		}
 		
@@ -373,7 +374,7 @@ public class LodDimension
 				byte maxDetail;
 				regionX = x + minPos.x;
 				regionZ = z + minPos.y;
-				final RegionPos regionPos = new RegionPos(regionX, regionZ);
+				final DHRegionPos regionPos = new DHRegionPos(regionX, regionZ);
 				region = regions.get(regionX, regionZ);
 				if (region != null && region.isWriting.get()!=0) return; // FIXME: A crude attempt at lowering chance of race condition!
 
@@ -601,7 +602,7 @@ public class LodDimension
 	 * Loads the region at the given RegionPos from file,
 	 * if a file exists for that region.
 	 */
-	public LodRegion getRegionFromFile(RegionPos regionPos, byte detailLevel, VerticalQuality verticalQuality)
+	public LodRegion getRegionFromFile(DHRegionPos regionPos, byte detailLevel, VerticalQuality verticalQuality)
 	{
 		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, verticalQuality) : 
 			new LodRegion(detailLevel, regionPos, verticalQuality);
@@ -658,9 +659,9 @@ public class LodDimension
 		return regions.getCenter().y;
 	}
 	
-	public RegionPos getCenterRegionPos() {
+	public DHRegionPos getCenterRegionPos() {
 		Pos2D p = regions.getCenter();
-		return new RegionPos(p.x, p.y);
+		return new DHRegionPos(p.x, p.y);
 	}
 	
 	/** returns the width of the dimension in regions */

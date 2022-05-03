@@ -19,7 +19,6 @@
 
 package com.seibel.lod.core.objects.lod;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,10 +28,7 @@ import com.seibel.lod.core.enums.config.DropoffQuality;
 import com.seibel.lod.core.enums.config.GenerationPriority;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.objects.LodDataView;
-import com.seibel.lod.core.objects.Pos2D;
-import com.seibel.lod.core.objects.PosToGenerateContainer;
-import com.seibel.lod.core.objects.PosToRenderContainer;
+import com.seibel.lod.core.objects.*;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
@@ -91,7 +87,7 @@ public class LodRegion {
 		return (byte)LodUtil.clamp(LodUtil.CHUNK_DETAIL_LEVEL+1, farModeLevel, LodUtil.DETAIL_OPTIONS - 1);
 	}
 
-	public LodRegion(byte minDetailLevel, RegionPos regionPos, VerticalQuality verticalQuality) {
+	public LodRegion(byte minDetailLevel, DHRegionPos regionPos, VerticalQuality verticalQuality) {
 		this.minDetailLevel = minDetailLevel;
 		this.regionPosX = regionPos.x;
 		this.regionPosZ = regionPos.z;
@@ -701,8 +697,8 @@ public class LodRegion {
 	/**
 	 * return RegionPos of this lod region
 	 */
-	public RegionPos getRegionPos() {
-		return new RegionPos(regionPosX, regionPosZ);
+	public DHRegionPos getRegionPos() {
+		return new DHRegionPos(regionPosX, regionPosZ);
 	}
 
 	/**

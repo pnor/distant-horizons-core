@@ -17,10 +17,8 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.objects.lod;
+package com.seibel.lod.core.objects;
 
-import com.seibel.lod.core.objects.DHBlockPos;
-import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.util.LodUtil;
 /**
  * This object is similar to ChunkPos or BlockPos.
@@ -28,35 +26,35 @@ import com.seibel.lod.core.util.LodUtil;
  * @author James Seibel
  * @version 8-21-2021
  */
-public class RegionPos
+public class DHRegionPos
 {
 
 	public int x;
 	public int z;
 	
 	/** Sets x and z to 0 */
-	public RegionPos()
+	public DHRegionPos()
 	{
 		x = 0;
 		z = 0;
 	}
 	
 	/** simple constructor that sets x and z to new x and z. */
-	public RegionPos(int newX, int newZ)
+	public DHRegionPos(int newX, int newZ)
 	{
 		x = newX;
 		z = newZ;
 	}
 	
 	/** Converts from a BlockPos to a RegionPos */
-	public RegionPos(DHBlockPos pos)
+	public DHRegionPos(DHBlockPos pos)
 	{
 		x = Math.floorDiv(pos.x >> 4, LodUtil.REGION_WIDTH_IN_CHUNKS);
 		z = Math.floorDiv(pos.z >> 4, LodUtil.REGION_WIDTH_IN_CHUNKS);
 	}
 	
 	/** Converts from a ChunkPos to a RegionPos */
-	public RegionPos(DHChunkPos pos)
+	public DHRegionPos(DHChunkPos pos)
 	{
 		x = Math.floorDiv(pos.getX(), LodUtil.REGION_WIDTH_IN_CHUNKS);
 		z = Math.floorDiv(pos.getZ(), LodUtil.REGION_WIDTH_IN_CHUNKS);
@@ -85,10 +83,10 @@ public class RegionPos
             return true;
         }
         // Check if o is an instance of RegionPos or not
-        if (!(o instanceof RegionPos)) {
+        if (!(o instanceof DHRegionPos)) {
             return false;
         }
-        RegionPos c = (RegionPos) o;
+        DHRegionPos c = (DHRegionPos) o;
         return c.x==x &&c.z==z;
 	}
 	

@@ -33,7 +33,7 @@ import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
-import com.seibel.lod.core.objects.lod.RegionPos;
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
@@ -226,7 +226,7 @@ public class LodDimensionFinder
 		DHChunkPos playerChunkPos = new DHChunkPos(playerData.playerBlockPos);
 		int startingBlockPosX = playerChunkPos.getMinBlockX();
 		int startingBlockPosZ = playerChunkPos.getMinBlockZ();
-		RegionPos playerRegionPos = new RegionPos(playerChunkPos);
+		DHRegionPos playerRegionPos = new DHRegionPos(playerChunkPos);
 		
 		
 		// chunk from the newly loaded dimension
