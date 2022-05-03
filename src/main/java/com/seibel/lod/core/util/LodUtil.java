@@ -227,6 +227,7 @@ public class LodUtil
 	 * This can be used to determine where to save files for a given
 	 * dimension.
 	 */
+	@Deprecated // FIXME: There are soooo many duplicated methods doing the same thing everywhere
 	public static String getDimensionIDFromWorld(IWorldWrapper world)
 	{
 		if (MC.hasSinglePlayerServer())
@@ -247,6 +248,8 @@ public class LodUtil
 	}
 	
 	/** returns the server name, IP and game version. */
+	@Deprecated // FIXME: There are soooo many duplicated methods doing the same thing everywhere
+	// Cloned to a7 package's DHFileHandler
 	public static String getServerFolderName()
 	{
 		// parse the current server's IP

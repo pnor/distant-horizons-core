@@ -67,7 +67,8 @@ public interface IMinecraftClientWrapper extends IBindable
 	
 	/** Returns the dimension the player is currently in */
 	IDimensionTypeWrapper getCurrentDimension();
-	
+
+	@Deprecated // This should be moved to directly calling the function in core
 	String getCurrentDimensionId();
 
 	//=============//
