@@ -21,6 +21,9 @@ package com.seibel.lod.core.wrapperInterfaces.chunk;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+import com.seibel.lod.core.objects.DHBlockPos;
+import com.seibel.lod.core.objects.DHChunkPos;
+import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
@@ -46,17 +49,21 @@ public interface IChunkWrapper extends IBindable
 
 	// Returns null if block doesn't exist. Note that this can cross chunk boundaries.
 	IBlockDetailWrapper getBlockDetailAtFace(int x, int y, int z, LodDirection dir);
-	
+
+	@Deprecated
 	int getChunkPosX();
+	@Deprecated
 	int getChunkPosZ();
+	@Deprecated
 	int getRegionPosX();
+	@Deprecated
 	int getRegionPosZ();
 	int getMaxY(int x, int z);
 	int getMaxX();
 	int getMaxZ();
 	int getMinX();
 	int getMinZ();
-	
+
 	long getLongChunkPos();
 	
 	boolean isLightCorrect();

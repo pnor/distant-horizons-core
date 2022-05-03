@@ -23,7 +23,7 @@ import java.io.File;
 
 import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 
 /**
@@ -58,7 +58,7 @@ public interface IWorldWrapper extends IBindable
 	/** @throws UnsupportedOperationException if the WorldWrapper isn't for a ServerWorld */
 	File getSaveFolder() throws UnsupportedOperationException;
 
-	default IChunkWrapper tryGetChunk(AbstractChunkPosWrapper pos) {return null;}
+	default IChunkWrapper tryGetChunk(DHChunkPos pos) {return null;}
 
     boolean hasChunkLoaded(int chunkX, int chunkZ);
 }

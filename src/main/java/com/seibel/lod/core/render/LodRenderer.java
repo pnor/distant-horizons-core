@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
+import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.render.objects.QuadElementBuffer;
@@ -46,7 +47,6 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
@@ -107,7 +107,7 @@ public class LodRenderer
 	LodRenderProgram shaderProgram = null;
 	
 	/** This is used to determine if the LODs should be regenerated */
-	private AbstractBlockPosWrapper lastUpdatedPos = null;
+	private DHBlockPos lastUpdatedPos = null;
 	public QuadElementBuffer quadIBO = null;
 	
 	// these variables are used to determine if the buffers should be rebuilt
@@ -339,7 +339,7 @@ public class LodRenderer
 		
 		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
-		AbstractBlockPosWrapper cameraBlockPos = MC_RENDER.getCameraBlockPosition();
+		DHBlockPos cameraBlockPos = MC_RENDER.getCameraBlockPosition();
 		Vec3f cameraDir = MC_RENDER.getLookAtVector();
 		int drawCount = 0;
 
@@ -558,7 +558,7 @@ public class LodRenderer
 	private void updateRegenStatus(LodDimension lodDim, float partialTicks) {
 		short chunkRenderDistance = (short) MC_RENDER.getRenderDistance();
 		long newTime = System.currentTimeMillis();
-		AbstractBlockPosWrapper newPos = MC.getPlayerBlockPos();
+		DHBlockPos newPos = MC.getPlayerBlockPos();
 		boolean shouldUpdateChunks = false;
 		boolean tryPartialGen = false;
 		boolean tryFullGen = false;

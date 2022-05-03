@@ -22,8 +22,8 @@ package com.seibel.lod.core.handlers.dimensionFinder;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 import java.io.File;
@@ -44,7 +44,7 @@ public class PlayerData
 	public static final String PLAYER_BLOCK_POS_X_PATH = "playerBlockPosX";
 	public static final String PLAYER_BLOCK_POS_Y_PATH = "playerBlockPosY";
 	public static final String PLAYER_BLOCK_POS_Z_PATH = "playerBlockPosZ";
-	public AbstractBlockPosWrapper playerBlockPos;
+	public DHBlockPos playerBlockPos;
 	
 	// not implemented yet
 	public static final String WORLD_SPAWN_POS_X_PATH = "worldSpawnBlockPosX";
@@ -54,7 +54,7 @@ public class PlayerData
 	 * The client world has access to a spawn point, so this should be possible to fill in.
 	 * I'm not sure what this will look like for worlds that don't have a spawn point.
 	 */
-	public AbstractBlockPosWrapper worldSpawnPointBlockPos;
+	public DHBlockPos worldSpawnPointBlockPos;
 	
 	
 	
@@ -79,11 +79,11 @@ public class PlayerData
 			int x = toml.getIntOrElse(PLAYER_BLOCK_POS_X_PATH, 0);
 			int y = toml.getIntOrElse(PLAYER_BLOCK_POS_Y_PATH, 0);
 			int z = toml.getIntOrElse(PLAYER_BLOCK_POS_Z_PATH, 0);
-			this.playerBlockPos = FACTORY.createBlockPos(x, y, z);
+			this.playerBlockPos = new DHBlockPos(x, y, z);
 		}
 		else
 		{
-			this.playerBlockPos = FACTORY.createBlockPos(0, 0, 0);
+			this.playerBlockPos = new DHBlockPos(0, 0, 0);
 		}
 	}
 	

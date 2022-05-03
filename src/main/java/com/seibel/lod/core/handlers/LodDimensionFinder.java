@@ -30,13 +30,13 @@ import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
@@ -223,7 +223,7 @@ public class LodDimensionFinder
 		}
 		
 		// relevant positions
-		AbstractChunkPosWrapper playerChunkPos = FACTORY.createChunkPos(playerData.playerBlockPos);
+		DHChunkPos playerChunkPos = new DHChunkPos(playerData.playerBlockPos);
 		int startingBlockPosX = playerChunkPos.getMinBlockX();
 		int startingBlockPosZ = playerChunkPos.getMinBlockZ();
 		RegionPos playerRegionPos = new RegionPos(playerChunkPos);

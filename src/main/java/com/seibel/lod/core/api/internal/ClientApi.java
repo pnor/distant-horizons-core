@@ -27,6 +27,7 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.render.RenderSystemTest;
 import org.apache.logging.log4j.Level;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
@@ -138,14 +139,14 @@ public class ClientApi
 		if (MC != null) MC.sendChatMessage(prefix + str);
 	}
 
-	private final ConcurrentHashMap.KeySetView<Long,Boolean> generating = ConcurrentHashMap.newKeySet();
-	public final ConcurrentHashMap.KeySetView<Long,Boolean> toBeLoaded = ConcurrentHashMap.newKeySet();
+	private final ConcurrentHashMap.KeySetView<DHChunkPos,Boolean> generating = ConcurrentHashMap.newKeySet();
+	public final ConcurrentHashMap.KeySetView<DHChunkPos,Boolean> toBeLoaded = ConcurrentHashMap.newKeySet();
 	
 	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
 	{
 		LagSpikeCatcher clientChunkLoad = new LagSpikeCatcher();
 		//ApiShared.LOGGER.info("Lod Generating add: "+chunk.getLongChunkPos());
-		toBeLoaded.add(chunk.getLongChunkPos());
+		toBeLoaded.add(new DHChunkPos(chunk.getLongChunkPos()));
 		clientChunkLoad.end("clientChunkLoad");
 	}
 
@@ -215,15 +216,15 @@ public class ClientApi
 			}
 
 			LagSpikeCatcher updateToBeLoadedChunk = new LagSpikeCatcher();
-			for (long pos : toBeLoaded) {
+			for (DHChunkPos pos : toBeLoaded) {
 				if (generating.size() >= 1) {
 					//ApiShared.LOGGER.info("Lod Generating Full! Remaining: "+toBeLoaded.size());
 					break;
 				}
-				IChunkWrapper chunk = world.tryGetChunk(FACTORY.createChunkPos(pos));
+				IChunkWrapper chunk = world.tryGetChunk(pos);
 				if (chunk == null) {
 					toBeLoaded.remove(pos);
-					LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} not ready. Remaining queue: {}", FACTORY.createChunkPos(pos), toBeLoaded.size());
+					LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} not ready. Remaining queue: {}", pos, toBeLoaded.size());
 					continue;
 				}
 				if (!chunk.isLightCorrect()) continue;
@@ -234,11 +235,11 @@ public class ClientApi
 				InternalApiShared.lodBuilder.generateLodNodeAsync(chunk, InternalApiShared.lodWorld,
 						world.getDimensionType(), DistanceGenerationMode.FULL, true, true, () -> {
 							generating.remove(pos);
-							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} done. Remaining queue: {}", FACTORY.createChunkPos(pos), toBeLoaded.size());
+							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} done. Remaining queue: {}", pos, toBeLoaded.size());
 						}, () -> {
 							generating.remove(pos);
 							toBeLoaded.add(pos);
-							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} not ready. Remaining queue: {}", FACTORY.createChunkPos(pos), toBeLoaded.size());
+							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} not ready. Remaining queue: {}", pos, toBeLoaded.size());
 						});
 			}
 			updateToBeLoadedChunk.end("updateToBeLoadedChunk");

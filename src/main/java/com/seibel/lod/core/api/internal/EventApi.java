@@ -24,6 +24,7 @@ import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
 import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.RegionPos;
 import com.seibel.lod.core.render.GLProxy;
@@ -202,7 +203,7 @@ public class EventApi
 			return;
 		// recreate the LOD where the blocks were changed
 		ClientApi.LagSpikeCatcher blockChangeUpdate = new ClientApi.LagSpikeCatcher();
-		ClientApi.INSTANCE.toBeLoaded.add(chunk.getLongChunkPos());
+		ClientApi.INSTANCE.toBeLoaded.add(new DHChunkPos(chunk.getLongChunkPos()));
 		blockChangeUpdate.end("clientChunkLoad");
 	}
 	

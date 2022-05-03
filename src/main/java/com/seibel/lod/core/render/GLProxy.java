@@ -66,7 +66,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
  */
 public class GLProxy
 {
-	public static final boolean OVERWIDE_VANILLA_GL_LOGGER = true;
+	public static final boolean OVERWIDE_VANILLA_GL_LOGGER = ModInfo.IS_DEV_BUILD;
 	
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);

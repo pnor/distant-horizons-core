@@ -20,7 +20,7 @@
 package com.seibel.lod.core.wrapperInterfaces.world;
 
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
+import com.seibel.lod.core.objects.DHBlockPos;
 
 
 /**
@@ -33,7 +33,7 @@ public interface IBiomeColorWrapperSingleton extends IBindable
 {
 	IBiomeColorWrapperSingleton getInstance();
 	
-	int getGrassColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
-	int getWaterColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
-	int getFoliageColor(IWorldWrapper world, AbstractBlockPosWrapper blockPos);
+	int getGrassColor(IWorldWrapper world, DHBlockPos blockPos);
+	int getWaterColor(IWorldWrapper world, DHBlockPos blockPos);
+	int getFoliageColor(IWorldWrapper world, DHBlockPos blockPos);
 }

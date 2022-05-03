@@ -19,12 +19,9 @@
 
 package com.seibel.lod.core.objects.lod;
 
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.DHBlockPos;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
-
 /**
  * This object is similar to ChunkPos or BlockPos.
  * 
@@ -33,12 +30,9 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
  */
 public class RegionPos
 {
-	private static final IWrapperFactory WRAPPER_FACTORY = SingletonHandler.get(IWrapperFactory.class);
-	
-	
+
 	public int x;
 	public int z;
-	
 	
 	/** Sets x and z to 0 */
 	public RegionPos()
@@ -55,31 +49,33 @@ public class RegionPos
 	}
 	
 	/** Converts from a BlockPos to a RegionPos */
-	public RegionPos(AbstractBlockPosWrapper pos)
+	public RegionPos(DHBlockPos pos)
 	{
-		this(WRAPPER_FACTORY.createChunkPos(pos));
+		x = Math.floorDiv(pos.x >> 4, LodUtil.REGION_WIDTH_IN_CHUNKS);
+		z = Math.floorDiv(pos.z >> 4, LodUtil.REGION_WIDTH_IN_CHUNKS);
 	}
 	
 	/** Converts from a ChunkPos to a RegionPos */
-	public RegionPos(AbstractChunkPosWrapper pos)
+	public RegionPos(DHChunkPos pos)
 	{
 		x = Math.floorDiv(pos.getX(), LodUtil.REGION_WIDTH_IN_CHUNKS);
 		z = Math.floorDiv(pos.getZ(), LodUtil.REGION_WIDTH_IN_CHUNKS);
 	}
-	
-	/** Returns the ChunkPos at the center of this region */
-	public AbstractChunkPosWrapper chunkPos()
-	{
-		return WRAPPER_FACTORY.createChunkPos(
-				(x * LodUtil.REGION_WIDTH_IN_CHUNKS) + LodUtil.REGION_WIDTH_IN_CHUNKS / 2,
-				(z * LodUtil.REGION_WIDTH_IN_CHUNKS) + LodUtil.REGION_WIDTH_IN_CHUNKS / 2);
+
+	public DHChunkPos centerChunkPos() {
+		return new DHChunkPos(x * LodUtil.REGION_WIDTH_IN_CHUNKS + LodUtil.REGION_WIDTH_IN_CHUNKS / 2,
+				z * LodUtil.REGION_WIDTH_IN_CHUNKS + LodUtil.REGION_WIDTH_IN_CHUNKS / 2);
 	}
-	
-	/** Returns the BlockPos at the center of this region */
-	public AbstractBlockPosWrapper blockPos()
-	{
-		return chunkPos().getWorldPosition()
-				.offset(LodUtil.CHUNK_WIDTH / 2, 0, LodUtil.CHUNK_WIDTH / 2);
+	public DHChunkPos cornerChunkPos() {
+		return new DHChunkPos(x * LodUtil.REGION_WIDTH_IN_CHUNKS, z * LodUtil.REGION_WIDTH_IN_CHUNKS);
+	}
+	public DHBlockPos centerBlockPos() {
+		return new DHBlockPos(x * LodUtil.REGION_WIDTH_IN_CHUNKS * 16 + LodUtil.REGION_WIDTH_IN_CHUNKS * 16 / 2,
+				0, z * LodUtil.REGION_WIDTH_IN_CHUNKS * 16 + LodUtil.REGION_WIDTH_IN_CHUNKS * 16 / 2);
+	}
+	public DHBlockPos cornerBlockPos() {
+		return new DHBlockPos(x * LodUtil.REGION_WIDTH_IN_CHUNKS * 16,
+				0, z * LodUtil.REGION_WIDTH_IN_CHUNKS * 16);
 	}
 	
 	@Override

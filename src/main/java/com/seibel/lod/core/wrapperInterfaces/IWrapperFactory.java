@@ -21,9 +21,9 @@ package com.seibel.lod.core.wrapperInterfaces;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+import com.seibel.lod.core.objects.DHBlockPos;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
 
@@ -35,15 +35,6 @@ import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenera
  */
 public interface IWrapperFactory extends IBindable 
 {
-	AbstractBlockPosWrapper createBlockPos();
-	AbstractBlockPosWrapper createBlockPos(int x, int y, int z);
-
-	AbstractChunkPosWrapper createChunkPos();
-	AbstractChunkPosWrapper createChunkPos(long xAndZPositionCombined);
-	AbstractChunkPosWrapper createChunkPos(int x, int z);
-	AbstractChunkPosWrapper createChunkPos(AbstractChunkPosWrapper newChunkPos);
-	AbstractChunkPosWrapper createChunkPos(AbstractBlockPosWrapper blockPos);
-
 	AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(LodBuilder newLodBuilder,
 			LodDimension newLodDimension, IWorldWrapper worldWrapper);
 }

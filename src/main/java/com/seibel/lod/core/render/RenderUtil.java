@@ -20,10 +20,10 @@
 package com.seibel.lod.core.render;
 
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.DHBlockPos;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 
 /**
@@ -42,7 +42,7 @@ public class RenderUtil
 	 * Returns if the given ChunkPos is in the loaded area of the world.
 	 * @param center the center of the loaded world (probably the player's ChunkPos)
 	 */
-	public static boolean isChunkPosInLoadedArea(AbstractChunkPosWrapper pos, AbstractChunkPosWrapper center)
+	public static boolean isChunkPosInLoadedArea(DHChunkPos pos, DHChunkPos center)
 	{
 		return (pos.getX() >= center.getX() - MC_RENDER.getRenderDistance()
 				&& pos.getX() <= center.getX() + MC_RENDER.getRenderDistance())
@@ -85,7 +85,7 @@ public class RenderUtil
 	 * Returns true if one of the region's 4 corners is in front
 	 * of the camera.
 	 */
-	public static boolean isRegionInViewFrustum(AbstractBlockPosWrapper playerBlockPos, Vec3f cameraDir, int vboRegionX, int vboRegionZ)
+	public static boolean isRegionInViewFrustum(DHBlockPos playerBlockPos, Vec3f cameraDir, int vboRegionX, int vboRegionZ)
 	{
 		// convert the vbo position into a direction vector
 		// starting from the player's position

@@ -35,6 +35,7 @@ import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.PosToRenderContainer;
@@ -51,7 +52,6 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.util.gridList.PosArrayGridList;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
@@ -125,8 +125,8 @@ public class RenderRegion implements AutoCloseable
 	}
 	
 	public boolean render(LodDimension renderDim,
-			Vec3d cameraPos, AbstractBlockPosWrapper cameraBlockPos, Vec3f cameraDir,
-			boolean enableDirectionalCulling, LodRenderProgram program) {
+						  Vec3d cameraPos, DHBlockPos cameraBlockPos, Vec3f cameraDir,
+						  boolean enableDirectionalCulling, LodRenderProgram program) {
 		if (!frontState.compareAndSet(FrontState.Unused, FrontState.Rendering)) return false;
 		try {
 		if (renderDim != lodDim) return false;

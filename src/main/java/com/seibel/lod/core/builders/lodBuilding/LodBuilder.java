@@ -28,6 +28,7 @@ import com.seibel.lod.core.enums.config.BlocksToAvoid;
 import com.seibel.lod.core.enums.config.DistanceGenerationMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
+import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.LodWorld;
@@ -459,7 +460,7 @@ public class LodBuilder
 				IBlockDetailWrapper blockAbove = chunk.getBlockDetail(x, y+1, z);
 				if (blockAbove != null && config.client().worldGenerator().getTintWithAvoidedBlocks() && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
 				{  // The above block is skipped. Lets use its skipped color for current block
-					colorInt = blockAbove.getAndResolveFaceColor(null, chunk, FACTORY.createBlockPos(x, y+1, z));
+					colorInt = blockAbove.getAndResolveFaceColor(null, chunk, new DHBlockPos(x, y+1, z));
 				}
 			}
 			
@@ -467,7 +468,7 @@ public class LodBuilder
 			// and we were avoiding non-full/non-solid blocks
 			if (colorInt == 0) {
 				IBlockDetailWrapper detail = chunk.getBlockDetail(x, y, z);
-				colorInt = detail.getAndResolveFaceColor(null, chunk, FACTORY.createBlockPos(x, y, z));
+				colorInt = detail.getAndResolveFaceColor(null, chunk, new DHBlockPos(x, y, z));
 			}
 		}
 		

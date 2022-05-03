@@ -24,9 +24,8 @@ import java.util.ArrayList;
 
 import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
-import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.chunk.AbstractChunkPosWrapper;
-import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
+import com.seibel.lod.core.objects.DHBlockPos;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
@@ -77,9 +76,9 @@ public interface IMinecraftClientWrapper extends IBindable
 	
 	boolean playerExists();
 	
-	AbstractBlockPosWrapper getPlayerBlockPos();
+	DHBlockPos getPlayerBlockPos();
 	
-	AbstractChunkPosWrapper getPlayerChunkPos();
+	DHChunkPos getPlayerChunkPos();
 	
 	/** 
 	 * Attempts to get the ServerWorld for the dimension
