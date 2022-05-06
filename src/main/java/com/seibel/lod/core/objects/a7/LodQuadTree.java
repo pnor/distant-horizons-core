@@ -7,7 +7,7 @@ import com.seibel.lod.core.util.gridList.MovableGridRingList;
 public class LodQuadTree {
 
     public final int maxPossibleDetailLevel;
-    private final MovableGridRingList<LodSection>[] ringLists;
+    private final MovableGridRingList<RenderDataContaioner>[] ringLists;
 
     public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
         maxPossibleDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(viewDistance*Math.sqrt(2));
@@ -16,17 +16,9 @@ public class LodQuadTree {
         for (int detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
             double distance = DetailDistanceUtil.getDrawDistanceFromDetail(detailLevel);
             int blockCount = ((int)Math.ceil(distance / (1 << detailLevel)));
-            ringLists[detailLevel] = new MovableGridRingList<LodSection>(blockCount, initialPlayerX >> detailLevel, initialPlayerZ >> detailLevel);
+            ringLists[detailLevel] = new MovableGridRingList<RenderDataContaioner>(blockCount, initialPlayerX >> detailLevel, initialPlayerZ >> detailLevel);
             size = ringLists[detailLevel].getSize();
-            for(int sectionIndexX = 0; sectionIndexX < size; sectionIndexX++)
-            {
-                for(int sectionIndexZ = 0; sectionIndexZ < size; sectionIndexZ++)
-                {
-                    ringLists[detailLevel].set(sectionIndexX, sectionIndexZ, new LodSection(sectionIndexX))
-                }
-            }
         }
-        
     }
 
 
