@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class RenderDataContaioner
+public class RenderDataContainer
 {
     public static final boolean DO_SAFETY_CHECKS = true;
     
@@ -27,7 +27,7 @@ public class RenderDataContaioner
     
     public final long[] dataContainer;
     
-    public RenderDataContaioner(byte detailLevel)
+    public RenderDataContainer(byte detailLevel)
     {
         this.detailLevel = detailLevel;
         verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
@@ -230,7 +230,7 @@ public class RenderDataContaioner
         }
     }
     
-    public RenderDataContaioner(DataInputStream inputData, int version, byte expectedDetailLevel) throws IOException {
+    public RenderDataContainer(DataInputStream inputData, int version, byte expectedDetailLevel) throws IOException {
         minHeight = SingletonHandler.get(IMinecraftClientWrapper.class).getWrappedClientWorld().getMinHeight();
         detailLevel = inputData.readByte();
         if (detailLevel != expectedDetailLevel)

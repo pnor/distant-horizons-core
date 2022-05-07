@@ -338,6 +338,14 @@ public class LodUtil
 		return -Math.floorDiv(-value, divider);
 	}
 
+	// Why is this not in the standard library?! Come on Java!
+	public static byte min(byte a, byte b) {
+		return a < b ? a : b;
+	}
+	public static byte max(byte a, byte b) {
+		return a > b ? a : b;
+	}
+
 	public static int computeOverdrawOffset(LodDimension lodDim) {
 		int chunkRenderDist = MC_RENDER.getRenderDistance() + 1;
 		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
@@ -397,6 +405,7 @@ public class LodUtil
 	public static double pow2(double x) {return x*x;}
 	public static int pow2(int x) {return x*x;}
 
+	public static long pow2(long x) {return x*x;}
 	
 	// True if the requested threshold pass, or false otherwise
 	// For details, see:

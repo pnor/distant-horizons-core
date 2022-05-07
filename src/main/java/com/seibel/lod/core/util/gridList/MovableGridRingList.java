@@ -19,12 +19,15 @@
  
 package com.seibel.lod.core.util.gridList;
 
+import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.Pos2D;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
@@ -34,6 +37,28 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	private final int halfSize;
 	private final int size;
 	private final ReentrantReadWriteLock moveLock = new ReentrantReadWriteLock();
+
+	private Pos2D[] ringIteratorList = null;
+
+	//TODO: Check if this needs to be synchronized
+	private void buildRingIteratorList() {
+		ringIteratorList = null;
+		Pos2D[] list = new Pos2D[size*size];
+
+			int i = 0;
+			for (int ix=-halfSize; ix<=halfSize; ix++) {
+				for (int iz=-halfSize; iz<=halfSize; iz++) {
+					list[i] = new Pos2D(ix, iz);
+					i++;
+				}
+			}
+			Arrays.sort(list, (a, b) -> {
+				double disSqrA = a.x* a.x+ a.y* a.y;
+				double disSqrB = b.x* b.x+ b.y* b.y;
+				return Double.compare(disSqrA, disSqrB);
+			});
+		ringIteratorList = list;
+	}
 
 	public MovableGridRingList(int halfSize, int centerX, int centerY) {
 		super((halfSize * 2 + 1) * (halfSize * 2 + 1));
@@ -212,6 +237,57 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 			moveLock.writeLock().unlock();
 		}
 	}
+
+	// TODO: Use MutablePos2D in the future
+	public void forEachPos(BiConsumer<? super T, Pos2D> d) {
+		moveLock.readLock().lock();
+		try {
+			Pos2D min = pos.get();
+			for (int x = min.x; x < min.x + size; x++) {
+				for (int y = min.y; y < min.y + size; y++) {
+					T t = _getUnsafe(x, y);
+					d.accept(t, new Pos2D(x, y));
+				}
+			}
+		}
+		finally {
+			moveLock.readLock().unlock();
+		}
+	}
+
+	// TODO: Use MutablePos2D in the future
+	public void forEachOrdered(Consumer<? super T> d) {
+		if (ringIteratorList == null) buildRingIteratorList();
+		moveLock.readLock().lock();
+		try {
+			Pos2D min = pos.get();
+			for (Pos2D offset : ringIteratorList) {
+				T t = _getUnsafe(min.x + offset.x, min.y + offset.y);
+				d.accept(t);
+			}
+		}
+		finally {
+			moveLock.readLock().unlock();
+		}
+	}
+
+	// TODO: Use MutablePos2D in the future
+	public void forEachPosOrdered(BiConsumer<? super T, Pos2D> d) {
+		if (ringIteratorList == null) buildRingIteratorList();
+		moveLock.readLock().lock();
+		try {
+			Pos2D min = pos.get();
+			for (Pos2D offset : ringIteratorList) {
+				T t = _getUnsafe(min.x + offset.x, min.y + offset.y);
+				d.accept(t, new Pos2D(min.x + offset.x, min.y + offset.y));
+			}
+		}
+		finally {
+			moveLock.readLock().unlock();
+		}
+	}
+
+
 
 	@Override
 	public String toString() {
