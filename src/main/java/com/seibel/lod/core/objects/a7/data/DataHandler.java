@@ -2,6 +2,7 @@ package com.seibel.lod.core.objects.a7.data;
 
 import com.seibel.lod.core.objects.a7.RenderDataContainer;
 import com.seibel.lod.core.objects.a7.RenderDataSource;
+import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 
 import java.io.File;
 
@@ -13,7 +14,7 @@ public class DataHandler implements RenderDataSource {
     }
 
     @Override
-    public RenderDataContainer createRenderData(byte detailLevel, int x, int z) {
+    public RenderDataContainer createRenderData(DhSectionPos pos) {
 
 
         //TODO

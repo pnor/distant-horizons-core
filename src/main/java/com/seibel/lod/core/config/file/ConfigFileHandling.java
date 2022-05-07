@@ -145,7 +145,9 @@ public class ConfigFileHandling {
     public static void createComment(ConfigEntry<?> entry, CommentedFileConfig workConfig) {
         if (!entry.getAppearance().showInFile)
             return;
-        workConfig.setComment(entry.getNameWCategory(), entry.getComment());
+        if (entry.getComment() != null) {
+            workConfig.setComment(entry.getNameWCategory(), " " + entry.getComment().replaceAll("\n", "\n ") + "\n ");
+        }
     }
 
 

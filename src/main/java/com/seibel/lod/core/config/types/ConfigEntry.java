@@ -3,7 +3,6 @@ package com.seibel.lod.core.config.types;
 import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.ConfigEntryAppearance;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
-import com.seibel.lod.core.objects.MinDefaultMax;
 
 /**
  * Use for making the config variables
@@ -51,13 +50,6 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     }
     public T getTrueValue() {
         return value;
-    }
-
-    public MinDefaultMax<T> getMinValueMax() {
-        return new MinDefaultMax<T>(min, value, max);
-    }
-    public MinDefaultMax<T> getMinDefaultMax() {
-        return new MinDefaultMax<T>(min, defaultValue, max);
     }
 
     /** Sets the value without saving */
@@ -149,7 +141,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     }
 
     public static class Builder<T> extends AbstractConfigType.Builder<T, Builder<T>> {
-        private String tmpComment;
+        private String tmpComment = null;
         private T tmpMin;
         private T tmpMax;
         private boolean tmpUseApiOverwrite;
@@ -159,9 +151,9 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
             return this;
         }
 
-        public Builder<T> setMinDefaultMax(MinDefaultMax<T> newMinDefaultMax) {
-            this.set(newMinDefaultMax.defaultValue);
-            this.setMinMax(newMinDefaultMax.minValue, newMinDefaultMax.maxValue);
+        public Builder<T> setMinDefaultMax(T newMin, T newDefault, T newMax) {
+            this.set(newDefault);
+            this.setMinMax(newMin, newMax);
             return this;
         }
 
