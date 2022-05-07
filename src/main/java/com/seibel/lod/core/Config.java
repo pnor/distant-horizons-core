@@ -39,7 +39,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.I
 
 /**
  * This handles any configuration the user has access to.
- * @author coolGi2007
+ * @author coolGi
  * @version 04-29-2022
  */
 

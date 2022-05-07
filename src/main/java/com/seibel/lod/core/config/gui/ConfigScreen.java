@@ -1,7 +1,7 @@
 package com.seibel.lod.core.config.gui;
 
 /**
- * @author coolGi2007
+ * @author coolGi
  */
 public class ConfigScreen extends AbstractScreen {
     @Override

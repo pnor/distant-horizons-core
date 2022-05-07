@@ -7,7 +7,7 @@ import com.seibel.lod.core.config.file.ConfigFileHandling;
 /**
  * Use for making the config variables
  *
- * @author coolGi2007
+ * @author coolGi
  */
 public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     private T defaultValue;

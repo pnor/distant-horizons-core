@@ -5,7 +5,7 @@ import com.seibel.lod.core.config.ConfigEntryAppearance;
 /**
  * The class where all config options should extend
  *
- * @author coolGi2007
+ * @author coolGi
  */
 public abstract class AbstractConfigType<T, S> { // The S is the class that is extending this
     public String category = "";    // This should only be set once in the init

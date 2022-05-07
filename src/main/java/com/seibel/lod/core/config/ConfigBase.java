@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Indexes and sets everything up for the file handling and gui
  *
- * @author coolGi2007
+ * @author coolGi
  * @author Ran
  */
 public class ConfigBase {

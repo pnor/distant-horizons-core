@@ -15,12 +15,11 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 
 /**
  * Handles all stuff to do with the files
  *
- * @author coolGi2007
+ * @author coolGi
  */
 public class ConfigFileHandling {
     public static final Path ConfigPath = SingletonHandler.get(IMinecraftClientWrapper.class).getGameDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");

@@ -25,12 +25,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Where the annotations for the config are defined
- * If there is no annotation then the config will not touch it
+ * Will be removed soon so please keep this out
  *
- * @author coolGi2007
+ * @author coolGi
  * @version 02-07-2022
  */
+@Deprecated
 public class ConfigAnnotations {
     /** For making categories */
     @Deprecated
@@ -45,6 +45,7 @@ public class ConfigAnnotations {
      *
      * Accepts string and the text is the value
      */
+    @Deprecated
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface Comment {}
@@ -55,6 +56,7 @@ public class ConfigAnnotations {
      *
      * Accepts string and the text is the value
      */
+    @Deprecated
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface FileComment {}
