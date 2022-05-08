@@ -1,5 +1,8 @@
 package com.seibel.lod.core;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.seibel.lod.core.jar.DarkModeDetector;
 import com.seibel.lod.core.jar.JarDependencySetup;
 
 import javax.swing.*;
@@ -13,17 +16,26 @@ import java.util.Locale;
  * @author coolGi
  */
 public class JarMain {
+    public static final boolean isDarkTheme = DarkModeDetector.isDarkMode();
+
     public static void main(String[] args) {
         // Sets up the local
         if (JarMain.accessFile("assets/lod/lang/"+Locale.getDefault().toString().toLowerCase()+".json") == null) {
             System.out.println("The language setting ["+Locale.getDefault().toString().toLowerCase()+"] isn't allowed yet. Defaulting to ["+Locale.US.toString().toLowerCase()+"].");
             Locale.setDefault(Locale.US);
         }
+        // Set up the theme
+        if (isDarkTheme)
+            FlatDarkLaf.setup();
+        else
+            FlatLightLaf.setup();
+
 
         JarDependencySetup.createInitialBindings();
         System.out.println("WARNING: The standalone jar still work in progress");
         JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);
     }
+
 
 
 
@@ -40,7 +52,7 @@ public class JarMain {
         return input;
     }
 
-    /** Convert inputStream to String. Usefull for reading .txt or .json that are inside the jar file */
+    /** Convert inputStream to String. Useful for reading .txt or .json that are inside the jar file */
     public static String convertInputStreamToString(InputStream inputStream) {
         final char[] buffer = new char[8192];
         final StringBuilder result = new StringBuilder();
