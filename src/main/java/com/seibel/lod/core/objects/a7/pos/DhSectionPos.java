@@ -1,5 +1,6 @@
 package com.seibel.lod.core.objects.a7.pos;
 
+import com.seibel.lod.core.enums.LodDirection;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import org.lwjgl.system.CallbackI;
 
@@ -49,5 +50,9 @@ public class DhSectionPos {
 
     public DhSectionPos getParent(){
         return new DhSectionPos((byte) (detail + 1), x / 2, z / 2);
+    }
+
+    public DhSectionPos getAdjacent(LodDirection dir) {
+        return new DhSectionPos(detail, x + dir.getNormal().x, z + dir.getNormal().z);
     }
 }

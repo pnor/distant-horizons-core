@@ -1,6 +1,8 @@
 package com.seibel.lod.core.objects.a7;
 
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
+import com.seibel.lod.core.objects.a7.render.RenderContainer;
+import com.seibel.lod.core.util.LodUtil;
 
 public class LodSection {
     public static final int SUB_REGION_DATA_WIDTH = 16*16;
@@ -14,7 +16,7 @@ public class LodSection {
 
 
     private RenderDataContainer levelContainer;
-    private RenderContainer renderContainer = null;
+    public RenderContainer renderContainer = null;
 
     // Create sub region
     public LodSection(DhSectionPos pos) {
@@ -34,10 +36,21 @@ public class LodSection {
     }
     public void unload() {
         if (!isLoaded()) throw new IllegalStateException("LodSection is not loaded");
+        if (renderContainer != null) renderContainer.notifyUnload();
         levelContainer = null;
+    }
+    public void dispose() {
+        LodUtil.assertTrue(!isLoaded());
+        if (renderContainer != null) renderContainer.notifyDispose();
+    }
+
+    public void immediateDispose() {
+        if (isLoaded()) unload();
+        if (renderContainer != null) renderContainer.notifyDispose();
     }
 
     public boolean isLoaded() {
         return levelContainer != null;
     }
+
 }

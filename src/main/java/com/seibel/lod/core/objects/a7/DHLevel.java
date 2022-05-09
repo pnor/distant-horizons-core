@@ -24,7 +24,6 @@ public class DHLevel extends LodQuadTree {
         }
     }
 
-
     @Override
     public RenderDataSource getRenderDataSource() {
         return dataHandler;

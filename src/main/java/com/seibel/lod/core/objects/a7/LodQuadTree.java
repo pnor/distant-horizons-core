@@ -51,7 +51,8 @@ public abstract class LodQuadTree {
 
     public void tick(DhBlockPos2D playerPos) {
         for (int detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
-            ringLists[detailLevel].move(playerPos.x >> detailLevel, playerPos.z >> detailLevel);
+            ringLists[detailLevel].move(playerPos.x >> detailLevel, playerPos.z >> detailLevel,
+                    LodSection::immediateDispose);
         }
 
         // First tick pass: update all sections' childCount from bottom level to top level. Step:
@@ -73,7 +74,6 @@ public abstract class LodQuadTree {
         //       - set childCount to -1 (Signal that this section will be freed if not rescued)
         //     - If targetLevel <= detail && section == null:
         //       - Parent's childCount++ (Create parent if needed)
-
         for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
             final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
             final MovableGridRingList<LodSection> childRingList =
@@ -150,10 +150,8 @@ public abstract class LodQuadTree {
         //   if childCount == -1: // (section can be loaded or unloaded, due to fast movement)
         //     - set this section to null (TODO: Is this needed to be first or last or don't matter for concurrency?)
         //     - If loaded unload section
-
         for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
-            final byte detail = detailLevel;
-            final MovableGridRingList<LodSection> ringList = ringLists[detail];
+            final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
             final MovableGridRingList<LodSection> childRingList =
                     detailLevel == 0 ? null : ringLists[detailLevel - 1];
             final MovableGridRingList<LodSection> parentRingList =
@@ -182,6 +180,7 @@ public abstract class LodQuadTree {
                     if (section.isLoaded()) {
                         section.unload();
                     }
+                    section.dispose();
                 }
             });
         }
