@@ -1,16 +1,13 @@
 package com.seibel.lod.core.objects.a7;
 
-import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.a7.pos.DhBlockPos2D;
-import com.seibel.lod.core.objects.a7.pos.DhLodUnit;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
 
 // QuadTree built from several layers of 2d ring buffers
-public class LodQuadTree {
-
+public abstract class LodQuadTree {
     public final int maxPossibleDetailLevel;
     private final MovableGridRingList<LodSection>[] ringLists;
 
@@ -35,90 +32,158 @@ public class LodQuadTree {
         return ringLists[detailLevel].get(x, z);
     }
 
-    enum LodSectionState {
-        Loaded,
-        Unloaded,
-        Freed,
+    // Overridable
+    public byte calculateExpectedDetailLevel(DhBlockPos2D playerPos, DhSectionPos sectionPos) {
+        return DetailDistanceUtil.getDetailLevelFromDistance(
+                playerPos.dist(sectionPos.getCenter().getCenter()));
     }
 
-    /*
-    private LodSectionState expectsState(DhBlockPos2D playerPos, DhSectionPos pos) {
-        // Get state of the children
-        boolean hasAnyChildren = false;
-        if (pos.detail != 0) {
-            hasAnyChildren = getSection(pos.getChild(0)) != null ||
-                    getSection(pos.getChild(1)) != null ||
-                    getSection(pos.getChild(2)) != null ||
-                    getSection(pos.getChild(3)) != null; // Do this to allow short-circuit
-        }
-        if (hasAnyChildren) {
-            return LodSectionState.Unloaded;
-        }
-        // All children is in the Freed state
+    public abstract RenderDataSource getRenderDataSource();
 
-        // Calculate the distance to the player
-        long dist = pos.getCenter().getCenter().distSquared(playerPos);
-        byte targetDetail = DetailDistanceUtil.getDetailLevelFromDistance(dist);
-    }*/
+    public LodSection getParentSection(DhSectionPos pos) {
+        return getSection(pos.getParent());
+    }
+    public LodSection getChildSection(DhSectionPos pos, int child0to3) {
+        return getSection(pos.getChild(child0to3));
+    }
+
+
 
     public void tick(DhBlockPos2D playerPos) {
         for (int detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
             ringLists[detailLevel].move(playerPos.x >> detailLevel, playerPos.z >> detailLevel);
         }
 
-        // First tick pass: update all sections' distanceBasedTargetLevel amd neighborCheckedTargetLevel
+        // First tick pass: update all sections' childCount from bottom level to top level. Step:
+        //   If as detail 0 && section != null:
+        //     - set childCount to 0
+        //   If section != null && child != 0:
+        //     - // Section will be in the unloaded state.
+        //     - create parent if it doesn't exist, with childCount = 1
+        //     - for each child:
+        //       - if null, create new with childCount = 0
+        //       - else if childCount == -1, set childCount = 0 (rescue it)
+        //     - set childCount to 4
+        //   Else:
+        //     - Calculate targetLevel at that section
+        //     - If targetLevel > detail && section != null:
+        //       - Parent's childCount-- (Assert parent != null && childCount > 0 before decrementing)
+        //       - // Note that this doesn't necessarily mean this section will be freed as it may be rescued later
+        //            due to neighboring quadrants not able to be freed (they pass targetLevel checks or has children)
+        //       - set childCount to -1 (Signal that this section will be freed if not rescued)
+        //     - If targetLevel <= detail && section == null:
+        //       - Parent's childCount++ (Create parent if needed)
+
         for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
             final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
-            final MovableGridRingList<LodSection> childRingList = detailLevel == 0 ? null : ringLists[detailLevel - 1];
+            final MovableGridRingList<LodSection> childRingList =
+                    detailLevel == 0 ? null : ringLists[detailLevel - 1];
+            final MovableGridRingList<LodSection> parentRingList =
+                    detailLevel == maxPossibleDetailLevel - 1 ? null : ringLists[detailLevel + 1];
             final byte detail = detailLevel;
-            ringList.forEachPosOrdered((r, pos) -> {
-                DhSectionPos sectionPos = new DhSectionPos(detail, pos.x, pos.y);
-                long dist = sectionPos.getCenter().getCenter().distSquared(playerPos);
-                byte targetDetail = DetailDistanceUtil.getDetailLevelFromDistance(dist);
-                if (r == null) {
-                    if (targetDetail <= detail) {
-                        r = ringList.setChained(pos.x, pos.y, new LodSection(sectionPos));
-                    } else {
-                        return;
+            ringList.forEachPosOrdered((section, pos) -> {
+                if (detail == 0 && section != null) {
+                    section.childCount = 0;
+                }
+                if (section != null && section.childCount != 0) {
+                    // Section will be in the unloaded state.
+                    LodUtil.assertTrue(parentRingList != null);
+                    LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
+                    if (parent == null) {
+                        parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
+                                new LodSection(section.pos.getParent()));
+                        parent.childCount++;
+                    }
+                    LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
+                    for (byte i = 0; i < 4; i++) {
+                        DhSectionPos childPos = section.pos.getChild(i);
+                        LodSection child = ringList.get(childPos.x, childPos.z);
+                        if (child == null) {
+                            child = ringList.setChained(childPos.x, childPos.z,
+                                    new LodSection(childPos));
+                            child.childCount = 0;
+                        } else if (child.childCount == -1) {
+                            child.childCount = 0;
+                        }
+                    }
+                    section.childCount = 4;
+                } else {
+                    DhSectionPos sectPos = section != null ? section.pos : new DhSectionPos(detail, pos.x, pos.y);
+                    byte targetLevel = calculateExpectedDetailLevel(playerPos, sectPos);
+                    if (targetLevel > detail && section != null) {
+                        LodUtil.assertTrue(parentRingList != null);
+                        LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
+                        LodUtil.assertTrue(parent != null);
+                        LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
+                        parent.childCount--;
+                        section.childCount = -1;
+                    } else if (targetLevel <= detail && section == null) {
+                        LodUtil.assertTrue(parentRingList != null);
+                        LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
+                        if (parent == null) {
+                            parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
+                                    new LodSection(sectPos.getParent()));
+                        }
+                        parent.childCount++;
                     }
                 }
-                r.distanceBasedTargetLevel = targetDetail;
-                if (childRingList == null) {
-                    r.childTargetLevel = (byte) (r.distanceBasedTargetLevel - 1);
-                } else {
-                    byte minChildLevel = Byte.MAX_VALUE;
-                    /* FIXME: Todo later
-                    DhSectionPos childPos0 = sectionPos.getChild(0);
-                    minChildLevel = LodUtil.min(minChildLevel, childRingList.get(childPos0.x, childPos0.z).childTargetLevel);
-                    DhSectionPos childPos1 = sectionPos.getChild(1);
-                    minChildLevel = LodUtil.min(minChildLevel, childRingList.get(childPos1.x, childPos1.z).childTargetLevel);
-                    DhSectionPos childPos2 = sectionPos.getChild(2);
-                    minChildLevel = LodUtil.min(minChildLevel, childRingList.get(childPos2.x, childPos2.z).childTargetLevel);
-                    DhSectionPos childPos3 = sectionPos.getChild(3);
-                    minChildLevel = LodUtil.min(minChildLevel, childRingList.get(childPos3.x, childPos3.z).childTargetLevel);
-                    r.childTargetLevel = minChildLevel + 1;*/
+                // Final quick assert to insure section pos is correct.
+                if (section != null) {
+                    LodUtil.assertTrue(section.pos.detail == detail);
+                    LodUtil.assertTrue(section.pos.x == pos.x);
+                    LodUtil.assertTrue(section.pos.z == pos.y);
                 }
             });
         }
 
-        // Second tick pass: load, unload, and free sections
-        for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
-            final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
-            final byte detail = detailLevel;
+        // Second tick pass: load and unload sections (and can also be used to assert everything is working). Step:
+        //   // ===Assertion steps===
+        //   assert childCount == 4 || childCount == 0 || childCount == -1
+        //   if childCount == 4 assert all children exist
+        //   if childCount == 0 assert all children are null
+        //   if childCount == -1 assert parent childCount is 0
+        //   // ======================
+        //   if childCount == 4 && section is loaded:
+        //     - unload section
+        //   if childCount == 0 && section is unloaded:
+        //     - load section
+        //   if childCount == -1: // (section can be loaded or unloaded, due to fast movement)
+        //     - set this section to null (TODO: Is this needed to be first or last or don't matter for concurrency?)
+        //     - If loaded unload section
 
-        }
-
-        // Update the tree from the bottom detail level upwards
         for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
-            final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
             final byte detail = detailLevel;
-            ringList.forEachPosOrdered((r, pos) -> {
-                DhSectionPos sectionPos = new DhSectionPos(detail, pos.x, pos.y);
+            final MovableGridRingList<LodSection> ringList = ringLists[detail];
+            final MovableGridRingList<LodSection> childRingList =
+                    detailLevel == 0 ? null : ringLists[detailLevel - 1];
+            final MovableGridRingList<LodSection> parentRingList =
+                    detailLevel == maxPossibleDetailLevel - 1 ? null : ringLists[detailLevel + 1];
+            ringList.forEachPosOrdered((section, pos) -> {
+                LodUtil.assertTrue(section.childCount == 4 || section.childCount == 0 || section.childCount == -1);
+                if (section.childCount == 4) LodUtil.assertTrue(
+                        getChildSection(section.pos, 0) != null &&
+                        getChildSection(section.pos, 1) != null &&
+                        getChildSection(section.pos, 2) != null &&
+                        getChildSection(section.pos, 3) != null);
+                if (section.childCount == 0) LodUtil.assertTrue(
+                        getChildSection(section.pos, 0) == null &&
+                        getChildSection(section.pos, 1) == null &&
+                        getChildSection(section.pos, 2) == null &&
+                        getChildSection(section.pos, 3) == null);
+                if (section.childCount == -1) LodUtil.assertTrue(
+                        getParentSection(section.pos).childCount == 0);
+
+                if (section.childCount == 4 && section.isLoaded()) {
+                    section.load(getRenderDataSource());
+                } else if (section.childCount == 0 && !section.isLoaded()) {
+                    section.unload();
+                } else if (section.childCount == -1) {
+                    ringList.set(pos.x, pos.y, null);
+                    if (section.isLoaded()) {
+                        section.unload();
+                    }
+                }
             });
         }
-
     }
-
-
-
 }

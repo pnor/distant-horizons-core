@@ -442,5 +442,9 @@ public class LodUtil
 			return str.substring(0, Math.min(str.length(), maxLength));
 		}
 	}
+
+	public static void assertTrue(boolean condition) {
+		if (!condition) throw new RuntimeException("Assertion failed");
+	}
 	
 }

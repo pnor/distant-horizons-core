@@ -7,10 +7,11 @@ public class LodSection {
 
     public final DhSectionPos pos;
 
-    // Following used for LodQuadTree tick() method, and ONLY for that method!
-    public byte distanceBasedTargetLevel = Byte.MAX_VALUE; // the pure distance-based target level of this section
-    // what is the nearest target level for the child quadrants after making sure child quadrants use the same target level?
-    public byte childTargetLevel = Byte.MAX_VALUE;
+    /* Following used for LodQuadTree tick() method, and ONLY for that method! */
+    // the number of children of this section
+    // (Should always be 4 after tick() is done, or 0 only if this is an unloaded node)
+    public byte childCount = 0;
+
 
     private RenderDataContainer levelContainer;
     private RenderContainer renderContainer = null;

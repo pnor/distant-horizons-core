@@ -6,7 +6,8 @@ import org.lwjgl.system.CallbackI;
 import java.util.function.Consumer;
 
 public class DhSectionPos {
-    public static final int DATA_WIDTH_PER_SECTION = 64;
+    public static final byte SECTION_DETAIL_LEVEL_OFFSET = 6;
+    public static final int DATA_WIDTH_PER_SECTION = 1 << SECTION_DETAIL_LEVEL_OFFSET;
 
     public final byte detail;
     public final int x;
