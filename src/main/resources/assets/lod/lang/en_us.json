@@ -143,7 +143,7 @@
   "lod.config.client.graphics.advancedGraphics.vanillaOverdraw":
 	"Vanilla overdraw",
   "lod.config.client.graphics.advancedGraphics.vanillaOverdraw.@tooltip":
-	"Determines how often fake chunks will be rendered on top of regular chunks.\n\n§6Dynamic:§r attempts to pick the best option based on vanilla render distance and dimension.\n§6Always:§r prevents holes in the world, but may look odd for transparent blocks or in caves.\n§6Border:§r renders fake chunks on the border of the vanilla render distance, preventing gaps when the player isn't moving.\n§6Never:§r fake chunks will never overlap the vanilla render distance, but there may be holes in the world.",
+	"Determines how often fake chunks will be rendered on top of regular chunks.\n\n§6Dynamic:§r attempts to pick the best option based on vanilla render distance and dimension.\n§6Always:§r prevents holes in the world, but may look odd for transparent blocks or in caves.\n§6Never:§r fake chunks will never overlap the vanilla render distance, but there may be holes in the world.",
   "lod.config.client.graphics.advancedGraphics.overdrawOffset":
     "Overdraw Offset",
   "lod.config.client.graphics.advancedGraphics.overdrawOffset.@tooltip":
