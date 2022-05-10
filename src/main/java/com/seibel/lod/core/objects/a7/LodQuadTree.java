@@ -7,10 +7,26 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
 
 // QuadTree built from several layers of 2d ring buffers
+
+/**
+ * This quadTree structure is the core of the DH mod.
+ * This class represent a circular quadTree of lodSection
+ *
+ * Each section at level n is populated in one (sometimes more than one) ways:
+ *      -by constructing it from the data of all the children sections (lower levels)
+ *      -by loading from file
+ *      -by adding data with the lodBuilder
+ */
 public abstract class LodQuadTree {
     public final int maxPossibleDetailLevel;
     private final MovableGridRingList<LodSection>[] ringLists;
-
+    
+    /**
+     * Constructor of the quadTree
+     * @param viewDistance
+     * @param initialPlayerX
+     * @param initialPlayerZ
+     */
     public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
         maxPossibleDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(viewDistance*Math.sqrt(2));
         ringLists = new MovableGridRingList[maxPossibleDetailLevel];
@@ -23,32 +39,68 @@ public abstract class LodQuadTree {
                     initialPlayerX >> detailLevel, initialPlayerZ >> detailLevel);
         }
     }
-
+    
+    /**
+     * This method return the LodSection given the Section Pos
+     * @param pos
+     * @return
+     */
     public LodSection getSection(DhSectionPos pos) {
         return getSection(pos.detail, pos.x, pos.z);
     }
-
+    
+    /**
+     * This method return the LodSection at the given detail level and level coordinate x and z
+     * @param detailLevel
+     * @param x
+     * @param z
+     * @return
+     */
     public LodSection getSection(byte detailLevel, int x, int z) {
         return ringLists[detailLevel].get(x, z);
     }
 
     // Overridable
+    
+    /**
+     * This method will compute the detail level based on player position and section pos
+     * @param playerPos
+     * @param sectionPos
+     * @return detail level of this section pos
+     */
     public byte calculateExpectedDetailLevel(DhBlockPos2D playerPos, DhSectionPos sectionPos) {
         return DetailDistanceUtil.getDetailLevelFromDistance(
                 playerPos.dist(sectionPos.getCenter().getCenter()));
     }
 
     public abstract RenderDataSource getRenderDataSource();
-
+    
+    /**
+     * Given a section pos at level n this method returns the parent section at level n+1
+     * @param pos
+     * @return the parent LodSection
+     */
     public LodSection getParentSection(DhSectionPos pos) {
         return getSection(pos.getParent());
     }
+    
+    /**
+     * Given a section pos at level n and a child index this method return the
+     * child section at level n-1
+     * @param pos
+     * @param child0to3 since there are 4 possible children this index identify which one we are getting
+     * @return one of the child LodSection
+     */
     public LodSection getChildSection(DhSectionPos pos, int child0to3) {
         return getSection(pos.getChild(child0to3));
     }
-
-
-
+    
+    
+    
+    /**
+     * This function update the quadTree based on the playerPos and the current game configs (static and global)
+     * @param playerPos
+     */
     public void tick(DhBlockPos2D playerPos) {
         for (int detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
             ringLists[detailLevel].move(playerPos.x >> detailLevel, playerPos.z >> detailLevel,

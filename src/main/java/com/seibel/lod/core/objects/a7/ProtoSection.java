@@ -6,7 +6,8 @@ import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 public class ProtoSection
 {
 	public int CHUNK_BLOCK_SIZE = LodSection.SUB_REGION_DATA_WIDTH;
-	public int CHUNK_BIOME_SIZE = LodSection.SUB_REGION_DATA_WIDTH;
+	/**TODO make biome resolution a costant somewhere*/
+	public int CHUNK_BIOME_SIZE = LodSection.SUB_REGION_DATA_WIDTH/4;
 	
 	public int blockVerticalSize;
 	public int biomeVerticalSize;
