@@ -23,14 +23,21 @@ public class RenderDataContainer
     private final short minHeight;
     public final byte detailLevel;
     public final int SECTION_SIZE = 128;
+    public final int AIR_LODS_SIZE = 16;
+    public final int AIR_SECTION_SIZE = SECTION_SIZE/AIR_LODS_SIZE;
     public final int verticalSize;
     
     public final long[] dataContainer;
     
+    /**
+     * Constructor of the RenderDataContainer
+     * @param detailLevel
+     */
     public RenderDataContainer(byte detailLevel)
     {
         this.detailLevel = detailLevel;
         verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
+        dataContainer = new long[SECTION_SIZE * SECTION_SIZE * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
         dataContainer = new long[SECTION_SIZE * SECTION_SIZE * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
         minHeight = SingletonHandler.get(IMinecraftClientWrapper.class).getWrappedClientWorld().getMinHeight();
     }
@@ -40,24 +47,51 @@ public class RenderDataContainer
         return detailLevel;
     }
     
+    /**
+     * This method will clear all data at relative section position
+     * @param posX
+     * @param posZ
+     */
     public void clear(int posX, int posZ)
     {
         for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
             dataContainer[posX * SECTION_SIZE * verticalSize + posZ * verticalSize + verticalIndex] = DataPointUtil.EMPTY_DATA;
     }
     
+    /**
+     * This method will add the data given in input at the relative position and vertical index
+     * @param data
+     * @param posX
+     * @param posZ
+     * @param verticalIndex
+     * @return
+     */
     public boolean addData(long data, int posX, int posZ, int verticalIndex)
     {
         dataContainer[posX * SECTION_SIZE * verticalSize + posZ * verticalSize + verticalIndex] = data;
         return true;
     }
     
+    /**
+     * This section will fill the data given in input at the given position
+     * @param data
+     * @param posX
+     * @param posZ
+     */
     private void forceWriteVerticalData(long[] data, int posX, int posZ)
     {
         int index = posX * SECTION_SIZE * verticalSize + posZ * verticalSize;
         if (verticalSize >= 0) System.arraycopy(data, 0, dataContainer, index + 0, verticalSize);
     }
     
+    /**
+     * This methods will add the data in the given position if certain condition are satisfied
+     * @param data
+     * @param posX
+     * @param posZ
+     * @param override if override is true we can override data created with same generation mode
+     * @return
+     */
     public boolean addVerticalData(long[] data, int posX, int posZ, boolean override)
     {
         int index = posX * SECTION_SIZE * verticalSize + posZ * verticalSize;

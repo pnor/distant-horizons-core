@@ -18,6 +18,13 @@ import com.seibel.lod.core.util.gridList.MovableGridRingList;
  *      -by adding data with the lodBuilder
  */
 public abstract class LodQuadTree {
+    
+    /**
+     * TODO add static configs here
+     * These configs are updated someway
+     */
+    
+    
     public final int maxPossibleDetailLevel;
     private final MovableGridRingList<LodSection>[] ringLists;
     

@@ -375,6 +375,7 @@ public class DataPointUtil
 	}
 
 	private static final ThreadLocal<short[]> tLocalHeightAndDepth = new ThreadLocal<short[]>();
+	private static final ThreadLocal<int[]> tDataIndexCache = new ThreadLocal<int[]>();
 	private static final ThreadLocal<long[]> tMaxVerticalData = new ThreadLocal<long[]>();
 	/**
 	 * This method merge column of multiple data together
@@ -386,8 +387,9 @@ public class DataPointUtil
 	// TODO: Make this operate on a out param array, to allow skipping copy array on use
 	public static long[] mergeMultiData(long[] dataToMerge, int inputVerticalData, int maxVerticalData)
 	{
+		//size indicate how many position we are merging in one position
 		int size = dataToMerge.length / inputVerticalData;
-
+		
 		// We initialize the arrays that are going to be used
 		int heightAndDepthLength = (MAX_WORLD_Y_SIZE / 2 + 16) * 2;
 		short[] heightAndDepth = tLocalHeightAndDepth.get();
@@ -417,6 +419,7 @@ public class DataPointUtil
 		int i;
 		int ii;
 		int dataIndex;
+		
 		//We collect the indexes of the data, ordered by the depth
 		for (int index = 0; index < size; index++)
 		{
@@ -596,28 +599,47 @@ public class DataPointUtil
 		}
 		else
 		{
+			
+			//We want to efficiently memorize indexes
+			int[] dataIndexesCache = tDataIndexCache.get();
+			if (dataIndexesCache==null || dataIndexesCache.length != size) {
+				dataIndexesCache = new int[size];
+				tDataIndexCache.set(dataIndexesCache);
+			}
+			Arrays.fill(dataIndexesCache,0);
+			
+			//For each lod height-depth value we have found we now want to generate the rest of the data
+			//by merging all lods at lower level that are contained inside the new ones
 			for (j = 0; j < count; j++)
 			{
+				//We firstly collect height and depth data
+				//this will be added to each realtive long DataPoint
 				height = heightAndDepth[j * 2];
 				depth = heightAndDepth[j * 2 + 1];
 				
+				//if both height and depth are at 0 then we finished
 				if ((depth == 0 && height == 0) || j >= heightAndDepth.length / 2)
 					break;
 				
+				//We initialize data useful for the merge
 				int numberOfChildren = 0;
+				allEmpty = true;
+				allVoid = true;
+				
+				//We initialize all the new values that we are going to put in the dataPoint
 				int tempAlpha = 0;
 				int tempRed = 0;
 				int tempGreen = 0;
 				int tempBlue = 0;
 				int tempLightBlock = 0;
 				int tempLightSky = 0;
-				allEmpty = true;
-				allVoid = true;
 				long data = 0;
 				
+				//For each position that we want to merge
 				for (int index = 0; index < size; index++)
 				{
-					for (dataIndex = 0; dataIndex < inputVerticalData; dataIndex++)
+					//we scan the lods in the position from top to bottom
+					for (dataIndex = dataIndexesCache[index]; dataIndexesCache[index] < inputVerticalData; dataIndexesCache[index]++)
 					{
 						singleData = dataToMerge[index * inputVerticalData + dataIndex];
 						if (doesItExist(singleData) && !isVoid(singleData))
