@@ -21,6 +21,8 @@ package com.seibel.lod.core.util;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.seibel.lod.core.enums.config.ServerFolderNameMode;
 import com.seibel.lod.core.enums.config.VanillaOverdraw;
@@ -446,5 +448,16 @@ public class LodUtil
 	public static void assertTrue(boolean condition) {
 		if (!condition) throw new RuntimeException("Assertion failed");
 	}
-	
+	public static ExecutorService makeSingleThreadPool(String name, int relativePriority) {
+		return Executors.newSingleThreadExecutor(new LodThreadFactory(name, Thread.NORM_PRIORITY+relativePriority));
+	}
+	public static ExecutorService makeSingleThreadPool(Class<?> clazz, int relativePriority) {
+		return makeSingleThreadPool(clazz.getSimpleName(), relativePriority);
+	}
+	public static ExecutorService makeSingleThreadPool(String name) {
+		return makeSingleThreadPool(name, 0);
+	}
+	public static ExecutorService makeSingleThreadPool(Class<?> clazz) {
+		return makeSingleThreadPool(clazz.getSimpleName(), 0);
+	}
 }

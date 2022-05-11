@@ -1,6 +1,17 @@
 package com.seibel.lod.core.objects.a7.render;
 
+import com.seibel.lod.core.objects.opengl.RenderBuffer;
+
+import java.util.concurrent.atomic.AtomicReference;
+
 public class EmptyRenderContainer extends RenderContainer {
+    public static final EmptyRenderContainer INSTANCE = new EmptyRenderContainer();
+
+    @Override
+    public void notifyLoad() {
+
+    }
+
     @Override
     public void notifyUnload() {
 
@@ -12,7 +23,7 @@ public class EmptyRenderContainer extends RenderContainer {
     }
 
     @Override
-    public boolean render() {
-        return true; //Always render successfully since there is nothing to render
+    public boolean trySwapRenderBuffer(AtomicReference<RenderBuffer> referenceSlot) {
+        return false; // no swap
     }
 }

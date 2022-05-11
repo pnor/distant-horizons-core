@@ -1,5 +1,6 @@
 package com.seibel.lod.core.objects.a7.pos;
 
+import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.util.LodUtil;
 
@@ -9,6 +10,11 @@ public class DhBlockPos2D {
     public DhBlockPos2D(int x, int z) {
         this.x = x;
         this.z = z;
+    }
+
+    public DhBlockPos2D(DHBlockPos blockPos) {
+        this.x = blockPos.x;
+        this.z = blockPos.z;
     }
 
     public DhBlockPos2D add(DhBlockPos2D other) {
