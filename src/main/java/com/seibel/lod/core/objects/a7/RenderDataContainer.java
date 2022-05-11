@@ -309,7 +309,7 @@ public class RenderDataContainer
         return new long[LodUtil.DETAIL_OPTIONS - 1][];
     });
     
-    public void updateData(LevelContainer lowerLevelContainer, int posX, int posZ)
+    public void updateData(RenderDataContainer lowerRenderContainer, int posX, int posZ)
     {
         //We reset the array
         long[][] verticalUpdateArrays = tLocalVerticalUpdateArrays.get();
@@ -320,11 +320,19 @@ public class RenderDataContainer
             verticalUpdateArrays[detailLevel-1] = dataToMerge;
         } else Arrays.fill(dataToMerge, 0);
         
-        int lowerMaxVertical = dataToMerge.length / 4;
-        int childPosX;
-        int childPosZ;
+        //int lowerMaxVertical = dataToMerge.length / 4;
+        int lowerSectionSize = lowerRenderContainer.getSECTION_SIZE();
+        int childPosStartX = Math.floorMod(2 * posX, lowerSectionSize);
+        int childPosEndX = Math.floorMod(2 * posX + 1, lowerSectionSize);
+        int childPosStartZ = Math.floorMod(2 * posZ, lowerSectionSize);
+        int childPosEndZ = Math.floorMod(2 * posZ + 1, lowerSectionSize);
+        
         long[] data;
         boolean anyDataExist = false;
+    
+        mergeMultiData(posX, posZ, lowerRenderContainer, childPosStartX, childPosEndX, childPosStartZ, childPosEndZ);
+        /*
+        TODO remove this old code when we are sure that this works
         for (int x = 0; x <= 1; x++)
         {
             for (int z = 0; z <= 1; z++)
@@ -336,7 +344,6 @@ public class RenderDataContainer
                     dataToMerge[(z * 2 + x) * lowerMaxVertical + verticalIndex] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
             }
         }
-        data = DataPointUtil.mergeMultiData(dataToMerge, lowerMaxVertical, getVerticalSize());
         if (!anyDataExist)
             throw new RuntimeException("Update data called but no child datapoint exist!");
         
@@ -347,7 +354,7 @@ public class RenderDataContainer
         if (DataPointUtil.getGenerationMode(data[0]) != DataPointUtil.getGenerationMode(lowerLevelContainer.getSingleData(posX*2, posZ*2)))
             throw new RuntimeException("Update data called but higher level datapoint does not have the same GenerationMode as the top left corner child datapoint!");
         
-        forceWriteVerticalData(data, posX, posZ);
+        forceWriteVerticalData(data, posX, posZ);*/
     }
     
     public boolean writeData(DataOutputStream output) throws IOException {
