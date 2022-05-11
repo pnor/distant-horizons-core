@@ -330,7 +330,7 @@ public class RenderDataContainer
         long[] data;
         boolean anyDataExist = false;
     
-        mergeMultiData(posX, posZ, lowerRenderContainer, childPosStartX, childPosEndX, childPosStartZ, childPosEndZ);
+        mergeAndAddDataFromOtherContainer(posX, posZ, lowerRenderContainer, childPosStartX, childPosEndX, childPosStartZ, childPosEndZ);
         /*
         TODO remove this old code when we are sure that this works
         for (int x = 0; x <= 1; x++)
@@ -421,7 +421,7 @@ public class RenderDataContainer
      * This method merge column of multiple data together
      */
     // TODO: Make this operate on a out param array, to allow skipping copy array on use
-    public void mergeMultiData(int mergeInX, int mergeInZ, RenderDataContainer lowerDataContainer, int mergeFromX, int mergeToX, int mergeFromZ, int mergeToZ)
+    public void mergeAndAddDataFromOtherContainer(int mergeInX, int mergeInZ, RenderDataContainer lowerDataContainer, int mergeFromX, int mergeToX, int mergeFromZ, int mergeToZ)
     {
         int outBaseIndex = mergeInX * SECTION_SIZE * verticalSize + mergeInZ*verticalSize;
         int inputVerticalSize = lowerDataContainer.verticalSize;
