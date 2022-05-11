@@ -35,6 +35,10 @@ public class Pos2D {
     public Pos2D subtract(Pos2D other) {
         return new Pos2D(x - other.x, y - other.y);
     }
+    public Pos2D subtract(int v) {
+        return new Pos2D(x - v, y - v);
+    }
+
     public double dist(Pos2D other) {
         return Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2));
     }

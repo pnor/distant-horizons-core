@@ -63,7 +63,8 @@ public class RenderRegion implements AutoCloseable
 	/** stores if the region at the given x and z index needs to be regenerated */
 	// Use int because I need Tri state:
 	private final AtomicInteger needRegen = new AtomicInteger(2);
-	
+
+
 	private enum BackState {
 		Unused,
 		Building,

@@ -14,43 +14,34 @@ public class LodSection {
     // (Should always be 4 after tick() is done, or 0 only if this is an unloaded node)
     public byte childCount = 0;
 
-
-    private RenderDataContainer levelContainer;
-    public RenderContainer renderContainer = null;
+    // TODO: Should I provide a way to change the render source?
+    private RenderContainer renderContainer;
 
     // Create sub region
-    public LodSection(DhSectionPos pos) {
+    public LodSection(DhSectionPos pos, RenderDataSource renderSource) {
         this.pos = pos;
-        levelContainer = null;
-    }
-    LodSection(DhSectionPos pos, RenderDataContainer levelContainer) {
-        this.pos = pos;
-        this.levelContainer = levelContainer;
+        this.renderContainer = renderSource.createRenderData(pos);
     }
 
-    // Return null if data does not exist
-    public boolean load(RenderDataSource renderDataSource) {
-        if (isLoaded()) throw new IllegalStateException("LodSection is already loaded");
-        levelContainer = renderDataSource.createRenderData(pos);
-        return levelContainer != null;
+    public void load() {
+        LodUtil.assertTrue(!isLoaded());
+        renderContainer.load();
     }
     public void unload() {
-        if (!isLoaded()) throw new IllegalStateException("LodSection is not loaded");
-        if (renderContainer != null) renderContainer.notifyUnload();
-        levelContainer = null;
-    }
-    public void dispose() {
-        LodUtil.assertTrue(!isLoaded());
-        if (renderContainer != null) renderContainer.notifyDispose();
+        LodUtil.assertTrue(isLoaded());
+        renderContainer.unload();
     }
 
-    public void immediateDispose() {
-        if (isLoaded()) unload();
-        if (renderContainer != null) renderContainer.notifyDispose();
+    public void dispose() {
+        if (renderContainer != null) renderContainer.dispose();
     }
 
     public boolean isLoaded() {
-        return levelContainer != null;
+        return renderContainer != null && renderContainer.isLoaded();
+    }
+
+    public RenderContainer getRenderContainer() {
+        return renderContainer;
     }
 
 }

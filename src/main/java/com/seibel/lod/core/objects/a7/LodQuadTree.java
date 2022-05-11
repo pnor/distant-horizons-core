@@ -18,27 +18,30 @@ import com.seibel.lod.core.util.gridList.MovableGridRingList;
  *      -by adding data with the lodBuilder
  */
 public abstract class LodQuadTree {
-    
+
+
     /**
-     * TODO add static configs here
-     * These configs are updated someway
+     * //TODO add static configs here
+     * //These configs are updated someway
+     * Comment: all config value should be via the class that extends this class, and
+     *          by implementing different abstract methods - LeeTom
      */
     
     
-    public final int maxPossibleDetailLevel;
+    public final int numbersOfDetailLevels;
     private final MovableGridRingList<LodSection>[] ringLists;
     
     /**
      * Constructor of the quadTree
-     * @param viewDistance
-     * @param initialPlayerX
-     * @param initialPlayerZ
+     * @param viewDistance View distance in blocks
+     * @param initialPlayerX player x coordinate
+     * @param initialPlayerZ player z coordinate
      */
     public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
-        maxPossibleDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(viewDistance*Math.sqrt(2));
-        ringLists = new MovableGridRingList[maxPossibleDetailLevel];
+        numbersOfDetailLevels = DetailDistanceUtil.getDetailLevelFromDistance(viewDistance*Math.sqrt(2));
+        ringLists = new MovableGridRingList[numbersOfDetailLevels];
         int size;
-        for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
+        for (byte detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
             double distance = DetailDistanceUtil.getDrawDistanceFromDetail(detailLevel);
             int sectionCount = LodUtil.ceilDiv((int) Math.ceil(distance),
                     DhSectionPos.getWidth(detailLevel).toBlock()) + 1; // +1 for the border during move
@@ -49,19 +52,37 @@ public abstract class LodQuadTree {
     
     /**
      * This method return the LodSection given the Section Pos
-     * @param pos
-     * @return
+     * @param pos the section positon
+     * @return the LodSection
      */
     public LodSection getSection(DhSectionPos pos) {
         return getSection(pos.detail, pos.x, pos.z);
     }
-    
+
+    /**
+     * This method returns the RingList of a given detail level
+     * @apiNote The returned ringList should not be modified!
+     * @param detailLevel the detail level
+     * @return the RingList
+     */
+    public MovableGridRingList<LodSection> getRingList(byte detailLevel) {
+        return ringLists[detailLevel];
+    }
+
+    /**
+     * This method returns the number of detail levels in the quadTree
+     * @return the number of detail levels
+     */
+    public int getNumbersOfDetailLevels() {
+        return numbersOfDetailLevels;
+    }
+
     /**
      * This method return the LodSection at the given detail level and level coordinate x and z
-     * @param detailLevel
-     * @param x
-     * @param z
-     * @return
+     * @param detailLevel detail level of the section
+     * @param x x coordinate of the section
+     * @param z z coordinate of the section
+     * @return the LodSection
      */
     public LodSection getSection(byte detailLevel, int x, int z) {
         return ringLists[detailLevel].get(x, z);
@@ -71,8 +92,8 @@ public abstract class LodQuadTree {
     
     /**
      * This method will compute the detail level based on player position and section pos
-     * @param playerPos
-     * @param sectionPos
+     * @param playerPos player position as a reference for calculating the detail level
+     * @param sectionPos section position
      * @return detail level of this section pos
      */
     public byte calculateExpectedDetailLevel(DhBlockPos2D playerPos, DhSectionPos sectionPos) {
@@ -84,7 +105,7 @@ public abstract class LodQuadTree {
     
     /**
      * Given a section pos at level n this method returns the parent section at level n+1
-     * @param pos
+     * @param pos the section positon
      * @return the parent LodSection
      */
     public LodSection getParentSection(DhSectionPos pos) {
@@ -106,12 +127,12 @@ public abstract class LodQuadTree {
     
     /**
      * This function update the quadTree based on the playerPos and the current game configs (static and global)
-     * @param playerPos
+     * @param playerPos the reference position for the player
      */
     public void tick(DhBlockPos2D playerPos) {
-        for (int detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
+        for (int detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
             ringLists[detailLevel].move(playerPos.x >> detailLevel, playerPos.z >> detailLevel,
-                    LodSection::immediateDispose);
+                    LodSection::dispose);
         }
 
         // First tick pass: update all sections' childCount from bottom level to top level. Step:
@@ -133,12 +154,12 @@ public abstract class LodQuadTree {
         //       - set childCount to -1 (Signal that this section will be freed if not rescued)
         //     - If targetLevel <= detail && section == null:
         //       - Parent's childCount++ (Create parent if needed)
-        for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
+        for (byte detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
             final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
             final MovableGridRingList<LodSection> childRingList =
                     detailLevel == 0 ? null : ringLists[detailLevel - 1];
             final MovableGridRingList<LodSection> parentRingList =
-                    detailLevel == maxPossibleDetailLevel - 1 ? null : ringLists[detailLevel + 1];
+                    detailLevel == numbersOfDetailLevels - 1 ? null : ringLists[detailLevel + 1];
             final byte detail = detailLevel;
             ringList.forEachPosOrdered((section, pos) -> {
                 if (detail == 0 && section != null) {
@@ -150,7 +171,7 @@ public abstract class LodQuadTree {
                     LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                     if (parent == null) {
                         parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                new LodSection(section.pos.getParent()));
+                                new LodSection(section.pos.getParent(), getRenderDataSource()));
                         parent.childCount++;
                     }
                     LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
@@ -159,7 +180,7 @@ public abstract class LodQuadTree {
                         LodSection child = ringList.get(childPos.x, childPos.z);
                         if (child == null) {
                             child = ringList.setChained(childPos.x, childPos.z,
-                                    new LodSection(childPos));
+                                    new LodSection(childPos, getRenderDataSource()));
                             child.childCount = 0;
                         } else if (child.childCount == -1) {
                             child.childCount = 0;
@@ -181,7 +202,7 @@ public abstract class LodQuadTree {
                         LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                         if (parent == null) {
                             parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                    new LodSection(sectPos.getParent()));
+                                    new LodSection(sectPos.getParent(), getRenderDataSource()));
                         }
                         parent.childCount++;
                     }
@@ -209,12 +230,12 @@ public abstract class LodQuadTree {
         //   if childCount == -1: // (section can be loaded or unloaded, due to fast movement)
         //     - set this section to null (TODO: Is this needed to be first or last or don't matter for concurrency?)
         //     - If loaded unload section
-        for (byte detailLevel = 0; detailLevel < maxPossibleDetailLevel; detailLevel++) {
+        for (byte detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
             final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
             final MovableGridRingList<LodSection> childRingList =
                     detailLevel == 0 ? null : ringLists[detailLevel - 1];
             final MovableGridRingList<LodSection> parentRingList =
-                    detailLevel == maxPossibleDetailLevel - 1 ? null : ringLists[detailLevel + 1];
+                    detailLevel == numbersOfDetailLevels - 1 ? null : ringLists[detailLevel + 1];
             ringList.forEachPosOrdered((section, pos) -> {
                 LodUtil.assertTrue(section.childCount == 4 || section.childCount == 0 || section.childCount == -1);
                 if (section.childCount == 4) LodUtil.assertTrue(
@@ -229,16 +250,12 @@ public abstract class LodQuadTree {
                         getChildSection(section.pos, 3) == null);
                 if (section.childCount == -1) LodUtil.assertTrue(
                         getParentSection(section.pos).childCount == 0);
-
                 if (section.childCount == 4 && section.isLoaded()) {
-                    section.load(getRenderDataSource());
-                } else if (section.childCount == 0 && !section.isLoaded()) {
                     section.unload();
+                } else if (section.childCount == 0 && !section.isLoaded()) {
+                    section.load();
                 } else if (section.childCount == -1) {
                     ringList.set(pos.x, pos.y, null);
-                    if (section.isLoaded()) {
-                        section.unload();
-                    }
                     section.dispose();
                 }
             });

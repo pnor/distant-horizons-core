@@ -41,6 +41,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	private Pos2D[] ringIteratorList = null;
 
 	//TODO: Check if this needs to be synchronized
+	//FIXME: Make all usage of this class do stuff relative to the minPos instead of the center
 	private void buildRingIteratorList() {
 		ringIteratorList = null;
 		Pos2D[] list = new Pos2D[size*size];
@@ -66,6 +67,9 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 		this.halfSize = halfSize;
 		pos.set(new Pos2D(centerX-halfSize, centerY-halfSize));
 		clear();
+	}
+	public MovableGridRingList(int halfSize, Pos2D center) {
+		this(halfSize, center.x, center.y);
 	}
 	
 	@Override
@@ -173,6 +177,23 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 		}
 	}
 
+	public T remove(int x, int y) {
+		return swap(x, y, null);
+	}
+
+	public T get(Pos2D p) {
+		return get(p.x, p.y);
+	}
+	public boolean set(Pos2D p, T t) {
+		return set(p.x, p.y, t);
+	}
+	public T swap(Pos2D p, T t) {
+		return swap(p.x, p.y, t);
+	}
+	public T remove(Pos2D p) {
+		return remove(p.x, p.y);
+	}
+
 	// TODO: Impl this
 	/*
 	// do a compare and set
@@ -195,6 +216,9 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	// Otherwise, return the new value (for chaining)
 	public T setChained(int x, int y, T t) {
 		return set(x,y,t) ? t : null;
+	}
+	public T setChained(Pos2D p, T t) {
+		return setChained(p.x, p.y, t);
 	}
 	
 	// Return false if haven't changed. Return true if it did
