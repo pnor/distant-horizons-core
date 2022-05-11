@@ -416,7 +416,6 @@ public class RenderDataContainer
     
     private static final ThreadLocal<short[]> tLocalHeightAndDepth = new ThreadLocal<short[]>();
     private static final ThreadLocal<int[]> tDataIndexCache = new ThreadLocal<int[]>();
-    private static final ThreadLocal<long[]> tMaxVerticalData = new ThreadLocal<long[]>();
     /**
      *
      * This method merge column of multiple data together
@@ -440,11 +439,6 @@ public class RenderDataContainer
             tLocalHeightAndDepth.set(heightAndDepth);
         }
         int dataPointLength = verticalSize;
-        long[] dataPoint = tMaxVerticalData.get();
-        if (dataPoint==null || dataPoint.length != dataPointLength) {
-            dataPoint = new long[dataPointLength];
-            tMaxVerticalData.set(dataPoint);
-        } else Arrays.fill(dataPoint, 0);
         
         int firstIndex = mergeFromX*SECTION_SIZE*inputVerticalSize + mergeFromZ * inputVerticalSize;
         byte genMode = DataPointUtil.getGenerationMode(lowerDataContainer.dataContainer[firstIndex]);
@@ -614,7 +608,7 @@ public class RenderDataContainer
             return;
         if (allVoid)
         {
-            dataPoint[outBaseIndex] = DataPointUtil.createVoidDataPoint(genMode);
+            dataContainer[outBaseIndex] = DataPointUtil.createVoidDataPoint(genMode);
             return;
         }
         
@@ -647,7 +641,7 @@ public class RenderDataContainer
         {
             for (yOut = 0; yOut < count; yOut++)
                 dataIndex = mergeFromX*inputSectionSize*inputVerticalSize + mergeFromZ*inputVerticalSize + yOut;
-                dataPoint[outBaseIndex + yOut] = lowerDataContainer.dataContainer[dataIndex];
+                dataContainer[outBaseIndex + yOut] = lowerDataContainer.dataContainer[dataIndex];
         }
         else
         {
@@ -740,10 +734,10 @@ public class RenderDataContainer
                 
                 if (allEmpty)
                     //no child has been initialized
-                    dataPoint[outBaseIndex + yOut] = DataPointUtil.EMPTY_DATA;
+                    dataContainer[outBaseIndex + yOut] = DataPointUtil.EMPTY_DATA;
                 else if (allVoid)
                     //all the children are void
-                    dataPoint[outBaseIndex + yOut] = DataPointUtil.createVoidDataPoint(genMode);
+                    dataContainer[outBaseIndex + yOut] = DataPointUtil.createVoidDataPoint(genMode);
                 else
                 {
                     //we have at least 1 child
@@ -760,7 +754,7 @@ public class RenderDataContainer
                     //{
                     //	add simplification at the end due to color
                     //}
-                    dataPoint[outBaseIndex + yOut] = DataPointUtil.createDataPoint((int) Math.sqrt(tempAlpha), (int) Math.sqrt(tempRed), (int) Math.sqrt(tempGreen), (int) Math.sqrt(tempBlue), height, depth, tempLightSky, tempLightBlock, genMode);
+                    dataContainer[outBaseIndex + yOut] = DataPointUtil.createDataPoint((int) Math.sqrt(tempAlpha), (int) Math.sqrt(tempRed), (int) Math.sqrt(tempGreen), (int) Math.sqrt(tempBlue), height, depth, tempLightSky, tempLightBlock, genMode);
                 }
             }
         }
