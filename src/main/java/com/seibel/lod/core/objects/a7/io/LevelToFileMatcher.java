@@ -72,7 +72,7 @@ public class LevelToFileMatcher {
 
         if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0) {
             File saveDir = getLevelFolderWithoutSimilarityMatching();
-            foundLevel = new DHLevel(saveDir);
+            foundLevel = new DHLevel(saveDir, currentWorld);
         } else {
             if (determiningWorldFolder.getAndSet(true)) return;
             //FIXME: Use a thread pool
@@ -82,7 +82,7 @@ public class LevelToFileMatcher {
                     // attempt to get the file handler
                     File saveDir = attemptToDetermineSubDimensionFolder();
                     if (saveDir == null) return;
-                    foundLevel = new DHLevel(saveDir);
+                    foundLevel = new DHLevel(saveDir, currentWorld);
                 } catch (IOException e) {
                     LOGGER.error("Unable to set the dimension file handler for level [" + currentWorld + "]. Error: ", e);
                 } finally {
