@@ -296,6 +296,7 @@ public class RenderDataContainer
         int targetMaxVerticalData = DetailDistanceUtil.getMaxVerticalData(detailLevel);
         verticalSize = targetMaxVerticalData;
         dataContainer = DataPointUtil.changeMaxVertSize(tempDataContainer, fileMaxVerticalData, verticalSize);
+        airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
     }
     
     public LevelContainer expand()

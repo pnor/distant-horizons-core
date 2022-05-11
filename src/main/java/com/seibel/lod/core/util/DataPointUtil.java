@@ -639,11 +639,12 @@ public class DataPointUtil
 				for (int index = 0; index < size; index++)
 				{
 					//we scan the lods in the position from top to bottom
-					for (dataIndex = dataIndexesCache[index]; dataIndexesCache[index] < inputVerticalData; dataIndexesCache[index]++)
+					while(dataIndexesCache[index] < inputVerticalData)
 					{
-						singleData = dataToMerge[index * inputVerticalData + dataIndex];
+						singleData = dataToMerge[index * inputVerticalData + dataIndexesCache[index]];
 						if (doesItExist(singleData) && !isVoid(singleData))
 						{
+							dataIndexesCache[index]++;
 							if ((depth <= getDepth(singleData) && getDepth(singleData) < height)
 									|| (depth < getHeight(singleData) && getHeight(singleData) <= height))
 							{
@@ -656,7 +657,6 @@ public class DataPointUtil
 					}
 					if (!doesItExist(data))
 					{
-						singleData = dataToMerge[index * inputVerticalData];
 						data = createVoidDataPoint(genMode);
 					}
 					
