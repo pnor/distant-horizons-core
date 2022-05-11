@@ -1,7 +1,7 @@
 package com.seibel.lod.core.objects.a7;
 
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.objects.a7.data.DataHandler;
+import com.seibel.lod.core.objects.a7.data.DataFileHandler;
 import com.seibel.lod.core.objects.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.objects.a7.render.RenderBufferHandler;
 import com.seibel.lod.core.render.LodRenderProgram;
@@ -18,7 +18,7 @@ public class DHLevel extends LodQuadTree {
     private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
     private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
     public final File saveFolder; // Could be null, for no saving
-    public final DataHandler dataHandler; // Could be null, for no saving
+    public final DataFileHandler dataFileHandler; // Could be null, for no saving
     public final RenderBufferHandler renderBufferHandler;
     public final ExecutorService dhTickerThread = LodUtil.makeSingleThreadPool("DHLevelTickerThread", 2);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
@@ -30,9 +30,9 @@ public class DHLevel extends LodQuadTree {
                 MC.getPlayerBlockPos().z);
         this.saveFolder = saveFolder;
         if (saveFolder != null) {
-            dataHandler = new DataHandler(saveFolder);
+            dataFileHandler = new DataFileHandler(saveFolder);
         } else {
-            dataHandler = null;
+            dataFileHandler = null;
         }
         renderBufferHandler = new RenderBufferHandler(this);
         this.level = level;
@@ -61,7 +61,7 @@ public class DHLevel extends LodQuadTree {
 
     @Override
     public RenderDataSource getRenderDataSource() {
-        return dataHandler;
+        return dataFileHandler;
     }
 
     public void render(LodRenderProgram renderContext) {

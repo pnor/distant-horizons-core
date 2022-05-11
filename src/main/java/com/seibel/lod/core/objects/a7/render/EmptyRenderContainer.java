@@ -8,21 +8,6 @@ public class EmptyRenderContainer extends RenderContainer {
     public static final EmptyRenderContainer INSTANCE = new EmptyRenderContainer();
 
     @Override
-    public void notifyRenderable() {
-
-    }
-
-    @Override
-    public void notifyUnrenderable() {
-
-    }
-
-    @Override
-    public boolean isRenderable() {
-        return false;
-    }
-
-    @Override
     public void notifyLoad() {
 
     }

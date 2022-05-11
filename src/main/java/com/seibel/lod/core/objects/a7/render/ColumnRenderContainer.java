@@ -1,5 +1,8 @@
 package com.seibel.lod.core.objects.a7.render;
 
+import com.seibel.lod.core.objects.a7.LodSection;
+import com.seibel.lod.core.objects.a7.RenderDataContainer;
+import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.opengl.RenderBuffer;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
@@ -10,32 +13,29 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ColumnRenderContainer extends RenderContainer {
     public static final int columnWidth = DhSectionPos.DATA_WIDTH_PER_SECTION;
     public static final int columnCount = LodUtil.pow2(DhSectionPos.DATA_WIDTH_PER_SECTION);
-    private long[] columnData;
+
+    public RenderDataContainer dataContainer = null;
+
     public final int maxColumnHeight;
     public final int minWorldHeight;
 
-    public RenderRegion renderRegion = null;
+    public static RenderContainer testAndConstruct(LodDataSource dataSource, DhSectionPos sectionPos) {
+        ColumnRenderContainer container = new ColumnRenderContainer(10, -100); //FIXME: Use actual config value
+        container.startFillData(dataSource);
+        return container;
+    }
+    static {
+        RenderContainer.registorLoader(ColumnRenderContainer::testAndConstruct, 0);
+    }
 
     public ColumnRenderContainer(int maxColumnHeight, int minWorldHeight) {
         this.maxColumnHeight = maxColumnHeight;
-        columnData = new long[columnCount * maxColumnHeight];
+        //columnData = new long[columnCount * maxColumnHeight];
         this.minWorldHeight = minWorldHeight;
-        renderRegion = new RenderRegion();
     }
 
-    @Override
-    public void notifyRenderable() {
-
-    }
-
-    @Override
-    public void notifyUnrenderable() {
-
-    }
-
-    @Override
-    public boolean isRenderable() {
-        return false;
+    private void startFillData(LodDataSource dataSource) {
+        //TODO
     }
 
     @Override

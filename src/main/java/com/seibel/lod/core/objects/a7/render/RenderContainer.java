@@ -1,11 +1,36 @@
 package com.seibel.lod.core.objects.a7.render;
 
+import com.seibel.lod.core.objects.a7.LodSection;
+import com.seibel.lod.core.objects.a7.data.LodDataSource;
+import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.opengl.RenderBuffer;
-import com.seibel.lod.core.objects.opengl.RenderRegion;
-
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class RenderContainer {
+    interface RenderContainerConstructor {
+        // Can return null as meaning the requirement is not met
+        RenderContainer testAndConstruct(LodDataSource dataSource, DhSectionPos sectionPos);
+    }
+    public static final SortedMap<Integer, RenderContainerConstructor>
+            renderContainerLoaderRegistry = new TreeMap<Integer, RenderContainerConstructor>();
+    public static void registorLoader(RenderContainerConstructor func, int priority) {
+        if (func == null) {
+            throw new IllegalArgumentException("loader must be non-null");
+        }
+        renderContainerLoaderRegistry.put(priority, func);
+    }
+
+    public static RenderContainer tryConstruct(LodDataSource dataSource, DhSectionPos pos) {
+        for (RenderContainerConstructor func : renderContainerLoaderRegistry.values()) {
+            RenderContainer container = func.testAndConstruct(dataSource, pos);
+            if (container != null) {
+                return container;
+            }
+        }
+        return null;
+    }
 
     private boolean isLoaded = false;
     public final void load() {
