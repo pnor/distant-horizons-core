@@ -28,6 +28,7 @@ public class RenderDataContainer
     public final int verticalSize;
     
     public final long[] dataContainer;
+    public final int[] airDataContainer;
     
     /**
      * Constructor of the RenderDataContainer
@@ -38,7 +39,7 @@ public class RenderDataContainer
         this.detailLevel = detailLevel;
         verticalSize = DetailDistanceUtil.getMaxVerticalData(detailLevel);
         dataContainer = new long[SECTION_SIZE * SECTION_SIZE * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
-        dataContainer = new long[SECTION_SIZE * SECTION_SIZE * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
+        airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * DetailDistanceUtil.getMaxVerticalData(detailLevel)];
         minHeight = SingletonHandler.get(IMinecraftClientWrapper.class).getWrappedClientWorld().getMinHeight();
     }
     
