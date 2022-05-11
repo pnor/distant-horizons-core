@@ -411,6 +411,7 @@ public class RenderDataContainer
     private static final ThreadLocal<int[]> tDataIndexCache = new ThreadLocal<int[]>();
     private static final ThreadLocal<long[]> tMaxVerticalData = new ThreadLocal<long[]>();
     /**
+     *
      * This method merge column of multiple data together
      */
     // TODO: Make this operate on a out param array, to allow skipping copy array on use
