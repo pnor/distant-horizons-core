@@ -406,4 +406,356 @@ public class RenderDataContainer
     }
     
     
+    
+    private static final ThreadLocal<short[]> tLocalHeightAndDepth = new ThreadLocal<short[]>();
+    private static final ThreadLocal<int[]> tDataIndexCache = new ThreadLocal<int[]>();
+    private static final ThreadLocal<long[]> tMaxVerticalData = new ThreadLocal<long[]>();
+    /**
+     * This method merge column of multiple data together
+     */
+    // TODO: Make this operate on a out param array, to allow skipping copy array on use
+    public void mergeMultiData(int mergeInX, int mergeInZ, RenderDataContainer lowerDataContainer, int mergeFromX, int mergeToX, int mergeFromZ, int mergeToZ)
+    {
+        int outBaseIndex = mergeInX * SECTION_SIZE * verticalSize + mergeInZ*verticalSize;
+        int inputVerticalSize = lowerDataContainer.verticalSize;
+        int inputSectionSize = lowerDataContainer.SECTION_SIZE;
+        int mergeFromToX;
+        int xSize = (mergeFromX - mergeToX + 1);
+        int zSize = (mergeFromZ - mergeToZ + 1);
+        //size indicate how many position we are merging in one position
+        
+        // We initialize the arrays that are going to be used
+        int heightAndDepthLength = (DataPointUtil.MAX_WORLD_Y_SIZE / 2 + 16) * 2;
+        short[] heightAndDepth = tLocalHeightAndDepth.get();
+        if (heightAndDepth==null || heightAndDepth.length != heightAndDepthLength) {
+            heightAndDepth = new short[heightAndDepthLength];
+            tLocalHeightAndDepth.set(heightAndDepth);
+        }
+        int dataPointLength = verticalSize;
+        long[] dataPoint = tMaxVerticalData.get();
+        if (dataPoint==null || dataPoint.length != dataPointLength) {
+            dataPoint = new long[dataPointLength];
+            tMaxVerticalData.set(dataPoint);
+        } else Arrays.fill(dataPoint, 0);
+        
+        int firstIndex = mergeFromX*SECTION_SIZE*inputVerticalSize + mergeFromZ * inputVerticalSize;
+        byte genMode = DataPointUtil.getGenerationMode(lowerDataContainer.dataContainer[firstIndex]);
+        if (genMode == 0) genMode = 1; // FIXME: Hack to make the version 10 genMode never be 0.
+        boolean allEmpty = true;
+        boolean allVoid = true;
+        boolean limited = false;
+        boolean allDefault;
+        long singleData;
+        
+        
+        short depth;
+        short height;
+        int count = 0;
+        int i;
+        int ii;
+        
+        //We collect the indexes of the data, ordered by the depth
+        int dataIndex = 0;
+        int x;
+        int z;
+        int y;
+        for (x = mergeFromX; x <= mergeToX; x++)
+        {
+            for (z = mergeFromZ; z <= mergeToZ; z++)
+            {
+                if (x == mergeFromX && z == mergeFromZ)
+                {
+                    for (y = 0; y < inputVerticalSize; y++)
+                    {
+                        dataIndex = x * inputSectionSize * inputVerticalSize + z * inputVerticalSize + y;
+                        singleData = lowerDataContainer.dataContainer[dataIndex];
+                        if (DataPointUtil.doesItExist(singleData))
+                        {
+                            //genMode = Math.min(genMode, getGenerationMode(singleData));
+                            allEmpty = false;
+                            if (!DataPointUtil.isVoid(singleData))
+                            {
+                                allVoid = false;
+                                count++;
+                                heightAndDepth[dataIndex * 2] = DataPointUtil.getHeight(singleData);
+                                heightAndDepth[dataIndex * 2 + 1] = DataPointUtil.getDepth(singleData);
+                            }
+                        }
+                        else
+                            break;
+                    }
+                }
+                else
+                {
+                    for (y = 0; y < inputVerticalSize; y++)
+                    {
+                        dataIndex = x * inputSectionSize * inputVerticalSize + z * inputVerticalSize + y;
+                        singleData = lowerDataContainer.dataContainer[dataIndex];
+                        if (DataPointUtil.doesItExist(singleData))
+                        {
+                            //genMode = Math.min(genMode, getGenerationMode(singleData));
+                            allEmpty = false;
+                            if (!DataPointUtil.isVoid(singleData))
+                            {
+                                allVoid = false;
+                                depth = DataPointUtil.getDepth(singleData);
+                                height = DataPointUtil.getHeight(singleData);
+                        
+                                int botPos = -1;
+                                int topPos = -1;
+                                //values fall in between and possibly require extension of array
+                                boolean botExtend = false;
+                                boolean topExtend = false;
+                                for (i = 0; i < count; i++)
+                                {
+                                    if (depth < heightAndDepth[i * 2] && depth >= heightAndDepth[i * 2 + 1])
+                                    {
+                                        botPos = i;
+                                        break;
+                                    }
+                                    else if (depth < heightAndDepth[i * 2 + 1] && ((i + 1 < count && depth >= heightAndDepth[(i + 1) * 2]) || i + 1 == count))
+                                    {
+                                        botPos = i;
+                                        botExtend = true;
+                                        break;
+                                    }
+                                }
+                                for (i = 0; i < count; i++)
+                                {
+                                    if (height <= heightAndDepth[i * 2] && height > heightAndDepth[i * 2 + 1])
+                                    {
+                                        topPos = i;
+                                        break;
+                                    }
+                                    else if (height <= heightAndDepth[i * 2 + 1] && ((i + 1 < count && height > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
+                                    {
+                                        topPos = i;
+                                        topExtend = true;
+                                        break;
+                                    }
+                                }
+                                if (topPos == -1)
+                                {
+                                    if (botPos == -1)
+                                    {
+                                        //whole block falls above
+                                        DataPointUtil.extendArray(heightAndDepth, 2, 0, 1, count);
+                                        heightAndDepth[0] = height;
+                                        heightAndDepth[1] = depth;
+                                        count++;
+                                    }
+                                    else if (!botExtend)
+                                    {
+                                        //only top falls above extending it there, while bottom is inside existing
+                                        DataPointUtil.shrinkArray(heightAndDepth, 2, 0, botPos, count);
+                                        heightAndDepth[0] = height;
+                                        count -= botPos;
+                                    }
+                                    else
+                                    {
+                                        //top falls between some blocks, extending those as well
+                                        DataPointUtil.shrinkArray(heightAndDepth, 2, 0, botPos, count);
+                                        heightAndDepth[0] = height;
+                                        heightAndDepth[1] = depth;
+                                        count -= botPos;
+                                    }
+                                }
+                                else if (!topExtend)
+                                {
+                                    if (!botExtend)
+                                        //both top and bottom are within some exiting blocks, possibly merging them
+                                        heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+                                    else
+                                        //top falls between some blocks, extending it there
+                                        heightAndDepth[topPos * 2 + 1] = depth;
+                                    DataPointUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+                                    count -= botPos - topPos;
+                                }
+                                else
+                                {
+                                    if (!botExtend)
+                                    {
+                                        //only top is within some exiting block, extending it
+                                        topPos++; //to make it easier
+                                        heightAndDepth[topPos * 2] = height;
+                                        heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+                                        DataPointUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+                                        count -= botPos - topPos;
+                                    }
+                                    else
+                                    {
+                                        //both top and bottom are outside existing blocks
+                                        DataPointUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+                                        count -= botPos - topPos;
+                                        DataPointUtil.extendArray(heightAndDepth, 2, topPos + 1, 1, count);
+                                        count++;
+                                        heightAndDepth[topPos * 2 + 2] = height;
+                                        heightAndDepth[topPos * 2 + 3] = depth;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                            break;
+                    }
+                }
+            }
+        }
+        //We check if there is any data that's not empty or void
+        if (allEmpty)
+            return;
+        if (allVoid)
+        {
+            dataPoint[outBaseIndex] = DataPointUtil.createVoidDataPoint(genMode);
+            return;
+        }
+        
+        //we limit the vertical portion to maxVerticalData
+        int j = 0;
+        while (count > verticalSize)
+        {
+            limited = true;
+            ii = DataPointUtil.MAX_WORLD_Y_SIZE;
+            for (i = 0; i < count - 1; i++)
+            {
+                if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)
+                {
+                    ii = heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2];
+                    j = i;
+                }
+            }
+            heightAndDepth[j * 2 + 1] = heightAndDepth[(j + 1) * 2 + 1];
+            for (i = j + 1; i < count - 1; i++)
+            {
+                heightAndDepth[i * 2] = heightAndDepth[(i + 1) * 2];
+                heightAndDepth[i * 2 + 1] = heightAndDepth[(i + 1) * 2 + 1];
+            }
+            //System.arraycopy(heightAndDepth, j + 1, heightAndDepth, j, count - j - 1);
+            count--;
+        }
+        int yOut;
+        //As standard the vertical lods are ordered from top to bottom
+        if (!limited && xSize*zSize == 1)
+        {
+            for (yOut = 0; yOut < count; yOut++)
+                dataIndex = mergeFromX*inputSectionSize*inputVerticalSize + mergeFromZ*inputVerticalSize + yOut;
+                dataPoint[outBaseIndex + yOut] = lowerDataContainer.dataContainer[dataIndex];
+        }
+        else
+        {
+            
+            //We want to efficiently memorize indexes
+            int[] dataIndexesCache = tDataIndexCache.get();
+            if (dataIndexesCache==null || dataIndexesCache.length != xSize*zSize) {
+                dataIndexesCache = new int[xSize*zSize];
+                tDataIndexCache.set(dataIndexesCache);
+            }
+            Arrays.fill(dataIndexesCache,0);
+            
+            //For each lod height-depth value we have found we now want to generate the rest of the data
+            //by merging all lods at lower level that are contained inside the new ones
+            for (yOut = 0; yOut < count; yOut++)
+            {
+                //We firstly collect height and depth data
+                //this will be added to each realtive long DataPoint
+                height = heightAndDepth[yOut * 2];
+                depth = heightAndDepth[yOut * 2 + 1];
+                
+                //if both height and depth are at 0 then we finished
+                if ((depth == 0 && height == 0) || yOut >= heightAndDepth.length / 2)
+                    break;
+                
+                //We initialize data useful for the merge
+                int numberOfChildren = 0;
+                allEmpty = true;
+                allVoid = true;
+                
+                //We initialize all the new values that we are going to put in the dataPoint
+                int tempAlpha = 0;
+                int tempRed = 0;
+                int tempGreen = 0;
+                int tempBlue = 0;
+                int tempLightBlock = 0;
+                int tempLightSky = 0;
+                long data = 0;
+                
+                int index;
+                
+                //For each position that we want to merge
+                for(x = mergeFromX; x <= mergeToX; x++)
+                {
+                    for (z = mergeFromZ; z <= mergeToZ; z++)
+                    {
+                        index = x * xSize + z;
+                        //we scan the lods in the position from top to bottom
+                        while (dataIndexesCache[index] < inputVerticalSize)
+                        {
+                            y = dataIndexesCache[index];
+                            dataIndex = x * inputSectionSize * inputVerticalSize + z * inputVerticalSize + y;
+        
+                            singleData = lowerDataContainer.dataContainer[dataIndex];
+                            if (DataPointUtil.doesItExist(singleData) && !DataPointUtil.isVoid(singleData))
+                            {
+                                dataIndexesCache[index]++;
+                                if ((depth <= DataPointUtil.getDepth(singleData) && DataPointUtil.getDepth(singleData) < height)
+                                            || (depth < DataPointUtil.getHeight(singleData) && DataPointUtil.getHeight(singleData) <= height))
+                                {
+                                    data = singleData;
+                                    break;
+                                }
+                            }
+                            else
+                                break;
+                        }
+                        if (!DataPointUtil.doesItExist(data))
+                        {
+                            data = DataPointUtil.createVoidDataPoint(genMode);
+                        }
+    
+                        if (DataPointUtil.doesItExist(data))
+                        {
+                            allEmpty = false;
+                            if (!DataPointUtil.isVoid(data))
+                            {
+                                numberOfChildren++;
+                                allVoid = false;
+                                tempAlpha = Math.max(DataPointUtil.getAlpha(data), tempAlpha);
+                                tempRed += DataPointUtil.getRed(data) * DataPointUtil.getRed(data);
+                                tempGreen += DataPointUtil.getGreen(data) * DataPointUtil.getGreen(data);
+                                tempBlue += DataPointUtil.getBlue(data) * DataPointUtil.getBlue(data);
+                                tempLightBlock += DataPointUtil.getLightBlock(data);
+                                tempLightSky += DataPointUtil.getLightSky(data);
+                            }
+                        }
+                    }
+                }
+                
+                if (allEmpty)
+                    //no child has been initialized
+                    dataPoint[outBaseIndex + yOut] = DataPointUtil.EMPTY_DATA;
+                else if (allVoid)
+                    //all the children are void
+                    dataPoint[outBaseIndex + yOut] = DataPointUtil.createVoidDataPoint(genMode);
+                else
+                {
+                    //we have at least 1 child
+                    if (xSize*zSize != 1)
+                    {
+                        tempRed = tempRed / numberOfChildren;
+                        tempGreen = tempGreen / numberOfChildren;
+                        tempBlue = tempBlue / numberOfChildren;
+                        tempLightBlock = tempLightBlock / numberOfChildren;
+                        tempLightSky = tempLightSky / numberOfChildren;
+                    }
+                    //data = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
+                    //if (j > 0 && getColor(data) == getColor(dataPoint[j]))
+                    //{
+                    //	add simplification at the end due to color
+                    //}
+                    dataPoint[outBaseIndex + yOut] = DataPointUtil.createDataPoint((int) Math.sqrt(tempAlpha), (int) Math.sqrt(tempRed), (int) Math.sqrt(tempGreen), (int) Math.sqrt(tempBlue), height, depth, tempLightSky, tempLightBlock, genMode);
+                }
+            }
+        }
+    }
+    
 }
