@@ -1,7 +1,7 @@
 package com.seibel.lod.core.objects.a7;
 
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
-import com.seibel.lod.core.objects.a7.render.RenderContainer;
+import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 import com.seibel.lod.core.util.LodUtil;
 
 public class LodSection {
@@ -15,33 +15,39 @@ public class LodSection {
     public byte childCount = 0;
 
     // TODO: Should I provide a way to change the render source?
-    private RenderContainer renderContainer;
+    private RenderDataSource renderDataSource;
+    private boolean isLoaded = false;
 
     // Create sub region
-    public LodSection(DhSectionPos pos, RenderDataSource renderSource) {
+    public LodSection(DhSectionPos pos, com.seibel.lod.core.objects.a7.RenderDataSource renderSource) {
         this.pos = pos;
-        this.renderContainer = renderSource.createRenderData(pos);
+        this.renderDataSource = renderSource.createRenderData(pos);
     }
 
     public void load() {
         LodUtil.assertTrue(!isLoaded());
-        renderContainer.load();
+        renderDataSource.load();
+        isLoaded = true;
     }
     public void unload() {
         LodUtil.assertTrue(isLoaded());
-        renderContainer.unload();
+        renderDataSource.unload();
+        isLoaded = false;
     }
 
     public void dispose() {
-        if (renderContainer != null) renderContainer.dispose();
+        if (renderDataSource != null) {
+            if (isLoaded()) renderDataSource.unload();
+            renderDataSource.dispose();
+        }
     }
 
     public boolean isLoaded() {
-        return renderContainer != null && renderContainer.isLoaded();
+        return renderDataSource != null && isLoaded;
     }
 
-    public RenderContainer getRenderContainer() {
-        return renderContainer;
+    public RenderDataSource getRenderContainer() {
+        return renderDataSource;
     }
 
 }

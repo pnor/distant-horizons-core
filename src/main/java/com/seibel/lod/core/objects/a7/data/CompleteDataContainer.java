@@ -1,14 +1,17 @@
 package com.seibel.lod.core.objects.a7.data;
 
 import com.seibel.lod.core.objects.a7.IdMappingUtil;
+import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Function;
 
-public class CompleteDataContainer extends LodDataSource { // 1 chunk
+public class CompleteDataContainer implements LodDataSource { // 1 chunk
+    private DhSectionPos sectionPos;
     ArrayList<String> idMap;
 
     protected CompleteDataContainer() {
@@ -16,13 +19,21 @@ public class CompleteDataContainer extends LodDataSource { // 1 chunk
     }
 
     @Override
-    public Function<ByteBuffer, ? extends LodDataSource> getLatestLoader() {
-        return null;
+    public DataSourceLoader getLatestLoader() {
+        return (DhSectionPos sectionPos, InputStream inputStream) -> {
+            //TODO: Implement
+            return null;
+        };
     }
 
     @Override
     public <T> T[] getData() {
         return null;
+    }
+
+    @Override
+    public DhSectionPos getSectionPos() {
+        return sectionPos;
     }
 
     public static CompleteDataContainer createNewFromChunk(IChunkWrapper chunk) {

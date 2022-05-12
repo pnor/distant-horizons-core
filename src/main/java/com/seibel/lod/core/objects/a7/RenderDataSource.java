@@ -1,7 +1,6 @@
 package com.seibel.lod.core.objects.a7;
 
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
-import com.seibel.lod.core.objects.a7.render.RenderContainer;
 
 public interface RenderDataSource {
     /**
@@ -9,5 +8,5 @@ public interface RenderDataSource {
      * @param pos The section position.
      * @return The render container. If there are no data, returns EmptyRenderContainer.
      */
-    RenderContainer createRenderData(DhSectionPos pos);
+    com.seibel.lod.core.objects.a7.render.RenderDataSource createRenderData(DhSectionPos pos);
 }

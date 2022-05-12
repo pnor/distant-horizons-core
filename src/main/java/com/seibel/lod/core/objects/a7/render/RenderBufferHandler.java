@@ -46,7 +46,7 @@ public class RenderBufferHandler {
             // If this fails, there may be concurrent modification of the quad tree
             //  (as this update() should be called from the same thread that calls update() on the quad tree)
             LodUtil.assertTrue(section != null);
-            RenderContainer container = section.getRenderContainer();
+            RenderDataSource container = section.getRenderContainer();
 
             // Update self's render buffer state
             boolean shouldRender = section.isLoaded();
@@ -60,7 +60,7 @@ public class RenderBufferHandler {
             }
 
             // Update children's render buffer state
-            boolean shouldHaveChildren = !container.isLoaded();
+            boolean shouldHaveChildren = !section.isLoaded();
             if (shouldHaveChildren) {
                 if (children == null) {
                     RenderBufferNode[] childs = new RenderBufferNode[4];

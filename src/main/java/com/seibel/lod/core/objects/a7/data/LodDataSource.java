@@ -1,16 +1,24 @@
 package com.seibel.lod.core.objects.a7.data;
 
+import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
+import com.seibel.lod.core.objects.a7.render.RenderDataSource;
+
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.function.Function;
 
-public abstract class LodDataSource {
-    private static final String REGISTER_STRING_FILTER_REGEX = "^[a-zA-Z0-9_]*$";
-    public static final HashMap<String, Function<InputStream,? extends LodDataSource>>
+public interface LodDataSource {
+    String REGISTER_STRING_FILTER_REGEX = "^[a-zA-Z0-9_]*$";
+    HashMap<String, Function<InputStream,? extends LodDataSource>>
             dataSourceLoaderRegistry = new HashMap<String, Function<InputStream,? extends LodDataSource>>();
 
-    public static void registerDataSourceLoader(String name, int version, Function<InputStream,? extends LodDataSource> loader) {
+    interface DataSourceLoader {
+        // Can return null as meaning the requirement is not met
+        LodDataSource loadData(DhSectionPos sectionPos, InputStream data);
+    }
+
+    static void registerDataSourceLoader(String name, int version, Function<InputStream,? extends LodDataSource> loader) {
         if (name == null || loader == null || name.isEmpty()) {
             throw new IllegalArgumentException("Name and loader must be non-null, and not empty");
         }
@@ -23,7 +31,7 @@ public abstract class LodDataSource {
         dataSourceLoaderRegistry.put(name+"$"+version, loader);
     }
 
-    public static LodDataSource loadData(String dataSourceTypeNameVersion, InputStream data) {
+    static LodDataSource loadData(String dataSourceTypeNameVersion, InputStream data) {
 
         Function<InputStream,? extends LodDataSource> loader = dataSourceLoaderRegistry.get(dataSourceTypeNameVersion);
         if (loader == null) {
@@ -31,7 +39,9 @@ public abstract class LodDataSource {
         }
         return loader.apply(data);
     }
-    public abstract Function<ByteBuffer,? extends LodDataSource> getLatestLoader();
+    DataSourceLoader getLatestLoader();
 
-    public abstract <T> T[] getData(); //TODO & FIXME: What is T?
+    <T> T[] getData(); //TODO & FIXME: What is T?
+
+    DhSectionPos getSectionPos();
 }

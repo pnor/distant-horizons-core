@@ -1,16 +1,15 @@
 package com.seibel.lod.core.objects.a7.data;
 
-import com.seibel.lod.core.objects.a7.RenderDataSource;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.EmptyRenderContainer;
-import com.seibel.lod.core.objects.a7.render.RenderContainer;
+import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 
-public class DataFileHandler implements RenderDataSource {
+public class DataFileHandler implements com.seibel.lod.core.objects.a7.RenderDataSource {
     public final File folder;
     private final HashMap<DhSectionPos, LodDataSource> dataSourceCache;
 
@@ -20,11 +19,11 @@ public class DataFileHandler implements RenderDataSource {
     }
 
     @Override
-    public RenderContainer createRenderData(DhSectionPos pos) {
+    public RenderDataSource createRenderData(DhSectionPos pos) {
         LodDataSource dataSource = getDataSource(pos);
-        RenderContainer renderContainer = RenderContainer.tryConstruct(dataSource, pos);
-        if (renderContainer == null) renderContainer = EmptyRenderContainer.INSTANCE;
-        return renderContainer;
+        RenderDataSource renderDataSource = RenderDataSource.tryConstruct(dataSource, pos);
+        if (renderDataSource == null) renderDataSource = EmptyRenderContainer.INSTANCE;
+        return renderDataSource;
     }
 
     private LodDataSource getDataSource(DhSectionPos pos) {
