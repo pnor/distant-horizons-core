@@ -16,6 +16,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+
+@Deprecated // Please edit the ColumnDatatype instead.
 public class RenderDataContainer
 {
     public static final boolean DO_SAFETY_CHECKS = true;
