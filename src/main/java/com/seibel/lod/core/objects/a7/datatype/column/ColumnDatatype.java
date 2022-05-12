@@ -1,7 +1,6 @@
 package com.seibel.lod.core.objects.a7.datatype.column;
 
 import com.seibel.lod.core.objects.LodDataView;
-import com.seibel.lod.core.objects.a7.RenderDataContainer;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
@@ -33,7 +32,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public final int[] airDataContainer;
 
     /**
-     * Constructor of the RenderDataContainer
+     * Constructor of the ColumnDataType
      * @param maxVerticalSize the maximum vertical size of the container
      */
     public ColumnDatatype(DhSectionPos sectionPos, int maxVerticalSize) {
@@ -339,7 +338,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return new long[LodUtil.DETAIL_OPTIONS - 1][];
     });
 
-    public void updateData(RenderDataContainer lowerRenderContainer, int posX, int posZ)
+    public void updateData(ColumnDatatype lowerDataContainer, int posX, int posZ)
     {
         //We reset the array
         long[][] verticalUpdateArrays = tLocalVerticalUpdateArrays.get();
@@ -351,7 +350,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         } else Arrays.fill(dataToMerge, 0);
 
         //int lowerMaxVertical = dataToMerge.length / 4;
-        int lowerSectionSize = lowerRenderContainer.getSECTION_SIZE();
+        int lowerSectionSize = lowerDataContainer.getSECTION_SIZE();
         int childPosStartX = Math.floorMod(2 * posX, lowerSectionSize);
         int childPosEndX = Math.floorMod(2 * posX + 1, lowerSectionSize);
         int childPosStartZ = Math.floorMod(2 * posZ, lowerSectionSize);
@@ -360,7 +359,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         long[] data;
         boolean anyDataExist = false;
 
-        mergeAndAddDataFromOtherContainer(posX, posZ, lowerRenderContainer, childPosStartX, childPosEndX, childPosStartZ, childPosEndZ);
+        mergeAndAddDataFromOtherContainer(posX, posZ, lowerDataContainer, childPosStartX, childPosEndX, childPosStartZ, childPosEndZ);
         /*
         TODO remove this old code when we are sure that this works
         for (int x = 0; x <= 1; x++)
@@ -452,7 +451,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
      * This method merge column of multiple data together
      */
     // TODO: Make this operate on a out param array, to allow skipping copy array on use
-    public void mergeAndAddDataFromOtherContainer(int mergeInX, int mergeInZ, RenderDataContainer lowerDataContainer, int mergeFromX, int mergeToX, int mergeFromZ, int mergeToZ)
+    public void mergeAndAddDataFromOtherContainer(int mergeInX, int mergeInZ, ColumnDatatype lowerDataContainer, int mergeFromX, int mergeToX, int mergeFromZ, int mergeToZ)
     {
         int outBaseIndex = mergeInX * SECTION_SIZE * verticalSize + mergeInZ*verticalSize;
         int inputVerticalSize = lowerDataContainer.verticalSize;
