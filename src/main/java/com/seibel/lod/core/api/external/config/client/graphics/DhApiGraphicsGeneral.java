@@ -10,7 +10,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
  * @author James Seibel
  * @version 2022-4-26
  */
-public class General
+public class DhApiGraphicsGeneral
 {
 	private static final ILodConfigWrapperSingleton.IClient.IGraphics.IQuality qualitySettings = ExternalApiShared.CONFIG.client().graphics().quality();
 	

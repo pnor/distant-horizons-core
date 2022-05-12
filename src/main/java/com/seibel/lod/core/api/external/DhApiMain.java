@@ -10,7 +10,7 @@ import com.seibel.lod.core.handlers.LodDimensionFileHandler;
  * @author James Seibel
  * @version 2022-4-27
  */
-public class ApiMain
+public class DhApiMain
 {
 	/** This version should only be updated when breaking changes are introduced to the DH API */
 	public static int getApiMajorVersion()

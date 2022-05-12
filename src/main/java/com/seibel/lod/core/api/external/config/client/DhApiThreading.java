@@ -9,7 +9,7 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
  * @author James Seibel
  * @version 2022-4-26
  */
-public class Threading
+public class DhApiThreading
 {
 	private static final ILodConfigWrapperSingleton.IClient.IAdvanced.IThreading threadSettings = ExternalApiShared.CONFIG.client().advanced().threading();
 	
