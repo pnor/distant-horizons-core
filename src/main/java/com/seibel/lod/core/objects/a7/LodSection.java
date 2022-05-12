@@ -19,9 +19,9 @@ public class LodSection {
     private boolean isLoaded = false;
 
     // Create sub region
-    public LodSection(DhSectionPos pos, com.seibel.lod.core.objects.a7.RenderDataSource renderSource) {
+    public LodSection(DhSectionPos pos, RenderDataProvider renderDataProvider) {
         this.pos = pos;
-        this.renderDataSource = renderSource.createRenderData(pos);
+        this.renderDataSource = renderDataProvider.createRenderData(pos);
     }
 
     public void load() {

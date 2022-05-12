@@ -1,5 +1,6 @@
 package com.seibel.lod.core.objects.a7.data;
 
+import com.seibel.lod.core.objects.a7.RenderDataProvider;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.EmptyRenderContainer;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
@@ -9,7 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 
-public class DataFileHandler implements com.seibel.lod.core.objects.a7.RenderDataSource {
+public class DataFileHandler implements RenderDataProvider {
     public final File folder;
     private final HashMap<DhSectionPos, LodDataSource> dataSourceCache;
 

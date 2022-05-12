@@ -101,7 +101,7 @@ public abstract class LodQuadTree {
                 playerPos.dist(sectionPos.getCenter().getCenter()));
     }
 
-    public abstract RenderDataSource getRenderDataSource();
+    public abstract RenderDataProvider getRenderDataProvider();
     
     /**
      * Given a section pos at level n this method returns the parent section at level n+1
@@ -171,7 +171,7 @@ public abstract class LodQuadTree {
                     LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                     if (parent == null) {
                         parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                new LodSection(section.pos.getParent(), getRenderDataSource()));
+                                new LodSection(section.pos.getParent(), getRenderDataProvider()));
                         parent.childCount++;
                     }
                     LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
@@ -180,7 +180,7 @@ public abstract class LodQuadTree {
                         LodSection child = ringList.get(childPos.x, childPos.z);
                         if (child == null) {
                             child = ringList.setChained(childPos.x, childPos.z,
-                                    new LodSection(childPos, getRenderDataSource()));
+                                    new LodSection(childPos, getRenderDataProvider()));
                             child.childCount = 0;
                         } else if (child.childCount == -1) {
                             child.childCount = 0;
@@ -202,7 +202,7 @@ public abstract class LodQuadTree {
                         LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                         if (parent == null) {
                             parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                    new LodSection(sectPos.getParent(), getRenderDataSource()));
+                                    new LodSection(sectPos.getParent(), getRenderDataProvider()));
                         }
                         parent.childCount++;
                     }
