@@ -5,52 +5,48 @@ import com.seibel.lod.core.enums.LodDirection;
 import java.util.function.Consumer;
 
 public class DhSectionPos {
-    public static final byte SECTION_DETAIL_LEVEL_OFFSET = 6;
-    public static final int DATA_WIDTH_PER_SECTION = 1 << SECTION_DETAIL_LEVEL_OFFSET;
-
     public final byte detail;
     public final int x;
     public final int z;
     public final int yOffset;
+    public final byte dataDetailOffset;
 
-    public DhSectionPos(byte detail, int x, int z) {
-        this.detail = detail;
-        this.x = x;
-        this.z = z;
-        this.yOffset = 0;
-    }
-    public DhSectionPos(byte detail, int x, int z, int yOffset) {
+    public DhSectionPos(byte detail, int x, int z, int yOffset, byte dataDetailOffset) {
         this.detail = detail;
         this.x = x;
         this.z = z;
         this.yOffset = yOffset;
+        this.dataDetailOffset = dataDetailOffset;
     }
 
-    public DhSectionPos withOffset(int yOffset) {
-        return new DhSectionPos(detail, x, z, yOffset);
+    public DhSectionPos withYOffset(int yOffset) {
+        return new DhSectionPos(detail, x, z, yOffset, dataDetailOffset);
     }
-
+    public DhSectionPos withDataOffset(byte dataDetailOffset) {
+        return new DhSectionPos(detail, x, z, yOffset, dataDetailOffset);
+    }
 
     public DhLodPos getCenter() {
-        return new DhLodPos(detail, x * DATA_WIDTH_PER_SECTION + DATA_WIDTH_PER_SECTION / 2, z * DATA_WIDTH_PER_SECTION + DATA_WIDTH_PER_SECTION / 2);
+        if (dataDetailOffset == 0) return new DhLodPos(detail, x, z);
+        return new DhLodPos(detail, (x << dataDetailOffset)+(1 << (dataDetailOffset-1)), (z << dataDetailOffset)+(1 << (dataDetailOffset-1)));
     }
 
     public DhLodPos getCorner() {
-        return new DhLodPos(detail, x * DATA_WIDTH_PER_SECTION, z * DATA_WIDTH_PER_SECTION);
+        return new DhLodPos(detail, x << dataDetailOffset, z << dataDetailOffset);
     }
 
     public DhLodUnit getWidth() {
-        return new DhLodUnit(detail, DATA_WIDTH_PER_SECTION);
+        return new DhLodUnit(detail, 1 << dataDetailOffset);
     }
 
-    public static DhLodUnit getWidth(byte detail) {
-        return new DhLodUnit(detail, DATA_WIDTH_PER_SECTION);
+    public static DhLodUnit getWidth(byte detail, byte dataDetailOffset){
+        return new DhLodUnit(detail, 1 << dataDetailOffset);
     }
 
     public DhSectionPos getChild(int child0to3){
         if (child0to3 < 0 || child0to3 > 3) throw new IllegalArgumentException("child0to3 must be between 0 and 3");
-        if (detail == 0) throw new IllegalStateException("detail must be greater than 0");
-        return new DhSectionPos((byte) (detail - 1), x * 2 + (child0to3 & 1), z * 2 + (child0to3 & 2) / 2, yOffset);
+        if (detail-dataDetailOffset <= 0) throw new IllegalStateException("detail or data detail must be greater than 0");
+        return new DhSectionPos((byte) (detail - 1), x * 2 + (child0to3 & 1), z * 2 + (child0to3 & 2) / 2, yOffset, dataDetailOffset);
     }
 
     public void forEachChild(Consumer<DhSectionPos> callback){
@@ -60,21 +56,22 @@ public class DhSectionPos {
     }
 
     public DhSectionPos getParent(){
-        return new DhSectionPos((byte) (detail + 1), x / 2, z / 2, yOffset);
+        return new DhSectionPos((byte) (detail + 1), x / 2, z / 2, yOffset, dataDetailOffset);
     }
 
     public DhSectionPos getAdjacent(LodDirection dir) {
-        return new DhSectionPos(detail, x + dir.getNormal().x, z + dir.getNormal().z, yOffset);
+        return new DhSectionPos(detail, x + dir.getNormal().x, z + dir.getNormal().z, yOffset, dataDetailOffset);
     }
 
     public DhSectionPos convertUpwardsTo(byte newDetail){
         if (detail == newDetail) return this;
-        if (detail > newDetail) return new DhSectionPos(newDetail, x >> (detail - newDetail), z >> (detail - newDetail), yOffset);
+        if (detail > newDetail) return
+                new DhSectionPos(newDetail, x >> (detail - newDetail), z >> (detail - newDetail), yOffset, dataDetailOffset);
         throw new IllegalArgumentException("newDetail must be greater than detail");
     }
 
     /**
-     *  NOTE: This equals() does not consider yOffset!
+     *  NOTE: This equals() does not consider yOffset or dataDetailOffset!
      */
 
     public boolean equals(Object o){
@@ -85,7 +82,7 @@ public class DhSectionPos {
     }
 
     /**
-     *  NOTE: This does not consider yOffset!
+     *  NOTE: This does not consider yOffset! (dataDetailOffset is also ignored since, well, it doesn't effect the outcome)
      */
     public boolean overlaps(DhSectionPos other){
         if (this.equals(other))

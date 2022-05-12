@@ -1,10 +1,15 @@
 package com.seibel.lod.core.objects.a7;
 
+import com.seibel.lod.core.objects.a7.datatype.column.ColumnDatatype;
 import com.seibel.lod.core.objects.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 // QuadTree built from several layers of 2d ring buffers
 
@@ -30,6 +35,37 @@ public abstract class LodQuadTree {
     
     public final int numbersOfDetailLevels;
     private final MovableGridRingList<LodSection>[] ringLists;
+
+    static class ContainerTypeConfigEntry {
+        final Class<?> containerType;
+        final int levelOffset;
+        public ContainerTypeConfigEntry(Class<?> containerType, int levelOffset) {
+            this.containerType = containerType;
+            this.levelOffset = levelOffset;
+        }
+    }
+
+    static final ArrayList<ContainerTypeConfigEntry> containerTypeConfig = new ArrayList<>();
+    static {
+        Collections.addAll(containerTypeConfig,
+                null,
+                null, //1
+                null, //2
+                null, //3
+                new ContainerTypeConfigEntry(FullDatatype.class, 4), //4 -> 0
+                null, //5 breaks down to 4
+                null, //6 breaks down to 4
+                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //7 -> 1
+                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //8 -> 2
+                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //9 -> 3
+                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //10 -> 4
+                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET) //11 -> 5...
+        );
+    }
+
+    final ContainerTypeConfigEntry[] containerTypeConfigs;
+
+    //public static final
     
     /**
      * Constructor of the quadTree
@@ -38,13 +74,35 @@ public abstract class LodQuadTree {
      * @param initialPlayerZ player z coordinate
      */
     public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
-        numbersOfDetailLevels = DetailDistanceUtil.getDetailLevelFromDistance(viewDistance*Math.sqrt(2));
+        byte maxDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(viewDistance*Math.sqrt(2));
+        ContainerTypeConfigEntry finalEntry = null;
+        byte topSectionLevel = 0;
+        for (; topSectionLevel < containerTypeConfig.size(); topSectionLevel++) {
+            if (containerTypeConfig.get(topSectionLevel) == null) continue;
+            finalEntry = containerTypeConfig.get(topSectionLevel);
+            if (topSectionLevel - finalEntry.levelOffset >= maxDetailLevel) break;
+        }
+        if (finalEntry == null) throw new RuntimeException("No container type found!");
+        if (topSectionLevel == containerTypeConfig.size())
+            topSectionLevel = (byte) (maxDetailLevel - finalEntry.levelOffset);
+        numbersOfDetailLevels = topSectionLevel + 1;
+        containerTypeConfigs = new ContainerTypeConfigEntry[numbersOfDetailLevels];
+        finalEntry = null;
+        for (byte i = 0; i < numbersOfDetailLevels; i++) {
+            if (containerTypeConfig.get(i) == null) continue; //TODO: Next here
+
+        }
+
         ringLists = new MovableGridRingList[numbersOfDetailLevels];
         int size;
         for (byte detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
-            double distance = DetailDistanceUtil.getDrawDistanceFromDetail(detailLevel);
-            int sectionCount = LodUtil.ceilDiv((int) Math.ceil(distance),
-                    DhSectionPos.getWidth(detailLevel).toBlock()) + 1; // +1 for the border during move
+            int distance = getFurthestPoint(detailLevel);
+            ContainerTypeConfigEntry configEntry = containerTypeConfig.get(detailLevel);
+            if (configEntry == null) {
+                continue;
+            }
+
+            int sectionCount = LodUtil.ceilDiv(distance, DhSectionPos.getWidth(detailLevel).toBlock()) + 1; // +1 for the border during move
             ringLists[detailLevel] = new MovableGridRingList<LodSection>(sectionCount,
                     initialPlayerX >> detailLevel, initialPlayerZ >> detailLevel);
         }
@@ -88,10 +146,10 @@ public abstract class LodQuadTree {
         return ringLists[detailLevel].get(x, z);
     }
 
-    // Overridable
     
     /**
      * This method will compute the detail level based on player position and section pos
+     * Override this method if you want to use a different algorithm
      * @param playerPos player position as a reference for calculating the detail level
      * @param sectionPos section position
      * @return detail level of this section pos
@@ -99,6 +157,17 @@ public abstract class LodQuadTree {
     public byte calculateExpectedDetailLevel(DhBlockPos2D playerPos, DhSectionPos sectionPos) {
         return DetailDistanceUtil.getDetailLevelFromDistance(
                 playerPos.dist(sectionPos.getCenter().getCenter()));
+    }
+
+    /**
+     * The method will return the furthest distance to the center for the given detail level
+     * Override this method if you want to use a different algorithm
+     * Note: the returned distance should always be the ceiling estimation of the distance
+     * @param detailLevel detail level
+     * @return the furthest distance to the center, in blocks
+     */
+    public int getFurthestPoint(byte detailLevel) {
+        return (int)Math.ceil(DetailDistanceUtil.getDrawDistanceFromDetail(detailLevel));
     }
 
     public abstract RenderDataProvider getRenderDataProvider();

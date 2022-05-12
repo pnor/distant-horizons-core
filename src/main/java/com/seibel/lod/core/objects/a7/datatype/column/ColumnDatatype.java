@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public static final boolean DO_SAFETY_CHECKS = true;
-    public static final int SECTION_SIZE = DhSectionPos.DATA_WIDTH_PER_SECTION;
+    public static final int SECTION_SIZE_OFFSET = 6;
+    public static final int SECTION_SIZE = 1 << SECTION_SIZE_OFFSET;
     public static final int LATEST_VERSION = 9;
     public final int AIR_LODS_SIZE = 16;
     public final int AIR_SECTION_SIZE = SECTION_SIZE/AIR_LODS_SIZE;
