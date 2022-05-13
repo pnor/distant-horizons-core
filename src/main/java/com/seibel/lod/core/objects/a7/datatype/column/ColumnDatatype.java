@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public static final boolean DO_SAFETY_CHECKS = true;
-    public static final int SECTION_SIZE_OFFSET = 6;
+    public static final byte SECTION_SIZE_OFFSET = 6;
     public static final int SECTION_SIZE = 1 << SECTION_SIZE_OFFSET;
     public static final int LATEST_VERSION = 9;
     public final int AIR_LODS_SIZE = 16;
@@ -46,7 +46,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version) throws IOException {
         this.sectionPos = sectionPos;
         byte detailLevel = inputData.readByte();
-        if (sectionPos.detail != detailLevel) {
+        if (sectionPos.dataDetail != detailLevel) {
             throw new IOException("Invalid data: detail level does not match");
         }
         verticalSize = inputData.readByte() & 0b01111111;
@@ -74,7 +74,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         verticalSize = maxVerticalSize;
         this.sectionPos = sectionPos;
         byte detailLevel = inputData.readByte();
-        if (sectionPos.detail != detailLevel) {
+        if (sectionPos.dataDetail != detailLevel) {
             throw new IOException("Invalid data: detail level does not match");
         }
         int fileMaxVerticalSize = inputData.readByte() & 0b01111111;
@@ -109,7 +109,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         if (!sourcePos.overlaps(sectionPos)) {
             throw new IllegalArgumentException("The source section does not overlap with new target position");
         }
-        if (sourcePos.detail > sectionPos.detail) {
+        if (sourcePos.dataDetail > sectionPos.dataDetail) {
             throw new IllegalArgumentException("The source section has higher detail than new target detail");
         }
         if (sourcePos.yOffset != sectionPos.yOffset) {
@@ -342,11 +342,11 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     {
         //We reset the array
         long[][] verticalUpdateArrays = tLocalVerticalUpdateArrays.get();
-        long[] dataToMerge = verticalUpdateArrays[sectionPos.detail-1];
-        int arrayLength = DetailDistanceUtil.getMaxVerticalData(sectionPos.detail-1) * 4;
+        long[] dataToMerge = verticalUpdateArrays[sectionPos.dataDetail -1];
+        int arrayLength = DetailDistanceUtil.getMaxVerticalData(sectionPos.dataDetail -1) * 4;
         if (dataToMerge == null || dataToMerge.length != arrayLength) {
             dataToMerge = new long[arrayLength];
-            verticalUpdateArrays[sectionPos.detail-1] = dataToMerge;
+            verticalUpdateArrays[sectionPos.dataDetail -1] = dataToMerge;
         } else Arrays.fill(dataToMerge, 0);
 
         //int lowerMaxVertical = dataToMerge.length / 4;
@@ -387,7 +387,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     }
 
     public boolean writeData(DataOutputStream output) throws IOException {
-        output.writeByte(sectionPos.detail);
+        output.writeByte(sectionPos.dataDetail);
         output.writeByte((byte) verticalSize);
         // FIXME: yOffset is a int, but we only are writing a short.
         output.writeByte((byte) (sectionPos.yOffset & 0xFF));
@@ -807,7 +807,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     }
     public static RenderDataSource loadByCopying(LodDataSource dataSource, DhSectionPos sectionPos) {
         ColumnDatatype columns = new ColumnDatatype(sectionPos, dataSource,
-                DetailDistanceUtil.getMaxVerticalData(sectionPos.detail));
+                DetailDistanceUtil.getMaxVerticalData(sectionPos.dataDetail));
 
         return null;
     }

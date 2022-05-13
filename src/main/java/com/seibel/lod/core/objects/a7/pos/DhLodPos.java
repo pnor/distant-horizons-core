@@ -1,6 +1,9 @@
 package com.seibel.lod.core.objects.a7.pos;
 
 import com.seibel.lod.core.objects.DHBlockPos;
+import com.seibel.lod.core.util.LodUtil;
+
+import java.util.Objects;
 
 public class DhLodPos {
     public final byte detail;
@@ -37,5 +40,33 @@ public class DhLodPos {
     }
     public DhBlockPos2D getCorner() {
         return new DhBlockPos2D(getX().toBlock(), getZ().toBlock());
+    }
+
+    public DhLodPos convertUpwardsTo(byte newDetail) {
+        LodUtil.assertTrue(newDetail >= detail);
+        return new DhLodPos(newDetail, x >> (newDetail - detail), z >> (newDetail - detail));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DhLodPos dhLodPos = (DhLodPos) o;
+        return detail == dhLodPos.detail && x == dhLodPos.x && z == dhLodPos.z;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(detail, x, z);
+    }
+
+    public boolean overlaps(DhLodPos other) {
+        if (equals(other)) return true;
+        if (detail == other.detail) return false;
+        if (detail > other.detail) {
+            return other.equals(this.convertUpwardsTo(other.detail));
+        } else {
+            return this.equals(other.convertUpwardsTo(this.detail));
+        }
     }
 }

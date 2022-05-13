@@ -1,6 +1,7 @@
 package com.seibel.lod.core.objects.a7;
 
 import com.seibel.lod.core.objects.a7.datatype.column.ColumnDatatype;
+import com.seibel.lod.core.objects.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.objects.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.util.DetailDistanceUtil;
@@ -9,7 +10,6 @@ import com.seibel.lod.core.util.gridList.MovableGridRingList;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 // QuadTree built from several layers of 2d ring buffers
 
@@ -33,13 +33,14 @@ public abstract class LodQuadTree {
      */
     
     
-    public final int numbersOfDetailLevels;
+    public final byte numbersOfSectionLevels;
+    public final byte startingSectionLevel;
     private final MovableGridRingList<LodSection>[] ringLists;
 
     static class ContainerTypeConfigEntry {
         final Class<?> containerType;
-        final int levelOffset;
-        public ContainerTypeConfigEntry(Class<?> containerType, int levelOffset) {
+        final byte levelOffset;
+        public ContainerTypeConfigEntry(Class<?> containerType, byte levelOffset) {
             this.containerType = containerType;
             this.levelOffset = levelOffset;
         }
@@ -47,25 +48,52 @@ public abstract class LodQuadTree {
 
     static final ArrayList<ContainerTypeConfigEntry> containerTypeConfig = new ArrayList<>();
     static {
+        //TODO: Make this dynamic
         Collections.addAll(containerTypeConfig,
                 null,
                 null, //1
                 null, //2
                 null, //3
-                new ContainerTypeConfigEntry(FullDatatype.class, 4), //4 -> 0
-                null, //5 breaks down to 4
-                null, //6 breaks down to 4
+                new ContainerTypeConfigEntry(FullDatatype.class, (byte) 4), //4 -> 0
+                null, //5 force breaks down to 4 -> 0
+                null, //6 force breaks down to 4 -> 0
                 new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //7 -> 1
-                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //8 -> 2
-                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //9 -> 3
-                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //10 -> 4
-                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET) //11 -> 5...
+                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET) //8 -> 2
+                // ... And same onwards
         );
     }
 
-    final ContainerTypeConfigEntry[] containerTypeConfigs;
+    static class SectionDetailLayer {
+        final byte targetDataDetail;
+        final Class<?> containerType;
+        public SectionDetailLayer(byte targetDataDetail, Class<?> containerType) {
+            this.targetDataDetail = targetDataDetail;
+            this.containerType = containerType;
+        }
+    }
 
-    //public static final
+    static void assertContainerTypeConfigCorrect() {
+        boolean isInFront = true;
+        for (int i = 0; i < containerTypeConfig.size(); i++) {
+            if (containerTypeConfig.get(i) == null) continue;
+            isInFront = false;
+            ContainerTypeConfigEntry entry = containerTypeConfig.get(i);
+            if (i - entry.levelOffset < 0) {
+                throw new RuntimeException("ContainerTypeConfigEntry " + i + " has a levelOffset of "
+                        + entry.levelOffset + " which makes the dataDetail be " + (i - entry.levelOffset) + "," +
+                        " which is less than 0!");
+            }
+            if (entry.levelOffset < 0) {
+                throw new RuntimeException("ContainerTypeConfigEntry " + i + " has a levelOffset of "
+                        + entry.levelOffset + " which is less than 0!");
+            }
+        }
+        if (containerTypeConfig.get(containerTypeConfig.size()-1) == null) {
+            throw new RuntimeException("The last ContainerTypeConfigEntry is null, which is invalid!");
+        }
+    }
+
+    final SectionDetailLayer[] sectionDetailLayers;
     
     /**
      * Constructor of the quadTree
@@ -74,47 +102,82 @@ public abstract class LodQuadTree {
      * @param initialPlayerZ player z coordinate
      */
     public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
-        byte maxDetailLevel = DetailDistanceUtil.getDetailLevelFromDistance(viewDistance*Math.sqrt(2));
-        ContainerTypeConfigEntry finalEntry = null;
-        byte topSectionLevel = 0;
-        for (; topSectionLevel < containerTypeConfig.size(); topSectionLevel++) {
-            if (containerTypeConfig.get(topSectionLevel) == null) continue;
-            finalEntry = containerTypeConfig.get(topSectionLevel);
-            if (topSectionLevel - finalEntry.levelOffset >= maxDetailLevel) break;
-        }
-        if (finalEntry == null) throw new RuntimeException("No container type found!");
-        if (topSectionLevel == containerTypeConfig.size())
-            topSectionLevel = (byte) (maxDetailLevel - finalEntry.levelOffset);
-        numbersOfDetailLevels = topSectionLevel + 1;
-        containerTypeConfigs = new ContainerTypeConfigEntry[numbersOfDetailLevels];
-        finalEntry = null;
-        for (byte i = 0; i < numbersOfDetailLevels; i++) {
-            if (containerTypeConfig.get(i) == null) continue; //TODO: Next here
+        assertContainerTypeConfigCorrect();
 
-        }
-
-        ringLists = new MovableGridRingList[numbersOfDetailLevels];
-        int size;
-        for (byte detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
-            int distance = getFurthestPoint(detailLevel);
-            ContainerTypeConfigEntry configEntry = containerTypeConfig.get(detailLevel);
-            if (configEntry == null) {
-                continue;
+        { // Calculate the max section detail
+            byte maxDetailLevel = getMaxDetailInRange(viewDistance * Math.sqrt(2));
+            ContainerTypeConfigEntry finalEntry = null;
+            byte topSectionLevel = 0;
+            byte firstLevel = -1;
+            for (; topSectionLevel < containerTypeConfig.size(); topSectionLevel++) {
+                if (containerTypeConfig.get(topSectionLevel) == null) continue;
+                finalEntry = containerTypeConfig.get(topSectionLevel);
+                if (firstLevel == -1) firstLevel = topSectionLevel;
+                if (topSectionLevel - finalEntry.levelOffset >= maxDetailLevel) break;
             }
+            if (finalEntry == null) throw new RuntimeException("No container type found!");
+            if (topSectionLevel == containerTypeConfig.size())
+                topSectionLevel = (byte) (maxDetailLevel - finalEntry.levelOffset);
+            numbersOfSectionLevels = (byte) (topSectionLevel + 1);
+            startingSectionLevel = firstLevel;
+            sectionDetailLayers = new SectionDetailLayer[numbersOfSectionLevels - startingSectionLevel];
+            ringLists = new MovableGridRingList[numbersOfSectionLevels - startingSectionLevel];
+        }
 
-            int sectionCount = LodUtil.ceilDiv(distance, DhSectionPos.getWidth(detailLevel).toBlock()) + 1; // +1 for the border during move
-            ringLists[detailLevel] = new MovableGridRingList<LodSection>(sectionCount,
-                    initialPlayerX >> detailLevel, initialPlayerZ >> detailLevel);
+        { // Fill in the sectionDetailLayers info and construct the ringLists
+            byte lastNonNullEntry = -1;
+            for (byte i = startingSectionLevel; i < numbersOfSectionLevels; i++) {
+                byte targetDataDetail;
+                Class<?> containerType;
+
+                if (i < containerTypeConfig.size()) {
+                    if (containerTypeConfig.get(i) == null) {
+                        if (lastNonNullEntry == -1) continue;
+                        targetDataDetail = sectionDetailLayers[lastNonNullEntry].targetDataDetail;
+                        containerType = null;
+                    } else {
+                        lastNonNullEntry = i;
+                        ContainerTypeConfigEntry entry = containerTypeConfig.get(i);
+                        targetDataDetail = (byte) (i - entry.levelOffset);
+                        containerType = entry.containerType;
+                    }
+                } else {
+                    LodUtil.assertTrue(containerTypeConfig.get(containerTypeConfig.size() - 1) != null,
+                            "The last entry must not be null!");
+                    ContainerTypeConfigEntry entry = containerTypeConfig.get(containerTypeConfig.size() - 1);
+                    targetDataDetail = (byte) (i - entry.levelOffset);
+                    containerType = entry.containerType;
+                }
+
+                LodUtil.assertTrue(targetDataDetail >= 0, "dataDetail must be >= 0!");
+                int maxDist = getFurthestDistance(targetDataDetail);
+                int halfSize = LodUtil.ceilDiv(maxDist, (1 << i) + 2);
+                sectionDetailLayers[i - startingSectionLevel] = new SectionDetailLayer(targetDataDetail, containerType);
+                ringLists[i - startingSectionLevel] = new MovableGridRingList<LodSection>(halfSize,
+                        initialPlayerX >> i, initialPlayerZ >> i);
+            }
         }
     }
-    
+
+
     /**
      * This method return the LodSection given the Section Pos
-     * @param pos the section positon
+     * @param pos the section positon.
      * @return the LodSection
      */
     public LodSection getSection(DhSectionPos pos) {
-        return getSection(pos.detail, pos.x, pos.z);
+        return getSection(pos.sectionDetail, pos.sectionX, pos.sectionZ);
+    }
+
+    public byte getFirstSectionDetailFromDataDetail(byte dataDetail) {
+        if (dataDetail <= startingSectionLevel) return startingSectionLevel;
+        for (byte i = 0; i < sectionDetailLayers.length; i++) {
+            if (sectionDetailLayers[i].targetDataDetail >= dataDetail) return (byte) (i + startingSectionLevel);
+        }
+        throw new RuntimeException("No section detail for dataDetail " + dataDetail+ " found!");
+    }
+    public byte getDataDetail(byte sectionDetail) {
+        return sectionDetailLayers[sectionDetail - startingSectionLevel].targetDataDetail;
     }
 
     /**
@@ -124,15 +187,19 @@ public abstract class LodQuadTree {
      * @return the RingList
      */
     public MovableGridRingList<LodSection> getRingList(byte detailLevel) {
-        return ringLists[detailLevel];
+        return ringLists[detailLevel - startingSectionLevel];
     }
 
     /**
      * This method returns the number of detail levels in the quadTree
      * @return the number of detail levels
      */
-    public int getNumbersOfDetailLevels() {
-        return numbersOfDetailLevels;
+    public byte getNumbersOfSectionLevels() {
+        return numbersOfSectionLevels;
+    }
+
+    public byte getStartingSectionLevel() {
+        return startingSectionLevel;
     }
 
     /**
@@ -143,7 +210,7 @@ public abstract class LodQuadTree {
      * @return the LodSection
      */
     public LodSection getSection(byte detailLevel, int x, int z) {
-        return ringLists[detailLevel].get(x, z);
+        return ringLists[detailLevel - startingSectionLevel].get(x, z);
     }
 
     
@@ -160,17 +227,31 @@ public abstract class LodQuadTree {
     }
 
     /**
+     * The method will return the highest detail level in a circle around the center
+     * Override this method if you want to use a different algorithm
+     * Note: the returned distance should always be the ceiling estimation of the distance
+     * //TODO: Make this input a bbox or a circle or something....
+     * @param distance the circle radius
+     * @return the highest detail level in the circle
+     */
+    public byte getMaxDetailInRange(double distance) {
+        return DetailDistanceUtil.getDetailLevelFromDistance(distance);
+    }
+
+    /**
      * The method will return the furthest distance to the center for the given detail level
      * Override this method if you want to use a different algorithm
      * Note: the returned distance should always be the ceiling estimation of the distance
+     * //TODO: Make this return a bbox instead of a distance in circle
      * @param detailLevel detail level
      * @return the furthest distance to the center, in blocks
      */
-    public int getFurthestPoint(byte detailLevel) {
+    public int getFurthestDistance(byte detailLevel) {
         return (int)Math.ceil(DetailDistanceUtil.getDrawDistanceFromDetail(detailLevel));
     }
 
     public abstract RenderDataProvider getRenderDataProvider();
+
     
     /**
      * Given a section pos at level n this method returns the parent section at level n+1
@@ -192,46 +273,59 @@ public abstract class LodQuadTree {
         return getSection(pos.getChild(child0to3));
     }
     
-    
-    
     /**
      * This function update the quadTree based on the playerPos and the current game configs (static and global)
      * @param playerPos the reference position for the player
      */
     public void tick(DhBlockPos2D playerPos) {
-        for (int detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
-            ringLists[detailLevel].move(playerPos.x >> detailLevel, playerPos.z >> detailLevel,
+        for (int sectLevel = startingSectionLevel; sectLevel < numbersOfSectionLevels; sectLevel++) {
+            ringLists[sectLevel - startingSectionLevel]
+                    .move(playerPos.x >> sectLevel, playerPos.z >> sectLevel,
                     LodSection::dispose);
         }
 
+
+
+
+
         // First tick pass: update all sections' childCount from bottom level to top level. Step:
-        //   If as detail 0 && section != null:
+        //   If sectLevel is bottom && section != null:
         //     - set childCount to 0
-        //   If section != null && child != 0:
+        //   If section != null && child != 0: //TODO: Should I move this createChild steps to Second tick pass?
         //     - // Section will be in the unloaded state.
         //     - create parent if it doesn't exist, with childCount = 1
         //     - for each child:
-        //       - if null, create new with childCount = 0
+        //       - if null, create new with childCount = 0 (force load due to neighboring issues)
         //       - else if childCount == -1, set childCount = 0 (rescue it)
         //     - set childCount to 4
         //   Else:
         //     - Calculate targetLevel at that section
-        //     - If targetLevel > detail && section != null:
-        //       - Parent's childCount-- (Assert parent != null && childCount > 0 before decrementing)
-        //       - // Note that this doesn't necessarily mean this section will be freed as it may be rescued later
-        //            due to neighboring quadrants not able to be freed (they pass targetLevel checks or has children)
-        //       - set childCount to -1 (Signal that this section will be freed if not rescued)
-        //     - If targetLevel <= detail && section == null:
-        //       - Parent's childCount++ (Create parent if needed)
-        for (byte detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
-            final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
+        //     - If sectLevel == numberOfSectionLevels - 1:
+        //       - // Section is the top level.
+        //       - If targetLevel > dataLevel@sectLevel && section != null:
+        //         - set childCount to -1 (Signal that section is to be freed) (this prob not be rescued as it is the top level)
+        //       - If targetLevel <= dataLevel@sectLevel && section == null: (direct use the current sectLevel's dataLevel)
+        //         - create new section with childCount = 0
+        //     - Else:
+        //       - // Section is not the top level. So we also need to consider the parent.
+        //       - If targetLevel >= dataLevel@(sectLevel+1) && section != null: (use the next level's dataLevel)
+        //         - Parent's childCount-- (Assert parent != null && childCount > 0 before decrementing)
+        //         - // Note that this doesn't necessarily mean this section will be freed as it may be rescued later
+        //              due to neighboring quadrants not able to be freed (they pass targetLevel checks or has children)
+        //              or due to parent's layer is in the Always Cascade mode. (containerType == null)
+        //         - set childCount to -1 (Signal that this section will be freed if not rescued)
+        //       - If targetLevel < dataLevel@(sectLevel+1) && section == null: (use the next level's dataLevel)
+        //         - create new section with childCount = 0
+        //         - Parent's childCount++ (Create parent if needed)
+        for (byte sectLevel = startingSectionLevel; sectLevel < numbersOfSectionLevels; sectLevel++) {
+            final MovableGridRingList<LodSection> ringList = ringLists[sectLevel - startingSectionLevel];
             final MovableGridRingList<LodSection> childRingList =
-                    detailLevel == 0 ? null : ringLists[detailLevel - 1];
+                    sectLevel == startingSectionLevel ? null : ringLists[sectLevel - startingSectionLevel - 1];
             final MovableGridRingList<LodSection> parentRingList =
-                    detailLevel == numbersOfDetailLevels - 1 ? null : ringLists[detailLevel + 1];
-            final byte detail = detailLevel;
+                    sectLevel == numbersOfSectionLevels - 1 ? null : ringLists[sectLevel - startingSectionLevel + 1];
+            final byte f_sectLevel = sectLevel;
             ringList.forEachPosOrdered((section, pos) -> {
-                if (detail == 0 && section != null) {
+                if (f_sectLevel == 0 && section != null) {
                     section.childCount = 0;
                 }
                 if (section != null && section.childCount != 0) {
@@ -246,9 +340,9 @@ public abstract class LodQuadTree {
                     LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
                     for (byte i = 0; i < 4; i++) {
                         DhSectionPos childPos = section.pos.getChild(i);
-                        LodSection child = ringList.get(childPos.x, childPos.z);
+                        LodSection child = childRingList.get(childPos.sectionX, childPos.sectionZ);
                         if (child == null) {
-                            child = ringList.setChained(childPos.x, childPos.z,
+                            child = childRingList.setChained(childPos.sectionX, childPos.sectionZ,
                                     new LodSection(childPos, getRenderDataProvider()));
                             child.childCount = 0;
                         } else if (child.childCount == -1) {
@@ -257,36 +351,53 @@ public abstract class LodQuadTree {
                     }
                     section.childCount = 4;
                 } else {
-                    DhSectionPos sectPos = section != null ? section.pos : new DhSectionPos(detail, pos.x, pos.y);
+                    DhSectionPos sectPos = section != null ? section.pos : new DhSectionPos(f_sectLevel, pos.x, pos.y);
                     byte targetLevel = calculateExpectedDetailLevel(playerPos, sectPos);
-                    if (targetLevel > detail && section != null) {
-                        LodUtil.assertTrue(parentRingList != null);
-                        LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
-                        LodUtil.assertTrue(parent != null);
-                        LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
-                        parent.childCount--;
-                        section.childCount = -1;
-                    } else if (targetLevel <= detail && section == null) {
-                        LodUtil.assertTrue(parentRingList != null);
-                        LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
-                        if (parent == null) {
-                            parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                    new LodSection(sectPos.getParent(), getRenderDataProvider()));
+                    if (f_sectLevel == numbersOfSectionLevels -1) {
+                        // Section is in the top level.
+                        if (targetLevel > getDataDetail(f_sectLevel) && section != null) {
+                            section.childCount = -1;
                         }
-                        parent.childCount++;
+                        if (targetLevel <= getDataDetail(f_sectLevel) && section == null) {
+                            section = ringList.setChained(pos.x, pos.y,
+                                    new LodSection(sectPos, getRenderDataProvider()));
+                        }
+                    } else {
+                        // Section is not the top level. So we also need to consider the parent.
+                        if (targetLevel >= getDataDetail((byte) (f_sectLevel+1)) && section != null) {
+                            LodUtil.assertTrue(parentRingList != null);
+                            LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
+                            LodUtil.assertTrue(parent != null);
+                            LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
+                            parent.childCount--;
+                            section.childCount = -1;
+                        }
+                        if (targetLevel < getDataDetail((byte) (f_sectLevel+1)) && section == null) {
+                            section = ringList.setChained(pos.x, pos.y,
+                                    new LodSection(sectPos, getRenderDataProvider()));
+                            LodUtil.assertTrue(parentRingList != null);
+                            LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
+                            if (parent == null) {
+                                parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
+                                        new LodSection(sectPos.getParent(), getRenderDataProvider()));
+                            }
+                            parent.childCount++;
+                        }
                     }
                 }
                 // Final quick assert to insure section pos is correct.
                 if (section != null) {
-                    LodUtil.assertTrue(section.pos.detail == detail);
-                    LodUtil.assertTrue(section.pos.x == pos.x);
-                    LodUtil.assertTrue(section.pos.z == pos.y);
+                    LodUtil.assertTrue(section.pos.sectionDetail == f_sectLevel);
+                    LodUtil.assertTrue(section.pos.sectionX == pos.x);
+                    LodUtil.assertTrue(section.pos.sectionZ == pos.y);
                 }
             });
         }
 
-        // Second tick pass: load and unload sections (and can also be used to assert everything is working). Step:
-        //   // ===Assertion steps===
+        // Second tick pass:
+        // Cascade the layers that is in Always Cascade Mode from top to bottom. (layer's containerType == null)
+        // At the same time, load and unload sections (and can also be used to assert everything is working). Step:
+        // ===Assertion steps===
         //   assert childCount == 4 || childCount == 0 || childCount == -1
         //   if childCount == 4 assert all children exist
         //   if childCount == 0 assert all children are null
@@ -299,26 +410,50 @@ public abstract class LodQuadTree {
         //   if childCount == -1: // (section can be loaded or unloaded, due to fast movement)
         //     - set this section to null (TODO: Is this needed to be first or last or don't matter for concurrency?)
         //     - If loaded unload section
-        for (byte detailLevel = 0; detailLevel < numbersOfDetailLevels; detailLevel++) {
-            final MovableGridRingList<LodSection> ringList = ringLists[detailLevel];
+        for (byte sectLevel = (byte) (numbersOfSectionLevels - 1); sectLevel >= startingSectionLevel; sectLevel--) {
+            final MovableGridRingList<LodSection> ringList = ringLists[sectLevel - startingSectionLevel];
             final MovableGridRingList<LodSection> childRingList =
-                    detailLevel == 0 ? null : ringLists[detailLevel - 1];
-            final MovableGridRingList<LodSection> parentRingList =
-                    detailLevel == numbersOfDetailLevels - 1 ? null : ringLists[detailLevel + 1];
+                    sectLevel == startingSectionLevel ? null : ringLists[sectLevel - startingSectionLevel - 1];
+            final boolean doCacsade = sectionDetailLayers[sectLevel].containerType == null;
+
             ringList.forEachPosOrdered((section, pos) -> {
+                if (section == null) return;
+
+                // Cascade layers
+                if (doCacsade && section.childCount == 0) {
+                    // Create childs to cascade the layer.
+                    for (byte i = 0; i < 4; i++) {
+                        DhSectionPos childPos = section.pos.getChild(i);
+                        LodSection child = childRingList.get(childPos.sectionX, childPos.sectionZ);
+                        if (child == null) {
+                            child = childRingList.setChained(childPos.sectionX, childPos.sectionZ,
+                                    new LodSection(childPos, getRenderDataProvider()));
+                            child.childCount = 0;
+                        } else {
+                            LodUtil.assertTrue(child.childCount == -1,
+                                    "Self has child count 0 but an existing child's child count != -1!");
+                            child.childCount = 0;
+                        }
+                    }
+                    section.childCount = 4;
+                }
+
+                // Assertion steps
                 LodUtil.assertTrue(section.childCount == 4 || section.childCount == 0 || section.childCount == -1);
                 if (section.childCount == 4) LodUtil.assertTrue(
                         getChildSection(section.pos, 0) != null &&
-                        getChildSection(section.pos, 1) != null &&
-                        getChildSection(section.pos, 2) != null &&
-                        getChildSection(section.pos, 3) != null);
+                                getChildSection(section.pos, 1) != null &&
+                                getChildSection(section.pos, 2) != null &&
+                                getChildSection(section.pos, 3) != null);
                 if (section.childCount == 0) LodUtil.assertTrue(
                         getChildSection(section.pos, 0) == null &&
-                        getChildSection(section.pos, 1) == null &&
-                        getChildSection(section.pos, 2) == null &&
-                        getChildSection(section.pos, 3) == null);
+                                getChildSection(section.pos, 1) == null &&
+                                getChildSection(section.pos, 2) == null &&
+                                getChildSection(section.pos, 3) == null);
                 if (section.childCount == -1) LodUtil.assertTrue(
                         getParentSection(section.pos).childCount == 0);
+
+                // Load/unload section
                 if (section.childCount == 4 && section.isLoaded()) {
                     section.unload();
                 } else if (section.childCount == 0 && !section.isLoaded()) {

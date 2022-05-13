@@ -448,6 +448,9 @@ public class LodUtil
 	public static void assertTrue(boolean condition) {
 		if (!condition) throw new RuntimeException("Assertion failed");
 	}
+	public static void assertTrue(boolean condition, String message) {
+		if (!condition) throw new RuntimeException("Assertion failed: " + message);
+	}
 	public static ExecutorService makeSingleThreadPool(String name, int relativePriority) {
 		return Executors.newSingleThreadExecutor(new LodThreadFactory(name, Thread.NORM_PRIORITY+relativePriority));
 	}
