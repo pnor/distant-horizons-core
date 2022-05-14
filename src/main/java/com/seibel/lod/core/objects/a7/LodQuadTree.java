@@ -4,6 +4,7 @@ import com.seibel.lod.core.objects.a7.datatype.column.ColumnDatatype;
 import com.seibel.lod.core.objects.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.objects.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
+import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
@@ -38,9 +39,9 @@ public abstract class LodQuadTree {
     private final MovableGridRingList<LodSection>[] ringLists;
 
     static class ContainerTypeConfigEntry {
-        final Class<?> containerType;
+        final Class<? extends RenderDataSource> containerType;
         final byte levelOffset;
-        public ContainerTypeConfigEntry(Class<?> containerType, byte levelOffset) {
+        public ContainerTypeConfigEntry(Class<? extends RenderDataSource> containerType, byte levelOffset) {
             this.containerType = containerType;
             this.levelOffset = levelOffset;
         }
@@ -65,8 +66,8 @@ public abstract class LodQuadTree {
 
     static class SectionDetailLayer {
         final byte targetDataDetail;
-        final Class<?> containerType;
-        public SectionDetailLayer(byte targetDataDetail, Class<?> containerType) {
+        final Class<? extends RenderDataSource> containerType;
+        public SectionDetailLayer(byte targetDataDetail, Class<? extends RenderDataSource> containerType) {
             this.targetDataDetail = targetDataDetail;
             this.containerType = containerType;
         }
@@ -128,7 +129,7 @@ public abstract class LodQuadTree {
             byte lastNonNullEntry = -1;
             for (byte i = startingSectionLevel; i < numbersOfSectionLevels; i++) {
                 byte targetDataDetail;
-                Class<?> containerType;
+                Class<? extends RenderDataSource> containerType;
 
                 if (i < containerTypeConfig.size()) {
                     if (containerTypeConfig.get(i) == null) {
@@ -324,6 +325,7 @@ public abstract class LodQuadTree {
             final MovableGridRingList<LodSection> parentRingList =
                     sectLevel == numbersOfSectionLevels - 1 ? null : ringLists[sectLevel - startingSectionLevel + 1];
             final byte f_sectLevel = sectLevel;
+            Class<? extends RenderDataSource> containerType = sectionDetailLayers[sectLevel - startingSectionLevel].containerType;
             ringList.forEachPosOrdered((section, pos) -> {
                 if (f_sectLevel == 0 && section != null) {
                     section.childCount = 0;
@@ -334,7 +336,7 @@ public abstract class LodQuadTree {
                     LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                     if (parent == null) {
                         parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                new LodSection(section.pos.getParent(), getRenderDataProvider()));
+                                new LodSection(section.pos.getParent(), getRenderDataProvider(), containerType));
                         parent.childCount++;
                     }
                     LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
@@ -343,7 +345,7 @@ public abstract class LodQuadTree {
                         LodSection child = childRingList.get(childPos.sectionX, childPos.sectionZ);
                         if (child == null) {
                             child = childRingList.setChained(childPos.sectionX, childPos.sectionZ,
-                                    new LodSection(childPos, getRenderDataProvider()));
+                                    new LodSection(childPos, getRenderDataProvider(), containerType));
                             child.childCount = 0;
                         } else if (child.childCount == -1) {
                             child.childCount = 0;
@@ -360,7 +362,7 @@ public abstract class LodQuadTree {
                         }
                         if (targetLevel <= getDataDetail(f_sectLevel) && section == null) {
                             section = ringList.setChained(pos.x, pos.y,
-                                    new LodSection(sectPos, getRenderDataProvider()));
+                                    new LodSection(sectPos, getRenderDataProvider(), containerType));
                         }
                     } else {
                         // Section is not the top level. So we also need to consider the parent.
@@ -374,12 +376,12 @@ public abstract class LodQuadTree {
                         }
                         if (targetLevel < getDataDetail((byte) (f_sectLevel+1)) && section == null) {
                             section = ringList.setChained(pos.x, pos.y,
-                                    new LodSection(sectPos, getRenderDataProvider()));
+                                    new LodSection(sectPos, getRenderDataProvider(), containerType));
                             LodUtil.assertTrue(parentRingList != null);
                             LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                             if (parent == null) {
                                 parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                        new LodSection(sectPos.getParent(), getRenderDataProvider()));
+                                        new LodSection(sectPos.getParent(), getRenderDataProvider(), containerType));
                             }
                             parent.childCount++;
                         }
@@ -414,7 +416,8 @@ public abstract class LodQuadTree {
             final MovableGridRingList<LodSection> ringList = ringLists[sectLevel - startingSectionLevel];
             final MovableGridRingList<LodSection> childRingList =
                     sectLevel == startingSectionLevel ? null : ringLists[sectLevel - startingSectionLevel - 1];
-            final boolean doCacsade = sectionDetailLayers[sectLevel].containerType == null;
+            final boolean doCacsade = sectionDetailLayers[sectLevel - startingSectionLevel].containerType == null;
+            Class<? extends RenderDataSource> containerType = sectionDetailLayers[sectLevel - startingSectionLevel].containerType;
 
             ringList.forEachPosOrdered((section, pos) -> {
                 if (section == null) return;
@@ -427,7 +430,7 @@ public abstract class LodQuadTree {
                         LodSection child = childRingList.get(childPos.sectionX, childPos.sectionZ);
                         if (child == null) {
                             child = childRingList.setChained(childPos.sectionX, childPos.sectionZ,
-                                    new LodSection(childPos, getRenderDataProvider()));
+                                    new LodSection(childPos, getRenderDataProvider(), containerType));
                             child.childCount = 0;
                         } else {
                             LodUtil.assertTrue(child.childCount == -1,

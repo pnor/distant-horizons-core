@@ -46,7 +46,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version) throws IOException {
         this.sectionPos = sectionPos;
         byte detailLevel = inputData.readByte();
-        if (sectionPos.dataDetail != detailLevel) {
+        if (sectionPos.sectionDetail - SECTION_SIZE_OFFSET != detailLevel) {
             throw new IOException("Invalid data: detail level does not match");
         }
         verticalSize = inputData.readByte() & 0b01111111;
@@ -74,7 +74,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         verticalSize = maxVerticalSize;
         this.sectionPos = sectionPos;
         byte detailLevel = inputData.readByte();
-        if (sectionPos.dataDetail != detailLevel) {
+        if (sectionPos.sectionDetail - SECTION_SIZE_OFFSET  != detailLevel) {
             throw new IOException("Invalid data: detail level does not match");
         }
         int fileMaxVerticalSize = inputData.readByte() & 0b01111111;

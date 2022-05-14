@@ -19,20 +19,25 @@ public class LodSection {
     private boolean isLoaded = false;
 
     // Create sub region
-    public LodSection(DhSectionPos pos, RenderDataProvider renderDataProvider) {
+    public LodSection(DhSectionPos pos, RenderDataProvider renderDataProvider, Class<? extends RenderDataSource> renderDataSourceClass) {
         this.pos = pos;
-        this.renderDataSource = renderDataProvider.createRenderData(pos);
+        this.renderDataSource = renderDataSourceClass == null ?
+                null : renderDataProvider.createRenderData(pos);
     }
 
     public void load() {
-        LodUtil.assertTrue(!isLoaded());
-        renderDataSource.load();
-        isLoaded = true;
+        if (renderDataSource != null) {
+            LodUtil.assertTrue(!isLoaded());
+            renderDataSource.load();
+            isLoaded = true;
+        }
     }
     public void unload() {
-        LodUtil.assertTrue(isLoaded());
-        renderDataSource.unload();
-        isLoaded = false;
+        if (renderDataSource != null) {
+            LodUtil.assertTrue(isLoaded());
+            renderDataSource.unload();
+            isLoaded = false;
+        }
     }
 
     public void dispose() {

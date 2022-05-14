@@ -56,6 +56,7 @@ public class RenderBufferHandler {
                     buff.close();
                 }
             } else {
+                LodUtil.assertTrue(container != null); // section.isLoaded() should have ensured this
                 container.trySwapRenderBuffer(renderBufferSlot);
             }
 
