@@ -1,10 +1,12 @@
 package com.seibel.lod.core.objects.a7.render;
 
+import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
+import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.opengl.RenderBuffer;
-import java.util.SortedMap;
-import java.util.TreeMap;
+
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -21,31 +23,45 @@ import java.util.concurrent.atomic.AtomicReference;
  </pre>
  */
 public interface RenderDataSource {
-    interface RenderContainerConstructor {
-        // Can return null as meaning the requirement is not met
-        RenderDataSource testAndConstruct(LodDataSource dataSource, DhSectionPos sectionPos);
-    }
-    SortedMap<Integer, RenderContainerConstructor>
-            renderContainerLoaderRegistry = new TreeMap<Integer, RenderContainerConstructor>();
-    static void registorLoader(RenderContainerConstructor func, int priority) {
-        if (func == null) {
-            throw new IllegalArgumentException("loader must be non-null");
+    // Don't think this is needed with the newer quad tree structure...
+//    interface RenderContainerConstructor {
+//        // Can return null as meaning the requirement is not met
+//        RenderDataSource testAndConstruct(LodDataSource dataSource, DhSectionPos sectionPos);
+//    }
+//    SortedMap<Integer, RenderContainerConstructor>
+//            renderContainerLoaderRegistry = new TreeMap<Integer, RenderContainerConstructor>();
+//    static void registorLoader(RenderContainerConstructor func, int priority) {
+//        if (func == null) {
+//            throw new IllegalArgumentException("loader must be non-null");
+//        }
+//        renderContainerLoaderRegistry.put(priority, func);
+//    }
+//
+//    static RenderDataSource tryConstruct(LodDataSource dataSource, DhSectionPos pos) {
+//        for (RenderContainerConstructor func : renderContainerLoaderRegistry.values()) {
+//            RenderDataSource container = func.testAndConstruct(dataSource, pos);
+//            if (container != null) {
+//                return container;
+//            }
+//        }
+//        return null;
+//    }
+
+    abstract class RenderDataSourceLoader {
+        public abstract RenderDataSource construct(LodDataSource[] dataSources, DhSectionPos sectionPos, DHLevel level);
+
+        public Set<DataFile> selectFiles(DhSectionPos sectionPos, DHLevel level, Set<DataFile> availableFiles) {
+            return Collections.singleton(availableFiles.iterator().next());
         }
-        renderContainerLoaderRegistry.put(priority, func);
+
     }
 
-    static RenderDataSource tryConstruct(LodDataSource dataSource, DhSectionPos pos) {
-        for (RenderContainerConstructor func : renderContainerLoaderRegistry.values()) {
-            RenderDataSource container = func.testAndConstruct(dataSource, pos);
-            if (container != null) {
-                return container;
-            }
-        }
-        return null;
-    }
-    void load(); // notify the container that it is now loaded and therefore may be rendered
-    void unload(); // notify the container that it is now unloaded and therefore will not be rendered
+    void enableRender();
+    void disableRender();
+    boolean isRenderReady();
     void dispose(); // notify the container that the parent lodSection is now disposed (can be in loaded or unloaded state)
+
+    byte getDetailOffset();
 
     /**
      * Try and swap in new render buffer for this section. Note that before this call, there should be no other

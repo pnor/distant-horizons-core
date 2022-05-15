@@ -336,7 +336,7 @@ public abstract class LodQuadTree {
                     LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                     if (parent == null) {
                         parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                new LodSection(section.pos.getParent(), getRenderDataProvider(), containerType));
+                                new LodSection(section.pos.getParent()));
                         parent.childCount++;
                     }
                     LodUtil.assertTrue(parent.childCount <= 4 && parent.childCount > 0);
@@ -345,7 +345,7 @@ public abstract class LodQuadTree {
                         LodSection child = childRingList.get(childPos.sectionX, childPos.sectionZ);
                         if (child == null) {
                             child = childRingList.setChained(childPos.sectionX, childPos.sectionZ,
-                                    new LodSection(childPos, getRenderDataProvider(), containerType));
+                                    new LodSection(childPos));
                             child.childCount = 0;
                         } else if (child.childCount == -1) {
                             child.childCount = 0;
@@ -362,7 +362,7 @@ public abstract class LodQuadTree {
                         }
                         if (targetLevel <= getDataDetail(f_sectLevel) && section == null) {
                             section = ringList.setChained(pos.x, pos.y,
-                                    new LodSection(sectPos, getRenderDataProvider(), containerType));
+                                    new LodSection(sectPos));
                         }
                     } else {
                         // Section is not the top level. So we also need to consider the parent.
@@ -376,12 +376,12 @@ public abstract class LodQuadTree {
                         }
                         if (targetLevel < getDataDetail((byte) (f_sectLevel+1)) && section == null) {
                             section = ringList.setChained(pos.x, pos.y,
-                                    new LodSection(sectPos, getRenderDataProvider(), containerType));
+                                    new LodSection(sectPos));
                             LodUtil.assertTrue(parentRingList != null);
                             LodSection parent = parentRingList.get(pos.x >> 1, pos.y >> 1);
                             if (parent == null) {
                                 parent = parentRingList.setChained(pos.x >> 1, pos.y >> 1,
-                                        new LodSection(sectPos.getParent(), getRenderDataProvider(), containerType));
+                                        new LodSection(sectPos.getParent()));
                             }
                             parent.childCount++;
                         }
@@ -424,13 +424,14 @@ public abstract class LodQuadTree {
 
                 // Cascade layers
                 if (doCacsade && section.childCount == 0) {
+                    LodUtil.assertTrue(childRingList != null);
                     // Create childs to cascade the layer.
                     for (byte i = 0; i < 4; i++) {
                         DhSectionPos childPos = section.pos.getChild(i);
                         LodSection child = childRingList.get(childPos.sectionX, childPos.sectionZ);
                         if (child == null) {
                             child = childRingList.setChained(childPos.sectionX, childPos.sectionZ,
-                                    new LodSection(childPos, getRenderDataProvider(), containerType));
+                                    new LodSection(childPos));
                             child.childCount = 0;
                         } else {
                             LodUtil.assertTrue(child.childCount == -1,
@@ -456,14 +457,17 @@ public abstract class LodQuadTree {
                 if (section.childCount == -1) LodUtil.assertTrue(
                         getParentSection(section.pos).childCount == 0);
 
-                // Load/unload section
-                if (section.childCount == 4 && section.isLoaded()) {
-                    section.unload();
-                } else if (section.childCount == 0 && !section.isLoaded()) {
-                    section.load();
-                } else if (section.childCount == -1) {
+                // Call load on new sections, and tick on existing ones, and dispose old sections
+                if (section.childCount == -1) {
                     ringList.set(pos.x, pos.y, null);
                     section.dispose();
+                } else {
+                    if (!section.isLoaded() && !section.isLoading()) {
+                        section.load(getRenderDataProvider(), containerType);
+                    }
+                    if (section.childCount == 4) section.enableRender();
+                    if (section.childCount == 0) section.disableRender();
+                    section.tick();
                 }
             });
         }

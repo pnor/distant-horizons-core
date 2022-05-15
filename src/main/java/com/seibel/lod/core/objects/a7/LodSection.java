@@ -2,7 +2,8 @@ package com.seibel.lod.core.objects.a7;
 
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
-import com.seibel.lod.core.util.LodUtil;
+
+import java.util.concurrent.CompletableFuture;
 
 public class LodSection {
     public static final int SUB_REGION_DATA_WIDTH = 16*16;
@@ -16,39 +17,62 @@ public class LodSection {
 
     // TODO: Should I provide a way to change the render source?
     private RenderDataSource renderDataSource;
-    private boolean isLoaded = false;
+    private CompletableFuture<RenderDataSource> loadFuture;
+    private boolean isRenderEnabled = false;
 
     // Create sub region
-    public LodSection(DhSectionPos pos, RenderDataProvider renderDataProvider, Class<? extends RenderDataSource> renderDataSourceClass) {
+    public LodSection(DhSectionPos pos) {
         this.pos = pos;
-        this.renderDataSource = renderDataSourceClass == null ?
-                null : renderDataProvider.createRenderData(pos);
     }
 
-    public void load() {
+    public void enableRender() {
+        if (isRenderEnabled) return;
         if (renderDataSource != null) {
-            LodUtil.assertTrue(!isLoaded());
-            renderDataSource.load();
-            isLoaded = true;
+            renderDataSource.enableRender();
         }
+        isRenderEnabled = true;
     }
-    public void unload() {
+    public void disableRender() {
+        if (!isRenderEnabled) return;
         if (renderDataSource != null) {
-            LodUtil.assertTrue(isLoaded());
-            renderDataSource.unload();
-            isLoaded = false;
+            renderDataSource.disableRender();
+        }
+        isRenderEnabled = false;
+    }
+
+    public void load(RenderDataProvider renderDataProvider, Class<? extends RenderDataSource> renderDataSourceClass) {
+        if (loadFuture != null || renderDataSource != null) throw new IllegalStateException("Reloading is not supported!");
+        loadFuture = renderDataProvider.createRenderData(renderDataSourceClass, pos);
+    }
+
+    public void tick() {
+        if (loadFuture != null && loadFuture.isDone()) {
+            renderDataSource = loadFuture.join();
+            loadFuture = null;
+            if (isRenderEnabled) {
+                renderDataSource.enableRender();
+            }
         }
     }
 
     public void dispose() {
         if (renderDataSource != null) {
-            if (isLoaded()) renderDataSource.unload();
             renderDataSource.dispose();
+        } else if (loadFuture != null) {
+            loadFuture.cancel(true);
         }
     }
 
+    public boolean canRender() {
+        return isLoaded() && renderDataSource.isRenderReady();
+    }
+
     public boolean isLoaded() {
-        return renderDataSource != null && isLoaded;
+        return renderDataSource != null;
+    }
+
+    public boolean isLoading() {
+        return loadFuture != null;
     }
 
     public RenderDataSource getRenderContainer() {

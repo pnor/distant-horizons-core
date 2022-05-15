@@ -1,6 +1,7 @@
 package com.seibel.lod.core.objects.a7.datatype.column;
 
 import com.seibel.lod.core.objects.LodDataView;
+import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
@@ -799,21 +800,40 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         }
     }
 
+    public static class ColumnRenderSourceLoader extends RenderDataSourceLoader {
+        @Override
+        public RenderDataSource construct(LodDataSource[] dataSources, DhSectionPos sectionPos, DHLevel level) {
+            // Select the direct one first
+            for (LodDataSource dataSource : dataSources) {
+                if (dataSource instanceof ColumnDatatype) {
+                    return (RenderDataSource) dataSource;
+                }
+            }
+
+            // Select the one that is from lower level
+        }
+    }
+
+
+
+
     public static RenderDataSource loadByCasting(LodDataSource dataSource, DhSectionPos sectionPos) {
         if (dataSource instanceof ColumnDatatype) {
             return (RenderDataSource) dataSource;
         }
         return null;
     }
-    public static RenderDataSource loadByCopying(LodDataSource dataSource, DhSectionPos sectionPos) {
-        ColumnDatatype columns = new ColumnDatatype(sectionPos, dataSource,
-                DetailDistanceUtil.getMaxVerticalData(sectionPos.dataDetail));
-
-        return null;
-    }
-    static {
-        RenderDataSource.registorLoader(ColumnDatatype::loadByCasting, 100);
-    }
+//    public static RenderDataSource loadByCopying(LodDataSource dataSource, DhSectionPos sectionPos) {
+//
+//        ColumnDatatype columns = new ColumnDatatype(sectionPos, dataSource,
+//                DetailDistanceUtil.getMaxVerticalData(dataDetail));
+//        //TODO
+//
+//        return null;
+//    }
+//    static {
+//        RenderDataSource.registorLoader(ColumnDatatype::loadByCasting, 100);
+//    }
 
     @Override
     public DataSourceLoader getLatestLoader() {
@@ -831,15 +851,32 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     }
 
     @Override
-    public void load() {
+    public byte getDataDetail() {
+        return (byte) (sectionPos.sectionDetail - SECTION_SIZE_OFFSET);
     }
 
     @Override
-    public void unload() {
+    public void enableRender() {
+
+    }
+
+    @Override
+    public void disableRender() {
+
+    }
+
+    @Override
+    public boolean isRenderReady() {
+        return false;
     }
 
     @Override
     public void dispose() {
+    }
+
+    @Override
+    public byte getDetailOffset() {
+        return 0;
     }
 
     @Override
