@@ -2,9 +2,15 @@ package com.seibel.lod.core.objects.a7.datatype.column;
 
 import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.a7.DHLevel;
+import com.seibel.lod.core.objects.a7.LodQuadTree;
+import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
+import com.seibel.lod.core.objects.a7.datatype.full.FullDatatype;
+import com.seibel.lod.core.objects.a7.pos.DhLodPos;
+import com.seibel.lod.core.objects.a7.pos.DhLodUnit;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
+import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
 import com.seibel.lod.core.objects.opengl.RenderBuffer;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
@@ -16,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ColumnDatatype implements LodDataSource, RenderDataSource {
@@ -24,10 +30,13 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public static final byte SECTION_SIZE_OFFSET = 6;
     public static final int SECTION_SIZE = 1 << SECTION_SIZE_OFFSET;
     public static final int LATEST_VERSION = 9;
+
+    public static final long DATA_TYPE_ID = "ColumnDatatype".hashCode();
     public final int AIR_LODS_SIZE = 16;
     public final int AIR_SECTION_SIZE = SECTION_SIZE/AIR_LODS_SIZE;
     public final int verticalSize;
     public final DhSectionPos sectionPos;
+    public final int yOffset;
 
     public final long[] dataContainer;
     public final int[] airDataContainer;
@@ -36,16 +45,18 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
      * Constructor of the ColumnDataType
      * @param maxVerticalSize the maximum vertical size of the container
      */
-    public ColumnDatatype(DhSectionPos sectionPos, int maxVerticalSize) {
+    public ColumnDatatype(DhSectionPos sectionPos, int maxVerticalSize, int yOffset) {
         verticalSize = maxVerticalSize;
         dataContainer = new long[SECTION_SIZE * SECTION_SIZE * verticalSize];
         airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * verticalSize];
         this.sectionPos = sectionPos;
+        this.yOffset = yOffset;
     }
 
     // Load from data stream with maxVerticalSize loaded from the data stream
-    public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version) throws IOException {
+    public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DHLevel level) throws IOException {
         this.sectionPos = sectionPos;
+        this.yOffset = level.getMinY();
         byte detailLevel = inputData.readByte();
         if (sectionPos.sectionDetail - SECTION_SIZE_OFFSET != detailLevel) {
             throw new IOException("Invalid data: detail level does not match");
@@ -53,16 +64,16 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         verticalSize = inputData.readByte() & 0b01111111;
         switch (version) {
             case 6:
-                dataContainer = readDataVersion6(inputData, verticalSize, sectionPos.yOffset);
+                dataContainer = readDataVersion6(inputData, verticalSize);
                 break;
             case 7:
-                dataContainer = readDataVersion7(inputData, verticalSize, sectionPos.yOffset);
+                dataContainer = readDataVersion7(inputData, verticalSize);
                 break;
             case 8:
-                dataContainer = readDataVersion8(inputData, verticalSize, sectionPos.yOffset);
+                dataContainer = readDataVersion8(inputData, verticalSize);
                 break;
             case 9:
-                dataContainer = readDataVersion9(inputData, verticalSize, sectionPos.yOffset);
+                dataContainer = readDataVersion9(inputData, verticalSize);
                 break;
             default:
                 throw new IOException("Invalid Data: The version of the data is not supported");
@@ -71,8 +82,9 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     }
 
     // Load from data stream with new maxVerticalSize
-    public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, int maxVerticalSize) throws IOException {
+    public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DHLevel level, int maxVerticalSize) throws IOException {
         verticalSize = maxVerticalSize;
+        this.yOffset = level.getMinY();
         this.sectionPos = sectionPos;
         byte detailLevel = inputData.readByte();
         if (sectionPos.sectionDetail - SECTION_SIZE_OFFSET  != detailLevel) {
@@ -82,46 +94,22 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         long[] fileDataContainer = null;
         switch (version) {
             case 6:
-                fileDataContainer = readDataVersion6(inputData, fileMaxVerticalSize, sectionPos.yOffset);
+                fileDataContainer = readDataVersion6(inputData, fileMaxVerticalSize);
                 break;
             case 7:
-                fileDataContainer = readDataVersion7(inputData, fileMaxVerticalSize, sectionPos.yOffset);
+                fileDataContainer = readDataVersion7(inputData, fileMaxVerticalSize);
                 break;
             case 8:
-                fileDataContainer = readDataVersion8(inputData, fileMaxVerticalSize, sectionPos.yOffset);
+                fileDataContainer = readDataVersion8(inputData, fileMaxVerticalSize);
                 break;
             case 9:
-                fileDataContainer = readDataVersion9(inputData, fileMaxVerticalSize, sectionPos.yOffset);
+                fileDataContainer = readDataVersion9(inputData, fileMaxVerticalSize);
                 break;
             default:
                 throw new IOException("Invalid Data: The version of the data is not supported");
         }
         dataContainer = DataPointUtil.changeMaxVertSize(fileDataContainer, fileMaxVerticalSize, verticalSize);
         airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * verticalSize];
-    }
-
-    // Copy constructor
-    public ColumnDatatype(DhSectionPos sectionPos, LodDataSource dataSource, int maxVerticalData) {
-        verticalSize = maxVerticalData;
-        this.sectionPos = sectionPos;
-        dataContainer = new long[SECTION_SIZE * SECTION_SIZE * verticalSize];
-        airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * verticalSize];
-        DhSectionPos sourcePos = dataSource.getSectionPos();
-        if (!sourcePos.overlaps(sectionPos)) {
-            throw new IllegalArgumentException("The source section does not overlap with new target position");
-        }
-        if (sourcePos.dataDetail > sectionPos.dataDetail) {
-            throw new IllegalArgumentException("The source section has higher detail than new target detail");
-        }
-        if (sourcePos.yOffset != sectionPos.yOffset) {
-            throw new IllegalArgumentException("Different yOffset is not yet supported"); // TODO: is this needed?
-        }
-
-        if (sourcePos.equals(sectionPos)) {
-            //TODO: Simple full copy.
-        } else {
-            //TODO: Downsample copy.
-        }
     }
 
     /**
@@ -256,8 +244,16 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return result;
     }
 
-    public LodDataView getVerticalDataView(int posX, int posZ) {
-        return new LodDataView(dataContainer, verticalSize, posX * SECTION_SIZE * verticalSize + posZ * verticalSize);
+    public ColumnArrayView getVerticalDataView(int posX, int posZ) {
+        return new ColumnArrayView(dataContainer, verticalSize,
+                posX * SECTION_SIZE * verticalSize + posZ * verticalSize, verticalSize);
+    }
+
+    public ColumnQuadView getDataInQuad(int quadX, int quadZ, int quadXSize, int quadZSize) {
+        return new ColumnQuadView(dataContainer, SECTION_SIZE, verticalSize, quadX, quadZ, quadXSize, quadZSize);
+    }
+    public ColumnQuadView getFullQuad() {
+        return new ColumnQuadView(dataContainer, SECTION_SIZE, verticalSize, 0, 0, SECTION_SIZE, SECTION_SIZE);
     }
 
     public int getVerticalSize()
@@ -270,7 +266,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return DataPointUtil.doesItExist(getSingleData(posX, posZ));
     }
 
-    private long[] readDataVersion6(DataInputStream inputData, int tempMaxVerticalData, int yOffset) throws IOException {
+    private long[] readDataVersion6(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
         int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
         byte[] data = new byte[x * Long.BYTES];
         ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -281,7 +277,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         patchHeightAndDepth(result,-yOffset);
         return result;
     }
-    private long[] readDataVersion7(DataInputStream inputData, int tempMaxVerticalData, int yOffset) throws IOException {
+    private long[] readDataVersion7(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
         int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
         byte[] data = new byte[x * Long.BYTES];
         ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
@@ -293,7 +289,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return result;
     }
 
-    private long[] readDataVersion8(DataInputStream inputData, int tempMaxVerticalData, int yOffset) throws IOException {
+    private long[] readDataVersion8(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
         int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
         byte[] data = new byte[x * Long.BYTES];
         short tempMinHeight = Short.reverseBytes(inputData.readShort());
@@ -308,7 +304,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return result;
     }
 
-    private long[] readDataVersion9(DataInputStream inputData, int tempMaxVerticalData, int yOffset) throws IOException {
+    private long[] readDataVersion9(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
         int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
         byte[] data = new byte[x * Long.BYTES];
         short tempMinHeight = Short.reverseBytes(inputData.readShort());
@@ -339,60 +335,19 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return new long[LodUtil.DETAIL_OPTIONS - 1][];
     });
 
-    public void updateData(ColumnDatatype lowerDataContainer, int posX, int posZ)
+    public void generateData(ColumnDatatype lowerDataContainer, int posX, int posZ)
     {
-        //We reset the array
-        long[][] verticalUpdateArrays = tLocalVerticalUpdateArrays.get();
-        long[] dataToMerge = verticalUpdateArrays[sectionPos.dataDetail -1];
-        int arrayLength = DetailDistanceUtil.getMaxVerticalData(sectionPos.dataDetail -1) * 4;
-        if (dataToMerge == null || dataToMerge.length != arrayLength) {
-            dataToMerge = new long[arrayLength];
-            verticalUpdateArrays[sectionPos.dataDetail -1] = dataToMerge;
-        } else Arrays.fill(dataToMerge, 0);
-
-        //int lowerMaxVertical = dataToMerge.length / 4;
-        int lowerSectionSize = lowerDataContainer.getSECTION_SIZE();
-        int childPosStartX = Math.floorMod(2 * posX, lowerSectionSize);
-        int childPosEndX = Math.floorMod(2 * posX + 1, lowerSectionSize);
-        int childPosStartZ = Math.floorMod(2 * posZ, lowerSectionSize);
-        int childPosEndZ = Math.floorMod(2 * posZ + 1, lowerSectionSize);
-
-        long[] data;
-        boolean anyDataExist = false;
-
-        mergeAndAddDataFromOtherContainer(posX, posZ, lowerDataContainer, childPosStartX, childPosEndX, childPosStartZ, childPosEndZ);
-        /*
-        TODO remove this old code when we are sure that this works
-        for (int x = 0; x <= 1; x++)
-        {
-            for (int z = 0; z <= 1; z++)
-            {
-                childPosX = 2 * posX + x;
-                childPosZ = 2 * posZ + z;
-                if (lowerLevelContainer.doesItExist(childPosX, childPosZ)) anyDataExist = true;
-                for (int verticalIndex = 0; verticalIndex < lowerMaxVertical; verticalIndex++)
-                    dataToMerge[(z * 2 + x) * lowerMaxVertical + verticalIndex] = lowerLevelContainer.getData(childPosX, childPosZ, verticalIndex);
-            }
-        }
-        if (!anyDataExist)
-            throw new RuntimeException("Update data called but no child datapoint exist!");
-
-        if ((!DataPointUtil.doesItExist(data[0])) && anyDataExist)
-            throw new RuntimeException("Update data called but higher level datapoint doesn't exist even though child data does exist!");
-
-        //FIXME: Disabled check if genMode for old data is already invalid due to having genMode 0.
-        if (DataPointUtil.getGenerationMode(data[0]) != DataPointUtil.getGenerationMode(lowerLevelContainer.getSingleData(posX*2, posZ*2)))
-            throw new RuntimeException("Update data called but higher level datapoint does not have the same GenerationMode as the top left corner child datapoint!");
-
-        forceWriteVerticalData(data, posX, posZ);*/
+        ColumnQuadView quadView = lowerDataContainer.getDataInQuad(posX*2, posZ*2, 2,2);
+        ColumnArrayView outputView = getVerticalDataView(posX, posZ);
+        outputView.mergeMultiDataFrom(quadView);
     }
 
     public boolean writeData(DataOutputStream output) throws IOException {
-        output.writeByte(sectionPos.dataDetail);
+        output.writeByte(getDataDetail());
         output.writeByte((byte) verticalSize);
         // FIXME: yOffset is a int, but we only are writing a short.
-        output.writeByte((byte) (sectionPos.yOffset & 0xFF));
-        output.writeByte((byte) ((sectionPos.yOffset >> 8) & 0xFF));
+        output.writeByte((byte) (yOffset & 0xFF));
+        output.writeByte((byte) ((yOffset >> 8) & 0xFF));
         boolean allGenerated = true;
         int x = SECTION_SIZE * SECTION_SIZE;
         for (int i = 0; i < x; i++)
@@ -443,401 +398,186 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return (long) dataContainer.length * Long.BYTES;
     }
 
-
-
-    private static final ThreadLocal<short[]> tLocalHeightAndDepth = new ThreadLocal<short[]>();
-    private static final ThreadLocal<int[]> tDataIndexCache = new ThreadLocal<int[]>();
-    /**
-     *
-     * This method merge column of multiple data together
-     */
-    // TODO: Make this operate on a out param array, to allow skipping copy array on use
-    public void mergeAndAddDataFromOtherContainer(int mergeInX, int mergeInZ, ColumnDatatype lowerDataContainer, int mergeFromX, int mergeToX, int mergeFromZ, int mergeToZ)
-    {
-        int outBaseIndex = mergeInX * SECTION_SIZE * verticalSize + mergeInZ*verticalSize;
-        int inputVerticalSize = lowerDataContainer.verticalSize;
-        int inputSectionSize = lowerDataContainer.SECTION_SIZE;
-        int mergeFromToX;
-        int xSize = (mergeFromX - mergeToX + 1);
-        int zSize = (mergeFromZ - mergeToZ + 1);
-        //size indicate how many position we are merging in one position
-
-        // We initialize the arrays that are going to be used
-        int heightAndDepthLength = (DataPointUtil.MAX_WORLD_Y_SIZE / 2 + 16) * 2;
-        short[] heightAndDepth = tLocalHeightAndDepth.get();
-        if (heightAndDepth==null || heightAndDepth.length != heightAndDepthLength) {
-            heightAndDepth = new short[heightAndDepthLength];
-            tLocalHeightAndDepth.set(heightAndDepth);
-        }
-        int dataPointLength = verticalSize;
-
-        int firstIndex = mergeFromX*SECTION_SIZE*inputVerticalSize + mergeFromZ * inputVerticalSize;
-        byte genMode = DataPointUtil.getGenerationMode(lowerDataContainer.dataContainer[firstIndex]);
-        if (genMode == 0) genMode = 1; // FIXME: Hack to make the version 10 genMode never be 0.
-        boolean allEmpty = true;
-        boolean allVoid = true;
-        boolean limited = false;
-        boolean allDefault;
-        long singleData;
-
-
-        short depth;
-        short height;
-        int count = 0;
-        int i;
-        int ii;
-
-        //We collect the indexes of the data, ordered by the depth
-        int dataIndex = 0;
-        int x;
-        int z;
-        int y;
-        for (x = mergeFromX; x <= mergeToX; x++)
-        {
-            for (z = mergeFromZ; z <= mergeToZ; z++)
-            {
-                if (x == mergeFromX && z == mergeFromZ)
-                {
-                    for (y = 0; y < inputVerticalSize; y++)
-                    {
-                        dataIndex = x * inputSectionSize * inputVerticalSize + z * inputVerticalSize + y;
-                        singleData = lowerDataContainer.dataContainer[dataIndex];
-                        if (DataPointUtil.doesItExist(singleData))
-                        {
-                            //genMode = Math.min(genMode, getGenerationMode(singleData));
-                            allEmpty = false;
-                            if (!DataPointUtil.isVoid(singleData))
-                            {
-                                allVoid = false;
-                                count++;
-                                heightAndDepth[dataIndex * 2] = DataPointUtil.getHeight(singleData);
-                                heightAndDepth[dataIndex * 2 + 1] = DataPointUtil.getDepth(singleData);
-                            }
-                        }
-                        else
-                            break;
-                    }
-                }
-                else
-                {
-                    for (y = 0; y < inputVerticalSize; y++)
-                    {
-                        dataIndex = x * inputSectionSize * inputVerticalSize + z * inputVerticalSize + y;
-                        singleData = lowerDataContainer.dataContainer[dataIndex];
-                        if (DataPointUtil.doesItExist(singleData))
-                        {
-                            //genMode = Math.min(genMode, getGenerationMode(singleData));
-                            allEmpty = false;
-                            if (!DataPointUtil.isVoid(singleData))
-                            {
-                                allVoid = false;
-                                depth = DataPointUtil.getDepth(singleData);
-                                height = DataPointUtil.getHeight(singleData);
-
-                                int botPos = -1;
-                                int topPos = -1;
-                                //values fall in between and possibly require extension of array
-                                boolean botExtend = false;
-                                boolean topExtend = false;
-                                for (i = 0; i < count; i++)
-                                {
-                                    if (depth < heightAndDepth[i * 2] && depth >= heightAndDepth[i * 2 + 1])
-                                    {
-                                        botPos = i;
-                                        break;
-                                    }
-                                    else if (depth < heightAndDepth[i * 2 + 1] && ((i + 1 < count && depth >= heightAndDepth[(i + 1) * 2]) || i + 1 == count))
-                                    {
-                                        botPos = i;
-                                        botExtend = true;
-                                        break;
-                                    }
-                                }
-                                for (i = 0; i < count; i++)
-                                {
-                                    if (height <= heightAndDepth[i * 2] && height > heightAndDepth[i * 2 + 1])
-                                    {
-                                        topPos = i;
-                                        break;
-                                    }
-                                    else if (height <= heightAndDepth[i * 2 + 1] && ((i + 1 < count && height > heightAndDepth[(i + 1) * 2]) || i + 1 == count))
-                                    {
-                                        topPos = i;
-                                        topExtend = true;
-                                        break;
-                                    }
-                                }
-                                if (topPos == -1)
-                                {
-                                    if (botPos == -1)
-                                    {
-                                        //whole block falls above
-                                        DataPointUtil.extendArray(heightAndDepth, 2, 0, 1, count);
-                                        heightAndDepth[0] = height;
-                                        heightAndDepth[1] = depth;
-                                        count++;
-                                    }
-                                    else if (!botExtend)
-                                    {
-                                        //only top falls above extending it there, while bottom is inside existing
-                                        DataPointUtil.shrinkArray(heightAndDepth, 2, 0, botPos, count);
-                                        heightAndDepth[0] = height;
-                                        count -= botPos;
-                                    }
-                                    else
-                                    {
-                                        //top falls between some blocks, extending those as well
-                                        DataPointUtil.shrinkArray(heightAndDepth, 2, 0, botPos, count);
-                                        heightAndDepth[0] = height;
-                                        heightAndDepth[1] = depth;
-                                        count -= botPos;
-                                    }
-                                }
-                                else if (!topExtend)
-                                {
-                                    if (!botExtend)
-                                        //both top and bottom are within some exiting blocks, possibly merging them
-                                        heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
-                                    else
-                                        //top falls between some blocks, extending it there
-                                        heightAndDepth[topPos * 2 + 1] = depth;
-                                    DataPointUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-                                    count -= botPos - topPos;
-                                }
-                                else
-                                {
-                                    if (!botExtend)
-                                    {
-                                        //only top is within some exiting block, extending it
-                                        topPos++; //to make it easier
-                                        heightAndDepth[topPos * 2] = height;
-                                        heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
-                                        DataPointUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-                                        count -= botPos - topPos;
-                                    }
-                                    else
-                                    {
-                                        //both top and bottom are outside existing blocks
-                                        DataPointUtil.shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-                                        count -= botPos - topPos;
-                                        DataPointUtil.extendArray(heightAndDepth, 2, topPos + 1, 1, count);
-                                        count++;
-                                        heightAndDepth[topPos * 2 + 2] = height;
-                                        heightAndDepth[topPos * 2 + 3] = depth;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                            break;
-                    }
-                }
-            }
-        }
-        //We check if there is any data that's not empty or void
-        if (allEmpty)
-            return;
-        if (allVoid)
-        {
-            dataContainer[outBaseIndex] = DataPointUtil.createVoidDataPoint(genMode);
-            return;
-        }
-
-        //we limit the vertical portion to maxVerticalData
-        int j = 0;
-        while (count > verticalSize)
-        {
-            limited = true;
-            ii = DataPointUtil.MAX_WORLD_Y_SIZE;
-            for (i = 0; i < count - 1; i++)
-            {
-                if (heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2] <= ii)
-                {
-                    ii = heightAndDepth[i * 2 + 1] - heightAndDepth[(i + 1) * 2];
-                    j = i;
-                }
-            }
-            heightAndDepth[j * 2 + 1] = heightAndDepth[(j + 1) * 2 + 1];
-            for (i = j + 1; i < count - 1; i++)
-            {
-                heightAndDepth[i * 2] = heightAndDepth[(i + 1) * 2];
-                heightAndDepth[i * 2 + 1] = heightAndDepth[(i + 1) * 2 + 1];
-            }
-            //System.arraycopy(heightAndDepth, j + 1, heightAndDepth, j, count - j - 1);
-            count--;
-        }
-        int yOut;
-        //As standard the vertical lods are ordered from top to bottom
-        if (!limited && xSize*zSize == 1)
-        {
-            for (yOut = 0; yOut < count; yOut++)
-                dataIndex = mergeFromX*inputSectionSize*inputVerticalSize + mergeFromZ*inputVerticalSize + yOut;
-            dataContainer[outBaseIndex + yOut] = lowerDataContainer.dataContainer[dataIndex];
-        }
-        else
-        {
-
-            //We want to efficiently memorize indexes
-            int[] dataIndexesCache = tDataIndexCache.get();
-            if (dataIndexesCache==null || dataIndexesCache.length != xSize*zSize) {
-                dataIndexesCache = new int[xSize*zSize];
-                tDataIndexCache.set(dataIndexesCache);
-            }
-            Arrays.fill(dataIndexesCache,0);
-
-            //For each lod height-depth value we have found we now want to generate the rest of the data
-            //by merging all lods at lower level that are contained inside the new ones
-            for (yOut = 0; yOut < count; yOut++)
-            {
-                //We firstly collect height and depth data
-                //this will be added to each realtive long DataPoint
-                height = heightAndDepth[yOut * 2];
-                depth = heightAndDepth[yOut * 2 + 1];
-
-                //if both height and depth are at 0 then we finished
-                if ((depth == 0 && height == 0) || yOut >= heightAndDepth.length / 2)
-                    break;
-
-                //We initialize data useful for the merge
-                int numberOfChildren = 0;
-                allEmpty = true;
-                allVoid = true;
-
-                //We initialize all the new values that we are going to put in the dataPoint
-                int tempAlpha = 0;
-                int tempRed = 0;
-                int tempGreen = 0;
-                int tempBlue = 0;
-                int tempLightBlock = 0;
-                int tempLightSky = 0;
-                long data = 0;
-
-                int index;
-
-                //For each position that we want to merge
-                for(x = mergeFromX; x <= mergeToX; x++)
-                {
-                    for (z = mergeFromZ; z <= mergeToZ; z++)
-                    {
-                        index = x * xSize + z;
-                        //we scan the lods in the position from top to bottom
-                        while (dataIndexesCache[index] < inputVerticalSize)
-                        {
-                            y = dataIndexesCache[index];
-                            dataIndex = x * inputSectionSize * inputVerticalSize + z * inputVerticalSize + y;
-
-                            singleData = lowerDataContainer.dataContainer[dataIndex];
-                            if (DataPointUtil.doesItExist(singleData) && !DataPointUtil.isVoid(singleData))
-                            {
-                                dataIndexesCache[index]++;
-                                if ((depth <= DataPointUtil.getDepth(singleData) && DataPointUtil.getDepth(singleData) < height)
-                                        || (depth < DataPointUtil.getHeight(singleData) && DataPointUtil.getHeight(singleData) <= height))
-                                {
-                                    data = singleData;
-                                    break;
-                                }
-                            }
-                            else
-                                break;
-                        }
-                        if (!DataPointUtil.doesItExist(data))
-                        {
-                            data = DataPointUtil.createVoidDataPoint(genMode);
-                        }
-
-                        if (DataPointUtil.doesItExist(data))
-                        {
-                            allEmpty = false;
-                            if (!DataPointUtil.isVoid(data))
-                            {
-                                numberOfChildren++;
-                                allVoid = false;
-                                tempAlpha = Math.max(DataPointUtil.getAlpha(data), tempAlpha);
-                                tempRed += DataPointUtil.getRed(data) * DataPointUtil.getRed(data);
-                                tempGreen += DataPointUtil.getGreen(data) * DataPointUtil.getGreen(data);
-                                tempBlue += DataPointUtil.getBlue(data) * DataPointUtil.getBlue(data);
-                                tempLightBlock += DataPointUtil.getLightBlock(data);
-                                tempLightSky += DataPointUtil.getLightSky(data);
-                            }
-                        }
-                    }
-                }
-
-                if (allEmpty)
-                    //no child has been initialized
-                    dataContainer[outBaseIndex + yOut] = DataPointUtil.EMPTY_DATA;
-                else if (allVoid)
-                    //all the children are void
-                    dataContainer[outBaseIndex + yOut] = DataPointUtil.createVoidDataPoint(genMode);
-                else
-                {
-                    //we have at least 1 child
-                    if (xSize*zSize != 1)
-                    {
-                        tempRed = tempRed / numberOfChildren;
-                        tempGreen = tempGreen / numberOfChildren;
-                        tempBlue = tempBlue / numberOfChildren;
-                        tempLightBlock = tempLightBlock / numberOfChildren;
-                        tempLightSky = tempLightSky / numberOfChildren;
-                    }
-                    //data = createDataPoint(tempAlpha, tempRed, tempGreen, tempBlue, height, depth, tempLightSky, tempLightBlock, tempGenMode, allDefault);
-                    //if (j > 0 && getColor(data) == getColor(dataPoint[j]))
-                    //{
-                    //	add simplification at the end due to color
-                    //}
-                    dataContainer[outBaseIndex + yOut] = DataPointUtil.createDataPoint((int) Math.sqrt(tempAlpha), (int) Math.sqrt(tempRed), (int) Math.sqrt(tempGreen), (int) Math.sqrt(tempBlue), height, depth, tempLightSky, tempLightBlock, genMode);
-                }
-            }
-        }
-    }
-
-    public static LodDataSource load(DhSectionPos pos, InputStream is, int version) {
+    public static LodDataSource loadFile(DHLevel level, DhSectionPos pos, InputStream is, int version) {
         try (DataInputStream dis = new DataInputStream(is)) {
-            return new ColumnDatatype(pos, dis, version);
+            return new ColumnDatatype(pos, dis, version, level);
         } catch (IOException e) {
             //FIXME: Log error
             return null;
         }
     }
 
-    public static class ColumnRenderSourceLoader extends RenderDataSourceLoader {
-        @Override
-        public RenderDataSource construct(LodDataSource[] dataSources, DhSectionPos sectionPos, DHLevel level) {
-            // Select the direct one first
-            for (LodDataSource dataSource : dataSources) {
-                if (dataSource instanceof ColumnDatatype) {
-                    return (RenderDataSource) dataSource;
+    public static RenderDataSourceLoader COLUMN_LAYER_LOADER = new RenderDataSourceLoader(4) {
+            @Override
+            public RenderDataSource construct(List<LodDataSource> dataSources, DhSectionPos sectionPos, DHLevel level) {
+                if (dataSources.size() == 0) return null;
+
+                // Check for direct casting
+                if (dataSources.size() == 1 && dataSources.get(0) instanceof ColumnDatatype
+                    && dataSources.get(0).getSectionPos().equals(sectionPos)
+                    && dataSources.get(0).getDataDetail() == sectionPos.sectionDetail-SECTION_SIZE_OFFSET) {
+                    // Directly using the data source as the render data source is possible.
+                    return (ColumnDatatype) dataSources.get(0);
                 }
+
+                // Otherwise, we need to create a new render data source, and copy the data from the data sources.
+                ColumnDatatype renderDataSource = new ColumnDatatype(sectionPos,
+                        DetailDistanceUtil.getMaxVerticalData(sectionPos.sectionDetail-SECTION_SIZE_OFFSET),
+                        level.getMinY());
+                boolean completeCopy = dataSources.get(0).getSectionPos().getWidth().toBlock() >= sectionPos.getWidth().toBlock();
+
+                if (completeCopy) {
+                    // If there is only one data source, we need to insure on copy, we don't copy out of bounds as we
+                    //  may just need to copy partial section of the data source.
+                    LodUtil.assertTrue(dataSources.size() == 1, "Expected only one data source for complete copy");
+                    byte targetDataLevel = (byte) (sectionPos.sectionDetail-SECTION_SIZE_OFFSET);
+                    byte sourceDataLevel = dataSources.get(0).getDataDetail();
+                    LodUtil.assertTrue(targetDataLevel >= sourceDataLevel);
+                    if (dataSources.get(0) instanceof ColumnDatatype) {
+                        ColumnDatatype dataSource = (ColumnDatatype) dataSources.get(0);
+                        DhSectionPos srcPos = dataSource.getSectionPos();
+
+                        // Note that in here, the source data level will be always < target section level
+                        int trgX = sectionPos.getCorner().getX().toBlock();
+                        int trgZ = sectionPos.getCorner().getZ().toBlock();
+                        int trgMaxX = trgX + sectionPos.getWidth().toBlock() - 1;
+                        int trgMaxZ = trgZ + sectionPos.getWidth().toBlock() - 1;
+                        int trgXSizeInSrc = (trgX >> sourceDataLevel) - (trgMaxX >> sourceDataLevel) + 1;
+                        int trgZSizeInSrc = (trgZ >> sourceDataLevel) - (trgMaxZ >> sourceDataLevel) + 1;
+                        int trgXInSrc = (trgX >> sourceDataLevel) % srcPos.getWidth(sourceDataLevel).value;
+                        int trgZInSrc = (trgZ >> sourceDataLevel) % srcPos.getWidth(sourceDataLevel).value;
+
+                        ColumnQuadView srcView = dataSource.getDataInQuad(trgXInSrc, trgZInSrc, trgXSizeInSrc, trgZSizeInSrc);
+                        ColumnQuadView trgView = renderDataSource.getFullQuad();
+                        trgView.mergeMultiColumnFrom(srcView);
+                    } else {
+                        if (!(dataSources.get(0) instanceof FullDatatype))
+                            throw new IllegalArgumentException("Unsupported data source type: " + dataSources.get(0).getClass().getName());
+                        FullDatatype dataSource = (FullDatatype) dataSources.get(0);
+                        DhSectionPos srcPos = dataSource.getSectionPos();
+                        //TODO: Impl this
+                        LodUtil.assertTrue(false,"Not implemented yet");
+                    }
+                } else {
+                    // If there are multiple data sources, we need to merge them into the target data source
+                    for (LodDataSource dataSource : dataSources) {
+                        byte targetDataLevel = (byte) (sectionPos.sectionDetail-SECTION_SIZE_OFFSET);
+                        byte sourceDataLevel = dataSource.getDataDetail();
+                        DhSectionPos srcPos = dataSource.getSectionPos();
+
+                        if (dataSource instanceof ColumnDatatype) {
+                            ColumnDatatype clDataSource = (ColumnDatatype) dataSource;
+
+                            // Note that targetDataLevel can be > source section level
+                            int srcX = srcPos.getCorner().getX().toBlock();
+                            int srcZ = srcPos.getCorner().getZ().toBlock();
+                            int srcMaxX = srcX + srcPos.getWidth().toBlock() - 1;
+                            int srcMaxZ = srcZ + srcPos.getWidth().toBlock() - 1;
+                            int srcXSizeInTrg = (srcX >> targetDataLevel) - (srcMaxX >> targetDataLevel) + 1;
+                            int srcZSizeInTrg = (srcZ >> targetDataLevel) - (srcMaxZ >> targetDataLevel) + 1;
+                            int srcXInTrg = (srcX >> targetDataLevel) % SECTION_SIZE;
+                            int srcZInTrg = (srcZ >> targetDataLevel) % SECTION_SIZE;
+
+                            ColumnQuadView srcView = clDataSource.getFullQuad();
+                            ColumnQuadView trgView = renderDataSource.getDataInQuad(srcXInTrg, srcZInTrg, srcXSizeInTrg, srcZSizeInTrg);
+                            trgView.mergeMultiColumnFrom(srcView);
+                        } else {
+                            if (!(dataSource instanceof FullDatatype))
+                                throw new IllegalArgumentException("Unsupported data source type: " + dataSource.getClass().getName());
+                            FullDatatype flDataSource = (FullDatatype) dataSource;
+                            //TODO: Impl this
+                            LodUtil.assertTrue(false,"Not implemented yet");
+                        }
+                    }
+                }
+
+                return renderDataSource;
             }
+            @Override
+            public List<DataFile> selectFiles(DhSectionPos sectionPos, DHLevel level, List<DataFile>[] availableFiles) {
+                byte targetDataLevel = (byte) (sectionPos.sectionDetail - SECTION_SIZE_OFFSET);
+                //No support for loading higher than the target level yet.
+                byte maxDataLevel = LodUtil.min((byte) (availableFiles.length-1), targetDataLevel);
+                byte topValidDataLevel = Byte.MIN_VALUE;
+                List<DataFile> selectedFiles = new LinkedList<>();
 
-            // Select the one that is from lower level
-        }
+                for (int detail = maxDataLevel; detail >= 0; detail--) {
+                    if (availableFiles[detail] == null) continue;
+                    if (topValidDataLevel == Byte.MIN_VALUE) {
+                        for (DataFile dataFile : availableFiles[detail]) {
+                            if (dataFile.dataLevel > targetDataLevel) continue;
+                            if (dataFile.dataType == ColumnDatatype.class || dataFile.dataType == FullDatatype.class) {
+                                topValidDataLevel = LodUtil.max(topValidDataLevel, dataFile.dataLevel);
+                                break;
+                            }
+                        }
+                    }
+                    if (topValidDataLevel == Byte.MIN_VALUE) continue;
+
+
+                    DataFile singleCoveringColumnFile = null;
+                    DataFile singleCoveringFullFile = null;
+
+                    for (DataFile dataFile : availableFiles[detail]) {
+                        if (dataFile.pos.getWidth().toBlock() == sectionPos.getWidth().toBlock()) {
+                            if (dataFile.dataType == ColumnDatatype.class) {
+                                singleCoveringColumnFile = dataFile;
+                                break;
+                            }
+                            else if (dataFile.dataType == FullDatatype.class) {
+                                singleCoveringFullFile = dataFile;
+                                // Don't break as there may be a column file later.
+                            }
+                        } else if (dataFile.pos.getWidth().toBlock() > sectionPos.getWidth().toBlock()) {
+                            if (dataFile.dataType == ColumnDatatype.class && singleCoveringColumnFile == null)
+                                singleCoveringColumnFile = dataFile;
+                            else if (dataFile.dataType == FullDatatype.class && singleCoveringFullFile == null)
+                                singleCoveringFullFile = dataFile;
+                        }
+                    }
+
+                    // First, try select single file that has enough width to cover the section
+                    if (singleCoveringColumnFile != null) return Collections.singletonList(singleCoveringColumnFile);
+                    if (singleCoveringFullFile != null) return Collections.singletonList(singleCoveringFullFile);
+
+                    // If no single file covers the section, try to select all files without any duplicates
+                    for (DataFile dataFile : availableFiles[detail]) {
+                        boolean isDuplicate = false;
+                        boolean isSet = false;
+                        for (int i = 0; i < selectedFiles.size(); i++) {
+                            DataFile selectedFile = selectedFiles.get(i);
+                            if (selectedFile == null) continue;
+                            if (selectedFile.pos.overlaps(dataFile.pos)) {
+                                // Now, the already selected file muct have same or higher data level
+                                //  so, we just select the file with a position that covers the most area.
+                                // Therefore, we choose the file with the higher section level.
+                                if (selectedFile.pos.sectionDetail < dataFile.pos.sectionDetail) {
+                                    if (isSet) selectedFiles.set(i, null);
+                                    else selectedFiles.set(i, dataFile);
+                                    isSet = true;
+                                } else {
+                                    LodUtil.assertTrue(!isSet); // We should not have encountered a smaller section level.
+                                    // This mean its completely covered by the selected file, so we can skip it.
+                                    isDuplicate = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!isDuplicate && !isSet) selectedFiles.add(dataFile);
+                    }
+                }
+                if (topValidDataLevel == Byte.MIN_VALUE) return Collections.emptyList();
+                selectedFiles.removeIf(Objects::isNull);
+                return selectedFiles;
+            }
+        };
+    static {
+        LodQuadTree.registerLayerLoader(COLUMN_LAYER_LOADER, (byte) 7); // 7 or above
     }
-
-
-
-
-    public static RenderDataSource loadByCasting(LodDataSource dataSource, DhSectionPos sectionPos) {
-        if (dataSource instanceof ColumnDatatype) {
-            return (RenderDataSource) dataSource;
-        }
-        return null;
-    }
-//    public static RenderDataSource loadByCopying(LodDataSource dataSource, DhSectionPos sectionPos) {
-//
-//        ColumnDatatype columns = new ColumnDatatype(sectionPos, dataSource,
-//                DetailDistanceUtil.getMaxVerticalData(dataDetail));
-//        //TODO
-//
-//        return null;
-//    }
-//    static {
-//        RenderDataSource.registorLoader(ColumnDatatype::loadByCasting, 100);
-//    }
 
     @Override
     public DataSourceLoader getLatestLoader() {
-        return (DhSectionPos sectionPos, InputStream is) -> load(sectionPos, is, LATEST_VERSION);
+        return (DHLevel level, DhSectionPos sectionPos, InputStream data) -> loadFile(level, sectionPos, data, LATEST_VERSION);
     }
 
     @Override

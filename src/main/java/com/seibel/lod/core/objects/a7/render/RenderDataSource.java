@@ -1,9 +1,5 @@
 package com.seibel.lod.core.objects.a7.render;
 
-import com.seibel.lod.core.objects.a7.DHLevel;
-import com.seibel.lod.core.objects.a7.data.LodDataSource;
-import com.seibel.lod.core.objects.a7.data.DataFile;
-import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.opengl.RenderBuffer;
 
 import java.util.*;
@@ -46,15 +42,6 @@ public interface RenderDataSource {
 //        }
 //        return null;
 //    }
-
-    abstract class RenderDataSourceLoader {
-        public abstract RenderDataSource construct(LodDataSource[] dataSources, DhSectionPos sectionPos, DHLevel level);
-
-        public Set<DataFile> selectFiles(DhSectionPos sectionPos, DHLevel level, Set<DataFile> availableFiles) {
-            return Collections.singleton(availableFiles.iterator().next());
-        }
-
-    }
 
     void enableRender();
     void disableRender();

@@ -30,7 +30,7 @@ public class DHLevel extends LodQuadTree {
                 MC.getPlayerBlockPos().z);
         this.saveFolder = saveFolder;
         if (saveFolder != null) {
-            dataFileHandler = new DataFileHandler(saveFolder);
+            dataFileHandler = new DataFileHandler(saveFolder, this);
         } else {
             dataFileHandler = null;
         }
@@ -66,5 +66,9 @@ public class DHLevel extends LodQuadTree {
 
     public void render(LodRenderProgram renderContext) {
         renderBufferHandler.render(renderContext);
+    }
+
+    public int getMinY() {
+        return level.getMinHeight();
     }
 }

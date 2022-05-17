@@ -4,15 +4,15 @@ import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.RenderDataProvider;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
-import com.seibel.lod.core.objects.a7.render.EmptyRenderContainer;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
+import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class DataFileHandler implements RenderDataProvider {
     public static final String FILE_EXTENSION = ".lod";
@@ -72,16 +72,16 @@ public class DataFileHandler implements RenderDataProvider {
     }
 
     @Override
-    public CompletableFuture<RenderDataSource> createRenderData(RenderDataSource.RenderDataSourceLoader renderSourceLoader, DhSectionPos pos) {
+    public CompletableFuture<RenderDataSource> createRenderData(RenderDataSourceLoader renderSourceLoader, DhSectionPos pos) {
         return CompletableFuture.supplyAsync(() -> {
             Set<DataFile> files = renderSourceLoader.selectFiles(pos, level, unloadedDataFileCache.get(pos));
-            LodDataSource[] dataSource = files.stream().map(f -> {
+            List<LodDataSource> dataSource = files.stream().map(f -> {
                 try {
                     return f.load(level);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-            }).toArray(LodDataSource[]::new);
+            }).collect(Collectors.toList());
             return renderSourceLoader.construct(dataSource, pos, level);
         });
     }

@@ -35,6 +35,7 @@ public class DataFile {
 
     public final File path;
     public final DhSectionPos pos;
+    public final byte dataLevel;
     public final LodDataSource.DataSourceLoader loader;
     public final Class<?> dataType;
 
@@ -47,11 +48,12 @@ public class DataFile {
         }
     }
 
-    public DataFile(File path, DhSectionPos pos, LodDataSource.DataSourceLoader loader, Class<?> dataType) {
+    public DataFile(File path, DhSectionPos pos, LodDataSource.DataSourceLoader loader, Class<?> dataType, byte dataLevel) {
         this.path = path;
         this.pos = pos;
         this.loader = loader;
         this.dataType = dataType;
+        this.dataLevel = dataLevel;
     }
 
     DataFile(File path, MappedByteBuffer meta) throws IOException {
@@ -66,7 +68,7 @@ public class DataFile {
         int z = meta.getInt();
         int checksum = meta.getInt();
         byte detailLevel = meta.get();
-        byte dataDetailLevel = meta.get();
+        dataLevel = meta.get();
         byte loaderVersion = meta.get();
         byte unused = meta.get();
         long dataTypeId = meta.getLong();

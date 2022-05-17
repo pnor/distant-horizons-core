@@ -22,8 +22,8 @@ public class DhLodUnit {
             return this;
         }
         if (detail > targetDetail) { //TODO check if this is correct
-            return new DhLodUnit(targetDetail, value >> (detail - targetDetail));
+            return new DhLodUnit(targetDetail, value << (detail - targetDetail));
         }
-        return new DhLodUnit(targetDetail, value << (targetDetail - detail));
+        return new DhLodUnit(targetDetail, value >> (targetDetail - detail));
     }
 }

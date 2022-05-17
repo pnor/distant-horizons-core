@@ -69,4 +69,9 @@ public class DhLodPos {
             return this.equals(other.convertUpwardsTo(this.detail));
         }
     }
+
+    public DhLodPos add(DhLodUnit width) {
+        if (width.detail < detail) throw new IllegalArgumentException("add called with width.detail < pos detail");
+        return new DhLodPos(detail, x + width.convertTo(detail).value, z + width.convertTo(detail).value);
+    }
 }
