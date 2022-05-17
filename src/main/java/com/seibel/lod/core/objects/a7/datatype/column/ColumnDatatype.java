@@ -6,13 +6,10 @@ import com.seibel.lod.core.objects.a7.LodQuadTree;
 import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.datatype.full.FullDatatype;
-import com.seibel.lod.core.objects.a7.pos.DhLodPos;
-import com.seibel.lod.core.objects.a7.pos.DhLodUnit;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
 import com.seibel.lod.core.objects.opengl.RenderBuffer;
-import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 
@@ -108,7 +105,9 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
             default:
                 throw new IOException("Invalid Data: The version of the data is not supported");
         }
-        dataContainer = DataPointUtil.changeMaxVertSize(fileDataContainer, fileMaxVerticalSize, verticalSize);
+        dataContainer = new long[SECTION_SIZE * SECTION_SIZE * verticalSize];
+        new ColumnArrayView(dataContainer, dataContainer.length, 0, verticalSize).changeVerticalSizeFrom(
+                new ColumnArrayView(fileDataContainer, fileDataContainer.length, 0, fileMaxVerticalSize));
         airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * verticalSize];
     }
 
@@ -120,7 +119,8 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public void clear(int posX, int posZ)
     {
         for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
-            dataContainer[posX * SECTION_SIZE * verticalSize + posZ * verticalSize + verticalIndex] = DataPointUtil.EMPTY_DATA;
+            dataContainer[posX * SECTION_SIZE * verticalSize + posZ * verticalSize + verticalIndex] =
+                    ColumnDataPoint.EMPTY_DATA;
     }
 
     /**
@@ -157,19 +157,6 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
      * @param override if override is true we can override data created with same generation mode
      * @return
      */
-    public boolean addVerticalData(long[] data, int posX, int posZ, boolean override)
-    {
-        int index = posX * SECTION_SIZE * verticalSize + posZ * verticalSize;
-        int compare = DataPointUtil.compareDatapointPriority(data[0], dataContainer[index]);
-        if (override) {
-            if (compare<0) return false;
-        } else {
-            if (compare<=0) return false;
-        }
-        forceWriteVerticalData(data, posX, posZ);
-        return true;
-    }
-
     public boolean copyVerticalData(LodDataView data, int posX, int posZ, boolean override) {
         if (DO_SAFETY_CHECKS) {
             if (data.size() != verticalSize)
@@ -180,7 +167,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
                 throw new IllegalArgumentException("Z position is out of bounds");
         }
         int index = posX * SECTION_SIZE * verticalSize + posZ * verticalSize;
-        int compare = DataPointUtil.compareDatapointPriority(data.get(0), dataContainer[index]);
+        int compare = ColumnDataPoint.compareDatapointPriority(data.get(0), dataContainer[index]);
         if (override) {
             if (compare<0) return false;
         } else {
@@ -188,42 +175,6 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         }
         data.copyTo(dataContainer, index);
         return true;
-    }
-
-    public boolean addChunkOfData(long[] data, int posX, int posZ, int widthX, int widthZ, boolean override)
-    {
-        boolean anyChange = false;
-        if (posX+widthX > SECTION_SIZE || posZ+widthZ > SECTION_SIZE)
-            throw new IndexOutOfBoundsException("addChunkOfData param not inside valid range");
-        if (widthX*widthZ*verticalSize != data.length)
-            throw new IndexOutOfBoundsException("addChunkOfData data array not sized correctly to contain the data to be copied");
-        if (posX<0 || posZ<0 || widthX<0 || widthZ<0)
-            throw new IndexOutOfBoundsException("addChunkOfData param is negative");
-
-        for (int ox=0; ox<widthX; ox++) {
-            anyChange = DataPointUtil.mergeTwoDataArray(
-                    dataContainer, ((ox+posX)* SECTION_SIZE +posZ) * verticalSize,
-                    data, ox*widthX*verticalSize,
-                    widthZ, verticalSize, override);
-        }
-        return anyChange;
-    }
-
-    public boolean copyChunkOfData(LodDataView data, int posX, int posZ, int widthX, int widthZ, boolean override) {
-        boolean anyChange = false;
-        if (posX+widthX > SECTION_SIZE || posZ+widthZ > SECTION_SIZE)
-            throw new IndexOutOfBoundsException("addChunkOfData param not inside valid range");
-        if (widthX*widthZ*verticalSize != data.size())
-            throw new IndexOutOfBoundsException("addChunkOfData data array not sized correctly to contain the data to be copied");
-        if (posX<0 || posZ<0 || widthX<0 || widthZ<0)
-            throw new IndexOutOfBoundsException("addChunkOfData param is negative");
-
-        for (int ox=0; ox<widthX; ox++) {
-            anyChange |= new LodDataView(dataContainer, widthX*verticalSize,
-                    ((ox+posX)* SECTION_SIZE +posZ) * verticalSize)
-                    .mergeWith(data, verticalSize, override);
-        }
-        return anyChange;
     }
 
     public long getData(int posX, int posZ, int verticalIndex)
@@ -263,7 +214,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
 
     public boolean doesItExist(int posX, int posZ)
     {
-        return DataPointUtil.doesItExist(getSingleData(posX, posZ));
+        return ColumnDataPoint.doesItExist(getSingleData(posX, posZ));
     }
 
     private long[] readDataVersion6(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
@@ -320,13 +271,13 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
 
     private static void patchHeightAndDepth(long[] data, int offset) {
         for (int i=0; i<data.length; i++) {
-            data[i] = DataPointUtil.shiftHeightAndDepth(data[i], (short)offset);
+            data[i] = ColumnDataPoint.shiftHeightAndDepth(data[i], (short)offset);
         }
     }
 
     private static void patchVersion9Reorder(long[] data) {
         for (int i=0; i<data.length; i++) {
-            data[i] = DataPointUtil.version9Reorder(data[i]);
+            data[i] = ColumnDataPoint.version9Reorder(data[i]);
         }
     }
 
@@ -357,7 +308,7 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
                 long current = dataContainer[i * verticalSize + j];
                 output.writeLong(Long.reverseBytes(current));
             }
-            if (!DataPointUtil.doesItExist(dataContainer[i]))
+            if (!ColumnDataPoint.doesItExist(dataContainer[i]))
                 allGenerated = false;
         }
         return allGenerated;
