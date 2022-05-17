@@ -1,16 +1,17 @@
 package com.seibel.lod.core.objects.a7.data;
 
 import com.google.common.collect.HashMultimap;
+import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.RenderDataProvider;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
+import com.seibel.lod.core.util.LodUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,11 @@ public class DataFileHandler implements RenderDataProvider {
     public final DHLevel level;
 
     public final File folder;
-    private final HashMultimap<DhSectionPos, DataFile> unloadedDataFileCache;
+    // A hash map of all data files.
+
+    private byte maxDataLevel = 0;
+
+    private final HashMultimap<DhSectionPos, DataFile> dataFiles;
 
     public static final String[] FoldersToScan = {
             "data",
@@ -29,13 +34,25 @@ public class DataFileHandler implements RenderDataProvider {
     public DataFileHandler(File folderPath, DHLevel level) {
         this.folder = folderPath;
         this.level = level;
-        unloadedDataFileCache = HashMultimap.create();
+        dataFiles = HashMultimap.create();
+
         File[] foldersToScan = new File[FoldersToScan.length + 1];
         for (int i = 0; i < FoldersToScan.length; i++) {
             foldersToScan[i] = new File(folder, FoldersToScan[i]);
         }
         foldersToScan[FoldersToScan.length] = folder;
         scanFiles(foldersToScan);
+    }
+    private List<DataFile>[] getFilesInPos(DhSectionPos pos) {
+        List<DataFile>[] files = new LinkedList[maxDataLevel + 1];
+        for (DhSectionPos p : dataFiles.keySet()) {
+            if (p.overlaps(pos)) {
+                for (DataFile f : dataFiles.get(p)) {
+                    files[f.dataLevel].add(f);
+                }
+            }
+        }
+        return files;
     }
 
     public void scanFiles(File[] foldersToScan) {
@@ -56,25 +73,27 @@ public class DataFileHandler implements RenderDataProvider {
                             // FIXME: Log error
                             continue;
                         }
-                        if (unloadedDataFileCache.containsKey(dataFile.pos)) {
-                            Set<DataFile> fileSet = unloadedDataFileCache.get(dataFile.pos);
+                        if (dataFiles.containsKey(dataFile.pos)) {
+                            Set<DataFile> fileSet = dataFiles.get(dataFile.pos);
                             if (fileSet.stream().anyMatch(f -> f.dataType.equals(dataFile.dataType))) {
                                 // A file with the same type and same position already exists
                                 // TODO: Handle this case
                                 continue; // For now, ignore the file
                             }
                         }
-                        unloadedDataFileCache.put(dataFile.pos, dataFile);
+                        maxDataLevel = LodUtil.max(maxDataLevel, dataFile.dataLevel);
+                        dataFiles.put(dataFile.pos, dataFile);
                     }
                 }
             }
         }
     }
 
+
     @Override
     public CompletableFuture<RenderDataSource> createRenderData(RenderDataSourceLoader renderSourceLoader, DhSectionPos pos) {
         return CompletableFuture.supplyAsync(() -> {
-            Set<DataFile> files = renderSourceLoader.selectFiles(pos, level, unloadedDataFileCache.get(pos));
+            List<DataFile> files = renderSourceLoader.selectFiles(pos, level, getFilesInPos(pos));
             List<LodDataSource> dataSource = files.stream().map(f -> {
                 try {
                     return f.load(level);

@@ -50,26 +50,26 @@ public abstract class LodQuadTree {
         }
     }
 
-    static {
-        //TODO: Make this dynamic
-        Collections.addAll(layerLoaderConfig,
-                null,
-                null, //1
-                null, //2
-                null, //3
-                new ContainerTypeConfigEntry(FullDatatype.class, (byte) 4), //4 -> 0
-                null, //5 force breaks down to 4 -> 0
-                null, //6 force breaks down to 4 -> 0
-                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //7 -> 1
-                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET) //8 -> 2
-                // ... And same onwards
-        );
-    }
+//    static {
+//        //TODO: Make this dynamic
+//        Collections.addAll(layerLoaderConfig,
+//                null,
+//                null, //1
+//                null, //2
+//                null, //3
+//                new ContainerTypeConfigEntry(FullDatatype.class, (byte) 4), //4 -> 0
+//                null, //5 force breaks down to 4 -> 0
+//                null, //6 force breaks down to 4 -> 0
+//                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET), //7 -> 1
+//                new ContainerTypeConfigEntry(ColumnDatatype.class, ColumnDatatype.SECTION_SIZE_OFFSET) //8 -> 2
+//                // ... And same onwards
+//        );
+//    }
 
     static class SectionDetailLayer {
         final byte targetDataDetail;
-        final Class<? extends RenderDataSource> containerType;
-        public SectionDetailLayer(byte targetDataDetail, Class<? extends RenderDataSource> containerType) {
+        final RenderDataSourceLoader containerType;
+        public SectionDetailLayer(byte targetDataDetail, RenderDataSourceLoader containerType) {
             this.targetDataDetail = targetDataDetail;
             this.containerType = containerType;
         }
@@ -80,15 +80,15 @@ public abstract class LodQuadTree {
         for (int i = 0; i < layerLoaderConfig.size(); i++) {
             if (layerLoaderConfig.get(i) == null) continue;
             isInFront = false;
-            ContainerTypeConfigEntry entry = layerLoaderConfig.get(i);
-            if (i - entry.levelOffset < 0) {
+            RenderDataSourceLoader entry = layerLoaderConfig.get(i);
+            if (i - entry.detailOffset < 0) {
                 throw new RuntimeException("ContainerTypeConfigEntry " + i + " has a levelOffset of "
-                        + entry.levelOffset + " which makes the dataDetail be " + (i - entry.levelOffset) + "," +
+                        + entry.detailOffset + " which makes the dataDetail be " + (i - entry.detailOffset) + "," +
                         " which is less than 0!");
             }
-            if (entry.levelOffset < 0) {
+            if (entry.detailOffset < 0) {
                 throw new RuntimeException("ContainerTypeConfigEntry " + i + " has a levelOffset of "
-                        + entry.levelOffset + " which is less than 0!");
+                        + entry.detailOffset + " which is less than 0!");
             }
         }
         if (layerLoaderConfig.get(layerLoaderConfig.size()-1) == null) {
@@ -109,18 +109,18 @@ public abstract class LodQuadTree {
 
         { // Calculate the max section detail
             byte maxDetailLevel = getMaxDetailInRange(viewDistance * Math.sqrt(2));
-            ContainerTypeConfigEntry finalEntry = null;
+            RenderDataSourceLoader finalEntry = null;
             byte topSectionLevel = 0;
             byte firstLevel = -1;
             for (; topSectionLevel < layerLoaderConfig.size(); topSectionLevel++) {
                 if (layerLoaderConfig.get(topSectionLevel) == null) continue;
                 finalEntry = layerLoaderConfig.get(topSectionLevel);
                 if (firstLevel == -1) firstLevel = topSectionLevel;
-                if (topSectionLevel - finalEntry.levelOffset >= maxDetailLevel) break;
+                if (topSectionLevel - finalEntry.detailOffset >= maxDetailLevel) break;
             }
             if (finalEntry == null) throw new RuntimeException("No container type found!");
             if (topSectionLevel == layerLoaderConfig.size())
-                topSectionLevel = (byte) (maxDetailLevel - finalEntry.levelOffset);
+                topSectionLevel = (byte) (maxDetailLevel - finalEntry.detailOffset);
             numbersOfSectionLevels = (byte) (topSectionLevel + 1);
             startingSectionLevel = firstLevel;
             sectionDetailLayers = new SectionDetailLayer[numbersOfSectionLevels - startingSectionLevel];
@@ -131,7 +131,7 @@ public abstract class LodQuadTree {
             byte lastNonNullEntry = -1;
             for (byte i = startingSectionLevel; i < numbersOfSectionLevels; i++) {
                 byte targetDataDetail;
-                Class<? extends RenderDataSource> containerType;
+                RenderDataSourceLoader containerType;
 
                 if (i < layerLoaderConfig.size()) {
                     if (layerLoaderConfig.get(i) == null) {
@@ -140,16 +140,16 @@ public abstract class LodQuadTree {
                         containerType = null;
                     } else {
                         lastNonNullEntry = i;
-                        ContainerTypeConfigEntry entry = layerLoaderConfig.get(i);
-                        targetDataDetail = (byte) (i - entry.levelOffset);
-                        containerType = entry.containerType;
+                        RenderDataSourceLoader entry = layerLoaderConfig.get(i);
+                        targetDataDetail = (byte) (i - entry.detailOffset);
+                        containerType = entry;
                     }
                 } else {
                     LodUtil.assertTrue(layerLoaderConfig.get(layerLoaderConfig.size() - 1) != null,
                             "The last entry must not be null!");
-                    ContainerTypeConfigEntry entry = layerLoaderConfig.get(layerLoaderConfig.size() - 1);
-                    targetDataDetail = (byte) (i - entry.levelOffset);
-                    containerType = entry.containerType;
+                    RenderDataSourceLoader entry = layerLoaderConfig.get(layerLoaderConfig.size() - 1);
+                    targetDataDetail = (byte) (i - entry.detailOffset);
+                    containerType = entry;
                 }
 
                 LodUtil.assertTrue(targetDataDetail >= 0, "dataDetail must be >= 0!");
@@ -327,7 +327,7 @@ public abstract class LodQuadTree {
             final MovableGridRingList<LodSection> parentRingList =
                     sectLevel == numbersOfSectionLevels - 1 ? null : ringLists[sectLevel - startingSectionLevel + 1];
             final byte f_sectLevel = sectLevel;
-            Class<? extends RenderDataSource> containerType = sectionDetailLayers[sectLevel - startingSectionLevel].containerType;
+            RenderDataSourceLoader containerType = sectionDetailLayers[sectLevel - startingSectionLevel].containerType;
             ringList.forEachPosOrdered((section, pos) -> {
                 if (f_sectLevel == 0 && section != null) {
                     section.childCount = 0;
@@ -419,7 +419,7 @@ public abstract class LodQuadTree {
             final MovableGridRingList<LodSection> childRingList =
                     sectLevel == startingSectionLevel ? null : ringLists[sectLevel - startingSectionLevel - 1];
             final boolean doCacsade = sectionDetailLayers[sectLevel - startingSectionLevel].containerType == null;
-            Class<? extends RenderDataSource> containerType = sectionDetailLayers[sectLevel - startingSectionLevel].containerType;
+            RenderDataSourceLoader containerType = sectionDetailLayers[sectLevel - startingSectionLevel].containerType;
 
             ringList.forEachPosOrdered((section, pos) -> {
                 if (section == null) return;

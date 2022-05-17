@@ -2,6 +2,7 @@ package com.seibel.lod.core.objects.a7;
 
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
+import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -40,7 +41,7 @@ public class LodSection {
         isRenderEnabled = false;
     }
 
-    public void load(RenderDataProvider renderDataProvider, Class<? extends RenderDataSource> renderDataSourceClass) {
+    public void load(RenderDataProvider renderDataProvider, RenderDataSourceLoader renderDataSourceClass) {
         if (loadFuture != null || renderDataSource != null) throw new IllegalStateException("Reloading is not supported!");
         loadFuture = renderDataProvider.createRenderData(renderDataSourceClass, pos);
     }
