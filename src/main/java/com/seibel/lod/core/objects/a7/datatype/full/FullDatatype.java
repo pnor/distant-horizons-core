@@ -1,5 +1,6 @@
 package com.seibel.lod.core.objects.a7.datatype.full;
 
+import com.seibel.lod.core.objects.a7.data.DataSourceLoader;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 

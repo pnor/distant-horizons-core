@@ -5,10 +5,8 @@ import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.Function;
 
 public class CompleteDataContainer implements LodDataSource { // 1 chunk
     private DhSectionPos sectionPos;

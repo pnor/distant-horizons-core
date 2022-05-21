@@ -76,4 +76,28 @@ public class DhSectionPos {
     public boolean overlaps(DhSectionPos other){
         return getSectionBBoxPos().overlaps(other.getSectionBBoxPos());
     }
+
+    @Override
+    public String toString() {
+        return "DhSectionPos{" +
+                "sectionDetail=" + sectionDetail +
+                ", sectionX=" + sectionX +
+                ", sectionZ=" + sectionZ +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DhSectionPos that = (DhSectionPos) o;
+        return sectionDetail == that.sectionDetail &&
+                sectionX == that.sectionX &&
+                sectionZ == that.sectionZ;
+    }
+
+    // Serialize() is different from toString() as this reqires it to NEVER be changed, and should be in a short format
+    public String serialize() {
+        return "[" + sectionDetail + ',' + sectionX + ',' + sectionZ + ']';
+    }
 }

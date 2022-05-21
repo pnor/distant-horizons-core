@@ -1,12 +1,12 @@
 package com.seibel.lod.core.objects.a7.data;
 
 import com.seibel.lod.core.objects.a7.DHLevel;
+import com.seibel.lod.core.objects.a7.datatype.column.DataSourceSaver;
+import com.seibel.lod.core.objects.a7.datatype.column.OldDataSourceLoader;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.util.LodUtil;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -35,9 +35,9 @@ public class DataFile {
 
     public final File path;
     public final DhSectionPos pos;
-    public final byte dataLevel;
-    public final LodDataSource.DataSourceLoader loader;
-    public final Class<?> dataType;
+    public byte dataLevel;
+    public DataSourceLoader loader;
+    public Class<?> dataType;
 
     public LodDataSource loadedData = null;
 
@@ -48,12 +48,13 @@ public class DataFile {
         }
     }
 
-    public DataFile(File path, DhSectionPos pos, LodDataSource.DataSourceLoader loader, Class<?> dataType, byte dataLevel) {
+    public DataFile(File path, DataSourceLoader loader, LodDataSource loadedData) {
         this.path = path;
-        this.pos = pos;
+        this.pos = loadedData.getSectionPos();
         this.loader = loader;
-        this.dataType = dataType;
-        this.dataLevel = dataLevel;
+        this.dataType = loader.clazz;
+        this.dataLevel = loadedData.getDataDetail();
+        this.loadedData = loadedData;
     }
 
     DataFile(File path, MappedByteBuffer meta) throws IOException {
@@ -76,11 +77,11 @@ public class DataFile {
         LodUtil.assertTrue(meta.remaining() == 0);
 
         this.pos = new DhSectionPos(detailLevel, x, z);
-        this.loader = LodDataSource.getLoader(dataTypeId, loaderVersion);
+        this.loader = DataSourceLoader.getLoader(dataTypeId, loaderVersion);
         if (loader == null) {
             throw new IOException("Invalid file: Data type loader not found: " + dataTypeId + "(v" + loaderVersion + ")");
         }
-        this.dataType = LodDataSource.dataSourceTypeRegistry.get(dataTypeId);
+        this.dataType = loader.clazz;
     }
 
     LodDataSource load(DHLevel level) throws IOException {
@@ -89,5 +90,53 @@ public class DataFile {
         fin.skipNBytes(METADATA_SIZE);
         loadedData = loader.loadData(level, pos, fin);
         return loadedData;
+    }
+
+    public boolean verifyPath() {
+        return path.exists() && path.isFile() && path.canRead() && path.canWrite();
+    }
+
+    public void save(DHLevel level) throws IOException {
+        if (loadedData == null) throw new IllegalStateException("No data loaded");
+        if (!verifyPath()) throw new IOException("File path became invalid");
+        DataSourceSaver saver;
+        if (loader instanceof DataSourceSaver) saver = (DataSourceSaver) loader;
+        else if (loader instanceof OldDataSourceLoader) saver = ((OldDataSourceLoader) loader).getNewSaver();
+        else throw new IllegalStateException("Data source does not support saving");
+        byte newDataLevel = loadedData.getDataDetail();
+
+        try (FileOutputStream fout = new FileOutputStream(path, false)) {
+            try (DataOutputStream out = new DataOutputStream(fout)) {
+
+                out.writeInt(METADATA_MAGIC_BYTES);
+
+                // Write x, y, z, checksum
+                out.writeInt(pos.sectionX);
+                out.writeInt(Integer.MIN_VALUE); // not used for now
+                out.writeInt(pos.sectionZ);
+                out.writeInt(Integer.MIN_VALUE); // not used for now
+
+                // Write detail level, data level, loader version
+                out.writeByte(pos.sectionDetail);
+                out.writeByte(loadedData.getDataDetail());
+                out.writeByte(saver.loaderVersion);
+
+                // Write unused
+                out.writeByte((byte) 0);
+
+                // Write data type id
+                out.writeLong(saver.datatypeId);
+
+                // Write unused
+                out.writeLong(Long.MIN_VALUE);
+                // Write data
+                saver.saveData(level, loadedData, out);
+            }
+        }
+
+        dataLevel = newDataLevel;
+        loader = saver;
+
+
     }
 }

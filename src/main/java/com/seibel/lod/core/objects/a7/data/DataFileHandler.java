@@ -1,9 +1,9 @@
 package com.seibel.lod.core.objects.a7.data;
 
 import com.google.common.collect.HashMultimap;
-import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.RenderDataProvider;
+import com.seibel.lod.core.objects.a7.datatype.column.DataSourceSaver;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
@@ -11,17 +11,22 @@ import com.seibel.lod.core.util.LodUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.server.ExportException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 public class DataFileHandler implements RenderDataProvider {
+    public static final List<OldFileConverter> CONVERTERS = new ArrayList<>();
     public static final String FILE_EXTENSION = ".lod";
 
     public final DHLevel level;
 
     public final File folder;
     // A hash map of all data files.
+
+    public final ExecutorService IO_MANAGER = LodUtil.makeSingleThreadPool("DataFileHandler IO Manager");
 
     private byte maxDataLevel = 0;
 
@@ -35,7 +40,12 @@ public class DataFileHandler implements RenderDataProvider {
         this.folder = folderPath;
         this.level = level;
         dataFiles = HashMultimap.create();
+        // Handle converting old files that doesn't have the meta data and stuff
+        List<DataFile> oldFiles = new ArrayList<>();
+        for (OldFileConverter converter : CONVERTERS) oldFiles.addAll(converter.scanAndConvert(folder, level));
+        oldFiles.forEach(this::_addFile);
 
+        // Scan for files
         File[] foldersToScan = new File[FoldersToScan.length + 1];
         for (int i = 0; i < FoldersToScan.length; i++) {
             foldersToScan[i] = new File(folder, FoldersToScan[i]);
@@ -53,6 +63,18 @@ public class DataFileHandler implements RenderDataProvider {
             }
         }
         return files;
+    }
+    private void _addFile(DataFile file) {
+        if (dataFiles.containsKey(file.pos)) {
+            Set<DataFile> fileSet = dataFiles.get(file.pos);
+            if (fileSet.stream().anyMatch(f -> f.dataType.equals(file.dataType))) {
+                // A file with the same type and same position already exists
+                // TODO: Handle this case
+                return;
+            }
+        }
+        maxDataLevel = LodUtil.max(maxDataLevel, file.dataLevel);
+        dataFiles.put(file.pos, file);
     }
 
     public void scanFiles(File[] foldersToScan) {
@@ -73,20 +95,40 @@ public class DataFileHandler implements RenderDataProvider {
                             // FIXME: Log error
                             continue;
                         }
-                        if (dataFiles.containsKey(dataFile.pos)) {
-                            Set<DataFile> fileSet = dataFiles.get(dataFile.pos);
-                            if (fileSet.stream().anyMatch(f -> f.dataType.equals(dataFile.dataType))) {
-                                // A file with the same type and same position already exists
-                                // TODO: Handle this case
-                                continue; // For now, ignore the file
-                            }
-                        }
-                        maxDataLevel = LodUtil.max(maxDataLevel, dataFile.dataLevel);
-                        dataFiles.put(dataFile.pos, dataFile);
+                        _addFile(dataFile);
                     }
                 }
             }
         }
+    }
+
+    public DataFile registerNewLodDataSource(LodDataSource dataSource, DataSourceSaver saver) {
+        DhSectionPos pos = dataSource.getSectionPos();
+        File newFile = saver.generateFilePathAndName(folder, level, pos);
+        if (!newFile.getName().endsWith(FILE_EXTENSION)) {
+            //TODO: Log warning
+            newFile = new File(newFile.getParentFile(), newFile.getName() + FILE_EXTENSION);
+        }
+
+        if (newFile.exists()) {
+            //TODO: Log warning
+            String fileStr = newFile.getPath().substring(0, newFile.getPath().length() - FILE_EXTENSION.length());
+            int i = 1;
+            do {
+                newFile = new File(fileStr + "_" + i + FILE_EXTENSION);
+                i++;
+            } while (newFile.exists());
+        }
+        DataFile dataFile = new DataFile(newFile, saver, dataSource);
+        dataFiles.put(pos, dataFile);
+        try {
+            dataFile.save(level);
+        } catch (Exception e) {
+            dataFiles.remove(pos, dataFile);
+            //TODO: Log error
+            return null;
+        }
+        return dataFile;
     }
 
 
