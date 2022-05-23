@@ -7,7 +7,6 @@ import java.util.Objects;
 
 public interface LodDataSource {
     DataSourceLoader getLatestLoader();
-
     DhSectionPos getSectionPos();
     byte getDataDetail();
 }

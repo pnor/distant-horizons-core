@@ -136,13 +136,7 @@ public class DataFileHandler implements RenderDataProvider {
     public CompletableFuture<RenderDataSource> createRenderData(RenderDataSourceLoader renderSourceLoader, DhSectionPos pos) {
         return CompletableFuture.supplyAsync(() -> {
             List<DataFile> files = renderSourceLoader.selectFiles(pos, level, getFilesInPos(pos));
-            List<LodDataSource> dataSource = files.stream().map(f -> {
-                try {
-                    return f.load(level);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).collect(Collectors.toList());
+            List<LodDataSource> dataSource = files.stream().map(f -> f.load(level)).filter(Objects::nonNull).collect(Collectors.toList());
             return renderSourceLoader.construct(dataSource, pos, level);
         });
     }

@@ -4,30 +4,27 @@ import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.LodQuadTree;
 import com.seibel.lod.core.objects.a7.data.DataSourceLoader;
-import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
-import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
 import com.seibel.lod.core.objects.opengl.RenderBuffer;
 import com.seibel.lod.core.util.LodUtil;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ColumnDatatype implements LodDataSource, RenderDataSource {
+public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
     public static final boolean DO_SAFETY_CHECKS = true;
     public static final byte SECTION_SIZE_OFFSET = 6;
     public static final int SECTION_SIZE = 1 << SECTION_SIZE_OFFSET;
-    public static final int LATEST_VERSION = 9;
-
+    public static final int LATEST_VERSION = 10;
     public static final long DATA_TYPE_ID = "ColumnDatatype".hashCode();
-    public final int AIR_LODS_SIZE = 16;
-    public final int AIR_SECTION_SIZE = SECTION_SIZE/AIR_LODS_SIZE;
+    public static final int AIR_LODS_SIZE = 16;
+    public static final int AIR_SECTION_SIZE = SECTION_SIZE/AIR_LODS_SIZE;
+
     public final int verticalSize;
     public final DhSectionPos sectionPos;
     public final int yOffset;
@@ -47,74 +44,43 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         this.yOffset = yOffset;
     }
 
+    private long[] loadData(DataInputStream inputData, int version, int verticalSize) throws IOException {
+        switch (version) {
+            case 1:
+                return readDataV1(inputData, verticalSize);
+            default:
+                throw new IOException("Invalid Data: The version of the data is not supported");
+        }
+    }
+    private long[] readDataV1(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
+        int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
+        byte[] data = new byte[x * Long.BYTES];
+        short tempMinHeight = Short.reverseBytes(inputData.readShort());
+        ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+        inputData.readFully(data);
+        long[] result = new long[x];
+        bb.asLongBuffer().get(result);
+        if (tempMinHeight != yOffset) {
+            for (int i=0; i<result.length; i++) {
+                result[i] = ColumnDataPoint.shiftHeightAndDepth(result[i], (short) (tempMinHeight - yOffset));
+            }
+        }
+        return result;
+    }
     // Load from data stream with maxVerticalSize loaded from the data stream
     public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DHLevel level) throws IOException {
         this.sectionPos = sectionPos;
-        this.yOffset = level.getMinY();
+        yOffset = level.getMinY();
         byte detailLevel = inputData.readByte();
         if (sectionPos.sectionDetail - SECTION_SIZE_OFFSET != detailLevel) {
             throw new IOException("Invalid data: detail level does not match");
         }
         verticalSize = inputData.readByte() & 0b01111111;
-        switch (version) {
-            case 6:
-                dataContainer = readDataVersion6(inputData, verticalSize);
-                break;
-            case 7:
-                dataContainer = readDataVersion7(inputData, verticalSize);
-                break;
-            case 8:
-                dataContainer = readDataVersion8(inputData, verticalSize);
-                break;
-            case 9:
-            case 10:
-                dataContainer = readDataVersion9(inputData, verticalSize);
-                break;
-            default:
-                throw new IOException("Invalid Data: The version of the data is not supported");
-        }
+        dataContainer = loadData(inputData, version, verticalSize);
         airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * verticalSize];
     }
 
-    // Load from data stream with new maxVerticalSize
-    public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DHLevel level, int maxVerticalSize) throws IOException {
-        verticalSize = maxVerticalSize;
-        this.yOffset = level.getMinY();
-        this.sectionPos = sectionPos;
-        byte detailLevel = inputData.readByte();
-        if (sectionPos.sectionDetail - SECTION_SIZE_OFFSET  != detailLevel) {
-            throw new IOException("Invalid data: detail level does not match");
-        }
-        int fileMaxVerticalSize = inputData.readByte() & 0b01111111;
-        long[] fileDataContainer = null;
-        switch (version) {
-            case 6:
-                fileDataContainer = readDataVersion6(inputData, fileMaxVerticalSize);
-                break;
-            case 7:
-                fileDataContainer = readDataVersion7(inputData, fileMaxVerticalSize);
-                break;
-            case 8:
-                fileDataContainer = readDataVersion8(inputData, fileMaxVerticalSize);
-                break;
-            case 9:
-            case 10:
-                fileDataContainer = readDataVersion9(inputData, fileMaxVerticalSize);
-                break;
-            default:
-                throw new IOException("Invalid Data: The version of the data is not supported");
-        }
-        dataContainer = new long[SECTION_SIZE * SECTION_SIZE * verticalSize];
-        new ColumnArrayView(dataContainer, dataContainer.length, 0, verticalSize).changeVerticalSizeFrom(
-                new ColumnArrayView(fileDataContainer, fileDataContainer.length, 0, fileMaxVerticalSize));
-        airDataContainer = new int[AIR_SECTION_SIZE * AIR_SECTION_SIZE * verticalSize];
-    }
-
-    /**
-     * This method will clear all data at relative section position
-     * @param posX
-     * @param posZ
-     */
+    @Override
     public void clear(int posX, int posZ)
     {
         for (int verticalIndex = 0; verticalIndex < verticalSize; verticalIndex++)
@@ -122,40 +88,15 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
                     ColumnDataPoint.EMPTY_DATA;
     }
 
-    /**
-     * This method will add the data given in input at the relative position and vertical index
-     * @param data
-     * @param posX
-     * @param posZ
-     * @param verticalIndex
-     * @return
-     */
+
+    @Override
     public boolean addData(long data, int posX, int posZ, int verticalIndex)
     {
         dataContainer[posX * SECTION_SIZE * verticalSize + posZ * verticalSize + verticalIndex] = data;
         return true;
     }
 
-    /**
-     * This section will fill the data given in input at the given position
-     * @param data
-     * @param posX
-     * @param posZ
-     */
-    private void forceWriteVerticalData(long[] data, int posX, int posZ)
-    {
-        int index = posX * SECTION_SIZE * verticalSize + posZ * verticalSize;
-        if (verticalSize >= 0) System.arraycopy(data, 0, dataContainer, index + 0, verticalSize);
-    }
-
-    /**
-     * This methods will add the data in the given position if certain condition are satisfied
-     * @param data
-     * @param posX
-     * @param posZ
-     * @param override if override is true we can override data created with same generation mode
-     * @return
-     */
+    @Override
     public boolean copyVerticalData(LodDataView data, int posX, int posZ, boolean override) {
         if (DO_SAFETY_CHECKS) {
             if (data.size() != verticalSize)
@@ -176,16 +117,13 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return true;
     }
 
+    @Override
     public long getData(int posX, int posZ, int verticalIndex)
     {
         return dataContainer[posX * SECTION_SIZE * verticalSize + posZ * verticalSize + verticalIndex];
     }
 
-    public long getSingleData(int posX, int posZ)
-    {
-        return dataContainer[posX * SECTION_SIZE * verticalSize + posZ * verticalSize];
-    }
-
+    @Override
     public long[] getAllData(int posX, int posZ)
     {
         long[] result = new long[verticalSize];
@@ -194,94 +132,35 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return result;
     }
 
+    @Override
     public ColumnArrayView getVerticalDataView(int posX, int posZ) {
         return new ColumnArrayView(dataContainer, verticalSize,
                 posX * SECTION_SIZE * verticalSize + posZ * verticalSize, verticalSize);
     }
 
+    @Override
     public ColumnQuadView getDataInQuad(int quadX, int quadZ, int quadXSize, int quadZSize) {
         return new ColumnQuadView(dataContainer, SECTION_SIZE, verticalSize, quadX, quadZ, quadXSize, quadZSize);
     }
+    @Override
     public ColumnQuadView getFullQuad() {
         return new ColumnQuadView(dataContainer, SECTION_SIZE, verticalSize, 0, 0, SECTION_SIZE, SECTION_SIZE);
     }
 
+    @Override
     public int getVerticalSize()
     {
         return verticalSize;
     }
 
+    @Override
     public boolean doesItExist(int posX, int posZ)
     {
         return ColumnDataPoint.doesItExist(getSingleData(posX, posZ));
     }
-    private long[] readDataVersion6(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
-        int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
-        byte[] data = new byte[x * Long.BYTES];
-        ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        inputData.readFully(data);
-        long[] result = new long[x];
-        bb.asLongBuffer().get(result);
-        patchVersion9Reorder(result);
-        patchHeightAndDepth(result,-yOffset);
-        return result;
-    }
-    private long[] readDataVersion7(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
-        int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
-        byte[] data = new byte[x * Long.BYTES];
-        ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        inputData.readFully(data);
-        long[] result = new long[x];
-        bb.asLongBuffer().get(result);
-        patchVersion9Reorder(result);
-        patchHeightAndDepth(result, 64 - yOffset);
-        return result;
-    }
-    private long[] readDataVersion8(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
-        int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
-        byte[] data = new byte[x * Long.BYTES];
-        short tempMinHeight = Short.reverseBytes(inputData.readShort());
-        ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        inputData.readFully(data);
-        long[] result = new long[x];
-        bb.asLongBuffer().get(result);
-        patchVersion9Reorder(result);
-        if (tempMinHeight != yOffset) {
-            patchHeightAndDepth(result,tempMinHeight - yOffset);
-        }
-        return result;
-    }
-    private long[] readDataVersion9(DataInputStream inputData, int tempMaxVerticalData) throws IOException {
-        int x = SECTION_SIZE * SECTION_SIZE * tempMaxVerticalData;
-        byte[] data = new byte[x * Long.BYTES];
-        short tempMinHeight = Short.reverseBytes(inputData.readShort());
-        ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
-        inputData.readFully(data);
-        long[] result = new long[x];
-        bb.asLongBuffer().get(result);
-        if (tempMinHeight != yOffset) {
-            patchHeightAndDepth(result,tempMinHeight - yOffset);
-        }
-        return result;
-    }
 
-    private static void patchHeightAndDepth(long[] data, int offset) {
-        for (int i=0; i<data.length; i++) {
-            data[i] = ColumnDataPoint.shiftHeightAndDepth(data[i], (short)offset);
-        }
-    }
 
-    private static void patchVersion9Reorder(long[] data) {
-        for (int i=0; i<data.length; i++) {
-            data[i] = ColumnDataPoint.version9Reorder(data[i]);
-        }
-    }
-
-    private static final ThreadLocal<long[][]> tLocalVerticalUpdateArrays = ThreadLocal.withInitial(() ->
-    {
-        return new long[LodUtil.DETAIL_OPTIONS - 1][];
-    });
-
+    @Override
     public void generateData(ColumnDatatype lowerDataContainer, int posX, int posZ)
     {
         ColumnQuadView quadView = lowerDataContainer.getDataInQuad(posX*2, posZ*2, 2,2);
@@ -335,36 +214,26 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
         return stringBuilder.toString();
     }
 
+    @Override
     public int getMaxNumberOfLods()
     {
         return SECTION_SIZE * SECTION_SIZE * getVerticalSize();
     }
 
+    @Override
     public long getRoughRamUsage()
     {
         return (long) dataContainer.length * Long.BYTES;
     }
 
-
-    // Called by ColumnDataLoader
-    static LodDataSource loadFile(DHLevel level, DhSectionPos pos, InputStream is, int version) {
-        try (DataInputStream dis = new DataInputStream(is)) {
-            return new ColumnDatatype(pos, dis, version, level);
-        } catch (IOException e) {
-            //FIXME: Log error
-            return null;
-        }
-    }
-
     public static final ColumnRenderLoader COLUMN_LAYER_LOADER = new ColumnRenderLoader();
-    public static final ColumnDataLoader COLUMN_DATA_LOADER = ColumnDataLoader.INSTANCE;
     static {
         LodQuadTree.registerLayerLoader(COLUMN_LAYER_LOADER, (byte) 7); // 7 or above
     }
 
     @Override
     public DataSourceLoader getLatestLoader() {
-        return COLUMN_DATA_LOADER;
+        return ColumnDataLoader.INSTANCE;
     }
 
     @Override
@@ -375,6 +244,11 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     @Override
     public byte getDataDetail() {
         return (byte) (sectionPos.sectionDetail - SECTION_SIZE_OFFSET);
+    }
+
+    @Override
+    public byte getDetailOffset() {
+        return SECTION_SIZE_OFFSET;
     }
 
     @Override
@@ -396,10 +270,6 @@ public class ColumnDatatype implements LodDataSource, RenderDataSource {
     public void dispose() {
     }
 
-    @Override
-    public byte getDetailOffset() {
-        return SECTION_SIZE_OFFSET;
-    }
 
     @Override
     public boolean trySwapRenderBuffer(AtomicReference<RenderBuffer> referenceSlot) {

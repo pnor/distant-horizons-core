@@ -45,8 +45,8 @@ class ColumnRenderLoader extends RenderDataSourceLoader  {
             byte targetDataLevel = (byte) (sectionPos.sectionDetail - ColumnDatatype.SECTION_SIZE_OFFSET);
             byte sourceDataLevel = dataSources.get(0).getDataDetail();
             LodUtil.assertTrue(targetDataLevel >= sourceDataLevel);
-            if (dataSources.get(0) instanceof ColumnDatatype) {
-                ColumnDatatype dataSource = (ColumnDatatype) dataSources.get(0);
+            if (dataSources.get(0) instanceof IColumnDatatype) {
+                IColumnDatatype dataSource = (IColumnDatatype) dataSources.get(0);
                 DhSectionPos srcPos = dataSource.getSectionPos();
 
                 // Note that in here, the source data level will be always < target section level
@@ -77,8 +77,8 @@ class ColumnRenderLoader extends RenderDataSourceLoader  {
                 byte sourceDataLevel = dataSource.getDataDetail();
                 DhSectionPos srcPos = dataSource.getSectionPos();
 
-                if (dataSource instanceof ColumnDatatype) {
-                    ColumnDatatype clDataSource = (ColumnDatatype) dataSource;
+                if (dataSource instanceof IColumnDatatype) {
+                    IColumnDatatype clDataSource = (IColumnDatatype) dataSource;
 
                     // Note that targetDataLevel can be > source section level
                     int srcX = srcPos.getCorner().getX().toBlock();
@@ -106,6 +106,10 @@ class ColumnRenderLoader extends RenderDataSourceLoader  {
         return renderDataSource;
     }
 
+    private static boolean IsColumnDatatype(Class<?> clazz) {
+        return IColumnDatatype.class.isAssignableFrom(clazz);
+    }
+
     @Override
     public List<DataFile> selectFiles(DhSectionPos sectionPos, DHLevel level, List<DataFile>[] availableFiles) {
         byte targetDataLevel = (byte) (sectionPos.sectionDetail - ColumnDatatype.SECTION_SIZE_OFFSET);
@@ -119,7 +123,8 @@ class ColumnRenderLoader extends RenderDataSourceLoader  {
             if (topValidDataLevel == Byte.MIN_VALUE) {
                 for (DataFile dataFile : availableFiles[detail]) {
                     if (dataFile.dataLevel > targetDataLevel) continue;
-                    if (dataFile.dataType == ColumnDatatype.class || dataFile.dataType == FullDatatype.class) {
+                    if (IsColumnDatatype(dataFile.dataType) || dataFile.dataType == FullDatatype.class
+                            || dataFile.dataType == OldColumnDatatype.class) {
                         topValidDataLevel = LodUtil.max(topValidDataLevel, dataFile.dataLevel);
                         break;
                     }
@@ -133,7 +138,7 @@ class ColumnRenderLoader extends RenderDataSourceLoader  {
 
             for (DataFile dataFile : availableFiles[detail]) {
                 if (dataFile.pos.getWidth().toBlock() == sectionPos.getWidth().toBlock()) {
-                    if (dataFile.dataType == ColumnDatatype.class) {
+                    if (IsColumnDatatype(dataFile.dataType)) {
                         singleCoveringColumnFile = dataFile;
                         break;
                     } else if (dataFile.dataType == FullDatatype.class) {
@@ -141,7 +146,7 @@ class ColumnRenderLoader extends RenderDataSourceLoader  {
                         // Don't break as there may be a column file later.
                     }
                 } else if (dataFile.pos.getWidth().toBlock() > sectionPos.getWidth().toBlock()) {
-                    if (dataFile.dataType == ColumnDatatype.class && singleCoveringColumnFile == null)
+                    if (IsColumnDatatype(dataFile.dataType) && singleCoveringColumnFile == null)
                         singleCoveringColumnFile = dataFile;
                     else if (dataFile.dataType == FullDatatype.class && singleCoveringFullFile == null)
                         singleCoveringFullFile = dataFile;

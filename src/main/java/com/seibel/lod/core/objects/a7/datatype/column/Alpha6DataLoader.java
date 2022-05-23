@@ -2,35 +2,45 @@ package com.seibel.lod.core.objects.a7.datatype.column;
 
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.objects.a7.DHLevel;
-import com.seibel.lod.core.objects.a7.data.DataFile;
-import com.seibel.lod.core.objects.a7.data.DataFileHandler;
-import com.seibel.lod.core.objects.a7.data.LodDataSource;
-import com.seibel.lod.core.objects.a7.data.OldFileConverter;
+import com.seibel.lod.core.objects.a7.data.*;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConverter {
 
-    public Alpha6DataLoader() {
-        super(ColumnDatatype.class, ColumnDatatype.DATA_TYPE_ID, (byte)0);
+    public static final Alpha6DataLoader INSTANCE = new Alpha6DataLoader();
+
+    private Alpha6DataLoader() {
+        super(OldColumnDatatype.class, OldColumnDatatype.DATA_TYPE_ID, (byte)0);
         DataFileHandler.CONVERTERS.add(this);
     }
 
     @Override
-    public LodDataSource loadData(DHLevel level, DhSectionPos sectionPos, InputStream data) {
-        return null;
+    public LodDataSource loadData(DataFile dataFile, DHLevel level) {
+        //TODO: Add decompressor here
+        try (
+                FileInputStream fin = dataFile.getDataContent();
+                XZCompressorInputStream xzIn = new XZCompressorInputStream(fin);
+                DataInputStream dis = new DataInputStream(xzIn);
+        ) {
+            return new OldColumnDatatype(dataFile.pos, dis, dataFile.loaderVersion, level, 1);
+        } catch (IOException e) {
+            //FIXME: Log error
+            return null;
+        }
     }
 
     @Override
     public DataSourceSaver getNewSaver() {
-        return null;
+        return null; // No re-saving of old datatype as any data should be converted to new format before saving
     }
+
+
+
 
     private static DataFile convert(File file, int detailLevel, VerticalQuality quality) {
         String oldName = file.getName();
@@ -46,26 +56,14 @@ public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConv
             XZCompressorInputStream inputStream = new XZCompressorInputStream(fileInStream);
             int fileVersion = inputStream.read();
 
-            datatype = new ColumnDatatype(fileVersion, quality, detailLevel);
 
             DhSectionPos pos;
 
-
-
-            File newFilePath = ColumnDataLoader.INSTANCE.generateFilePathAndName(file,
-                    detailLevel,
-                    quality);
-
-
-
+            //TODO: Implement
         } catch (Exception e) {
             e.printStackTrace();
         }
-        int version
-
-
-
-
+        return null;
     }
 
     @Override

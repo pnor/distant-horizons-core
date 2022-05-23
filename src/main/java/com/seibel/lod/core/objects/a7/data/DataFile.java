@@ -37,6 +37,7 @@ public class DataFile {
     public final DhSectionPos pos;
     public byte dataLevel;
     public DataSourceLoader loader;
+    public byte loaderVersion;
     public Class<?> dataType;
 
     public LodDataSource loadedData = null;
@@ -55,6 +56,7 @@ public class DataFile {
         this.dataType = loader.clazz;
         this.dataLevel = loadedData.getDataDetail();
         this.loadedData = loadedData;
+        this.loaderVersion = loader.loaderSupportedVersions[loader.loaderSupportedVersions.length - 1]; // get latest version
     }
 
     DataFile(File path, MappedByteBuffer meta) throws IOException {
@@ -82,14 +84,23 @@ public class DataFile {
             throw new IOException("Invalid file: Data type loader not found: " + dataTypeId + "(v" + loaderVersion + ")");
         }
         this.dataType = loader.clazz;
+        this.loaderVersion = loaderVersion;
     }
-
-    LodDataSource load(DHLevel level) throws IOException {
-        if (loadedData != null) return loadedData;
+    public FileInputStream getDataContent() throws IOException {
         FileInputStream fin = new FileInputStream(path);
         fin.skipNBytes(METADATA_SIZE);
-        loadedData = loader.loadData(level, pos, fin);
-        return loadedData;
+        return fin;
+    }
+
+    LodDataSource load(DHLevel level) {
+        if (loadedData != null) return loadedData;
+        try {
+            loadedData = loader.loadData(this, level);
+            return loadedData;
+        } catch (IOException e) {
+            //FIXME: Log and review this handling
+            return null;
+        }
     }
 
     public boolean verifyPath() {
@@ -102,7 +113,9 @@ public class DataFile {
         DataSourceSaver saver;
         if (loader instanceof DataSourceSaver) saver = (DataSourceSaver) loader;
         else if (loader instanceof OldDataSourceLoader) saver = ((OldDataSourceLoader) loader).getNewSaver();
-        else throw new IllegalStateException("Data source does not support saving");
+        else saver = null;
+        if (saver == null) return;
+
         byte newDataLevel = loadedData.getDataDetail();
 
         try (FileOutputStream fout = new FileOutputStream(path, false)) {
@@ -119,7 +132,7 @@ public class DataFile {
                 // Write detail level, data level, loader version
                 out.writeByte(pos.sectionDetail);
                 out.writeByte(loadedData.getDataDetail());
-                out.writeByte(saver.loaderVersion);
+                out.writeByte(saver.getSaverVersion());
 
                 // Write unused
                 out.writeByte((byte) 0);
