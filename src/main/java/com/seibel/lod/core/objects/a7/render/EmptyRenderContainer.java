@@ -1,8 +1,9 @@
 package com.seibel.lod.core.objects.a7.render;
 
+import com.seibel.lod.core.objects.a7.LodQuadTree;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
-import com.seibel.lod.core.objects.opengl.RenderBuffer;
+import com.seibel.lod.core.objects.a7.render.RenderBuffer;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -11,14 +12,20 @@ public class EmptyRenderContainer implements RenderDataSource {
 
     // NOTE: No register() needed since this should never be loaded from a actual data.
 
+
     @Override
-    public void load() {
+    public void enableRender(LodQuadTree quadTree) {
 
     }
 
     @Override
-    public void unload() {
+    public void disableRender() {
 
+    }
+
+    @Override
+    public boolean isRenderReady() {
+        return false;
     }
 
     @Override
@@ -27,7 +34,12 @@ public class EmptyRenderContainer implements RenderDataSource {
     }
 
     @Override
-    public boolean trySwapRenderBuffer(AtomicReference<RenderBuffer> referenceSlot) {
+    public byte getDetailOffset() {
+        return 0;
+    }
+
+    @Override
+    public boolean trySwapRenderBuffer(LodQuadTree quadTree, AtomicReference<RenderBuffer> referenceSlot) {
         return false; // no swap
     }
 }

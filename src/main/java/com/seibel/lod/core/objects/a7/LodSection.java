@@ -26,10 +26,10 @@ public class LodSection {
         this.pos = pos;
     }
 
-    public void enableRender() {
+    public void enableRender(LodQuadTree quadTree) {
         if (isRenderEnabled) return;
         if (renderDataSource != null) {
-            renderDataSource.enableRender();
+            renderDataSource.enableRender(quadTree);
         }
         isRenderEnabled = true;
     }
@@ -46,12 +46,12 @@ public class LodSection {
         loadFuture = renderDataProvider.createRenderData(renderDataSourceClass, pos);
     }
 
-    public void tick() {
+    public void tick(LodQuadTree quadTree) {
         if (loadFuture != null && loadFuture.isDone()) {
             renderDataSource = loadFuture.join();
             loadFuture = null;
             if (isRenderEnabled) {
-                renderDataSource.enableRender();
+                renderDataSource.enableRender(quadTree);
             }
         }
     }

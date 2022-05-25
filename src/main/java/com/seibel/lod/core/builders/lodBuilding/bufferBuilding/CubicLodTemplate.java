@@ -22,6 +22,8 @@ package com.seibel.lod.core.builders.lodBuilding.bufferBuilding;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.LodDataView;
+import com.seibel.lod.core.objects.a7.datatype.column.ColumnArrayView;
+import com.seibel.lod.core.objects.a7.datatype.column.ColumnBox;
 import com.seibel.lod.core.objects.opengl.LodBox;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -103,5 +105,71 @@ public class CubicLodTemplate
 				DataPointUtil.getLightSky(data), // setSkyLights
 				fullBright ? 15 : DataPointUtil.getLightBlock(data), // setBlockLights
 				topData, botData, adjData, adjFillBlack); // setAdjData
+	}
+
+	public static void addLodToBuffer(long data, long topData, long botData, ColumnArrayView[][] adjData, byte detailLevel, int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, DebugMode debugging)
+	{
+		short width = (short) (1 << detailLevel);
+		short x = (short) LevelPosUtil.convert(detailLevel, offsetPosX, LodUtil.BLOCK_DETAIL_LEVEL);
+		short y = DataPointUtil.getDepth(data);
+		short z = (short) LevelPosUtil.convert(detailLevel, offsetOosZ, LodUtil.BLOCK_DETAIL_LEVEL);
+		short dy = (short) (DataPointUtil.getHeight(data) - y);
+		if (dy == 0)
+			return;
+		if (dy < 0)
+		{
+			throw new IllegalArgumentException("Negative y size for the data! Data: " + DataPointUtil.toString(data));
+		}
+
+		int color;
+		boolean fullBright = false;
+		switch (debugging) {
+			case OFF:
+			case SHOW_WIREFRAME:
+			{
+				float saturationMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getSaturationMultiplier();
+				float brightnessMultiplier = (float)CONFIG.client().graphics().advancedGraphics().getBrightnessMultiplier();
+				if (saturationMultiplier == 1.0 && brightnessMultiplier == 1.0) {
+					color = DataPointUtil.getColor(data);
+				} else {
+					float[] ahsv = ColorUtil.argbToAhsv(DataPointUtil.getColor(data));
+					color = ColorUtil.ahsvToArgb(ahsv[0], ahsv[1], ahsv[2] * saturationMultiplier, ahsv[3] * brightnessMultiplier);
+					//ApiShared.LOGGER.info("Raw color:[{}], AHSV:{}, Out color:[{}]",
+					//		ColorUtil.toString(DataPointUtil.getColor(data)),
+					//		ahsv, ColorUtil.toString(color));
+				}
+				break;
+			}
+			case SHOW_DETAIL:
+			case SHOW_DETAIL_WIREFRAME:
+			{
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[detailLevel];
+				fullBright = true;
+				break;
+			}
+			case SHOW_GENMODE:
+			case SHOW_GENMODE_WIREFRAME:
+			{
+				color = LodUtil.DEBUG_DETAIL_LEVEL_COLORS[DataPointUtil.getGenerationMode(data)];
+				fullBright = true;
+				break;
+			}
+			case SHOW_OVERLAPPING_QUADS:
+			case SHOW_OVERLAPPING_QUADS_WIREFRAME:
+			{
+				color = ColorUtil.WHITE;
+				fullBright = true;
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unknown debug mode: " + debugging);
+		}
+		ColumnBox.addBoxQuadsToBuilder(quadBuilder, // buffer
+				width, dy, width, // setWidth
+				x, y, z, // setOffset
+				color, // setColor
+				DataPointUtil.getLightSky(data), // setSkyLights
+				fullBright ? 15 : DataPointUtil.getLightBlock(data), // setBlockLights
+				topData, botData, adjData); // setAdjData
 	}
 }

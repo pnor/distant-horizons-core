@@ -1,6 +1,7 @@
 package com.seibel.lod.core.objects.a7.render;
 
-import com.seibel.lod.core.objects.opengl.RenderBuffer;
+import com.seibel.lod.core.objects.a7.LodQuadTree;
+import com.seibel.lod.core.objects.a7.render.RenderBuffer;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,7 +44,7 @@ public interface RenderDataSource {
 //        return null;
 //    }
 
-    void enableRender();
+    void enableRender(LodQuadTree quadTree);
     void disableRender();
     boolean isRenderReady();
     void dispose(); // notify the container that the parent lodSection is now disposed (can be in loaded or unloaded state)
@@ -56,6 +57,6 @@ public interface RenderDataSource {
      * @param referenceSlot The slot for swapping in the new buffer.
      * @return True if the swap was successful. False if swap is not needed or if it is in progress.
      */
-    boolean trySwapRenderBuffer(AtomicReference<RenderBuffer> referenceSlot);
+    boolean trySwapRenderBuffer(LodQuadTree quadTree, AtomicReference<RenderBuffer> referenceSlot);
 
 }

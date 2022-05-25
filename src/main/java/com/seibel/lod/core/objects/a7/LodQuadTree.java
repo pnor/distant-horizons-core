@@ -467,9 +467,9 @@ public abstract class LodQuadTree {
                     if (!section.isLoaded() && !section.isLoading()) {
                         section.load(getRenderDataProvider(), containerType);
                     }
-                    if (section.childCount == 4) section.enableRender();
+                    if (section.childCount == 4) section.enableRender(this);
                     if (section.childCount == 0) section.disableRender();
-                    section.tick();
+                    section.tick(this);
                 }
             });
         }

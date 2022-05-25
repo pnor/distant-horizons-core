@@ -252,18 +252,6 @@ public class RenderRegion implements AutoCloseable
 		});
 	}
 
-	private static final int ADJACENT8[][] = {
-			{-1,-1},
-			{-1, 0},
-			{-1, 1},
-			{ 0,-1},
-			//{ 0, 0},
-			{ 0, 1},
-			{ 1,-1},
-			{ 1, 0},
-			{ 1, 1}
-	};
-
 	private static void makeLodRenderData(LodQuadBuilder quadBuilder, LodRegion region, LodRegion[] adjRegions, int playerX,
 			int playerZ) {
 		byte minDetail = region.getMinDetailLevel();

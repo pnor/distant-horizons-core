@@ -4,7 +4,7 @@ import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.a7.LodQuadTree;
 import com.seibel.lod.core.objects.a7.LodSection;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
-import com.seibel.lod.core.objects.opengl.RenderBuffer;
+import com.seibel.lod.core.objects.a7.render.RenderBuffer;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
@@ -57,7 +57,7 @@ public class RenderBufferHandler {
                 }
             } else {
                 LodUtil.assertTrue(container != null); // section.isLoaded() should have ensured this
-                container.trySwapRenderBuffer(renderBufferSlot);
+                container.trySwapRenderBuffer(target, renderBufferSlot);
             }
 
             // Update children's render buffer state
