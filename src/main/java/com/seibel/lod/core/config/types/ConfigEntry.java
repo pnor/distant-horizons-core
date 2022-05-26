@@ -1,7 +1,7 @@
 package com.seibel.lod.core.config.types;
 
 import com.seibel.lod.core.config.ConfigBase;
-import com.seibel.lod.core.config.ConfigEntryAppearance;
+import com.seibel.lod.core.config.types.ConfigEntryAppearance;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
 
 /**

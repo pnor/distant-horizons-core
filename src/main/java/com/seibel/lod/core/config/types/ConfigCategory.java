@@ -1,6 +1,6 @@
 package com.seibel.lod.core.config.types;
 
-import com.seibel.lod.core.config.ConfigEntryAppearance;
+import com.seibel.lod.core.config.types.ConfigEntryAppearance;
 
 public class ConfigCategory extends AbstractConfigType<Class, ConfigCategory> {
     public String destination;    // Where the category goes to

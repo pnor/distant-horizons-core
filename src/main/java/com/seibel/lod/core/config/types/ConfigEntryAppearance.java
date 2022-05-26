@@ -1,4 +1,4 @@
-package com.seibel.lod.core.config;
+package com.seibel.lod.core.config.types;
 
 public enum ConfigEntryAppearance {
     ALL(true, true),

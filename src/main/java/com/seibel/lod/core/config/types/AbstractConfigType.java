@@ -1,6 +1,6 @@
 package com.seibel.lod.core.config.types;
 
-import com.seibel.lod.core.config.ConfigEntryAppearance;
+import com.seibel.lod.core.config.types.ConfigEntryAppearance;
 
 /**
  * The class where all config options should extend
