@@ -97,6 +97,7 @@ public abstract class LodQuadTree {
     }
 
     final SectionDetailLayer[] sectionDetailLayers;
+    public final int viewDistance;
     
     /**
      * Constructor of the quadTree
@@ -106,6 +107,7 @@ public abstract class LodQuadTree {
      */
     public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
         assertContainerTypeConfigCorrect();
+        this.viewDistance = viewDistance;
 
         { // Calculate the max section detail
             byte maxDetailLevel = getMaxDetailInRange(viewDistance * Math.sqrt(2));

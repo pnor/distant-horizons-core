@@ -107,7 +107,17 @@ public class DataFile {
         return path.exists() && path.isFile() && path.canRead() && path.canWrite();
     }
 
-    public void save(DHLevel level) throws IOException {
+    public void saveIfNeeded(DHLevel level, boolean freeMemory) {
+        if (loadedData == null) return;
+        if (!verifyPath()) return;
+        try {
+            save(level, freeMemory);
+        } catch (IOException e) {
+            //FIXME: Log and review this handling
+        }
+    }
+
+    public void save(DHLevel level, boolean freeMemory) throws IOException {
         if (loadedData == null) throw new IllegalStateException("No data loaded");
         if (!verifyPath()) throw new IOException("File path became invalid");
         DataSourceSaver saver;
@@ -149,7 +159,15 @@ public class DataFile {
 
         dataLevel = newDataLevel;
         loader = saver;
+        if (freeMemory) {
+            loadedData = null;
+        }
+    }
 
+    public void close(DHLevel level) {
+        if (loadedData != null) {
+            saveIfNeeded(level, true);
+        }
 
     }
 }

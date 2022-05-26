@@ -1,20 +1,27 @@
 package com.seibel.lod.core.objects.a7;
 
+import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.api.internal.a7.ClientApi;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.a7.data.DataFileHandler;
 import com.seibel.lod.core.objects.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.objects.a7.render.RenderBufferHandler;
-import com.seibel.lod.core.render.LodRenderProgram;
+import com.seibel.lod.core.objects.math.Mat4f;
+import com.seibel.lod.core.render.a7LodRenderer;
+import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.EventLoop;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
+import java.io.Closeable;
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class DHLevel extends LodQuadTree {
+public class DHLevel extends LodQuadTree implements Closeable {
     private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
     private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
     public final File saveFolder; // Could be null, for no saving
@@ -23,11 +30,16 @@ public class DHLevel extends LodQuadTree {
     public final ExecutorService dhTickerThread = LodUtil.makeSingleThreadPool("DHLevelTickerThread", 2);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
     public final IWorldWrapper level;
+    public a7LodRenderer renderer;
+    public final DHWorld world;
 
-    public DHLevel(File saveFolder, IWorldWrapper level) {
+    public EventLoop eventLoop;
+
+    public DHLevel(DHWorld world, File saveFolder, IWorldWrapper level) {
         super(CONFIG.client().graphics().quality().getLodChunkRenderDistance()*16,
                 MC.getPlayerBlockPos().x,
                 MC.getPlayerBlockPos().z);
+        this.world = world;
         this.saveFolder = saveFolder;
         if (saveFolder != null) {
             dataFileHandler = new DataFileHandler(saveFolder, this);
@@ -36,6 +48,7 @@ public class DHLevel extends LodQuadTree {
         }
         renderBufferHandler = new RenderBufferHandler(this);
         this.level = level;
+        eventLoop = new EventLoop(world.dhTickerThread, this::tick);
     }
 
     // Should be called by server tick thread, or called by render thread but only 20 times per second, or less?
@@ -64,11 +77,60 @@ public class DHLevel extends LodQuadTree {
         return dataFileHandler;
     }
 
-    public void render(LodRenderProgram renderContext) {
-        renderBufferHandler.render(renderContext);
+    public void render(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfilerWrapper profiler) {
+        if (renderer == null) {
+            renderer = new a7LodRenderer(this);
+        }
+        renderer.drawLODs(mcModelViewMatrix, mcProjectionMatrix, partialTicks, profiler);
     }
 
     public int getMinY() {
         return level.getMinHeight();
+    }
+    public void dumpRamUsage() {
+        //TODO
+    }
+    public void asyncTick() {
+        eventLoop.tick();
+    }
+    public void close() {
+        eventLoop.halt();
+        if (dataFileHandler != null) {
+            dataFileHandler.close();
+        }
+    }
+    public void saveFlush() {
+        if (dataFileHandler != null) {
+            dataFileHandler.save();
+        }
+    }
+
+    public void viewDistanceChangedEvent()
+    {
+        // calculate how wide the dimension(s) should be in regions
+        int chunksWide;
+        if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
+            chunksWide = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(),
+                    LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
+        else
+            chunksWide = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 2 + 1;
+
+        int newWidth = (int) Math.ceil(chunksWide / (float) LodUtil.REGION_WIDTH_IN_CHUNKS);
+        // make sure we have an odd number of regions
+        newWidth += (newWidth & 1) == 0 ? 1 : 0;
+
+        // do the dimensions need to change in size?
+        if (InternalApiShared.lodBuilder.defaultDimensionWidthInRegions != newWidth || recalculateWidths)
+        {
+            // update the dimensions to fit the new width
+            InternalApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
+            InternalApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
+            ClientApi.renderer.setupBuffers();
+
+            recalculateWidths = false;
+            // LOGGER.info("new dimension width in regions: " + newWidth + "\t potential: "
+            // + newWidth );
+        }
+        DetailDistanceUtil.updateSettings();
     }
 }

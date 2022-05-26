@@ -4,7 +4,6 @@ import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.a7.LodQuadTree;
 import com.seibel.lod.core.objects.a7.LodSection;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
-import com.seibel.lod.core.objects.a7.render.RenderBuffer;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
@@ -142,4 +141,5 @@ public class RenderBufferHandler {
     public void close() {
         renderBufferNodes.clear(RenderBufferNode::close);
     }
+
 }

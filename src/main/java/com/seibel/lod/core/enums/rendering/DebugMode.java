@@ -51,24 +51,37 @@ public enum DebugMode
 	/** Only draw overlapping LOD quads, and draws in wireframe. */
 	SHOW_OVERLAPPING_QUADS_WIREFRAME;
 	
-	/** used when cycling through the different modes */
-	private DebugMode next;
-	
-	static
-	{
-		OFF.next = SHOW_WIREFRAME;
-		SHOW_WIREFRAME.next = SHOW_DETAIL;
-		SHOW_DETAIL.next = SHOW_DETAIL_WIREFRAME;
-		SHOW_DETAIL_WIREFRAME.next = SHOW_GENMODE;
-		SHOW_GENMODE.next = SHOW_GENMODE_WIREFRAME;
-		SHOW_GENMODE_WIREFRAME.next = SHOW_OVERLAPPING_QUADS;
-		SHOW_OVERLAPPING_QUADS.next = SHOW_OVERLAPPING_QUADS_WIREFRAME;
-		SHOW_OVERLAPPING_QUADS_WIREFRAME.next = OFF;
-	}
-	
 	/** returns the next debug mode */
+	// Deprecated: use DebugMode.next() instead
+	@Deprecated
 	public DebugMode getNext()
 	{
-		return this.next;
+		return next(this);
+	}
+
+	public static DebugMode next(DebugMode type) {
+		switch (type) {
+			case OFF: return SHOW_WIREFRAME;
+			case SHOW_WIREFRAME: return SHOW_DETAIL;
+			case SHOW_DETAIL: return SHOW_DETAIL_WIREFRAME;
+			case SHOW_DETAIL_WIREFRAME: return SHOW_GENMODE;
+			case SHOW_GENMODE: return SHOW_GENMODE_WIREFRAME;
+			case SHOW_GENMODE_WIREFRAME: return SHOW_OVERLAPPING_QUADS;
+			case SHOW_OVERLAPPING_QUADS: return SHOW_OVERLAPPING_QUADS_WIREFRAME;
+			default: return OFF;
+		}
+	}
+
+	public static DebugMode previous(DebugMode type) {
+		switch (type) {
+			case OFF: return SHOW_OVERLAPPING_QUADS_WIREFRAME;
+			case SHOW_OVERLAPPING_QUADS_WIREFRAME: return SHOW_OVERLAPPING_QUADS;
+			case SHOW_OVERLAPPING_QUADS: return SHOW_GENMODE_WIREFRAME;
+			case SHOW_GENMODE_WIREFRAME: return SHOW_GENMODE;
+			case SHOW_GENMODE: return SHOW_DETAIL_WIREFRAME;
+			case SHOW_DETAIL_WIREFRAME: return SHOW_DETAIL;
+			case SHOW_DETAIL: return SHOW_WIREFRAME;
+			default: return OFF;
+		}
 	}
 }

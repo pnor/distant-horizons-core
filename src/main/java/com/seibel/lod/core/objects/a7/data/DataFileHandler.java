@@ -9,15 +9,17 @@ import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
 import com.seibel.lod.core.util.LodUtil;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.ExportException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class DataFileHandler implements RenderDataProvider {
+public class DataFileHandler implements RenderDataProvider, Closeable {
     public static final List<OldFileConverter> CONVERTERS = new ArrayList<>();
     public static final String FILE_EXTENSION = ".lod";
 
@@ -122,7 +124,7 @@ public class DataFileHandler implements RenderDataProvider {
         DataFile dataFile = new DataFile(newFile, saver, dataSource);
         dataFiles.put(pos, dataFile);
         try {
-            dataFile.save(level);
+            dataFile.save(level, false);
         } catch (Exception e) {
             dataFiles.remove(pos, dataFile);
             //TODO: Log error
@@ -141,4 +143,17 @@ public class DataFileHandler implements RenderDataProvider {
         });
     }
 
+    @Override
+    public void close() {
+        IO_MANAGER.shutdown();
+        try {
+            IO_MANAGER.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException ignored) {}
+        dataFiles.values().forEach((f) -> f.close(level));
+    }
+
+    public void save() {
+        //TODO: Make it free memory that is not needed
+        dataFiles.values().forEach(f -> f.saveIfNeeded(level, false));
+    }
 }
