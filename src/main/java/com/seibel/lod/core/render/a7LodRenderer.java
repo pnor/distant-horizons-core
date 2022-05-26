@@ -19,12 +19,11 @@
 
 package com.seibel.lod.core.render;
 
-import com.seibel.lod.core.Config;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
@@ -44,7 +43,6 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.EdgeDistanceBooleanGrid;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
 import com.seibel.lod.core.util.gridList.PosArrayGridList;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;

@@ -38,7 +38,7 @@ public abstract class DataSourceLoader {
             return false;
         })) {
             throw new IllegalArgumentException("Loader for class " + clazz + " that supports one of the version in "
-                    + loaderSupportedVersions " already registered!");
+                    + loaderSupportedVersions + " already registered!");
         }
         datatypeIdRegistry.put(datatypeId, clazz);
         loaderRegistry.put(datatypeId, this);

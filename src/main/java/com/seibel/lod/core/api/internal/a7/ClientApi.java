@@ -19,12 +19,10 @@
 
 package com.seibel.lod.core.api.internal.a7;
 
-import com.seibel.lod.core.Config;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.RendererType;
-import com.seibel.lod.core.handlers.LodDimensionFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
@@ -33,9 +31,7 @@ import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.DHWorld;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
-import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.RenderSystemTest;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
@@ -63,20 +59,14 @@ public class ClientApi
 	public static boolean prefLoggerEnabled = false;
 	
 	public static final ClientApi INSTANCE = new ClientApi();
-	public static final LodBufferBuilderFactory lodBufferBuilderFactory = new LodBufferBuilderFactory();
-	public static LodRenderer renderer = new LodRenderer(lodBufferBuilderFactory);
 	public static RenderSystemTest testRenderer = new RenderSystemTest();
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
-	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
-	private static final ServerApi EVENT_API = ServerApi.INSTANCE;
 
 	public static final boolean ENABLE_LAG_SPIKE_LOGGING = false;
 	public static final long LAG_SPIKE_THRESHOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
 	
 	public static final long SPAM_LOGGER_FLUSH_NS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
-	
-	public static LodDimensionFinder DIMENSION_FINDER = new LodDimensionFinder();;
 	
 	public static class LagSpikeCatcher {
 		long timer = System.nanoTime();
@@ -96,7 +86,6 @@ public class ClientApi
 	 */
 	private boolean firstTimeSetupComplete = false;
 	private boolean configOverrideReminderPrinted = false;
-	
 	public boolean rendererDisabledBecauseOfExceptions = false;
 	private ClientApi()
 	{

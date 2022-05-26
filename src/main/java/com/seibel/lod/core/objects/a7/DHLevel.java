@@ -104,33 +104,4 @@ public class DHLevel extends LodQuadTree implements Closeable {
             dataFileHandler.save();
         }
     }
-
-    public void viewDistanceChangedEvent()
-    {
-        // calculate how wide the dimension(s) should be in regions
-        int chunksWide;
-        if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
-            chunksWide = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(),
-                    LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
-        else
-            chunksWide = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 2 + 1;
-
-        int newWidth = (int) Math.ceil(chunksWide / (float) LodUtil.REGION_WIDTH_IN_CHUNKS);
-        // make sure we have an odd number of regions
-        newWidth += (newWidth & 1) == 0 ? 1 : 0;
-
-        // do the dimensions need to change in size?
-        if (InternalApiShared.lodBuilder.defaultDimensionWidthInRegions != newWidth || recalculateWidths)
-        {
-            // update the dimensions to fit the new width
-            InternalApiShared.lodWorld.resizeDimensionRegionWidth(newWidth);
-            InternalApiShared.lodBuilder.defaultDimensionWidthInRegions = newWidth;
-            ClientApi.renderer.setupBuffers();
-
-            recalculateWidths = false;
-            // LOGGER.info("new dimension width in regions: " + newWidth + "\t potential: "
-            // + newWidth );
-        }
-        DetailDistanceUtil.updateSettings();
-    }
 }

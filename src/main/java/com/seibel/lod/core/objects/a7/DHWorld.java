@@ -1,8 +1,6 @@
 package com.seibel.lod.core.objects.a7;
 
-import com.seibel.lod.core.Config;
-import com.seibel.lod.core.api.internal.InternalApiShared;
-import com.seibel.lod.core.api.internal.a7.ClientApi;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.objects.a7.io.DHFolderHandler;
 import com.seibel.lod.core.objects.a7.io.LevelToFileMatcher;
 import com.seibel.lod.core.util.DetailDistanceUtil;

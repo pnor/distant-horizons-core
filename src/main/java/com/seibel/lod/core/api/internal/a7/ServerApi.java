@@ -19,26 +19,12 @@
 
 package com.seibel.lod.core.api.internal.a7;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
-import com.seibel.lod.core.enums.WorldType;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.objects.DHChunkPos;
-import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.a7.DHWorld;
 import com.seibel.lod.core.objects.a7.Server;
-import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.render.GLProxy;
-import com.seibel.lod.core.render.LodRenderer;
-import com.seibel.lod.core.util.DetailDistanceUtil;
-import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import org.apache.logging.log4j.Logger;
 
