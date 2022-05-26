@@ -1,6 +1,6 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
-import com.seibel.lod.core.Config;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
 

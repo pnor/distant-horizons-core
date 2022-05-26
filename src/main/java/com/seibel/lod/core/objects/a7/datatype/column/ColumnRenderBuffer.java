@@ -1,6 +1,6 @@
 package com.seibel.lod.core.objects.a7.datatype.column;
 
-import com.seibel.lod.core.Config;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.CubicLodTemplate;
