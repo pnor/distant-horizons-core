@@ -12,6 +12,7 @@ import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.GLProxyContext;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
+import com.seibel.lod.core.objects.a7.UncheckedInterruptedException;
 import com.seibel.lod.core.objects.a7.render.RenderBuffer;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderProgram;
@@ -31,7 +32,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
-import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
 
 public class ColumnRenderBuffer extends RenderBuffer {
@@ -127,13 +127,12 @@ public class ColumnRenderBuffer extends RenderBuffer {
         }
     }
 
-    public boolean uploadBuffer(LodQuadBuilder builder, GpuUploadMethod method) throws InterruptedException {
+    public void uploadBuffer(LodQuadBuilder builder, GpuUploadMethod method) throws InterruptedException {
         if (method.useEarlyMapping) {
             _uploadBuffersMapped(builder, method);
         } else {
             _uploadBuffersDirect(builder, method);
         }
-        return true;
     }
 
     @Override
@@ -181,7 +180,7 @@ public class ColumnRenderBuffer extends RenderBuffer {
     }
 
 
-    public static CompletableFuture<ColumnRenderBuffer> build(ColumnDatatype data, ColumnDatatype[] adjData) {
+    public static CompletableFuture<ColumnRenderBuffer> build(ColumnRenderBuffer usedBuffer, ColumnDatatype data, ColumnDatatype[] adjData) {
         EVENT_LOGGER.trace("RenderRegion startBuild @ {}", data.sectionPos);
         return CompletableFuture.supplyAsync(() -> {
                     try {
@@ -190,13 +189,13 @@ public class ColumnRenderBuffer extends RenderBuffer {
                         // FIXME: Clamp also to the max world height.
                         skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
                         LodQuadBuilder builder = new LodQuadBuilder(true, skyLightCullingBelow);
-                        Runnable buildRun = ()->{
-                            makeLodRenderData(builder, data, adjData);
-                        };
-                        buildRun.run();
+                        makeLodRenderData(builder, data, adjData);
                         EVENT_LOGGER.trace("RenderRegion end QuadBuild @ {}", data.sectionPos);
                         return builder;
-                    } catch (Throwable e3) {
+                    } catch (UncheckedInterruptedException e) {
+                        throw e;
+                    }
+                    catch (Throwable e3) {
                         EVENT_LOGGER.error("\"LodNodeBufferBuilder\" was unable to build quads: ", e3);
                         throw e3;
                     }
@@ -208,22 +207,26 @@ public class ColumnRenderBuffer extends RenderBuffer {
                         GpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
                         GLProxyContext oldContext = glProxy.getGlContext();
                         glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
-                        ColumnRenderBuffer buffer = new ColumnRenderBuffer();
+                        ColumnRenderBuffer buffer = usedBuffer!=null ? usedBuffer : new ColumnRenderBuffer();
                         try {
                             buffer.uploadBuffer(builder, method);
+                            EVENT_LOGGER.trace("RenderRegion end Upload @ {}", data.sectionPos);
+                            return buffer;
+                        } catch (Exception e) {
+                            buffer.close();
+                            throw e;
                         } finally {
-                            glProxy.setGlContext(oldContext); //FIXME: Close buffer on exception?
+                            glProxy.setGlContext(oldContext);
                         }
-                        EVENT_LOGGER.trace("RenderRegion end Upload @ {}", data.sectionPos);
-                        return buffer;
                     } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        throw UncheckedInterruptedException.convert(e);
                     } catch (Throwable e3) {
                         EVENT_LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
                         throw e3;
                     }
                 }, BUFFER_UPLOADER).handle((v, e) -> {
                     if (e != null) {
+                        usedBuffer.close();
                         return null;
                     } else {
                         return v;
@@ -242,6 +245,8 @@ public class ColumnRenderBuffer extends RenderBuffer {
         int dataSize = 1 << detailLevel;
         for (int x = 0; x < dataSize; x++) {
             for (int z = 0; z < dataSize; z++) {
+                UncheckedInterruptedException.throwIfInterrupted();
+
                 ColumnArrayView posData = region.getVerticalDataView(x, z);
                 if (posData.size() == 0 || !DataPointUtil.doesItExist(posData.get(0))
                         || DataPointUtil.isVoid(posData.get(0)))

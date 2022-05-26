@@ -258,6 +258,7 @@ public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
     }
 
     private CompletableFuture<ColumnRenderBuffer> inBuildRenderBuffer = null;
+    private ColumnRenderBuffer usedBuffer = null;
 
 
     private void tryBuildBuffer(LodQuadTree quadTree) {
@@ -269,7 +270,7 @@ public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
                     data[direction.ordinal()-2] = ((ColumnDatatype) section.getRenderContainer());
                 }
             }
-            inBuildRenderBuffer = ColumnRenderBuffer.build( this, data);
+            inBuildRenderBuffer = ColumnRenderBuffer.build(usedBuffer, this, data);
         }
     }
     private void cancelBuildBuffer() {
@@ -302,7 +303,8 @@ public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
     @Override
     public boolean trySwapRenderBuffer(LodQuadTree quadTree, AtomicReference<RenderBuffer> referenceSlot) {
         if (inBuildRenderBuffer != null && inBuildRenderBuffer.isDone()) {
-            referenceSlot.set(inBuildRenderBuffer.join());
+            RenderBuffer oldBuffer = referenceSlot.getAndSet(inBuildRenderBuffer.join());
+            if (oldBuffer != null && oldBuffer instanceof ColumnRenderBuffer) usedBuffer = (ColumnRenderBuffer) oldBuffer;
             inBuildRenderBuffer = null;
             return true;
         } else {
