@@ -17,9 +17,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Handles all stuff to do with the files
+ * Handles reading and writing config files.
  *
  * @author coolGi
+ * @version 2022-5-26
  */
 public class ConfigFileHandling {
     public static final Path ConfigPath = SingletonHandler.get(IMinecraftClientWrapper.class).getGameDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");
@@ -114,14 +115,14 @@ public class ConfigFileHandling {
         if (workConfig.contains(entry.getNameWCategory())) {
             try {
                 if (entry.getType().isEnum()) {
-                    entry.setWTSave((T) ( workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.getType()) ));
+                    entry.setWithoutSaving((T) ( workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.getType()) ));
                 } else if (ConfigTypeConverters.convertObjects.containsKey(entry.getType())) {
-                    entry.setWTSave((T) ConfigTypeConverters.convertFromString(entry.getType(), workConfig.get(entry.getNameWCategory())));
+                    entry.setWithoutSaving((T) ConfigTypeConverters.convertFromString(entry.getType(), workConfig.get(entry.getNameWCategory())));
                 } else {
-                    entry.setWTSave((T) workConfig.get(entry.getNameWCategory()));
+                    entry.setWithoutSaving((T) workConfig.get(entry.getNameWCategory()));
                     if (entry.isValid() == 0) return;
-                    else if (entry.isValid() == -1) entry.setWTSave(entry.getMin());
-                    else if (entry.isValid() == 1) entry.setWTSave(entry.getMax());
+                    else if (entry.isValid() == -1) entry.setWithoutSaving(entry.getMin());
+                    else if (entry.isValid() == 1) entry.setWithoutSaving(entry.getMax());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -176,7 +177,7 @@ public class ConfigFileHandling {
     /** ALWAYS CLEAR WHEN NOT ON SERVER!!!! */
     public static void clearApiValues() {
         for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
-            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).useApiOverwrite) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).allowApiOverride) {
                 ((ConfigEntry) entry).setApiValue(null);
             }
         }
@@ -186,7 +187,7 @@ public class ConfigFileHandling {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("configVersion", ConfigBase.configVersion);
         for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
-            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).useApiOverwrite) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).allowApiOverride) {
                 if (ConfigTypeConverters.convertObjects.containsKey(entry.getType())) {
                     jsonObject.put(entry.getNameWCategory(), ConfigTypeConverters.convertToString(entry.getType(), ((ConfigEntry<?>) entry).getTrueValue()));
                 } else {
@@ -207,7 +208,7 @@ public class ConfigFileHandling {
 
         // Importing code
         for (AbstractConfigType<?, ?> entry : ConfigBase.entries) {
-            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).useApiOverwrite) {
+            if (ConfigEntry.class.isAssignableFrom(entry.getClass()) && ((ConfigEntry) entry).allowApiOverride) {
                 Object jsonItem = jsonObject.get(entry.getNameWCategory());
                 if (entry.getType().isEnum()) {
                     ((ConfigEntry) entry).setApiValue(Enum.valueOf((Class<? extends Enum>) entry.getType(), jsonItem.toString()));

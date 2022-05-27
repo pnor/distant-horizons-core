@@ -1,31 +1,39 @@
 package com.seibel.lod.core.config.types;
 
 import com.seibel.lod.core.config.ConfigBase;
-import com.seibel.lod.core.config.types.ConfigEntryAppearance;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
 
 /**
  * Use for making the config variables
  *
  * @author coolGi
+ * @version 2022-5-26
  */
-public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
-    private T defaultValue;
+public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>>
+{
+    private final T defaultValue;
     private String comment;
     private T min;
     private T max;
-    // Stuff for server overwrites
-    public final boolean useApiOverwrite;
+    
+    // API control //
+    /**
+     * If true this config can be controlled by the API <br>
+     * and any get() method calls will return the apiValue if it is set.
+     */
+    public final boolean allowApiOverride;
     private T apiValue;
-
+    
+    
+    
     /** Creates the entry */
-    private ConfigEntry(ConfigEntryAppearance appearance, T value, String comment, T min, T max, boolean useApiOverwrite) {
+    private ConfigEntry(ConfigEntryAppearance appearance, T value, String comment, T min, T max, boolean allowApiOverride) {
         super(appearance, value);
         this.defaultValue = value;
         this.comment = comment;
         this.min = min;
         this.max = max;
-        this.useApiOverwrite = useApiOverwrite;
+        this.allowApiOverride = allowApiOverride;
     }
 
 
@@ -44,7 +52,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     }
     @Override
     public T get() {
-        if (useApiOverwrite && apiValue != null)
+        if (allowApiOverride && apiValue != null)
             return apiValue;
         return value;
     }
@@ -53,7 +61,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>> {
     }
 
     /** Sets the value without saving */
-    public void setWTSave(T newValue) {
+    public void setWithoutSaving(T newValue) {
         this.value = newValue;
     }
 
