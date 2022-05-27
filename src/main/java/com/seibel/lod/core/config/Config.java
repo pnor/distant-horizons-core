@@ -699,7 +699,21 @@ public class Config
                                 + " so if they add up to more threads than your CPU has cores, \n"
                                 + " that shouldn't cause an issue.")
                         .build();
-
+    
+                /** Returns the number of threads that can be used to generate terrain */
+                public static int getWorldGenerationThreadPoolSize()
+                {
+                    return numberOfWorldGenerationThreads.get() < 1 ?
+                            1 : (int) Math.ceil(numberOfWorldGenerationThreads.get());
+                }
+                /** Returns how often world generator threads should run as a number between 0.0 and 1.0 */
+                public static double getWorldGenerationPartialRunTime()
+                {
+                    return numberOfWorldGenerationThreads.get() > 1 ?
+                            1.0 : numberOfWorldGenerationThreads.get();
+                }
+    
+    
                 public static ConfigEntry<Integer> numberOfBufferBuilderThreads = new ConfigEntry.Builder<Integer>()
                         .setMinDefaultMax(1,
                                 Math.min(Runtime.getRuntime().availableProcessors()/2, 2),
