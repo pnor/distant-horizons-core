@@ -18,20 +18,17 @@ public class CompleteDataContainer implements LodDataSource { // 1 chunk
 
     @Override
     public DataSourceLoader getLatestLoader() {
-        return (DhSectionPos sectionPos, InputStream inputStream) -> {
-            //TODO: Implement
-            return null;
-        };
-    }
-
-    @Override
-    public <T> T[] getData() {
         return null;
     }
 
     @Override
     public DhSectionPos getSectionPos() {
         return sectionPos;
+    }
+
+    @Override
+    public byte getDataDetail() {
+        return 0;
     }
 
     public static CompleteDataContainer createNewFromChunk(IChunkWrapper chunk) {

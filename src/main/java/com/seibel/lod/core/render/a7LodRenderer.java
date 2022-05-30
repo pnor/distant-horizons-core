@@ -22,6 +22,7 @@ package com.seibel.lod.core.render;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
+import com.seibel.lod.core.config.types.ConfigEntry;
 import com.seibel.lod.core.enums.rendering.DebugMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -31,6 +32,7 @@ import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.a7.DHLevel;
+import com.seibel.lod.core.objects.a7.render.RenderBufferHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
@@ -95,10 +97,15 @@ public class a7LodRenderer
 	// The shader program
 	LodRenderProgram shaderProgram = null;
 	public QuadElementBuffer quadIBO = null;
+	public boolean isSetupComplete = false;
 
 	public a7LodRenderer(DHLevel level)
 	{
 		this.level = level;
+	}
+
+	public void close() {
+		cleanup();
 	}
 
 	public void drawLODs(Mat4f baseModelViewMatrix, Mat4f baseProjectionMatrix, float partialTicks, IProfilerWrapper profiler)
@@ -126,74 +133,28 @@ public class a7LodRenderer
 		drawSaveGLState.end("drawSaveGLState");
 
 		GLProxy glProxy = GLProxy.getInstance();
-		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
-			if (!MC_RENDER.tryDisableVanillaFog())
-				canVanillaFogBeDisabled = false;
-		
-		// TODO move the buffer regeneration logic into its own class (probably called in the client api instead)
-		// starting here...
-		LagSpikeCatcher updateStatus = new LagSpikeCatcher();
-		updateRegenStatus(lodDim, partialTicks);
-		updateStatus.end("LodDrawSetup:UpdateStatus");
-		
+		if (Config.Client.Graphics.FogQuality.disableVanillaFog.get())
+			MC_RENDER.tryDisableVanillaFog();
 
-		// FIXME: Currently, we check for last Lod Dimension so that we can trigger a cleanup() if dimension has changed
-		// The better thing to do is to call cleanup() on leaving dimensions in the EventApi, but only for client-side.
-		if (markToCleanup) {
-			LagSpikeCatcher drawObjectClenup = new LagSpikeCatcher();
-			markToCleanup = false;
-			cleanup(); // This will unset the isSetupComplete, causing a setup() call.
-			drawObjectClenup.end("drawObjectClenup");
-		}
-		
-		//=================//
-		// create the LODs //
-		//=================//
-		
-		// only regenerate the LODs if:
-		// 1. we want to regenerate LODs
-		// 2. we aren't already regenerating the LODs
-		// 3. we aren't waiting for the build and draw buffers to swap
-		//		(this is to prevent thread conflicts)
-		LagSpikeCatcher swapBuffer = new LagSpikeCatcher();
-		if (partialRegen || fullRegen) {
-			if (lodBufferBuilderFactory.updateAndSwapLodBuffersAsync(this, lodDim, MC.getPlayerBlockPos().getX(),
-					MC.getPlayerBlockPos().getY(), MC.getPlayerBlockPos().getZ(), fullRegen)) {
-				// the regen process has been started,
-				// it will be done when lodBufferBuilder.newBuffersAvailable() is true
-				fullRegen = false;
-				partialRegen = false;
-			}
-		}
-		swapBuffer.end("SwapBuffer");
-		// Get the front buffers to draw
-		MovableGridRingList<RenderRegion> regions = lodBufferBuilderFactory.getRenderRegions();
-		
-		if (regions == null) {
-			// There is no vbos, which means nothing needs to be drawn. So skip rendering
-			return;
-		}
+		// The Buffer manager
+		RenderBufferHandler bufferHandler = level.renderBufferHandler;
 		
 		//===================//
 		// draw params setup //
 		//===================//
 		
 		profiler.push("LOD draw setup");
-		LagSpikeCatcher drawSetup = new LagSpikeCatcher();
 		/*---------Set GL State--------*/
 		// Make sure to unbind current VBO so we don't mess up vanilla settings
-		LagSpikeCatcher drawGLSetup = new LagSpikeCatcher();
-		LagSpikeCatcher drawBindBuff = new LagSpikeCatcher();
 		//GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, MC_RENDER.getTargetFrameBuffer());
 		GL32.glViewport(0,0, MC_RENDER.getTargetFrameBufferViewportWidth(), MC_RENDER.getTargetFrameBufferViewportHeight());
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
-		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
-		LagSpikeCatcher drawSetPolygon = new LagSpikeCatcher();
-		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_GENMODE_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
+		ConfigEntry<DebugMode> debugModeConfig = Config.Client.Advanced.Debugging.debugMode;
+		if (debugModeConfig.get() == DebugMode.SHOW_DETAIL_WIREFRAME
+			|| debugModeConfig.get() == DebugMode.SHOW_GENMODE_WIREFRAME
+			|| debugModeConfig.get() == DebugMode.SHOW_WIREFRAME
+			|| debugModeConfig.get() == DebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
 			//GL32.glDisable(GL32.GL_CULL_FACE);
 		}
@@ -201,14 +162,10 @@ public class a7LodRenderer
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_FILL);
 			GL32.glEnable(GL32.GL_CULL_FACE);
 		}
-		drawSetPolygon.end("drawSetPolygon");
-		LagSpikeCatcher drawEnableDepth = new LagSpikeCatcher();
 		GL32.glEnable(GL32.GL_DEPTH_TEST);
 		// GL32.glDisable(GL32.GL_DEPTH_TEST);
 		GL32.glDepthFunc(GL32.GL_LESS);
-		drawEnableDepth.end("drawEnableDepth");
-		drawGLSetup.end("drawGLSetup");
-		// enable transparent rendering
+		// TODO: enable for transparent rendering
 		// GL32.glBlendFunc(GL32.GL_SRC_ALPHA, GL32.GL_ONE_MINUS_SRC_ALPHA);
 		// GL32.glEnable(GL32.GL_BLEND);
 		GL32.glDisable(GL32.GL_BLEND);
@@ -218,41 +175,33 @@ public class a7LodRenderer
 		// Setup LodRenderProgram and the LightmapTexture if it has not yet been done
 		// also binds LightmapTexture, VAO, and ShaderProgram
 		if (!isSetupComplete) {
-			LagSpikeCatcher drawObjectSetup = new LagSpikeCatcher();
 			setup();
-			drawObjectSetup.end("drawObjectSetup");
 		} else {
-			LagSpikeCatcher drawShaderBind = new LagSpikeCatcher();
 			LodFogConfig newConfig = shaderProgram.isShaderUsable();
 			if (newConfig != null) {
 				shaderProgram.free();
 				shaderProgram = new LodRenderProgram(newConfig);
 			}
 			shaderProgram.bind();
-			drawShaderBind.end("drawShaderBind");
 		}
-		LagSpikeCatcher drawSetActiveTexture = new LagSpikeCatcher();
 		GL32.glActiveTexture(GL32.GL_TEXTURE0);
-		drawSetActiveTexture.end("drawSetActiveTexture");
-		LagSpikeCatcher drawCalculateParams = new LagSpikeCatcher();
 		//LightmapTexture lightmapTexture = new LightmapTexture();
 		
 		/*---------Get required data--------*/
 		// Get the matrixs for rendering
 		int vanillaBlockRenderedDistance = MC_RENDER.getRenderDistance() * LodUtil.CHUNK_WIDTH;
+		int lodChunkDist = Config.Client.Graphics.Quality.lodChunkRenderDistance.get();
 		int farPlaneBlockDistance;
 		// required for setupFog and setupProjectionMatrix
 		if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
-			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
+			farPlaneBlockDistance = Math.min(lodChunkDist, LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
-			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
-		drawCalculateParams.end("drawCalculateParams");
+			farPlaneBlockDistance = lodChunkDist * LodUtil.CHUNK_WIDTH;
 
 		Mat4f combinedMatrix = createCombinedMatrix(baseProjectionMatrix, baseModelViewMatrix,
 				vanillaBlockRenderedDistance, farPlaneBlockDistance, partialTicks);
 		
 		/*---------Fill uniform data--------*/
-		LagSpikeCatcher drawFillData = new LagSpikeCatcher();
 		// Fill the uniform data. Note: GL33.GL_TEXTURE0 == texture bindpoint 0
 		shaderProgram.fillUniformData(combinedMatrix,
 				MC_RENDER.isFogStateSpecial() ? getSpecialFogColor(partialTicks) : getFogColor(partialTicks),
@@ -260,59 +209,28 @@ public class a7LodRenderer
 				vanillaBlockRenderedDistance, MC_RENDER.isFogStateSpecial());
 
 		// Note: Since lightmapTexture is changing every frame, it's faster to recreate it than to reuse the old one.
-		LagSpikeCatcher drawFillLightmap = new LagSpikeCatcher();
 		ILightMapWrapper lightmap = MC_RENDER.getLightmapWrapper();
 		lightmap.bind();
-
 		if (ENABLE_IBO) quadIBO.bind();
-
 		//lightmapTexture.fillData(MC_RENDER.getLightmapTextureWidth(), MC_RENDER.getLightmapTextureHeight(), MC_RENDER.getLightmapPixels());
-		drawFillLightmap.end("drawFillLightmap");
-		drawFillData.end("DrawFillData");
 		//GL32.glEnable( GL32.GL_POLYGON_OFFSET_FILL );
 		//GL32.glPolygonOffset( 1f, 1f );
 
 		//===========//
 		// rendering //
 		//===========//
-		drawSetup.end("LodDrawSetup");
 		profiler.popPush("LOD draw");
 		LagSpikeCatcher draw = new LagSpikeCatcher();
-		
-		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
+
+		boolean cullingDisabled = Config.Client.Graphics.AdvancedGraphics.disableDirectionalCulling.get();
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		DHBlockPos cameraBlockPos = MC_RENDER.getCameraBlockPosition();
 		Vec3f cameraDir = MC_RENDER.getLookAtVector();
 		int drawCount = 0;
 
-		{
-			int ox,oy,dx,dy;
-		    ox = oy = dx = 0;
-		    dy = -1;
-		    int len = regions.getSize();
-		    int maxI = len*len;
-		    int halfLen = len/2;
-		    for(int i =0; i < maxI; i++){
-		        if ((-halfLen <= ox) && (ox <= halfLen) && (-halfLen <= oy) && (oy <= halfLen)){
-		        	Pos2D pos = regions.getCenter();
-		        	int regionX = ox+pos.x;
-		        	int regionZ = oy+pos.y;
-		        	{
-						RenderRegion region = regions.get(regionX, regionZ);
-						if (region == null) continue;
-						if (region.render(lodDim, cameraPos, cameraBlockPos, cameraDir,
-								!cullingDisabled, shaderProgram)) drawCount++;
-		        	}
-		        }
-		        if( (ox == oy) || ((ox < 0) && (ox == -oy)) || ((ox > 0) && (ox == 1-oy))){
-		            int temp = dx;
-		            dx = -dy;
-		            dy = temp;
-		        }
-		        ox += dx;
-		        oy += dy;
-		    }
-		}
+		//TODO: Directional culling
+		bufferHandler.render(shaderProgram);
+
 		//if (drawCall==0)
 		//	tickLogger.info("DrawCall Count: {}", drawCount);
 		
@@ -363,18 +281,12 @@ public class a7LodRenderer
 		}
 		EVENT_LOGGER.info("Renderer setup complete");
 	}
-	
-	/** Create all buffers that will be used. */
-	public void setupBuffers()
-	{
-		lodBufferBuilderFactory.triggerReset();
-	}
 
 	private Color getFogColor(float partialTicks)
 	{
 		Color fogColor;
 		
-		if (CONFIG.client().graphics().fogQuality().getFogColorMode() == FogColorMode.USE_SKY_COLOR)
+		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == FogColorMode.USE_SKY_COLOR)
 			fogColor = MC_RENDER.getSkyColor();
 		else
 			fogColor = MC_RENDER.getFogColor(partialTicks);
@@ -407,9 +319,9 @@ public class a7LodRenderer
 		Mat4f lodProj = projMat.copy();
 
 		float nearClipPlane;
-		if (CONFIG.client().advanced().getLodOnlyMode()) {
+		if (Config.Client.Advanced.lodOnlyMode.get()) {
 			nearClipPlane = 0.1f;
-		} else if (CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane()) {
+		} else if (Config.Client.Graphics.AdvancedGraphics.useExtendedNearClipPlane.get()) {
 			nearClipPlane = Math.min((vanillaBlockRenderedDistance-16f),8f*16f);
 		} else {
 			nearClipPlane = 16f;
@@ -446,116 +358,4 @@ public class a7LodRenderer
 		if (quadIBO != null) quadIBO.destroy(false);
 		EVENT_LOGGER.info("Renderer Cleanup Complete");
 	}
-
-	/** Calls the BufferBuilder's destroyBuffers method. */
-	public void destroyBuffers()
-	{
-		lodBufferBuilderFactory.destroyBuffers();
-	}
-	
-	//======================//
-	// Other Misc Functions //
-	//======================//
-	
-	/**
-	 * If this is called then the next time "drawLODs" is called
-	 * the LODs will be regenerated; the same as if the player moved.
-	 */
-	public void regenerateLODsNextFrame()
-	{
-		fullRegen = true;
-	}
-	
-	// returns whether anything changed
-	private boolean updateVanillaRenderedChunks(LodDimension lodDim) {
-		// if the player is high enough, draw all LODs
-		IWorldWrapper world = MC.getWrappedClientWorld();
-		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight() ||
-			CONFIG.client().advanced().getLodOnlyMode()) {
-			if (vanillaChunks != null) {
-				vanillaChunks = null;
-				return true;
-			}
-			return false;
-		}
-
-		LagSpikeCatcher getChunks = new LagSpikeCatcher();
-		EdgeDistanceBooleanGrid edgeGrid = LodUtil.readVanillaRenderedChunks(lodDim);
-		if (edgeGrid == null) {
-			if (vanillaChunks != null) {
-				vanillaChunks = null;
-				return true;
-			}
-			return false;
-		}
-		getChunks.end("LodDrawSetup:UpdateStatus:UpdateVanillaChunks:getChunks");
-		PosArrayGridList<BoolType> grid = new PosArrayGridList<>(edgeGrid.gridSize, edgeGrid.getOffsetX(), edgeGrid.getOffsetY());
-
-		int overdrawOffset = LodUtil.computeOverdrawOffset(lodDim);
-		edgeGrid.flagAllWithDistance(grid, (i) -> (i >= overdrawOffset));
-		vanillaChunks = grid;
-		return true;
-	}
-	
-	private void updateRegenStatus(LodDimension lodDim, float partialTicks) {
-		short chunkRenderDistance = (short) MC_RENDER.getRenderDistance();
-		long newTime = System.currentTimeMillis();
-		DHBlockPos newPos = MC.getPlayerBlockPos();
-		boolean shouldUpdateChunks = false;
-		boolean tryPartialGen = false;
-		boolean tryFullGen = false;
-
-		// check if the view distance or config changed
-		if (InternalApiShared.previousLodRenderDistance != CONFIG.client().graphics().quality().getLodChunkRenderDistance()
-					|| chunkRenderDistance != prevRenderDistance
-					|| prevFogDistance != CONFIG.client().graphics().fogQuality().getFogDistance())
-		{
-			DetailDistanceUtil.updateSettings(); // FIXME: This should NOT be here!
-			prevFogDistance = CONFIG.client().graphics().fogQuality().getFogDistance();
-			prevRenderDistance = chunkRenderDistance;
-			tryFullGen = true;
-		} else if (CONFIG.client().advanced().debugging().getDebugMode() != previousDebugMode)
-		{ // did the user change the debug setting?
-			previousDebugMode = CONFIG.client().advanced().debugging().getDebugMode();
-			tryFullGen = true;
-		}
-		
-		// check if the player has moved
-		if (newTime - prevPlayerPosTime > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveTimeout) { 
-			if (lastUpdatedPos == null
-				|| Math.abs(newPos.getX() - lastUpdatedPos.getX()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16
-				|| Math.abs(newPos.getZ() - lastUpdatedPos.getZ()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16)
-			{
-				shouldUpdateChunks = true;
-			}
-			prevPlayerPosTime = newTime;
-		}
-
-		// check if the vanilla rendered chunks changed
-		if (newTime - prevVanillaChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().renderedChunkTimeout)
-		{
-			shouldUpdateChunks = true;
-			prevVanillaChunkTime = newTime;
-		}
-
-		// check if there is any newly generated terrain to show
-		if (newTime - prevChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().chunkChangeTimeout)
-		{
-			tryPartialGen = true;
-			prevChunkTime = newTime;
-		}
-		
-		shouldUpdateChunks |= tryFullGen;
-		if (shouldUpdateChunks) {
-			lastUpdatedPos = newPos;
-			tryPartialGen |= updateVanillaRenderedChunks(lodDim);
-		}
-		
-		if (tryFullGen) {
-			fullRegen = true;
-		} else if (tryPartialGen) {
-			partialRegen = true;
-		}
-	}
-
 }

@@ -14,6 +14,7 @@ import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.a7.DHLevel;
+import com.seibel.lod.core.objects.a7.DHWorld;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -51,10 +52,12 @@ public class LevelToFileMatcher {
 
     private final IWorldWrapper currentWorld;
     private final File worldFolder;
+    private final DHWorld dhWorld;
 
-    public LevelToFileMatcher(File worldFolder, IWorldWrapper targetWorld) {
+    public LevelToFileMatcher(DHWorld dhWorld, File worldFolder, IWorldWrapper targetWorld) {
         this.currentWorld = targetWorld;
         this.worldFolder = worldFolder;
+        this.dhWorld = dhWorld;
     }
 
     // May return null, where at this moment the level is not yet known
@@ -72,7 +75,7 @@ public class LevelToFileMatcher {
 
         if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0) {
             File saveDir = getLevelFolderWithoutSimilarityMatching();
-            foundLevel = new DHLevel(saveDir, currentWorld);
+            foundLevel = new DHLevel(dhWorld, saveDir, currentWorld);
         } else {
             if (determiningWorldFolder.getAndSet(true)) return;
             //FIXME: Use a thread pool
@@ -82,7 +85,7 @@ public class LevelToFileMatcher {
                     // attempt to get the file handler
                     File saveDir = attemptToDetermineSubDimensionFolder();
                     if (saveDir == null) return;
-                    foundLevel = new DHLevel(saveDir, currentWorld);
+                    foundLevel = new DHLevel(dhWorld, saveDir, currentWorld);
                 } catch (IOException e) {
                     LOGGER.error("Unable to set the dimension file handler for level [" + currentWorld + "]. Error: ", e);
                 } finally {

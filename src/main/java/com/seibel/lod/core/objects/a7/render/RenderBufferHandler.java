@@ -107,6 +107,8 @@ public class RenderBufferHandler {
     public void render(LodRenderProgram renderContext) {
         //TODO: This might get locked by update() causing move() call. Is there a way to avoid this?
         // Maybe dupe the base list and use atomic swap on render? Or is this not worth it?
+        //TODO: Directional culling
+        //TODO: Ordered by distance
         renderBufferNodes.forEachOrdered(n -> n.render(renderContext));
     }
 

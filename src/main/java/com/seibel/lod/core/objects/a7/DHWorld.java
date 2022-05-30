@@ -31,7 +31,7 @@ public class DHWorld implements Closeable {
     public DHLevel getOrLoadLevel(IWorldWrapper wrapper) {
         if (!levels.containsKey(wrapper)) {
             if (levelToFileMatcher == null || levelToFileMatcher.getTargetWorld() != wrapper) {
-                levelToFileMatcher = new LevelToFileMatcher(saveDir, wrapper);
+                levelToFileMatcher = new LevelToFileMatcher(this, saveDir, wrapper);
             }
             DHLevel level = levelToFileMatcher.tryGetLevel();
             if (level != null) {

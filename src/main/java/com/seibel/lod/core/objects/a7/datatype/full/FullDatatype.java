@@ -11,11 +11,6 @@ public class FullDatatype implements LodDataSource {
     }
 
     @Override
-    public <T> T[] getData() {
-        return null;
-    }
-
-    @Override
     public DhSectionPos getSectionPos() {
         return null;
     }

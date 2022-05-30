@@ -15,7 +15,7 @@ public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConv
     public static final Alpha6DataLoader INSTANCE = new Alpha6DataLoader();
 
     private Alpha6DataLoader() {
-        super(OldColumnDatatype.class, OldColumnDatatype.DATA_TYPE_ID, (byte)0);
+        super(OldColumnDatatype.class, OldColumnDatatype.DATA_TYPE_ID, new byte[]{0});
         DataFileHandler.CONVERTERS.add(this);
     }
 

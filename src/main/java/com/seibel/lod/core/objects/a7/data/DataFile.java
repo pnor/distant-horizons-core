@@ -88,7 +88,17 @@ public class DataFile {
     }
     public FileInputStream getDataContent() throws IOException {
         FileInputStream fin = new FileInputStream(path);
-        fin.skipNBytes(METADATA_SIZE);
+        int toSkip = METADATA_SIZE;
+        while (toSkip > 0) {
+            long skipped = fin.skip(toSkip);
+            if (skipped == 0) {
+                throw new IOException("Invalid file: Failed to skip metadata.");
+            }
+            toSkip -= skipped;
+        }
+        if (toSkip != 0) {
+            throw new IOException("File IO Error: Failed to skip metadata.");
+        }
         return fin;
     }
 
