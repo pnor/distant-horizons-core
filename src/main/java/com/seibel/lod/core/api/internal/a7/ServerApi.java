@@ -90,4 +90,7 @@ public class ServerApi
 	public void chunkSaveEvent(IChunkWrapper chunk, IWorldWrapper world) {
 		//TODO
 	}
+
+	public void serverChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world) {
+	}
 }

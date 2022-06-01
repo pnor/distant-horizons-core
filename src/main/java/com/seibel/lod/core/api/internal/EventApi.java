@@ -48,6 +48,7 @@ import java.lang.invoke.MethodHandles;
  * @author James Seibel
  * @version 2021-11-12
  */
+@Deprecated
 public class EventApi
 {
 	public static final boolean ENABLE_STACK_DUMP_LOGGING = false;

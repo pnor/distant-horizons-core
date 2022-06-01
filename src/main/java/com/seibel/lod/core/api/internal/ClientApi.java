@@ -61,6 +61,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  * @author James Seibel
  * @version 2022-4-27
  */
+@Deprecated
 public class ClientApi
 {
 	public static final Logger LOGGER = LogManager.getLogger(ClientApi.class.getSimpleName());

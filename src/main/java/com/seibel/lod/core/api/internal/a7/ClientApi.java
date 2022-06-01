@@ -67,8 +67,8 @@ public class ClientApi
 	public static final long LAG_SPIKE_THRESHOLD_NS = TimeUnit.NANOSECONDS.convert(16, TimeUnit.MILLISECONDS);
 	
 	public static final long SPAM_LOGGER_FLUSH_NS = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
-	
-	public static class LagSpikeCatcher {
+
+    public static class LagSpikeCatcher {
 		long timer = System.nanoTime();
 		public LagSpikeCatcher() {}
 		public void end(String source) {
@@ -139,10 +139,25 @@ public class ClientApi
 
 	private long lastFlush = 0;
 
-	public void preRender() {
+
+	public void rendererShutdownEvent() {
 		IProfilerWrapper profiler = MC.getProfiler();
-		profiler.pop(); // get out of "terrain"
-		profiler.push("DH-PreRender");
+		profiler.push("DH-RendererShutdown");
+
+		profiler.pop();
+	}
+	public void rendererStartupEvent() {
+		IProfilerWrapper profiler = MC.getProfiler();
+		profiler.push("DH-RendererStartup");
+		// make sure the GLProxy is created before the LodBufferBuilder needs it
+		GLProxy.getInstance();
+		profiler.pop();
+	}
+
+	public void clientTickEvent() {
+		IProfilerWrapper profiler = MC.getProfiler();
+		profiler.push("DH-ClientTick");
+
 		boolean doFlush = System.nanoTime() - lastFlush >= SPAM_LOGGER_FLUSH_NS;
 		if (doFlush) {
 			lastFlush = System.nanoTime();
@@ -150,20 +165,18 @@ public class ClientApi
 		}
 		ConfigBasedLogger.updateAll();
 		ConfigBasedSpamLogger.updateAll(doFlush);
-		// only run the first time setup once
-		if (!firstTimeSetupComplete) firstFrameSetup();
-		if (ModInfo.IS_DEV_BUILD)
-		{
-			// config overrides should only be used in the developer builds
-			applyDeveloperConfigOverrides();
-		}
 
-		if (SharedApi.currentServer == null && SharedApi.currentWorld != null) {
-			// In single player.
-			SharedApi.currentWorld.asyncTick();
+		if (SharedApi.currentWorld != null) {
+			if (ModInfo.IS_DEV_BUILD) {
+				// config overrides should only be used in the developer builds
+				applyDeveloperConfigOverrides();
+			}
+			if (SharedApi.currentServer == null) {
+				// In single player. Do client-side ticking system.
+				SharedApi.currentWorld.asyncTick();
+			}
 		}
-		//FIXME: Is it always 'terrain' that is the previous thing in the profiler?
-		profiler.push("terrain"); // go back into "terrain"
+		profiler.pop();
 	}
 	
 	public void renderLods(IWorldWrapper world, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
@@ -280,28 +293,6 @@ public class ClientApi
 			MC.sendChatMessage("P: Debug Pref Logger is " + (prefLoggerEnabled ? "enabled" : "disabled"));
 		}
 	}
-
-	//=================//
-	// Lod maintenance //
-	//=================//
-	
-	// FIXME: I need a onLastFrameCleanup() callback in Render Thread... Which calls renderer.cleanup()
-	
-	/** This event is called once during the first frame Minecraft renders in the world. */
-	public void firstFrameSetup()
-	{
-		// make sure the GLProxy is created before the LodBufferBuilder needs it
-		GLProxy.getInstance();
-		
-		firstTimeSetupComplete = true;
-	}
-	
-	
-	
-	
-	
-
-	
 	
 	
 }

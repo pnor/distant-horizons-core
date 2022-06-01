@@ -34,6 +34,7 @@ import com.seibel.lod.core.objects.lod.LodWorld;
  * @author James Seibel
  * @version 2022-4-24
  */
+@Deprecated
 public class InternalApiShared
 {
 	public InternalApiShared INSTANCE = new InternalApiShared();
