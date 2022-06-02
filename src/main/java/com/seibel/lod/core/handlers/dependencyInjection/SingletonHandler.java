@@ -88,5 +88,8 @@ public class SingletonHandler
 	{
 		return dependencyHandler.getBindingFinished();
 	}
-	
+
+	public static void runDelayedSetup() {
+		dependencyHandler.runDelayedSetup();
+	}
 }

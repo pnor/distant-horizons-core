@@ -24,6 +24,7 @@ public class DHWorld implements Closeable {
     public EventLoop eventLoop = new EventLoop(dhTickerThread, this::tick);
 
     public DHWorld() {
+        //Note: this changes the singleplayer lod save location.
         saveDir = DHFolderHandler.getCurrentWorldFolder();
         levels = new HashMap<>();
     }

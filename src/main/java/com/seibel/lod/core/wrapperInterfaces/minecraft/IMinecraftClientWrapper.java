@@ -117,21 +117,7 @@ public interface IMinecraftClientWrapper extends IBindable
 	 */
 	void crashMinecraft(String errorMessage, Throwable exception);
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+    Object getOptionsObject();
+
+	File getSinglePlayerServerFolder();
 }

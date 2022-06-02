@@ -31,8 +31,7 @@ public class DHFolderHandler {
             if (MC.hasSinglePlayerServer())
             {
                 // local world
-                IWorldWrapper serverWorld = MC.getWrappedServerWorld();
-                dimensionFolder = new File(serverWorld.getSaveFolder().getCanonicalFile().getPath() + File.separatorChar + "lod");
+                dimensionFolder = new File(MC.getSinglePlayerServerFolder(), "lod");
             }
             else
             {

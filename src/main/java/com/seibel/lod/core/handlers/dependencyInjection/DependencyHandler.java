@@ -148,17 +148,19 @@ public class DependencyHandler
 		// (yes technically the binding isn't finished,
 		// but this needs to be set to "true" so we can use "get")
 		bindingFinished = true;
-		
-		for (Class<?> interfaceKey : dependencies.keySet())
-		{
-			IBindable concreteObject = get(interfaceKey);
-			concreteObject.finishDelayedSetup();
-		}
 	}
 	
 	/** returns whether the finishBinding method has been called */
 	public boolean getBindingFinished()
 	{
 		return bindingFinished;
+	}
+
+	public void runDelayedSetup() {
+		for (Class<?> interfaceKey : dependencies.keySet())
+		{
+			IBindable concreteObject = get(interfaceKey);
+			concreteObject.finishDelayedSetup();
+		}
 	}
 }

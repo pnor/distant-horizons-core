@@ -22,11 +22,11 @@ package com.seibel.lod.core.handlers;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import org.apache.logging.log4j.LogManager;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import org.apache.logging.log4j.Logger;
 
-import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.FogDrawMode;
 
 /**
@@ -45,35 +45,36 @@ public class ReflectionHandler implements IReflectionHandler
 	public static ReflectionHandler instance;
 	
 	private Field ofFogField = null;
-	private final Object mcOptionsObject;
+	private Object mcOptionsObject;
 	
 	private Boolean sodiumPresent = null;
 	private boolean optifinePresent = false;
-	
-	
-	
-	
-	private ReflectionHandler(Field[] optionFields, Object newMcOptionsObject)
+
+	@Override
+	public void finishDelayedSetup()
 	{
-		mcOptionsObject = newMcOptionsObject;
-		
-		setupFogField(optionFields);
+		mcOptionsObject = SingletonHandler.get(IMinecraftClientWrapper.class).getOptionsObject();
+		setupFogField(mcOptionsObject.getClass().getDeclaredFields());
+	}
+	
+	
+	private ReflectionHandler()
+	{
+		mcOptionsObject = null;
 	}
 	
 	/**
-	 * @param optionFields the fields that should contain "ofFogType"
-	 * @param newMcOptionsObject the object instance that contains "ofFogType"
 	 * @return the ReflectionHandler just created
 	 * @throws IllegalStateException if a ReflectionHandler already exists
 	 */
-	public static ReflectionHandler createSingleton(Field[] optionFields, Object newMcOptionsObject) throws IllegalStateException
+	public static ReflectionHandler createSingleton() throws IllegalStateException
 	{
 		if (instance != null)
 		{
 			throw new IllegalStateException();	
 		}
 		
-		instance = new ReflectionHandler(optionFields, newMcOptionsObject);
+		instance = new ReflectionHandler();
 		return instance;
 	}
 	
