@@ -1,5 +1,6 @@
 package com.seibel.lod.core.objects.a7;
 
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.a7.datatype.column.ColumnDatatype;
 import com.seibel.lod.core.objects.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.objects.a7.pos.DhBlockPos2D;
@@ -9,6 +10,7 @@ import com.seibel.lod.core.objects.a7.render.RenderDataSourceLoader;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +43,10 @@ public abstract class LodQuadTree {
 
     static final ArrayList<RenderDataSourceLoader> layerLoaderConfig = new ArrayList<>();
 
+    static final Logger LOGGER = DhLoggerBuilder.getLogger("LodQuadTree");
+
     public static void registerLayerLoader(RenderDataSourceLoader loader, byte sectionLevel) {
+        LOGGER.info("Registering loader for section level " + sectionLevel + " for " + loader.getClass().getSimpleName());
         while (layerLoaderConfig.size() <= sectionLevel) {
             layerLoaderConfig.add(null);
         }
@@ -51,7 +56,6 @@ public abstract class LodQuadTree {
     }
 
 //    static {
-//        //TODO: Make this dynamic
 //        Collections.addAll(layerLoaderConfig,
 //                null,
 //                null, //1
@@ -106,9 +110,12 @@ public abstract class LodQuadTree {
      * @param initialPlayerZ player z coordinate
      */
     public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
+        ColumnDatatype.REGISTER(); //FIXME: This is a hack to make sure the datatype is registered
+
         assertContainerTypeConfigCorrect();
         this.viewDistance = viewDistance;
 
+        //FIXME: Rework this mess of code!
         { // Calculate the max section detail
             byte maxDetailLevel = getMaxDetailInRange(viewDistance * Math.sqrt(2));
             RenderDataSourceLoader finalEntry = null;
@@ -122,9 +129,11 @@ public abstract class LodQuadTree {
             }
             if (finalEntry == null) throw new RuntimeException("No container type found!");
             if (topSectionLevel == layerLoaderConfig.size())
-                topSectionLevel = (byte) (maxDetailLevel - finalEntry.detailOffset);
+                topSectionLevel = (byte) (maxDetailLevel + finalEntry.detailOffset);
             numbersOfSectionLevels = (byte) (topSectionLevel + 1);
             startingSectionLevel = firstLevel;
+            LOGGER.info("MaxLevel: " + maxDetailLevel + ", StartingLevel: " + startingSectionLevel + ", NumberOfLevels: " + numbersOfSectionLevels
+                                + ", TopSectionLevel: " + topSectionLevel + ", FinalEntry: " + finalEntry);
             sectionDetailLayers = new SectionDetailLayer[numbersOfSectionLevels - startingSectionLevel];
             ringLists = new MovableGridRingList[numbersOfSectionLevels - startingSectionLevel];
         }

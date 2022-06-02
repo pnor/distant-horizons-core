@@ -232,9 +232,14 @@ public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
         return (long) dataContainer.length * Long.BYTES;
     }
 
-    public static final ColumnRenderLoader COLUMN_LAYER_LOADER = new ColumnRenderLoader();
-    static {
+    public static ColumnRenderLoader COLUMN_LAYER_LOADER;
+
+    private static boolean hasRendered = false;
+    public static void REGISTER() { //FIXME: THIS IS A MESS
+        if (hasRendered) return;
+        COLUMN_LAYER_LOADER = new ColumnRenderLoader();
         LodQuadTree.registerLayerLoader(COLUMN_LAYER_LOADER, (byte) 7); // 7 or above
+        hasRendered = true;
     }
 
     @Override
@@ -312,5 +317,7 @@ public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
         }
         return false;
     }
+
+
 
 }

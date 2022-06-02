@@ -73,7 +73,7 @@ public class LevelToFileMatcher {
     private void tick() {
         // prevent multiple threads running at the same time
 
-        if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0) {
+        if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0 || MC.hasSinglePlayerServer()) {
             File saveDir = getLevelFolderWithoutSimilarityMatching();
             foundLevel = new DHLevel(dhWorld, saveDir, currentWorld);
         } else {

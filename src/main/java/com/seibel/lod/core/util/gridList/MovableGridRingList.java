@@ -263,6 +263,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	}
 
 	// TODO: Use MutablePos2D in the future
+	// Will pass in null entries
 	public void forEachPos(BiConsumer<? super T, Pos2D> d) {
 		moveLock.readLock().lock();
 		try {
@@ -280,6 +281,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	}
 
 	// TODO: Use MutablePos2D in the future
+	// Will skip null entries
 	public void forEachOrdered(Consumer<? super T> d) {
 		if (ringIteratorList == null) buildRingIteratorList();
 		moveLock.readLock().lock();
@@ -287,7 +289,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 			Pos2D min = pos.get();
 			for (Pos2D offset : ringIteratorList) {
 				T t = _getUnsafe(min.x + offset.x, min.y + offset.y);
-				d.accept(t);
+				if (t != null) d.accept(t);
 			}
 		}
 		finally {
@@ -296,6 +298,7 @@ public class MovableGridRingList<T> extends ArrayList<T> implements List<T> {
 	}
 
 	// TODO: Use MutablePos2D in the future
+	// Will pass in null entries
 	public void forEachPosOrdered(BiConsumer<? super T, Pos2D> d) {
 		if (ringIteratorList == null) buildRingIteratorList();
 		moveLock.readLock().lock();

@@ -29,6 +29,7 @@ import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.DHWorld;
+import com.seibel.lod.core.objects.a7.Server;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.RenderSystemTest;
@@ -112,6 +113,16 @@ public class ClientApi
 		prefix += ":\u00A7r ";
 		if (MC != null) MC.sendChatMessage(prefix + str);
 	}
+
+	public void clientServerConnected() {
+		SharedApi.currentServer = new Server(false);
+		SharedApi.currentWorld = new DHWorld();
+	}
+	public void clientServerDisconnected() {
+		SharedApi.currentWorld.close();
+		SharedApi.currentWorld = null;
+		SharedApi.currentServer = null;
+	}
 	
 	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
 	{
@@ -124,14 +135,13 @@ public class ClientApi
 
 	public void clientLevelUnloadEvent(IWorldWrapper world)
 	{
-		if (SharedApi.currentServer != null) return;
 		if (SharedApi.currentWorld != null) {
 			SharedApi.currentWorld.unloadLevel(world);
 		}
 	}
 	public void clientLevelLoadEvent(IWorldWrapper world)
 	{
-		if (SharedApi.currentServer != null) return;
+		//TODO: Maybe make DHLevel init no longer depend on needing player entity in single player
 		if (SharedApi.currentWorld != null) {
 			SharedApi.currentWorld.getOrLoadLevel(world);
 		}
@@ -257,12 +267,11 @@ public class ClientApi
 	private void applyDeveloperConfigOverrides()
 	{
 		// remind the user that the config override is active
-		if (!configOverrideReminderPrinted)
+		if (!configOverrideReminderPrinted && MC.playerExists())
 		{
 			MC.sendChatMessage(ModInfo.READABLE_NAME + " experimental build " + ModInfo.VERSION);
 			MC.sendChatMessage("You are running an unsupported version of the mod!");
 			MC.sendChatMessage("Here be dragons!");
-			
 			configOverrideReminderPrinted = true;
 		}
 	}

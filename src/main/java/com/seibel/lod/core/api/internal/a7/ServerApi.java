@@ -67,19 +67,22 @@ public class ServerApi
 
 	//TODO: rename to serverLoadEvent
 	public void serverWorldLoadEvent() {
-		Server server = new Server();
-		SharedApi.currentServer = server;
+		SharedApi.currentServer = new Server(!SharedApi.inDedicatedEnvironment);
 		SharedApi.currentWorld = new DHWorld();
+		//TODO: Setup the network handler
 	}
 
 	//TODO: rename to serverUnloadEvent
 	public void serverWorldUnloadEvent() {
+		//TODO: Close the network handler
 		SharedApi.currentWorld.close();
 		SharedApi.currentWorld = null;
 		SharedApi.currentServer = null;
 	}
 
 	public void serverLevelLoadEvent(IWorldWrapper world) {
+		//TODO: Maybe make DHLevel init no longer depend on needing player entity in single player
+		if (SharedApi.currentServer.isSinglePlayer) return;
 		SharedApi.currentWorld.getOrLoadLevel(world);
 	}
 	public void serverLevelUnloadEvent(IWorldWrapper world) {
