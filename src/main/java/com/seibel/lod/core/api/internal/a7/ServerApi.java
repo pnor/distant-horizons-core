@@ -65,12 +65,14 @@ public class ServerApi
 		}
 	}
 
+	//TODO: rename to serverLoadEvent
 	public void serverWorldLoadEvent() {
 		Server server = new Server();
 		SharedApi.currentServer = server;
 		SharedApi.currentWorld = new DHWorld();
 	}
 
+	//TODO: rename to serverUnloadEvent
 	public void serverWorldUnloadEvent() {
 		SharedApi.currentWorld.close();
 		SharedApi.currentWorld = null;
@@ -83,14 +85,20 @@ public class ServerApi
 	public void serverLevelUnloadEvent(IWorldWrapper world) {
 		SharedApi.currentWorld.unloadLevel(world);
 	}
+
+	@Deprecated
 	public void serverSaveEvent() {
 		SharedApi.currentWorld.save();
 	}
+
+
 	
 	public void chunkSaveEvent(IChunkWrapper chunk, IWorldWrapper world) {
 		//TODO
 	}
 
 	public void serverChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world) {
+	}
+	public void serverChunkSaveEvent(IChunkWrapper chunk, IWorldWrapper world) {
 	}
 }

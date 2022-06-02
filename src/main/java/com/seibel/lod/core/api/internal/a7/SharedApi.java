@@ -15,4 +15,6 @@ public class SharedApi {
     public static IMinecraftSharedWrapper MC;
     public static Logger LOGGER = DhLoggerBuilder.getLogger("DH Events");
 
+    public static boolean inDedicatedEnvironment;
+
 }
