@@ -115,14 +115,14 @@ public class ConfigFileHandling {
         if (workConfig.contains(entry.getNameWCategory())) {
             try {
                 if (entry.getType().isEnum()) {
-                    entry.setWTSave((T) ( workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.getType()) ));
+                    entry.setWithoutSaving((T) ( workConfig.getEnum(entry.getNameWCategory(), (Class<? extends Enum>) entry.getType()) ));
                 } else if (ConfigTypeConverters.convertObjects.containsKey(entry.getType())) {
-                    entry.setWTSave((T) ConfigTypeConverters.convertFromString(entry.getType(), workConfig.get(entry.getNameWCategory())));
+                    entry.setWithoutSaving((T) ConfigTypeConverters.convertFromString(entry.getType(), workConfig.get(entry.getNameWCategory())));
                 } else {
-                    entry.setWTSave((T) workConfig.get(entry.getNameWCategory()));
+                    entry.setWithoutSaving((T) workConfig.get(entry.getNameWCategory()));
                     if (entry.isValid() == 0) return;
-                    else if (entry.isValid() == -1) entry.setWTSave(entry.getMin());
-                    else if (entry.isValid() == 1) entry.setWTSave(entry.getMax());
+                    else if (entry.isValid() == -1) entry.setWithoutSaving(entry.getMin());
+                    else if (entry.isValid() == 1) entry.setWithoutSaving(entry.getMax());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
