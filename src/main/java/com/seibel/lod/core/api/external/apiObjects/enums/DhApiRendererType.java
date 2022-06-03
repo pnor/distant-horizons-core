@@ -17,27 +17,46 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
  
-package com.seibel.lod.core.enums.rendering;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
-public enum RendererType {
+/**
+ * Default
+ * Debug
+ * Disabled
+ *
+ * @version 2022-6-2
+ */
+public enum DhApiRendererType
+{
+    // Reminder:
+    // when adding items up the API minor version
+    // when removing items up the API major version
+    
     DEFAULT,
     DEBUG,
-    DISABLED,
-    ;
-
-    public static RendererType next(RendererType type) {
-        switch (type) {
+    DISABLED;
+    
+    
+    /** Used by the config GUI to cycle through the available rendering options */
+    public static DhApiRendererType next(DhApiRendererType type)
+    {
+        switch (type)
+        {
             case DEFAULT: return DEBUG;
             case DEBUG: return DISABLED;
             default: return DEFAULT;
         }
     }
-
-    public static RendererType previous(RendererType type) {
-        switch (type) {
+    
+    /** Used by the config GUI to cycle through the available rendering options */
+    public static DhApiRendererType previous(DhApiRendererType type)
+    {
+        switch (type)
+        {
             case DEFAULT: return DISABLED;
             case DEBUG: return DEFAULT;
             default: return DEBUG;
         }
     }
+    
 }

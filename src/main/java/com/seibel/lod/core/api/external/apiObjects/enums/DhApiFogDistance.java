@@ -17,16 +17,20 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.rendering;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * NEAR, FAR, or NEAR_AND_FAR.
  * 
  * @author James Seibel
- * @version 11-26-2021
+ * @version 2022-6-2
  */
-public enum FogDistance
+public enum DhApiFogDistance
 {
+	// Reminder:
+	// when adding items up the API minor version
+	// when removing items up the API major version
+	
 	NEAR,
 	FAR,
 	NEAR_AND_FAR

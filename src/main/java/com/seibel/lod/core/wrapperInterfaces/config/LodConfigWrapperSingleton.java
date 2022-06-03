@@ -1,5 +1,9 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
@@ -206,38 +210,38 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				}
 
 				@Override
-				public FogDistance getFogDistance()
+				public DhApiFogDistance getFogDistance()
 				{
 					return Config.Client.Graphics.FogQuality.fogDistance.get();
 				}
 				@Override
-				public void setFogDistance(FogDistance newFogDistance)
+				public void setFogDistance(DhApiFogDistance newFogDistance)
 				{
 					Config.Client.Graphics.FogQuality.fogDistance.set(newFogDistance);
 				}
 
 
 				@Override
-				public FogDrawMode getFogDrawMode()
+				public DhApiFogDrawMode getFogDrawMode()
 				{
 					return Config.Client.Graphics.FogQuality.fogDrawMode.get();
 				}
 
 				@Override
-				public void setFogDrawMode(FogDrawMode setFogDrawMode)
+				public void setFogDrawMode(DhApiFogDrawMode setFogDrawMode)
 				{
 					Config.Client.Graphics.FogQuality.fogDrawMode.set(setFogDrawMode);
 				}
 
 
 				@Override
-				public FogColorMode getFogColorMode()
+				public DhApiFogColorMode getFogColorMode()
 				{
 					return Config.Client.Graphics.FogQuality.fogColorMode.get();
 				}
 
 				@Override
-				public void setFogColorMode(FogColorMode newFogColorMode)
+				public void setFogColorMode(DhApiFogColorMode newFogColorMode)
 				{
 					Config.Client.Graphics.FogQuality.fogColorMode.set(newFogColorMode);
 				}
@@ -725,11 +729,11 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				 * DISABLED
 				 * */
 				@Override
-				public RendererType getRendererType() {
+				public DhApiRendererType getRendererType() {
 					return Config.Client.Advanced.Debugging.rendererType.get();
 				}
 				@Override
-				public void setRendererType(RendererType newRenderType) {
+				public void setRendererType(DhApiRendererType newRenderType) {
 					Config.Client.Advanced.Debugging.rendererType.set(newRenderType);
 				}
 

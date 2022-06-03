@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.enums.rendering.RendererType;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.objects.DHChunkPos;
@@ -264,7 +264,7 @@ public class ClientApi
 			
 			
 			
-			if (CONFIG.client().advanced().debugging().getRendererType() == RendererType.DEFAULT)
+			if (CONFIG.client().advanced().debugging().getRendererType() == DhApiRendererType.DEFAULT)
 			{
 				// Note to self:
 				// if "unspecified" shows up in the pie chart, it is
@@ -290,7 +290,7 @@ public class ClientApi
 				}
 				profiler.pop(); // end LOD
 				profiler.push("terrain"); // go back into "terrain"
-			} else if (CONFIG.client().advanced().debugging().getRendererType() == RendererType.DEBUG) {
+			} else if (CONFIG.client().advanced().debugging().getRendererType() == DhApiRendererType.DEBUG) {
 				IProfilerWrapper profiler = MC.getProfiler();
 				profiler.pop(); // get out of "terrain"
 				profiler.push("LODTestRendering");
@@ -359,7 +359,7 @@ public class ClientApi
 		if (glfwKey == GLFW.GLFW_KEY_F6)
 		{
 			CONFIG.client().advanced().debugging()
-					.setRendererType(RendererType.next(CONFIG.client().advanced().debugging().getRendererType()));
+					.setRendererType(DhApiRendererType.next(CONFIG.client().advanced().debugging().getRendererType()));
 			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getRendererType());
 		}
 		

@@ -20,36 +20,26 @@
 package com.seibel.lod.core.render;
 
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.config.types.ConfigEntry;
 import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.enums.rendering.FogColorMode;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
-import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.DHBlockPos;
-import com.seibel.lod.core.objects.Pos2D;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.render.RenderBufferHandler;
-import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
-import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.render.objects.QuadElementBuffer;
-import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.util.gridList.EdgeDistanceBooleanGrid;
-import com.seibel.lod.core.util.gridList.MovableGridRingList;
-import com.seibel.lod.core.util.gridList.PosArrayGridList;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
 import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.GL32;
 
@@ -286,7 +276,7 @@ public class a7LodRenderer
 	{
 		Color fogColor;
 		
-		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == FogColorMode.USE_SKY_COLOR)
+		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == DhApiFogColorMode.USE_SKY_COLOR)
 			fogColor = MC_RENDER.getSkyColor();
 		else
 			fogColor = MC_RENDER.getFogColor(partialTicks);

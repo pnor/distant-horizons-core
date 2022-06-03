@@ -27,7 +27,7 @@ import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import org.apache.logging.log4j.Logger;
 
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
 
 /**
  * A singleton used to get variables from methods
@@ -109,14 +109,14 @@ public class ReflectionHandler implements IReflectionHandler
 	 * @return the fog quality
 	 */
 	@Override
-	public FogDrawMode getFogDrawMode()
+	public DhApiFogDrawMode getFogDrawMode()
 	{
 		if (ofFogField == null)
 		{
 			// either optifine isn't installed,
 			// the variable name was changed, or
 			// the setup method wasn't called yet.
-			return FogDrawMode.FOG_ENABLED;
+			return DhApiFogDrawMode.FOG_ENABLED;
 		}
 		
 		int returnNum = 0;
@@ -140,9 +140,9 @@ public class ReflectionHandler implements IReflectionHandler
 			// normal options
 		case 1: // fast
 		case 2: // fancy
-			return FogDrawMode.FOG_ENABLED;
+			return DhApiFogDrawMode.FOG_ENABLED;
 		case 3: // off
-			return FogDrawMode.FOG_DISABLED;
+			return DhApiFogDrawMode.FOG_DISABLED;
 		}
 	}
 	

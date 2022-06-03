@@ -20,21 +20,14 @@
 package com.seibel.lod.core.config;
 
 
-import com.seibel.lod.core.config.*;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
 import com.seibel.lod.core.config.types.*;
 
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
-
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IAdvanced.*;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IGraphics.*;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.IAdvancedFog;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality.IAdvancedFog.IHeightFog;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IMultiplayer;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IWorldGenerator;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IAdvanced;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton.IClient.IAdvanced.IDebugging.*;
 
 
 /**
@@ -178,34 +171,34 @@ public class Config
 
             public static class FogQuality
             {
-                public static ConfigEntry<FogDistance> fogDistance = new ConfigEntry.Builder<FogDistance>()
-                        .set(FogDistance.FAR)
+                public static ConfigEntry<DhApiFogDistance> fogDistance = new ConfigEntry.Builder<DhApiFogDistance>()
+                        .set(DhApiFogDistance.FAR)
                         .comment(""
                                 + "At what distance should Fog be drawn on the fake chunks? \n"
                                 + "\n"
                                 + "This setting shouldn't affect performance.")
                         .build();
 
-                public static ConfigEntry<FogDrawMode> fogDrawMode = new ConfigEntry.Builder<FogDrawMode>()
-                        .set(FogDrawMode.FOG_ENABLED)
+                public static ConfigEntry<DhApiFogDrawMode> fogDrawMode = new ConfigEntry.Builder<DhApiFogDrawMode>()
+                        .set(DhApiFogDrawMode.FOG_ENABLED)
                         .comment(""
                                 + "When should fog be drawn? \n"
                                 + "\n"
-                                + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
-                                + "If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
-                                + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
-                                + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
+                                + DhApiFogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
+                                + "If Optifine isn't installed this defaults to " + DhApiFogDrawMode.FOG_ENABLED + ". \n"
+                                + DhApiFogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
+                                + DhApiFogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
                                 + "\n"
                                 + "Disabling fog will improve GPU performance.")
                         .build();
 
-                public static ConfigEntry<FogColorMode> fogColorMode = new ConfigEntry.Builder<FogColorMode>()
-                        .set(FogColorMode.USE_WORLD_FOG_COLOR)
+                public static ConfigEntry<DhApiFogColorMode> fogColorMode = new ConfigEntry.Builder<DhApiFogColorMode>()
+                        .set(DhApiFogColorMode.USE_WORLD_FOG_COLOR)
                         .comment(""
                                 + "What color should fog use? \n"
                                 + "\n"
-                                + FogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
-                                + FogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
+                                + DhApiFogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
+                                + DhApiFogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
                                 + "\n"
                                 + "This setting doesn't affect performance.")
                         .build();
@@ -737,14 +730,14 @@ public class Config
 
             public static class Debugging
             {
-                public static ConfigEntry<RendererType> rendererType = new ConfigEntry.Builder<RendererType>()
-                        .set(RendererType.DEFAULT)
+                public static ConfigEntry<DhApiRendererType> rendererType = new ConfigEntry.Builder<DhApiRendererType>()
+                        .set(DhApiRendererType.DEFAULT)
                         .comment(""
                                 + "What renderer is active? \n"
                                 + "\n"
-                                + RendererType.DEFAULT + ": Default lod renderer \n"
-                                + RendererType.DEBUG + ": Debug testing renderer \n"
-                                + RendererType.DISABLED + ": Disable rendering")
+                                + DhApiRendererType.DEFAULT + ": Default lod renderer \n"
+                                + DhApiRendererType.DEBUG + ": Debug testing renderer \n"
+                                + DhApiRendererType.DISABLED + ": Disable rendering")
                         .build();
 
                 public static ConfigEntry<DebugMode> debugMode = new ConfigEntry.Builder<DebugMode>()
