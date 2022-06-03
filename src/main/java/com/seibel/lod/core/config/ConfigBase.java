@@ -18,6 +18,7 @@ import java.util.Map;
  * @author coolGi
  * @author Ran
  */
+// Init the config after singletons have been blinded
 public class ConfigBase {
     /*
             What the config works with

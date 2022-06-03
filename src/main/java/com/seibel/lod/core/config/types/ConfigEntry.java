@@ -41,8 +41,7 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>>
     public T getDefaultValue() {
         return this.defaultValue;
     }
-    
-    
+
     public void setApiValue(T newApiValue) {
         this.apiValue = newApiValue;
     }
@@ -51,22 +50,22 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>>
     }
     @Override
     public void set(T newValue) {
-        this.value = newValue;
+        super.set(newValue);
         save();
     }
     @Override
     public T get() {
         if (allowApiOverride && apiValue != null)
             return apiValue;
-        return value;
+        return super.get();
     }
     public T getTrueValue() {
-        return value;
+        return super.get();
     }
 
     /** Sets the value without saving */
-    public void setWTSave(T newValue) {
-        this.value = newValue;
+    public void setWithoutSaving(T newValue) {
+        super.set(newValue);
     }
 
     /** Gets the min value */
@@ -194,5 +193,4 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>>
             return new ConfigEntry<T>(tmpAppearance, tmpValue, tmpComment, tmpMin, tmpMax, tmpUseApiOverwrite);
         }
     }
-    
 }
