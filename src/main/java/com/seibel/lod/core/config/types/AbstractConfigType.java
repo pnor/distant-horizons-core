@@ -12,7 +12,7 @@ public abstract class AbstractConfigType<T, S> { // The S is the class that is e
     public String name;            // This should only be set once in the init
     protected T value;
 
-    public Object guiValue; // This can be set by whatever gui you are using
+    public Object guiValue; // This is a storage variable something like the gui can use
 
     protected ConfigEntryAppearance appearance;
 

@@ -47,22 +47,22 @@ public class ConfigEntry<T> extends AbstractConfigType<T, ConfigEntry<T>>
     }
     @Override
     public void set(T newValue) {
-        this.value = newValue;
+        super.set(newValue);
         save();
     }
     @Override
     public T get() {
         if (allowApiOverride && apiValue != null)
             return apiValue;
-        return value;
+        return super.get();
     }
     public T getTrueValue() {
-        return value;
+        return super.get();
     }
 
     /** Sets the value without saving */
     public void setWithoutSaving(T newValue) {
-        this.value = newValue;
+        super.set(newValue);
     }
 
     /** Gets the min value */
