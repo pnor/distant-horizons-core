@@ -19,8 +19,8 @@
 
 package com.seibel.lod.core.render;
 
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -62,26 +62,26 @@ public class LodFogConfig
 	
 	public static LodFogConfig generateFogConfig()
 	{
-		DhApiFogDrawMode fogMode = CONFIG.client().graphics().fogQuality().getFogDrawMode();
-		if (fogMode == DhApiFogDrawMode.USE_OPTIFINE_SETTING)
+		FogDrawMode fogMode = CONFIG.client().graphics().fogQuality().getFogDrawMode();
+		if (fogMode == FogDrawMode.USE_OPTIFINE_SETTING)
 			fogMode = REFLECTION_HANDLER.getFogDrawMode();
 		
 		return new LodFogConfig(fogMode);
 	}
 	
 	/** sets all fog options from the config */
-	private LodFogConfig(DhApiFogDrawMode fogDrawMode)
+	private LodFogConfig(FogDrawMode fogDrawMode)
 	{
 		earthCurveRatio = CONFIG.client().graphics().advancedGraphics().getEarthCurveRatio(); //FIXME: Move this out of here
 
-		if (fogDrawMode != DhApiFogDrawMode.FOG_DISABLED)
+		if (fogDrawMode != FogDrawMode.FOG_DISABLED)
 		{
 			ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality fogSettings = CONFIG.client().graphics().fogQuality();
 			
-			DhApiFogDistance fogDistance = fogSettings.getFogDistance();
-			drawNearFog = (fogDistance == DhApiFogDistance.NEAR || fogDistance == DhApiFogDistance.NEAR_AND_FAR);
+			FogDistance fogDistance = fogSettings.getFogDistance();
+			drawNearFog = (fogDistance == FogDistance.NEAR || fogDistance == FogDistance.NEAR_AND_FAR);
 			
-			if (fogDistance == DhApiFogDistance.FAR || fogDistance == DhApiFogDistance.NEAR_AND_FAR)
+			if (fogDistance == FogDistance.FAR || fogDistance == FogDistance.NEAR_AND_FAR)
 			{
 				// far fog should be drawn
 				

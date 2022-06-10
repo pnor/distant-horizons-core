@@ -24,7 +24,7 @@ package com.seibel.lod.core.api.external.apiObjects.enums;
  * USE_SKY_COLOR, <br>
  * 
  * @author James Seibel
- * @version 2022-6-2
+ * @version 2022-6-9
  */
 public enum DhApiFogColorMode
 {

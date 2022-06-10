@@ -1,9 +1,9 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
+import com.seibel.lod.core.enums.rendering.FogDistance;
+import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
@@ -210,25 +210,25 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				}
 
 				@Override
-				public DhApiFogDistance getFogDistance()
+				public FogDistance getFogDistance()
 				{
 					return Config.Client.Graphics.FogQuality.fogDistance.get();
 				}
 				@Override
-				public void setFogDistance(DhApiFogDistance newFogDistance)
+				public void setFogDistance(FogDistance newFogDistance)
 				{
 					Config.Client.Graphics.FogQuality.fogDistance.set(newFogDistance);
 				}
 
 
 				@Override
-				public DhApiFogDrawMode getFogDrawMode()
+				public FogDrawMode getFogDrawMode()
 				{
 					return Config.Client.Graphics.FogQuality.fogDrawMode.get();
 				}
 
 				@Override
-				public void setFogDrawMode(DhApiFogDrawMode setFogDrawMode)
+				public void setFogDrawMode(FogDrawMode setFogDrawMode)
 				{
 					Config.Client.Graphics.FogQuality.fogDrawMode.set(setFogDrawMode);
 				}
@@ -729,11 +729,11 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				 * DISABLED
 				 * */
 				@Override
-				public DhApiRendererType getRendererType() {
+				public RendererType getRendererType() {
 					return Config.Client.Advanced.Debugging.rendererType.get();
 				}
 				@Override
-				public void setRendererType(DhApiRendererType newRenderType) {
+				public void setRendererType(RendererType newRenderType) {
 					Config.Client.Advanced.Debugging.rendererType.set(newRenderType);
 				}
 

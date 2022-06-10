@@ -22,10 +22,14 @@ package com.seibel.lod.core.api.external.apiObjects.enums;
 /**
  *
  * @author Leonardo Amato
- * @version 2022-3-26
+ * @version 2022-6-9
  */
 public enum DhApiVerticalQuality
 {
+	// Reminder:
+	// when adding items: up the API minor version
+	// when removing items: up the API major version
+	
 	LOW,
 	MEDIUM,
 	HIGH,

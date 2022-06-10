@@ -19,10 +19,10 @@
 
 package com.seibel.lod.core.wrapperInterfaces.config;
 
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
+import com.seibel.lod.core.enums.rendering.FogDistance;
+import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
@@ -93,11 +93,11 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			@Deprecated
 			interface IFogQuality
 			{
-				DhApiFogDistance getFogDistance();
-				void setFogDistance(DhApiFogDistance newFogDistance);
+				FogDistance getFogDistance();
+				void setFogDistance(FogDistance newFogDistance);
 
-				DhApiFogDrawMode getFogDrawMode();
-				void setFogDrawMode(DhApiFogDrawMode newFogDrawMode);
+				FogDrawMode getFogDrawMode();
+				void setFogDrawMode(FogDrawMode newFogDrawMode);
 
 				FogColorMode getFogColorMode();
 				void setFogColorMode(FogColorMode newFogColorMode);
@@ -309,8 +309,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			@Deprecated
 			interface IDebugging
 			{
-				DhApiRendererType getRendererType();
-				void setRendererType(DhApiRendererType newRendererType);
+				RendererType getRendererType();
+				void setRendererType(RendererType newRendererType);
 
 				DebugMode getDebugMode();
 				void setDebugMode(DebugMode newDebugMode);

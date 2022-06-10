@@ -1,10 +1,10 @@
 package com.seibel.lod.core.api.external.config.client.graphics;
 
 import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
+import com.seibel.lod.core.enums.rendering.FogDistance;
 import com.seibel.lod.core.api.external.apiObjects.objects.DhApiConfig_v1;
 import com.seibel.lod.core.config.Config.Client.Graphics.FogQuality;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 
 /**
  * Any graphics settings related to fog.
@@ -16,11 +16,11 @@ public class DhApiGraphicsFog
 {
 	
 	/** Returns the config related to when fog is rendered. */
-	public static DhApiConfig_v1<DhApiFogDistance> getFogDistanceConfig_v1()
+	public static DhApiConfig_v1<FogDistance> getFogDistanceConfig_v1()
 	{ return new DhApiConfig_v1<>(FogQuality.fogDistance); }
 	
 	/** Returns the config related to when fog is rendered. */
-	public static DhApiConfig_v1<DhApiFogDrawMode> getFogRenderConfig_v1()
+	public static DhApiConfig_v1<FogDrawMode> getFogRenderConfig_v1()
 	{ return new DhApiConfig_v1<>(FogQuality.fogDrawMode); }
 	
 	/** Returns the config related to the fog draw type. */

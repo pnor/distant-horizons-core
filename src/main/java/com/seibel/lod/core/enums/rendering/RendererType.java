@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
  
-package com.seibel.lod.core.api.external.apiObjects.enums;
+package com.seibel.lod.core.enums.rendering;
 
 /**
  * Default
@@ -26,7 +26,7 @@ package com.seibel.lod.core.api.external.apiObjects.enums;
  *
  * @version 2022-6-2
  */
-public enum DhApiRendererType
+public enum RendererType
 {
     // Reminder:
     // when adding items up the API minor version
@@ -38,7 +38,7 @@ public enum DhApiRendererType
     
     
     /** Used by the config GUI to cycle through the available rendering options */
-    public static DhApiRendererType next(DhApiRendererType type)
+    public static RendererType next(RendererType type)
     {
         switch (type)
         {
@@ -49,7 +49,7 @@ public enum DhApiRendererType
     }
     
     /** Used by the config GUI to cycle through the available rendering options */
-    public static DhApiRendererType previous(DhApiRendererType type)
+    public static RendererType previous(RendererType type)
     {
         switch (type)
         {

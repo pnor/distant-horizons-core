@@ -1,7 +1,7 @@
 package com.seibel.lod.core.api.external.config.client.graphics;
 
 import com.seibel.lod.core.api.external.apiObjects.objects.DhApiConfig_v1;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
+import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.config.Config.Client.Graphics.Quality;
 import com.seibel.lod.core.config.Config.Client.Advanced.Debugging;
 
@@ -22,7 +22,7 @@ public class DhApiGraphicsGeneral
 	{ return new DhApiConfig_v1<>(Quality.lodChunkRenderDistance); }
 	
 	/** Returns the config related to how Distant Horizons is set to render. */
-	public static DhApiConfig_v1<DhApiRendererType> getRenderingTypeConfig_v1()
+	public static DhApiConfig_v1<RendererType> getRenderingTypeConfig_v1()
 	{ return new DhApiConfig_v1<>(Debugging.rendererType); }
 	
 }

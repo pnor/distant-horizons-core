@@ -18,7 +18,7 @@
  */
 
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiEnumAssembly;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.enums.CoreEnumAssembly;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.util.EnumUtil;
@@ -56,7 +56,7 @@ public class ApiEnumSyncTests
 		// this should always succeed (comparing an enum to itself)
 		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(VerticalQuality.class, VerticalQuality.class), true);
 		// this should always fail (two completely different enums)
-		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(VerticalQuality.class, DhApiFogDrawMode.class), false);
+		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(VerticalQuality.class, FogDrawMode.class), false);
 		
 		
 		

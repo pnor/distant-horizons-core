@@ -20,10 +20,10 @@
 package com.seibel.lod.core.config;
 
 
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.enums.rendering.FogDrawMode;
 import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
+import com.seibel.lod.core.enums.rendering.FogDistance;
+import com.seibel.lod.core.enums.rendering.RendererType;
 import com.seibel.lod.core.config.types.*;
 
 import com.seibel.lod.core.enums.config.*;
@@ -171,23 +171,23 @@ public class Config
 
             public static class FogQuality
             {
-                public static ConfigEntry<DhApiFogDistance> fogDistance = new ConfigEntry.Builder<DhApiFogDistance>()
-                        .set(DhApiFogDistance.FAR)
+                public static ConfigEntry<FogDistance> fogDistance = new ConfigEntry.Builder<FogDistance>()
+                        .set(FogDistance.FAR)
                         .comment(""
                                 + "At what distance should Fog be drawn on the fake chunks? \n"
                                 + "\n"
                                 + "This setting shouldn't affect performance.")
                         .build();
 
-                public static ConfigEntry<DhApiFogDrawMode> fogDrawMode = new ConfigEntry.Builder<DhApiFogDrawMode>()
-                        .set(DhApiFogDrawMode.FOG_ENABLED)
+                public static ConfigEntry<FogDrawMode> fogDrawMode = new ConfigEntry.Builder<FogDrawMode>()
+                        .set(FogDrawMode.FOG_ENABLED)
                         .comment(""
                                 + "When should fog be drawn? \n"
                                 + "\n"
-                                + DhApiFogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
-                                + "If Optifine isn't installed this defaults to " + DhApiFogDrawMode.FOG_ENABLED + ". \n"
-                                + DhApiFogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
-                                + DhApiFogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
+                                + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
+                                + "If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
+                                + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
+                                + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
                                 + "\n"
                                 + "Disabling fog will improve GPU performance.")
                         .build();
@@ -730,14 +730,14 @@ public class Config
 
             public static class Debugging
             {
-                public static ConfigEntry<DhApiRendererType> rendererType = new ConfigEntry.Builder<DhApiRendererType>()
-                        .set(DhApiRendererType.DEFAULT)
+                public static ConfigEntry<RendererType> rendererType = new ConfigEntry.Builder<RendererType>()
+                        .set(RendererType.DEFAULT)
                         .comment(""
                                 + "What renderer is active? \n"
                                 + "\n"
-                                + DhApiRendererType.DEFAULT + ": Default lod renderer \n"
-                                + DhApiRendererType.DEBUG + ": Debug testing renderer \n"
-                                + DhApiRendererType.DISABLED + ": Disable rendering")
+                                + RendererType.DEFAULT + ": Default lod renderer \n"
+                                + RendererType.DEBUG + ": Debug testing renderer \n"
+                                + RendererType.DISABLED + ": Disable rendering")
                         .build();
 
                 public static ConfigEntry<DebugMode> debugMode = new ConfigEntry.Builder<DebugMode>()

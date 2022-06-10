@@ -17,21 +17,29 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.api.external.apiObjects.enums;
+package com.seibel.lod.core.enums.rendering;
 
 /**
- * NEAR, FAR, or NEAR_AND_FAR.
+ * USE_OPTIFINE_FOG_SETTING, <br>
+ * FOG_ENABLED, <br>
+ * FOG_DISABLED <br>
  * 
  * @author James Seibel
  * @version 2022-6-2
  */
-public enum DhApiFogDistance
+public enum FogDrawMode
 {
 	// Reminder:
 	// when adding items up the API minor version
 	// when removing items up the API major version
 	
-	NEAR,
-	FAR,
-	NEAR_AND_FAR
+	/**
+	 * Use whatever Fog setting optifine is using.
+	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
+	 */
+	USE_OPTIFINE_SETTING,
+	
+	FOG_ENABLED,
+	FOG_DISABLED;
+	
 }
