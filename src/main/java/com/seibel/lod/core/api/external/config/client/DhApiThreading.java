@@ -1,6 +1,7 @@
 package com.seibel.lod.core.api.external.config.client;
 
-import com.seibel.lod.core.api.external.apiObjects.objects.DhApiConfig_v1;
+import com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces.IDhApiConfig_v1;
+import com.seibel.lod.core.api.externalImplementation.apiObjects.wrappers.DhApiConfig_v1;
 import com.seibel.lod.core.config.Config.Client.Advanced.Threading;
 
 
@@ -8,7 +9,7 @@ import com.seibel.lod.core.config.Config.Client.Advanced.Threading;
  * General Threading settings.
  *
  * @author James Seibel
- * @version 2022-6-2
+ * @version 2022-6-9
  */
 public class DhApiThreading
 {
@@ -25,12 +26,12 @@ public class DhApiThreading
 	 * 1.5 = 2 threads active 100% of the time (partial values are rounded up) <br>
 	 * 2.0 = 2 threads active 100% of the time <br>
 	 */
-	public static DhApiConfig_v1<Double> getWorldGeneratorThreadConfig_v1()
+	public static IDhApiConfig_v1<Double> getWorldGeneratorThreadConfig_v1()
 	{ return new DhApiConfig_v1<>(Threading.numberOfWorldGenerationThreads); }
 	
 	
 	/** Returns the config related to the buffer (GPU Terrain data) builder threads. */
-	public static DhApiConfig_v1<Integer> getBufferBuilderThreadConfig_v1()
+	public static IDhApiConfig_v1<Integer> getBufferBuilderThreadConfig_v1()
 	{ return new DhApiConfig_v1<>(Threading.numberOfBufferBuilderThreads); }
 	
 }
