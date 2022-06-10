@@ -16,16 +16,15 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+ 
+package com.seibel.lod.core.enums.config;
 
-package com.seibel.lod.core.api.external.apiObjects.enums;
-
-/**
- * Assembly classes are used to reference the package they are in.
- *
- * @author James Seibel
- * @version 2022-6-9
- */
-public class DhApiEnumAssembly
+public enum ELightGenerationMode
 {
-	public static final String API_ENUM_PREFIX = "EDhApi";
+	
+	// Fake in light values based on height maps
+	FAST,
+	
+	// Run the light engine though the chunk to generate proper light values
+	FANCY
 }

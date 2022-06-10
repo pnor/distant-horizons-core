@@ -39,8 +39,8 @@ import org.lwjgl.opengl.GLUtil;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
+import com.seibel.lod.core.enums.rendering.EGLProxyContext;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.util.GLMessage;
 import com.seibel.lod.core.util.GLMessageOutputStream;
@@ -98,7 +98,7 @@ public class GLProxy
 	public boolean bufferStorageSupported = false; // ~OpenGL 4.4
 	public boolean VertexAttributeBufferBindingSupported = false; // ~OpenGL 4.3
 	
-	private final GpuUploadMethod preferredUploadMethod;
+	private final EGpuUploadMethod preferredUploadMethod;
 
 	public final GLMessage.Builder vanillaDebugMessageBuilder;
 	public final GLMessage.Builder lodBuilderDebugMessageBuilder;
@@ -295,7 +295,7 @@ public class GLProxy
 		// get any GPU related capabilities //
 		//==================================//
 		
-		setGlContext(GLProxyContext.LOD_BUILDER);
+		setGlContext(EGLProxyContext.LOD_BUILDER);
 
 		GLUtil.setupDebugMessageCallback(new PrintStream(new GLMessageOutputStream(GLProxy::logMessage, lodBuilderDebugMessageBuilder), true));
 		
@@ -313,17 +313,17 @@ public class GLProxy
 		if (vendor.contains("NVIDIA") || vendor.contains("GEFORCE"))
 		{
 			// NVIDIA card
-			preferredUploadMethod = bufferStorageSupported ? GpuUploadMethod.BUFFER_STORAGE : GpuUploadMethod.SUB_DATA;
+			preferredUploadMethod = bufferStorageSupported ? EGpuUploadMethod.BUFFER_STORAGE : EGpuUploadMethod.SUB_DATA;
 		}
 		else
 		{
 			// AMD or Intel card
-			preferredUploadMethod = GpuUploadMethod.BUFFER_MAPPING;
+			preferredUploadMethod = EGpuUploadMethod.BUFFER_MAPPING;
 		}
 
 		GL_LOGGER.info("GPU Vendor [" + vendor + "], Preferred upload method is [" + preferredUploadMethod + "].");
 
-		setGlContext(GLProxyContext.PROXY_WORKER);
+		setGlContext(EGLProxyContext.PROXY_WORKER);
 		
 		GLUtil.setupDebugMessageCallback(new PrintStream(new GLMessageOutputStream(GLProxy::logMessage, proxyWorkerDebugMessageBuilder), true));
 		
@@ -332,7 +332,7 @@ public class GLProxy
 		//==========//
 		
 		// Since this is created on the render thread, make sure the Minecraft context is used in the end
-        setGlContext(GLProxyContext.MINECRAFT);
+        setGlContext(EGLProxyContext.MINECRAFT);
 		
 		// GLProxy creation success
 		GL_LOGGER.info(GLProxy.class.getSimpleName() + " creation successful. OpenGL smiles upon you this day.");
@@ -342,9 +342,9 @@ public class GLProxy
 	 * A wrapper function to make switching contexts easier. <br>
 	 * Does nothing if the calling thread is already using newContext.
 	 */
-	public void setGlContext(GLProxyContext newContext)
+	public void setGlContext(EGLProxyContext newContext)
 	{
-		GLProxyContext currentContext = getGlContext();
+		EGLProxyContext currentContext = getGlContext();
 		
 		// we don't have to change the context, we are already there.
 		if (currentContext == newContext)
@@ -383,19 +383,19 @@ public class GLProxy
 	}
 	
 	/** Returns this thread's OpenGL context. */
-	public GLProxyContext getGlContext()
+	public EGLProxyContext getGlContext()
 	{
 		long currentContext = GLFW.glfwGetCurrentContext();
 		
 		
 		if (currentContext == lodBuilderGlContext)
-			return GLProxyContext.LOD_BUILDER;
+			return EGLProxyContext.LOD_BUILDER;
 		else if (currentContext == minecraftGlContext)
-			return GLProxyContext.MINECRAFT;
+			return EGLProxyContext.MINECRAFT;
 		else if (currentContext == proxyWorkerGlContext)
-			return GLProxyContext.PROXY_WORKER;
+			return EGLProxyContext.PROXY_WORKER;
 		else if (currentContext == 0L)
-			return GLProxyContext.NONE;
+			return EGLProxyContext.NONE;
 		else
 			// hopefully this shouldn't happen
 			throw new IllegalStateException(Thread.currentThread().getName() + 
@@ -417,17 +417,17 @@ public class GLProxy
 		return instance;
 	}
 	
-	public GpuUploadMethod getGpuUploadMethod() {
-		GpuUploadMethod method = CONFIG.client().advanced().buffers().getGpuUploadMethod();
+	public EGpuUploadMethod getGpuUploadMethod() {
+		EGpuUploadMethod method = CONFIG.client().advanced().buffers().getGpuUploadMethod();
 
-		if (!bufferStorageSupported && method == GpuUploadMethod.BUFFER_STORAGE)
+		if (!bufferStorageSupported && method == EGpuUploadMethod.BUFFER_STORAGE)
 		{
 			// if buffer storage isn't supported
 			// default to SUB_DATA
-			method = GpuUploadMethod.SUB_DATA;
+			method = EGpuUploadMethod.SUB_DATA;
 		}
 		
-		return method == GpuUploadMethod.AUTO ? preferredUploadMethod : method;
+		return method == EGpuUploadMethod.AUTO ? preferredUploadMethod : method;
 	}
 	
 	/** 
@@ -446,7 +446,7 @@ public class GLProxy
 		try
 		{
 			// set up the context...
-			setGlContext(GLProxyContext.PROXY_WORKER);
+			setGlContext(EGLProxyContext.PROXY_WORKER);
 			// ...run the actual code...
 			renderCall.run();
 		}
@@ -459,7 +459,7 @@ public class GLProxy
 		finally
 		{
 			// ...and make sure the context is released when the thread finishes
-			setGlContext(GLProxyContext.NONE);	
+			setGlContext(EGLProxyContext.NONE);
 		}
 	}
 	

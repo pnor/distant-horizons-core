@@ -19,8 +19,8 @@
 
 package com.seibel.lod.core.render;
 
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
-import com.seibel.lod.core.enums.rendering.FogDistance;
+import com.seibel.lod.core.enums.rendering.EFogDrawMode;
+import com.seibel.lod.core.enums.rendering.EFogDistance;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -49,10 +49,10 @@ public class LodFogConfig
 	
 	public static final boolean DEBUG_DUMP_GENERATED_CODE = false;
 	
-	public final FogSetting farFogSetting;
-	public final FogSetting heightFogSetting;
-	public final HeightFogMixMode heightFogMixMode;
-	public final HeightFogMode heightFogMode;
+	public final EFogSetting farFogSetting;
+	public final EFogSetting heightFogSetting;
+	public final EHeightFogMixMode heightFogMixMode;
+	public final EHeightFogMode heightFogMode;
 	public final float heightFogHeight;
 	
 	final boolean drawNearFog;
@@ -62,33 +62,33 @@ public class LodFogConfig
 	
 	public static LodFogConfig generateFogConfig()
 	{
-		FogDrawMode fogMode = CONFIG.client().graphics().fogQuality().getFogDrawMode();
-		if (fogMode == FogDrawMode.USE_OPTIFINE_SETTING)
+		EFogDrawMode fogMode = CONFIG.client().graphics().fogQuality().getFogDrawMode();
+		if (fogMode == EFogDrawMode.USE_OPTIFINE_SETTING)
 			fogMode = REFLECTION_HANDLER.getFogDrawMode();
 		
 		return new LodFogConfig(fogMode);
 	}
 	
 	/** sets all fog options from the config */
-	private LodFogConfig(FogDrawMode fogDrawMode)
+	private LodFogConfig(EFogDrawMode fogDrawMode)
 	{
 		earthCurveRatio = CONFIG.client().graphics().advancedGraphics().getEarthCurveRatio(); //FIXME: Move this out of here
 
-		if (fogDrawMode != FogDrawMode.FOG_DISABLED)
+		if (fogDrawMode != EFogDrawMode.FOG_DISABLED)
 		{
 			ILodConfigWrapperSingleton.IClient.IGraphics.IFogQuality fogSettings = CONFIG.client().graphics().fogQuality();
 			
-			FogDistance fogDistance = fogSettings.getFogDistance();
-			drawNearFog = (fogDistance == FogDistance.NEAR || fogDistance == FogDistance.NEAR_AND_FAR);
+			EFogDistance fogDistance = fogSettings.getFogDistance();
+			drawNearFog = (fogDistance == EFogDistance.NEAR || fogDistance == EFogDistance.NEAR_AND_FAR);
 			
-			if (fogDistance == FogDistance.FAR || fogDistance == FogDistance.NEAR_AND_FAR)
+			if (fogDistance == EFogDistance.FAR || fogDistance == EFogDistance.NEAR_AND_FAR)
 			{
 				// far fog should be drawn
 				
 				farFogSetting = fogSettings.advancedFog().computeFarFogSetting();
 				
 				heightFogMixMode = fogSettings.advancedFog().heightFog().getHeightFogMixMode();
-				if (heightFogMixMode == HeightFogMixMode.IGNORE_HEIGHT || heightFogMixMode == HeightFogMixMode.BASIC)
+				if (heightFogMixMode == EHeightFogMixMode.IGNORE_HEIGHT || heightFogMixMode == EHeightFogMixMode.BASIC)
 				{
 					// basic fog mixing
 					
@@ -211,7 +211,7 @@ public class LodFogConfig
 			str.append("" +
 				"float calculateFarFogDepth(float horizontal, float dist, float nearFogStart) \n" +
 				"{ \n" +
-				"	return " + (heightFogMixMode == HeightFogMixMode.BASIC ?
+				"	return " + (heightFogMixMode == EHeightFogMixMode.BASIC ?
 								"(dist - nearFogStart)/(1.0 - nearFogStart);" :
 								"(horizontal - nearFogStart)/(1.0 - nearFogStart);") +
 				"} \n");
@@ -238,8 +238,8 @@ public class LodFogConfig
 		str.append("// =======RUNTIME GENERATED DEFINE SECTION======== //\n");
 		str.append("#version 150 core\n");
 		
-		FogSetting activeFarFogSetting = this.farFogSetting != null ? this.farFogSetting : FogSetting.EMPTY;
-		FogSetting activeHeightFogSetting = this.heightFogSetting != null ? this.heightFogSetting : FogSetting.EMPTY;
+		EFogSetting activeFarFogSetting = this.farFogSetting != null ? this.farFogSetting : EFogSetting.EMPTY;
+		EFogSetting activeHeightFogSetting = this.heightFogSetting != null ? this.heightFogSetting : EFogSetting.EMPTY;
 		
 		str.append("\n" +
 			"#define farFogStart " + activeFarFogSetting.start + "\n" +
@@ -259,7 +259,7 @@ public class LodFogConfig
 		return str;
 	}
 	
-	private static String getFarFogMethod(FogSetting.FogType fogType)
+	private static String getFarFogMethod(EFogSetting.FogType fogType)
 	{
 		switch (fogType)
 		{
@@ -275,7 +275,7 @@ public class LodFogConfig
 		}
 	}
 	
-	private static String getHeightDepthMethod(HeightFogMode heightMode, float heightFogHeight)
+	private static String getHeightDepthMethod(EHeightFogMode heightMode, float heightFogHeight)
 	{
 		String str = "";
 		if (!heightMode.basedOnCamera)
@@ -307,7 +307,7 @@ public class LodFogConfig
 	 * Example: <br>
 	 * <code>"	return linearFog(dist, heightFogStart, heightFogLength, heightFogMin, heightFogRange);"</code>
 	 */
-	private static String getHeightFogMethod(FogSetting.FogType fogType)
+	private static String getHeightFogMethod(EFogSetting.FogType fogType)
 	{
 		switch (fogType)
 		{
@@ -327,7 +327,7 @@ public class LodFogConfig
 	 * creates a line in the format <br>
 	 * <code>"	return max(1.0-near, far);" </code>
 	 */
-	private static String getMixFogLine(HeightFogMixMode heightFogMode, boolean drawNearFog)
+	private static String getMixFogLine(EHeightFogMixMode heightFogMode, boolean drawNearFog)
 	{
 		String str = "	return ";
 		

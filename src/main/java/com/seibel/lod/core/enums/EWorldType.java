@@ -25,7 +25,7 @@ package com.seibel.lod.core.enums;
  * @author James Seibel
  * @version 11-12-2021
  */
-public enum WorldType
+public enum EWorldType
 {
 	ServerWorld,
 	ClientWorld,

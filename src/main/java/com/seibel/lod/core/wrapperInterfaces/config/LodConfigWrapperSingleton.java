@@ -1,9 +1,9 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
-import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.RendererType;
+import com.seibel.lod.core.enums.rendering.EFogDrawMode;
+import com.seibel.lod.core.enums.rendering.EFogColorMode;
+import com.seibel.lod.core.enums.rendering.EFogDistance;
+import com.seibel.lod.core.enums.rendering.ERendererType;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
@@ -121,12 +121,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			public static class Quality implements IQuality
 			{
 				@Override
-				public HorizontalResolution getDrawResolution()
+				public EHorizontalResolution getDrawResolution()
 				{
 					return Config.Client.Graphics.Quality.drawResolution.get();
 				}
 				@Override
-				public void setDrawResolution(HorizontalResolution newHorizontalResolution)
+				public void setDrawResolution(EHorizontalResolution newHorizontalResolution)
 				{
 					Config.Client.Graphics.Quality.drawResolution.set(newHorizontalResolution);
 				}
@@ -145,12 +145,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 
 
 				@Override
-				public VerticalQuality getVerticalQuality()
+				public EVerticalQuality getVerticalQuality()
 				{
 					return Config.Client.Graphics.Quality.verticalQuality.get();
 				}
 				@Override
-				public void setVerticalQuality(VerticalQuality newVerticalQuality)
+				public void setVerticalQuality(EVerticalQuality newVerticalQuality)
 				{
 					Config.Client.Graphics.Quality.verticalQuality.set(newVerticalQuality);
 				}
@@ -169,22 +169,22 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 
 
 				@Override
-				public HorizontalQuality getHorizontalQuality()
+				public EHorizontalQuality getHorizontalQuality()
 				{
 					return Config.Client.Graphics.Quality.horizontalQuality.get();
 				}
 				@Override
-				public void setHorizontalQuality(HorizontalQuality newHorizontalQuality)
+				public void setHorizontalQuality(EHorizontalQuality newHorizontalQuality)
 				{
 					Config.Client.Graphics.Quality.horizontalQuality.set(newHorizontalQuality);
 				}
 
 				@Override
-				public DropoffQuality getDropoffQuality() {
+				public EDropoffQuality getDropoffQuality() {
 					return Config.Client.Graphics.Quality.dropoffQuality.get();
 				}
 				@Override
-				public void setDropoffQuality(DropoffQuality newDropoffQuality) {
+				public void setDropoffQuality(EDropoffQuality newDropoffQuality) {
 					Config.Client.Graphics.Quality.dropoffQuality.set(newDropoffQuality);
 				}
 
@@ -210,38 +210,38 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				}
 
 				@Override
-				public FogDistance getFogDistance()
+				public EFogDistance getFogDistance()
 				{
 					return Config.Client.Graphics.FogQuality.fogDistance.get();
 				}
 				@Override
-				public void setFogDistance(FogDistance newFogDistance)
+				public void setFogDistance(EFogDistance newFogDistance)
 				{
 					Config.Client.Graphics.FogQuality.fogDistance.set(newFogDistance);
 				}
 
 
 				@Override
-				public FogDrawMode getFogDrawMode()
+				public EFogDrawMode getFogDrawMode()
 				{
 					return Config.Client.Graphics.FogQuality.fogDrawMode.get();
 				}
 
 				@Override
-				public void setFogDrawMode(FogDrawMode setFogDrawMode)
+				public void setFogDrawMode(EFogDrawMode setFogDrawMode)
 				{
 					Config.Client.Graphics.FogQuality.fogDrawMode.set(setFogDrawMode);
 				}
 
 
 				@Override
-				public FogColorMode getFogColorMode()
+				public EFogColorMode getFogColorMode()
 				{
 					return Config.Client.Graphics.FogQuality.fogColorMode.get();
 				}
 
 				@Override
-				public void setFogColorMode(FogColorMode newFogColorMode)
+				public void setFogColorMode(EFogColorMode newFogColorMode)
 				{
 					Config.Client.Graphics.FogQuality.fogColorMode.set(newFogColorMode);
 				}
@@ -287,7 +287,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogMax.get();
 					}
 					@Override
-					public FogSetting.FogType getFarFogType() {
+					public EFogSetting.FogType getFarFogType() {
 						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogType.get();
 					}
 					@Override
@@ -312,7 +312,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 						Config.Client.Graphics.FogQuality.AdvancedFog.farFogMax.set(newFarFogMax);
 					}
 					@Override
-					public void setFarFogType(FogSetting.FogType newFarFogType) {
+					public void setFarFogType(EFogSetting.FogType newFarFogType) {
 						Config.Client.Graphics.FogQuality.AdvancedFog.farFogType.set(newFarFogType);
 					}
 					@Override
@@ -328,11 +328,11 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 					public static class HeightFog implements IHeightFog {
 
 						@Override
-						public HeightFogMixMode getHeightFogMixMode() {
+						public EHeightFogMixMode getHeightFogMixMode() {
 							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMixMode.get();
 						}
 						@Override
-						public HeightFogMode getHeightFogMode() {
+						public EHeightFogMode getHeightFogMode() {
 							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMode.get();
 						}
 						@Override
@@ -356,7 +356,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMax.get();
 						}
 						@Override
-						public FogSetting.FogType getHeightFogType() {
+						public EFogSetting.FogType getHeightFogType() {
 							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogType.get();
 						}
 						@Override
@@ -365,11 +365,11 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 						}
 
 						@Override
-						public void setHeightFogMixMode(HeightFogMixMode newHeightFogMixMode) {
+						public void setHeightFogMixMode(EHeightFogMixMode newHeightFogMixMode) {
 							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMixMode.set(newHeightFogMixMode);
 						}
 						@Override
-						public void setHeightFogMode(HeightFogMode newHeightFogMode) {
+						public void setHeightFogMode(EHeightFogMode newHeightFogMode) {
 							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMode.set(newHeightFogMode);
 						}
 						@Override
@@ -393,7 +393,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMax.set(newHeightFogMax);
 						}
 						@Override
-						public void setHeightFogType(FogSetting.FogType newHeightFogType) {
+						public void setHeightFogType(EFogSetting.FogType newHeightFogType) {
 							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogType.set(newHeightFogType);
 						}
 						@Override
@@ -421,12 +421,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 
 
 				@Override
-				public VanillaOverdraw getVanillaOverdraw()
+				public EVanillaOverdraw getVanillaOverdraw()
 				{
 					return Config.Client.Graphics.AdvancedGraphics.vanillaOverdraw.get();
 				}
 				@Override
-				public void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw)
+				public void setVanillaOverdraw(EVanillaOverdraw newVanillaOverdraw)
 				{
 					Config.Client.Graphics.AdvancedGraphics.vanillaOverdraw.set(newVanillaOverdraw);
 				}
@@ -531,24 +531,24 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		public static class WorldGenerator implements IWorldGenerator
 		{
 			@Override
-			public GenerationPriority getGenerationPriority()
+			public EGenerationPriority getGenerationPriority()
 			{
 				return Config.Client.WorldGenerator.generationPriority.get();
 			}
 			@Override
-			public void setGenerationPriority(GenerationPriority newGenerationPriority)
+			public void setGenerationPriority(EGenerationPriority newGenerationPriority)
 			{
 				Config.Client.WorldGenerator.generationPriority.set(newGenerationPriority);
 			}
 
 
 			@Override
-			public DistanceGenerationMode getDistanceGenerationMode()
+			public EDistanceGenerationMode getDistanceGenerationMode()
 			{
 				return Config.Client.WorldGenerator.distanceGenerationMode.get();
 			}
 			@Override
-			public void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode)
+			public void setDistanceGenerationMode(EDistanceGenerationMode newDistanceGenerationMode)
 			{
 				Config.Client.WorldGenerator.distanceGenerationMode.set(newDistanceGenerationMode);
 			}
@@ -568,12 +568,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 
 
 			@Override
-			public BlocksToAvoid getBlocksToAvoid()
+			public EBlocksToAvoid getBlocksToAvoid()
 			{
 				return Config.Client.WorldGenerator.blocksToAvoid.get();
 			}
 			@Override
-			public void setBlockToAvoid(BlocksToAvoid newBlockToAvoid)
+			public void setBlockToAvoid(EBlocksToAvoid newBlockToAvoid)
 			{
 				Config.Client.WorldGenerator.blocksToAvoid.set(newBlockToAvoid);
 			}
@@ -599,12 +599,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				Config.Client.WorldGenerator.enableDistantGeneration.set(newEnableDistantGeneration);
 			}
 			@Override
-			public LightGenerationMode getLightGenerationMode()
+			public ELightGenerationMode getLightGenerationMode()
 			{
 				return Config.Client.WorldGenerator.lightGenerationMode.get();
 			}
 			@Override
-			public void setLightGenerationMode(LightGenerationMode newLightGenerationMode)
+			public void setLightGenerationMode(ELightGenerationMode newLightGenerationMode)
 			{
 				Config.Client.WorldGenerator.lightGenerationMode.set(newLightGenerationMode);
 			}
@@ -618,12 +618,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 		public static class Multiplayer implements IMultiplayer
 		{
 			@Override
-			public ServerFolderNameMode getServerFolderNameMode()
+			public EServerFolderNameMode getServerFolderNameMode()
 			{
 				return Config.Client.Multiplayer.serverFolderNameMode.get();
 			}
 			@Override
-			public void setServerFolderNameMode(ServerFolderNameMode newServerFolderNameMode)
+			public void setServerFolderNameMode(EServerFolderNameMode newServerFolderNameMode)
 			{
 				Config.Client.Multiplayer.serverFolderNameMode.set(newServerFolderNameMode);
 			}
@@ -729,21 +729,21 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				 * DISABLED
 				 * */
 				@Override
-				public RendererType getRendererType() {
+				public ERendererType getRendererType() {
 					return Config.Client.Advanced.Debugging.rendererType.get();
 				}
 				@Override
-				public void setRendererType(RendererType newRenderType) {
+				public void setRendererType(ERendererType newRenderType) {
 					Config.Client.Advanced.Debugging.rendererType.set(newRenderType);
 				}
 
 				@Override
-				public DebugMode getDebugMode()
+				public EDebugMode getDebugMode()
 				{
 					return Config.Client.Advanced.Debugging.debugMode.get();
 				}
 				@Override
-				public void setDebugMode(DebugMode newDebugMode)
+				public void setDebugMode(EDebugMode newDebugMode)
 				{
 					Config.Client.Advanced.Debugging.debugMode.set(newDebugMode);
 				}
@@ -780,83 +780,83 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 					 */
 
 					@Override
-					public LoggerMode getLogWorldGenEvent() {
+					public ELoggerMode getLogWorldGenEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenEvent.get();
 					}
 					@Override
-					public void setLogWorldGenEvent(LoggerMode newLogWorldGenEvent) {
+					public void setLogWorldGenEvent(ELoggerMode newLogWorldGenEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenEvent.set(newLogWorldGenEvent);
 					}
 
 					@Override
-					public LoggerMode getLogWorldGenPerformance() {
+					public ELoggerMode getLogWorldGenPerformance() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenPerformance.get();
 					}
 					@Override
-					public void setLogWorldGenPerformance(LoggerMode newLogWorldGenPerformance) {
+					public void setLogWorldGenPerformance(ELoggerMode newLogWorldGenPerformance) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenPerformance.set(newLogWorldGenPerformance);
 					}
 
 					@Override
-					public LoggerMode getLogWorldGenLoadEvent() {
+					public ELoggerMode getLogWorldGenLoadEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenLoadEvent.get();
 					}
 					@Override
-					public void setLogWorldGenLoadEvent(LoggerMode newLogWorldGenLoadEvent) {
+					public void setLogWorldGenLoadEvent(ELoggerMode newLogWorldGenLoadEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logWorldGenLoadEvent.set(newLogWorldGenLoadEvent);
 					}
 
 					@Override
-					public LoggerMode getLogLodBuilderEvent() {
+					public ELoggerMode getLogLodBuilderEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logLodBuilderEvent.get();
 					}
 					@Override
-					public void setLogLodBuilderEvent(LoggerMode newLogLodBuilderEvent) {
+					public void setLogLodBuilderEvent(ELoggerMode newLogLodBuilderEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logLodBuilderEvent.set(newLogLodBuilderEvent);
 					}
 
 					@Override
-					public LoggerMode getLogRendererBufferEvent() {
+					public ELoggerMode getLogRendererBufferEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logRendererBufferEvent.get();
 					}
 					@Override
-					public void setLogRendererBufferEvent(LoggerMode newLogRendererBufferEvent) {
+					public void setLogRendererBufferEvent(ELoggerMode newLogRendererBufferEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logRendererBufferEvent.set(newLogRendererBufferEvent);
 					}
 
 					@Override
-					public LoggerMode getLogRendererGLEvent() {
+					public ELoggerMode getLogRendererGLEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logRendererGLEvent.get();
 					}
 					@Override
-					public void setLogRendererGLEvent(LoggerMode newLogRendererGLEvent) {
+					public void setLogRendererGLEvent(ELoggerMode newLogRendererGLEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logRendererGLEvent.set(newLogRendererGLEvent);
 					}
 
 					@Override
-					public LoggerMode getLogFileReadWriteEvent() {
+					public ELoggerMode getLogFileReadWriteEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logFileReadWriteEvent.get();
 					}
 					@Override
-					public void setLogFileReadWriteEvent(LoggerMode newLogFileReadWriteEvent) {
+					public void setLogFileReadWriteEvent(ELoggerMode newLogFileReadWriteEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logFileReadWriteEvent.set(newLogFileReadWriteEvent);
 					}
 
 					@Override
-					public LoggerMode getLogFileSubDimEvent() {
+					public ELoggerMode getLogFileSubDimEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.get();
 					}
 					@Override
-					public void setLogFileSubDimEvent(LoggerMode newLogFileSubDimEvent) {
+					public void setLogFileSubDimEvent(ELoggerMode newLogFileSubDimEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.set(newLogFileSubDimEvent);
 					}
 
 					@Override
-					public LoggerMode getLogNetworkEvent() {
+					public ELoggerMode getLogNetworkEvent() {
 						return Config.Client.Advanced.Debugging.DebugSwitch.logNetworkEvent.get();
 					}
 					@Override
-					public void setLogNetworkEvent(LoggerMode newLogNetworkEvent) {
+					public void setLogNetworkEvent(ELoggerMode newLogNetworkEvent) {
 						Config.Client.Advanced.Debugging.DebugSwitch.logNetworkEvent.set(newLogNetworkEvent);
 					}
 				}
@@ -867,12 +867,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 			{
 
 				@Override
-				public GpuUploadMethod getGpuUploadMethod()
+				public EGpuUploadMethod getGpuUploadMethod()
 				{
 					return Config.Client.Advanced.Buffers.gpuUploadMethod.get();
 				}
 				@Override
-				public void setGpuUploadMethod(GpuUploadMethod newDisableVanillaFog)
+				public void setGpuUploadMethod(EGpuUploadMethod newDisableVanillaFog)
 				{
 					Config.Client.Advanced.Buffers.gpuUploadMethod.set(newDisableVanillaFog);
 				}
@@ -890,12 +890,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 
 
 				@Override
-				public BufferRebuildTimes getRebuildTimes()
+				public EBufferRebuildTimes getRebuildTimes()
 				{
 					return Config.Client.Advanced.Buffers.rebuildTimes.get();
 				}
 				@Override
-				public void setRebuildTimes(BufferRebuildTimes newBufferRebuildTimes)
+				public void setRebuildTimes(EBufferRebuildTimes newBufferRebuildTimes)
 				{
 					Config.Client.Advanced.Buffers.rebuildTimes.set(newBufferRebuildTimes);
 				}

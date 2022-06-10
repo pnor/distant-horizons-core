@@ -25,20 +25,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import com.seibel.lod.core.api.internal.EventApi;
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.enums.LodDirection.Axis;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.ELodDirection;
+import com.seibel.lod.core.enums.ELodDirection.Axis;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
-import net.minecraft.core.Direction;
 
 import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
@@ -181,11 +177,11 @@ public class LodQuadBuilder
 	
 	
 	
-	public void addQuadAdj(LodDirection dir, short x, short y, short z,
+	public void addQuadAdj(ELodDirection dir, short x, short y, short z,
 			short widthEastWest, short widthNorthSouthOrUpDown,
 			int color, byte skylight, byte blocklight)
 	{
-		if (dir.ordinal() <= LodDirection.DOWN.ordinal())
+		if (dir.ordinal() <= ELodDirection.DOWN.ordinal())
 			throw new IllegalArgumentException("addQuadAdj() is only for adj direction! Not UP or Down!");
 		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
 			return;
@@ -206,8 +202,8 @@ public class LodQuadBuilder
 	{
 		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
 			return;
-		BufferQuad quad = new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, LodDirection.UP);
-		ArrayList<BufferQuad> qs = quads[LodDirection.UP.ordinal()];
+		BufferQuad quad = new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, ELodDirection.UP);
+		ArrayList<BufferQuad> qs = quads[ELodDirection.UP.ordinal()];
 		if (!qs.isEmpty() &&
 				(qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.EastWest)
 						|| qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.NorthSouthOrUpDown))
@@ -222,8 +218,8 @@ public class LodQuadBuilder
 	{
 		if (skipQuadsWithZeroSkylight && skylight == 0 && y < skyLightCullingBelow)
 			return;
-		BufferQuad quad = new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, LodDirection.DOWN);
-		ArrayList<BufferQuad> qs = quads[LodDirection.DOWN.ordinal()];
+		BufferQuad quad = new BufferQuad(x, y, z, width, wz, color, skylight, blocklight, ELodDirection.DOWN);
+		ArrayList<BufferQuad> qs = quads[ELodDirection.DOWN.ordinal()];
 		if (!qs.isEmpty() &&
 				(qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.EastWest)
 						|| qs.get(qs.size()-1).tryMerge(quad, BufferMergeDirectionEnum.NorthSouthOrUpDown))
@@ -442,7 +438,7 @@ public class LodQuadBuilder
 		boolean fill(GLVertexBuffer vbo);
 	}
 	
-	public BufferFiller makeBufferFiller(GpuUploadMethod method)
+	public BufferFiller makeBufferFiller(EGpuUploadMethod method)
 	{
 		return new BufferFiller()
 		{

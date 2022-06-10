@@ -22,7 +22,7 @@ package com.seibel.lod.core.objects.opengl;
 import java.util.ConcurrentModificationException;
 
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.StatsMap;
 
@@ -66,7 +66,7 @@ public abstract class RenderBuffer implements AutoCloseable
 
 	/* Return false if current renderMethod is not suited for current builder
 	 * This will auto close the object if returning false. */
-	final public boolean tryUploadBuffers(LodQuadBuilder builder, GpuUploadMethod uploadMethod) {
+	final public boolean tryUploadBuffers(LodQuadBuilder builder, EGpuUploadMethod uploadMethod) {
 		_lockThread(State.Uploading);
 		boolean successful = false;
 		try {
@@ -102,7 +102,7 @@ public abstract class RenderBuffer implements AutoCloseable
 	 *  If false, close call will be automatically triggered.
 	 *  If true, the object will be used (by first calling the swapBufferToFront())
 	 *  on tick render. */
-	protected abstract boolean uploadBuffers(LodQuadBuilder builder, GpuUploadMethod uploadMethod);
+	protected abstract boolean uploadBuffers(LodQuadBuilder builder, EGpuUploadMethod uploadMethod);
 	
 	// ========== Called by render thread ==========
 	

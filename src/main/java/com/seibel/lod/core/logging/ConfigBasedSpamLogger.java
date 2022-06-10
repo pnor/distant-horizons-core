@@ -20,13 +20,12 @@
 package com.seibel.lod.core.logging;
 
 import com.seibel.lod.core.api.internal.ClientApi;
-import com.seibel.lod.core.enums.config.LoggerMode;
+import com.seibel.lod.core.enums.config.ELoggerMode;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
 
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,13 +44,13 @@ public class ConfigBasedSpamLogger {
         });
     }
 
-    private LoggerMode mode;
-    private final Supplier<LoggerMode> getter;
+    private ELoggerMode mode;
+    private final Supplier<ELoggerMode> getter;
     private final int maxLogCount;
     private final AtomicInteger logTries = new AtomicInteger(0);
     private final Logger logger;
 
-    public ConfigBasedSpamLogger(Logger logger, Supplier<LoggerMode> configQuery, int maxLogPerSec) {
+    public ConfigBasedSpamLogger(Logger logger, Supplier<ELoggerMode> configQuery, int maxLogPerSec) {
         getter = configQuery;
         mode = getter.get();
         maxLogCount = maxLogPerSec;
@@ -59,7 +58,7 @@ public class ConfigBasedSpamLogger {
         loggers.add(new WeakReference<>(this));
     }
     public void reset() {logTries.set(0);}
-    public boolean canMaybeLog() {return mode != LoggerMode.DISABLED && logTries.get() < maxLogCount;}
+    public boolean canMaybeLog() {return mode != ELoggerMode.DISABLED && logTries.get() < maxLogCount;}
     public void update() {
         mode = getter.get();
     }

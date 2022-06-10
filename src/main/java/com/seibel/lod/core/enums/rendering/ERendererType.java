@@ -16,22 +16,47 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+ 
 package com.seibel.lod.core.enums.rendering;
 
 /**
- * NEAR, FAR, or NEAR_AND_FAR.
- * 
- * @author James Seibel
+ * Default
+ * Debug
+ * Disabled
+ *
  * @version 2022-6-2
  */
-public enum FogDistance
+public enum ERendererType
 {
-	// Reminder:
-	// when adding items up the API minor version
-	// when removing items up the API major version
-	
-	NEAR,
-	FAR,
-	NEAR_AND_FAR
+    // Reminder:
+    // when adding items up the API minor version
+    // when removing items up the API major version
+    
+    DEFAULT,
+    DEBUG,
+    DISABLED;
+    
+    
+    /** Used by the config GUI to cycle through the available rendering options */
+    public static ERendererType next(ERendererType type)
+    {
+        switch (type)
+        {
+            case DEFAULT: return DEBUG;
+            case DEBUG: return DISABLED;
+            default: return DEFAULT;
+        }
+    }
+    
+    /** Used by the config GUI to cycle through the available rendering options */
+    public static ERendererType previous(ERendererType type)
+    {
+        switch (type)
+        {
+            case DEFAULT: return DISABLED;
+            case DEBUG: return DEFAULT;
+            default: return DEBUG;
+        }
+    }
+    
 }

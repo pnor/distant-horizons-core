@@ -38,9 +38,9 @@ import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
-import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.enums.rendering.FogDistance;
+import com.seibel.lod.core.enums.rendering.EDebugMode;
+import com.seibel.lod.core.enums.rendering.EFogColorMode;
+import com.seibel.lod.core.enums.rendering.EFogDistance;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -95,7 +95,7 @@ public class LodRenderer
 	 * If true the LODs colors will be replaced with
 	 * a checkerboard, this can be used for debugging.
 	 */
-	public DebugMode previousDebugMode = DebugMode.OFF;
+	public EDebugMode previousDebugMode = EDebugMode.OFF;
 	
 	// This tells us if the renderer is enabled or not. If in a world, it should be enabled.
 	private boolean isSetupComplete = false;
@@ -118,7 +118,7 @@ public class LodRenderer
 	
 	
 	/** This is used to determine if the LODs should be regenerated */
-	private FogDistance prevFogDistance = FogDistance.NEAR_AND_FAR;
+	private EFogDistance prevFogDistance = EFogDistance.NEAR_AND_FAR;
 	
 	/**
 	 * if this is true the LOD buffers should be regenerated,
@@ -248,10 +248,10 @@ public class LodRenderer
 		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
 		LagSpikeCatcher drawSetPolygon = new LagSpikeCatcher();
-		if (CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_DETAIL_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_GENMODE_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == DebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
+		if (CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_DETAIL_WIREFRAME
+			|| CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_GENMODE_WIREFRAME
+			|| CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_WIREFRAME
+			|| CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
 			//GL32.glDisable(GL32.GL_CULL_FACE);
 		}
@@ -432,7 +432,7 @@ public class LodRenderer
 	{
 		Color fogColor;
 		
-		if (CONFIG.client().graphics().fogQuality().getFogColorMode() == FogColorMode.USE_SKY_COLOR)
+		if (CONFIG.client().graphics().fogQuality().getFogColorMode() == EFogColorMode.USE_SKY_COLOR)
 			fogColor = MC_RENDER.getSkyColor();
 		else
 			fogColor = MC_RENDER.getFogColor(partialTicks);

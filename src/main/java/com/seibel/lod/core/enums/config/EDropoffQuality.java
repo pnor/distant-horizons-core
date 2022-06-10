@@ -2,6 +2,7 @@
  *    This file is part of the Distant Horizons mod (formerly the LOD Mod),
  *    licensed under the GNU LGPL v3 License.
  *
+ *    Copyright (C) 2022  Tom Lee (TomTheFurry)
  *    Copyright (C) 2020-2022  James Seibel
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -16,28 +17,34 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+ 
 package com.seibel.lod.core.enums.config;
 
 /**
  * AUTO <br>
- * Near_First <br>
- * Far_First <br>
+ * SMOOTH_DROPOFF <br>
+ * PERFORMANCE_FOCUSED <br>
  * <br>
- * Determines which LODs should have priority when generating
- * outside the normal view distance.
+ * Determines how lod level drop off should be done
  * 
- * @author Leonardo Amato
- * @version 12-1-2021
+ * @author Tom Lee
+ * @version 7-1-2022
  */
-public enum GenerationPriority
+public enum EDropoffQuality
 {
-	/** NEAR_FIRST when connected to servers and BALANCED when on single player */
-	AUTO,
+
+	/** SMOOTH_DROPOFF when <128 lod view distance, or PERFORMANCE_FOCUSED otherwise */
+	AUTO(-1),
 	
-	NEAR_FIRST,
+	SMOOTH_DROPOFF(10),
 	
-	BALANCED,
+	PERFORMANCE_FOCUSED(0);
 	
-	FAR_FIRST
+	public final int fastModeSwitch;
+	
+	EDropoffQuality(int fastModeSwitch) {
+		this.fastModeSwitch = fastModeSwitch;
+	}
+	
+	
 }

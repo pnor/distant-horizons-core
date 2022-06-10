@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.wrapperInterfaces.chunk;
 
-import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
@@ -44,7 +44,7 @@ public interface IChunkWrapper extends IBindable
 	IBlockDetailWrapper getBlockDetail(int x, int y, int z);
 
 	// Returns null if block doesn't exist. Note that this can cross chunk boundaries.
-	IBlockDetailWrapper getBlockDetailAtFace(int x, int y, int z, LodDirection dir);
+	IBlockDetailWrapper getBlockDetailAtFace(int x, int y, int z, ELodDirection dir);
 
 	@Deprecated
 	int getChunkPosX();

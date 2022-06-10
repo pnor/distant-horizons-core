@@ -20,35 +20,34 @@
 package com.seibel.lod.core.enums.config;
 
 /**
- * FREQUENT <br>
- * NORMAL <br>
- * RARE <br>
+ * Lowest <br>
+ * Low <br>
+ * Medium <br>
+ * High <br>
  * <br>
- * Determines how fast the buffers need to be regenerated
+ * this indicates the base of the quadratic function we use for the quality drop off
  * 
  * @author Leonardo Amato
- * @version 9-25-2021
+ * @version 9-29-2021
  */
-public enum BufferRebuildTimes
+public enum EHorizontalQuality
 {
-	CONSTANT(0, 0, 0, 1),
+	/** 1.0 AKA Linear */
+	LOWEST(1.0f),
 	
-	FREQUENT(1000, 500, 2500, 1),
+	/** exponent 1.5 */
+	LOW(1.5f),
 	
-	NORMAL(2000, 1000, 5000, 4),
+	/** exponent 2.0 */
+	MEDIUM(2.0f),
 	
-	RARE(5000, 2000, 10000, 16);
+	/** exponent 2.2 */
+	HIGH(2.2f);
 	
-	public final int playerMoveTimeout;
-	public final int renderedChunkTimeout;
-	public final int chunkChangeTimeout;
-	public final int playerMoveDistance;
+	public final double quadraticBase;
 	
-	BufferRebuildTimes(int playerMoveTimeout, int renderedChunkTimeout, int chunkChangeTimeout, int playerMoveDistance)
+	EHorizontalQuality(double distanceUnit)
 	{
-		this.playerMoveTimeout = playerMoveTimeout;
-		this.renderedChunkTimeout = renderedChunkTimeout;
-		this.chunkChangeTimeout = chunkChangeTimeout;
-		this.playerMoveDistance = playerMoveDistance;
+		this.quadraticBase = distanceUnit;
 	}
 }

@@ -1,6 +1,6 @@
 package com.seibel.lod.core.objects.a7.datatype.column;
 
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.data.*;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
@@ -42,7 +42,7 @@ public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConv
 
 
 
-    private static DataFile convert(File file, int detailLevel, VerticalQuality quality) {
+    private static DataFile convert(File file, int detailLevel, EVerticalQuality quality) {
         String oldName = file.getName();
         String regionStr = oldName.substring("lod.".length(), oldName.length() - ".xz".length());
         String[] parts = regionStr.split("\\.");
@@ -71,15 +71,15 @@ public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConv
 
         List<DataFile> files = new ArrayList<>();
 
-        List<File> foldersToScan = new ArrayList<>(VerticalQuality.values().length);
-        for (VerticalQuality q : VerticalQuality.values()) {
+        List<File> foldersToScan = new ArrayList<>(EVerticalQuality.values().length);
+        for (EVerticalQuality q : EVerticalQuality.values()) {
             File qualityFolder = new File(levelFolder, q.toString());
             for (int i = 0; i < 10; i++) {
                 foldersToScan.add(new File(qualityFolder, "detail-"+i));
             }
         }
 
-        for (VerticalQuality q : VerticalQuality.values()) {
+        for (EVerticalQuality q : EVerticalQuality.values()) {
             for (int i = 0; i < 10; i++) {
                 File detailFolder = new File(levelFolder, q.toString() + File.pathSeparator + "detail-" + i);
                 if (!detailFolder.exists() || !detailFolder.isDirectory()) continue;

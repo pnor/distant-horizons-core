@@ -19,10 +19,9 @@
 
 package com.seibel.lod.core.builders.worldGeneration;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.enums.config.GenerationPriority;
+import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
+import com.seibel.lod.core.enums.config.EGenerationPriority;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
@@ -73,7 +72,7 @@ public class BatchGenerator
 			LOGGER.info("1.18 Experimental Chunk Generator reinitialized");
 		}
 
-		DistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
+		EDistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
 		int newThreadCount = CONFIG.client().advanced().threading()._getWorldGenerationThreadPoolSize();
 		if (newThreadCount != previousThreadCount) {
 			generationGroup.resizeThreadPool(newThreadCount);
@@ -82,9 +81,9 @@ public class BatchGenerator
 		if (estimatedPointsToQueue < newThreadCount)
 			estimatedPointsToQueue = newThreadCount;
 
-		GenerationPriority priority = CONFIG.client().worldGenerator().getGenerationPriority();
-		if (priority == GenerationPriority.AUTO)
-			priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.NEAR_FIRST;
+		EGenerationPriority priority = CONFIG.client().worldGenerator().getGenerationPriority();
+		if (priority == EGenerationPriority.AUTO)
+			priority = MC.hasSinglePlayerServer() ? EGenerationPriority.FAR_FIRST : EGenerationPriority.NEAR_FIRST;
 
 		generationGroup.updateAllFutures();
 		if (!MC.hasSinglePlayerServer())
@@ -149,7 +148,7 @@ public class BatchGenerator
 		if (ENABLE_GENERATOR_STATS_LOGGING)
 			LOGGER.info("WorldGen. Near:" + posToGenerate.getNumberOfNearPos() + " Far:"
 					+ posToGenerate.getNumberOfFarPos());
-		if (priority == GenerationPriority.FAR_FIRST || priority == GenerationPriority.BALANCED) {
+		if (priority == EGenerationPriority.FAR_FIRST || priority == EGenerationPriority.BALANCED) {
 
 			int nearCount = posToGenerate.getNumberOfNearPos();
 			int farCount = posToGenerate.getNumberOfFarPos();

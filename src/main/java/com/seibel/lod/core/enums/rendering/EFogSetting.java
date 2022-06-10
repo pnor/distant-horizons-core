@@ -26,10 +26,10 @@ import java.util.Objects;
  *
  * @version 2022-4-13
  */
-public class FogSetting
+public class EFogSetting
 {
     /** a FogSetting object with 0 for every value */
-    public static final FogSetting EMPTY = new FogSetting(0, 0, 0, 0,0, FogSetting.FogType.LINEAR);
+    public static final EFogSetting EMPTY = new EFogSetting(0, 0, 0, 0,0, EFogSetting.FogType.LINEAR);
     
     
 	public final double start;
@@ -39,7 +39,7 @@ public class FogSetting
 	public final double density;
 	public final FogType fogType;
 	
-	public FogSetting(double start, double end, double min, double max, double density, FogType fogType)
+	public EFogSetting(double start, double end, double min, double max, double density, FogType fogType)
 	{
 		this.start = start;
 		this.end = end;
@@ -56,7 +56,7 @@ public class FogSetting
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		FogSetting that = (FogSetting) o;
+		EFogSetting that = (EFogSetting) o;
 		return Double.compare(that.start, start) == 0 && Double.compare(that.end, end) == 0 && Double.compare(that.min, min) == 0 && Double.compare(that.max, max) == 0 && Double.compare(that.density, density) == 0 && fogType == that.fogType;
 	}
 	

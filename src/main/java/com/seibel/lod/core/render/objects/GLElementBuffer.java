@@ -19,10 +19,7 @@
 
 package com.seibel.lod.core.render.objects;
 
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import org.lwjgl.opengl.GL32;
-
-import java.nio.ByteBuffer;
 
 /**
  * This is a container for a OpenGL

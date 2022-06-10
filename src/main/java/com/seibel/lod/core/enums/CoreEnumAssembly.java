@@ -34,4 +34,7 @@ public class CoreEnumAssembly
 	// This is done so they can be found via reflection.
 	private static final CoreRenderingEnumAssembly renderingAssembly = new CoreRenderingEnumAssembly();
 	private static final CoreConfigEnumAssembly configAssembly = new CoreConfigEnumAssembly();
+	
+	/** All enums should have this prefix */
+	public static final String ENUM_PREFIX = "E";
 }

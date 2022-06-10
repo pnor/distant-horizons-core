@@ -26,7 +26,7 @@ package com.seibel.lod.core.enums.config;
  * @author Leonardo Amato
  * @version 2022-3-26
  */
-public enum VerticalQuality
+public enum EVerticalQuality
 {
 	LOW(
 			new int[] { 4, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1 },
@@ -53,23 +53,23 @@ public enum VerticalQuality
 	@Deprecated // Will find other ways to optimize
 	public final int maxConnectedLods;
 	
-	VerticalQuality(int[] maxVerticalData, int maxConnectedLods)
+	EVerticalQuality(int[] maxVerticalData, int maxConnectedLods)
 	{
 		this.maxVerticalData = maxVerticalData;
 		this.maxConnectedLods = maxConnectedLods;
 	}
 	
 	/** returns null if out of range */
-	public static VerticalQuality previous(VerticalQuality mode)
+	public static EVerticalQuality previous(EVerticalQuality mode)
 	{
 		switch (mode)
 		{
 		case ULTRA:
-			return VerticalQuality.HIGH;
+			return EVerticalQuality.HIGH;
 		case HIGH:
-			return VerticalQuality.MEDIUM;
+			return EVerticalQuality.MEDIUM;
 		case MEDIUM:
-			return VerticalQuality.LOW;
+			return EVerticalQuality.LOW;
 		case LOW:
 		default:
 			return null;
@@ -77,16 +77,16 @@ public enum VerticalQuality
 	}
 	
 	/** returns null if out of range */
-	public static VerticalQuality next(VerticalQuality mode)
+	public static EVerticalQuality next(EVerticalQuality mode)
 	{
 		switch (mode)
 		{
 		case MEDIUM:
-			return VerticalQuality.HIGH;
+			return EVerticalQuality.HIGH;
 		case LOW:
-			return VerticalQuality.MEDIUM;
+			return EVerticalQuality.MEDIUM;
 		case HIGH:
-			return VerticalQuality.ULTRA;
+			return EVerticalQuality.ULTRA;
 		case ULTRA:
 		default:
 			return null;
@@ -98,18 +98,18 @@ public enum VerticalQuality
 	 * Returns null if no enums match the name. <br>
 	 * Similar to valueOf(String value)
 	 */
-	public static VerticalQuality getByName(String name)
+	public static EVerticalQuality getByName(String name)
 	{
 		switch (name.toUpperCase())
 		{
 		case "ULTRA":
-			return VerticalQuality.ULTRA;
+			return EVerticalQuality.ULTRA;
 		case "HIGH":
-			return VerticalQuality.HIGH;
+			return EVerticalQuality.HIGH;
 		case "MEDIUM":
-			return VerticalQuality.MEDIUM;
+			return EVerticalQuality.MEDIUM;
 		case "LOW":
-			return VerticalQuality.LOW;
+			return EVerticalQuality.LOW;
 			
 		default:
 			return null;

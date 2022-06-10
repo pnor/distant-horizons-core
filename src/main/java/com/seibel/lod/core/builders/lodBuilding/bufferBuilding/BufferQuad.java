@@ -19,10 +19,7 @@
 
 package com.seibel.lod.core.builders.lodBuilding.bufferBuilding;
 
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.util.ColorUtil;
-
-import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
+import com.seibel.lod.core.enums.ELodDirection;
 
 /**
  * Represents a renderable quad.
@@ -42,13 +39,13 @@ public final class BufferQuad
 	final int color;
 	final byte skyLight;
 	final byte blockLight;
-	final LodDirection direction;
+	final ELodDirection direction;
 
 	boolean hasError = false;
 	
 	BufferQuad(short x, short y, short z, short widthEastWest, short widthNorthSouthOrUpDown,
 			int color, byte skylight, byte blocklight,
-			LodDirection direction)
+			ELodDirection direction)
 	{
 		if (widthEastWest == 0 || widthNorthSouthOrUpDown == 0)
 			throw new IllegalArgumentException("Size 0 quad!");

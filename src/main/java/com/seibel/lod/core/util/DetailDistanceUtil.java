@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.util;
 
-import com.seibel.lod.core.enums.config.HorizontalQuality;
+import com.seibel.lod.core.enums.config.EHorizontalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
@@ -57,7 +57,7 @@ public class DetailDistanceUtil
 		
 		detail-=minDetail;
 		
-		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
+		if (CONFIG.client().graphics().quality().getHorizontalQuality() == EHorizontalQuality.LOWEST)
 			return ((double)detail * distanceUnit);
 		else
 		{
@@ -81,7 +81,7 @@ public class DetailDistanceUtil
 		
 		int detail;
 		
-		if (CONFIG.client().graphics().quality().getHorizontalQuality() == HorizontalQuality.LOWEST)
+		if (CONFIG.client().graphics().quality().getHorizontalQuality() == EHorizontalQuality.LOWEST)
 			detail = (int) (distance/distanceUnit);
 		else
 			detail = (int) (Math.log(distance/distanceUnit) / logBase);

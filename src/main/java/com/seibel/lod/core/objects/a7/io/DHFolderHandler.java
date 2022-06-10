@@ -1,13 +1,12 @@
 package com.seibel.lod.core.objects.a7.io;
 
-import com.seibel.lod.core.enums.config.ServerFolderNameMode;
+import com.seibel.lod.core.enums.config.EServerFolderNameMode;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.ParsedIp;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
@@ -81,18 +80,18 @@ public class DHFolderHandler {
 
 
         // determine the format of the folder name
-        ServerFolderNameMode folderNameMode = CONFIG.client().multiplayer().getServerFolderNameMode();
-        if (folderNameMode == ServerFolderNameMode.AUTO)
+        EServerFolderNameMode folderNameMode = CONFIG.client().multiplayer().getServerFolderNameMode();
+        if (folderNameMode == EServerFolderNameMode.AUTO)
         {
             if (parsedIp.isLan())
             {
                 // LAN
-                folderNameMode = ServerFolderNameMode.NAME_IP;
+                folderNameMode = EServerFolderNameMode.NAME_IP;
             }
             else
             {
                 // normal multiplayer
-                folderNameMode = ServerFolderNameMode.NAME_IP_PORT;
+                folderNameMode = EServerFolderNameMode.NAME_IP_PORT;
             }
         }
         String serverName = MC.getCurrentServerName().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");

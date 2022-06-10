@@ -6,10 +6,10 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.CubicLodTemplate;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.enums.ELodDirection;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
+import com.seibel.lod.core.enums.rendering.EDebugMode;
+import com.seibel.lod.core.enums.rendering.EGLProxyContext;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.a7.UncheckedInterruptedException;
@@ -51,7 +51,7 @@ public class ColumnRenderBuffer extends RenderBuffer {
     }
 
 
-    private void _uploadBuffersDirect(LodQuadBuilder builder, GpuUploadMethod method) throws InterruptedException {
+    private void _uploadBuffersDirect(LodQuadBuilder builder, EGpuUploadMethod method) throws InterruptedException {
         resize(builder.getCurrentNeededVertexBufferCount());
         long remainingNS = 0;
         long BPerNS = Config.Client.Advanced.Buffers.gpuUploadPerMegabyteInMilliseconds.get();
@@ -89,7 +89,7 @@ public class ColumnRenderBuffer extends RenderBuffer {
         }
     }
 
-    private void _uploadBuffersMapped(LodQuadBuilder builder, GpuUploadMethod method)
+    private void _uploadBuffersMapped(LodQuadBuilder builder, EGpuUploadMethod method)
     {
         resize(builder.getCurrentNeededVertexBufferCount());
         for (int i=0; i<vbos.length; i++) {
@@ -127,7 +127,7 @@ public class ColumnRenderBuffer extends RenderBuffer {
         }
     }
 
-    public void uploadBuffer(LodQuadBuilder builder, GpuUploadMethod method) throws InterruptedException {
+    public void uploadBuffer(LodQuadBuilder builder, EGpuUploadMethod method) throws InterruptedException {
         if (method.useEarlyMapping) {
             _uploadBuffersMapped(builder, method);
         } else {
@@ -204,9 +204,9 @@ public class ColumnRenderBuffer extends RenderBuffer {
                     try {
                         EVENT_LOGGER.trace("RenderRegion start Upload @ {}", data.sectionPos);
                         GLProxy glProxy = GLProxy.getInstance();
-                        GpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
-                        GLProxyContext oldContext = glProxy.getGlContext();
-                        glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
+                        EGpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
+                        EGLProxyContext oldContext = glProxy.getGlContext();
+                        glProxy.setGlContext(EGLProxyContext.LOD_BUILDER);
                         ColumnRenderBuffer buffer = usedBuffer!=null ? usedBuffer : new ColumnRenderBuffer();
                         try {
                             buffer.uploadBuffer(builder, method);
@@ -239,7 +239,7 @@ public class ColumnRenderBuffer extends RenderBuffer {
     private static void makeLodRenderData(LodQuadBuilder quadBuilder, ColumnDatatype region, ColumnDatatype[] adjRegions) {
 
         // Variable initialization
-        DebugMode debugMode = Config.Client.Advanced.Debugging.debugMode.get();
+        EDebugMode debugMode = Config.Client.Advanced.Debugging.debugMode.get();
 
         byte detailLevel = region.getDataDetail();
         int dataSize = 1 << detailLevel;
@@ -268,7 +268,7 @@ public class ColumnRenderBuffer extends RenderBuffer {
                 // We avoid cases where the adjPosition is in player chunk while the position is
                 // not
                 // to always have a wall underwater
-                for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS) {
+                for (ELodDirection lodDirection : ELodDirection.ADJ_DIRECTIONS) {
                     try {
                         int xAdj = x + lodDirection.getNormal().x;
                         int zAdj = z + lodDirection.getNormal().z;
@@ -308,8 +308,8 @@ public class ColumnRenderBuffer extends RenderBuffer {
                             adjData[lodDirection.ordinal() - 2] = new ColumnArrayView[2];
                             adjData[lodDirection.ordinal() - 2][0] = adjRegion.getVerticalDataView(xAdj, zAdj);
                             adjData[lodDirection.ordinal() - 2][1] =  adjRegion.getVerticalDataView(
-                                    xAdj + (lodDirection.getAxis()==LodDirection.Axis.X ? 0 : 1),
-                                    zAdj + (lodDirection.getAxis()==LodDirection.Axis.Z ? 0 : 1));
+                                    xAdj + (lodDirection.getAxis()== ELodDirection.Axis.X ? 0 : 1),
+                                    zAdj + (lodDirection.getAxis()== ELodDirection.Axis.Z ? 0 : 1));
                         }
                     } catch (RuntimeException e) {
                         EVENT_LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, x, z, lodDirection);

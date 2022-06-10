@@ -16,34 +16,26 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.seibel.lod.core.enums.rendering;
 
-/**
- * basic                        <br>
- * Ignore_Height                <br>
- * Addition                     <br>
- * Max                          <br>
- * Multiply                     <br>
- * Inverse_Multiply             <br>
- * Limited_Addition             <br>
- * Multiply_Addition            <br>
- * Inverse_Multiply_Addition    <br>
- * Average                      <br>
- *
- * @author Leetom
- * @version 2022-4-14
- */
-public enum HeightFogMixMode
+public enum EHeightFogMode
 {
-    BASIC,
-    IGNORE_HEIGHT,
-    ADDITION,
-    MAX,
-    MULTIPLY,
-    INVERSE_MULTIPLY,
-    LIMITED_ADDITION,
-    MULTIPLY_ADDITION,
-    INVERSE_MULTIPLY_ADDITION,
-    AVERAGE,
+	ABOVE_CAMERA(true, true, false),
+	BELOW_CAMERA(true, false, true),
+	ABOVE_AND_BELOW_CAMERA(true, true, true),
+	ABOVE_SET_HEIGHT(false, true, false),
+	BELOW_SET_HEIGHT(false, false, true),
+	ABOVE_AND_BELOW_SET_HEIGHT(false, true, true);
+	
+	public final boolean basedOnCamera;
+	public final boolean above;
+	public final boolean below;
+	
+	EHeightFogMode(boolean basedOnCamera, boolean above, boolean below)
+	{
+		this.basedOnCamera = basedOnCamera;
+		this.above = above;
+		this.below = below;
+	}
 }

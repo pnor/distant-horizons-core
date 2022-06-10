@@ -17,30 +17,38 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.rendering;
+package com.seibel.lod.core.enums.config;
 
 /**
- * USE_DEFAULT_FOG_COLOR, <br>
- * USE_SKY_COLOR, <br>
+ * FREQUENT <br>
+ * NORMAL <br>
+ * RARE <br>
+ * <br>
+ * Determines how fast the buffers need to be regenerated
  * 
- * @author James Seibel
- * @version 2022-6-9
+ * @author Leonardo Amato
+ * @version 9-25-2021
  */
-public enum FogColorMode
+public enum EBufferRebuildTimes
 {
-	// Reminder:
-	// when adding items: up the API minor version
-	// when removing items: up the API major version
+	CONSTANT(0, 0, 0, 1),
 	
-	/** Fog uses Minecraft's fog color. */
-	USE_WORLD_FOG_COLOR,
+	FREQUENT(1000, 500, 2500, 1),
 	
-	/**
-	 * Replicates the effect of the clear sky mod.
-	 * Making the fog blend in with the sky better
-	 * For it to look good you need one of the following mods:
-	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies
-	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies-forge-port
-	 */
-	USE_SKY_COLOR,
+	NORMAL(2000, 1000, 5000, 4),
+	
+	RARE(5000, 2000, 10000, 16);
+	
+	public final int playerMoveTimeout;
+	public final int renderedChunkTimeout;
+	public final int chunkChangeTimeout;
+	public final int playerMoveDistance;
+	
+	EBufferRebuildTimes(int playerMoveTimeout, int renderedChunkTimeout, int chunkChangeTimeout, int playerMoveDistance)
+	{
+		this.playerMoveTimeout = playerMoveTimeout;
+		this.renderedChunkTimeout = renderedChunkTimeout;
+		this.chunkChangeTimeout = chunkChangeTimeout;
+		this.playerMoveDistance = playerMoveDistance;
+	}
 }

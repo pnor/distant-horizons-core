@@ -18,9 +18,9 @@
  */
 
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiEnumAssembly;
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.enums.CoreEnumAssembly;
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.util.EnumUtil;
 import org.junit.Test;
 import org.junit.Assert;
@@ -54,9 +54,9 @@ public class ApiEnumSyncTests
 		//=================//
 		
 		// this should always succeed (comparing an enum to itself)
-		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(VerticalQuality.class, VerticalQuality.class), true);
+		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(EVerticalQuality.class, EVerticalQuality.class), true);
 		// this should always fail (two completely different enums)
-		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(VerticalQuality.class, FogDrawMode.class), false);
+		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(EVerticalQuality.class, EFogDrawMode.class), false);
 		
 		
 		
@@ -93,7 +93,7 @@ public class ApiEnumSyncTests
 		// compare each API enum to its corresponding Core enum
 		for (Class<? extends Enum<?>> apiEnumClass : apiEnumClassList)
 		{
-			String coreEnumName = apiEnumClass.getSimpleName().substring(DhApiEnumAssembly.API_ENUM_PREFIX.length());
+			String coreEnumName = CoreEnumAssembly.ENUM_PREFIX + apiEnumClass.getSimpleName().substring(DhApiEnumAssembly.API_ENUM_PREFIX.length());
 			boolean coreEnumFound = false;
 			
 			// find the core enum to compare against

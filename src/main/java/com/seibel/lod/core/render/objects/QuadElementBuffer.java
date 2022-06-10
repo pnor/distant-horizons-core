@@ -1,7 +1,6 @@
 package com.seibel.lod.core.render.objects;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.GLProxy;
 import org.apache.logging.log4j.Logger;
@@ -119,11 +118,11 @@ public class QuadElementBuffer extends GLElementBuffer
         if (!gl.bufferStorageSupported) {
 
             bind();
-            super.uploadBuffer(buffer, GpuUploadMethod.DATA,
+            super.uploadBuffer(buffer, EGpuUploadMethod.DATA,
                     indicesCount * GLEnums.getTypeSize(type), GL32.GL_STATIC_DRAW);
         } else {
             bind();
-            super.uploadBuffer(buffer, GpuUploadMethod.BUFFER_STORAGE,
+            super.uploadBuffer(buffer, EGpuUploadMethod.BUFFER_STORAGE,
                     indicesCount * GLEnums.getTypeSize(type), 0);
         }
     }

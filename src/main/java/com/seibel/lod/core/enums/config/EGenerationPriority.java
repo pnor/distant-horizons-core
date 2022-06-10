@@ -20,30 +20,24 @@
 package com.seibel.lod.core.enums.config;
 
 /**
- * Low <br>
- * Medium <br>
- * High <br>
+ * AUTO <br>
+ * Near_First <br>
+ * Far_First <br>
  * <br>
- * this is a quality scale for the detail drop-off
+ * Determines which LODs should have priority when generating
+ * outside the normal view distance.
  * 
  * @author Leonardo Amato
- * @version 9-25-2021
+ * @version 12-1-2021
  */
-public enum HorizontalScale
+public enum EGenerationPriority
 {
-	/** Lods are 2D with heightMap */
-	LOW(64),
+	/** NEAR_FIRST when connected to servers and BALANCED when on single player */
+	AUTO,
 	
-	/** Lods expand in three dimension */
-	MEDIUM(128),
+	NEAR_FIRST,
 	
-	/** Lods expand in three dimension */
-	HIGH(256);
+	BALANCED,
 	
-	public final int distanceUnit;
-	
-	HorizontalScale(int distanceUnit)
-	{
-		this.distanceUnit = distanceUnit;
-	}
+	FAR_FIRST
 }

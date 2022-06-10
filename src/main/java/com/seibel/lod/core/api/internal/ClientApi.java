@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.enums.rendering.RendererType;
+import com.seibel.lod.core.enums.rendering.ERendererType;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.objects.DHChunkPos;
@@ -37,7 +37,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -234,7 +234,7 @@ public class ClientApi
 				generating.add(pos);
 				//ApiShared.LOGGER.info("Lod Generation trying "+pos+". Remaining: " +toBeLoaded.size());
 				InternalApiShared.lodBuilder.generateLodNodeAsync(chunk, InternalApiShared.lodWorld,
-						world.getDimensionType(), DistanceGenerationMode.FULL, true, true, () -> {
+						world.getDimensionType(), EDistanceGenerationMode.FULL, true, true, () -> {
 							generating.remove(pos);
 							LodBuilder.EVENT_LOGGER.debug("Manual Chunk: {} done. Remaining queue: {}", pos, toBeLoaded.size());
 						}, () -> {
@@ -264,7 +264,7 @@ public class ClientApi
 			
 			
 			
-			if (CONFIG.client().advanced().debugging().getRendererType() == RendererType.DEFAULT)
+			if (CONFIG.client().advanced().debugging().getRendererType() == ERendererType.DEFAULT)
 			{
 				// Note to self:
 				// if "unspecified" shows up in the pie chart, it is
@@ -290,7 +290,7 @@ public class ClientApi
 				}
 				profiler.pop(); // end LOD
 				profiler.push("terrain"); // go back into "terrain"
-			} else if (CONFIG.client().advanced().debugging().getRendererType() == RendererType.DEBUG) {
+			} else if (CONFIG.client().advanced().debugging().getRendererType() == ERendererType.DEBUG) {
 				IProfilerWrapper profiler = MC.getProfiler();
 				profiler.pop(); // get out of "terrain"
 				profiler.push("LODTestRendering");
@@ -359,7 +359,7 @@ public class ClientApi
 		if (glfwKey == GLFW.GLFW_KEY_F6)
 		{
 			CONFIG.client().advanced().debugging()
-					.setRendererType(RendererType.next(CONFIG.client().advanced().debugging().getRendererType()));
+					.setRendererType(ERendererType.next(CONFIG.client().advanced().debugging().getRendererType()));
 			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getRendererType());
 		}
 		

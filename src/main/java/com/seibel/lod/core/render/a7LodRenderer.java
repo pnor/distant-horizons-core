@@ -22,8 +22,8 @@ package com.seibel.lod.core.render;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.config.types.ConfigEntry;
-import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.enums.rendering.FogColorMode;
+import com.seibel.lod.core.enums.rendering.EDebugMode;
+import com.seibel.lod.core.enums.rendering.EFogColorMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
@@ -81,7 +81,7 @@ public class a7LodRenderer
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 
-	public DebugMode previousDebugMode = null;
+	public EDebugMode previousDebugMode = null;
 	public final DHLevel level;
 
 	// The shader program
@@ -140,11 +140,11 @@ public class a7LodRenderer
 		GL32.glViewport(0,0, MC_RENDER.getTargetFrameBufferViewportWidth(), MC_RENDER.getTargetFrameBufferViewportHeight());
 		GL32.glBindBuffer(GL32.GL_ARRAY_BUFFER, 0);
 		// set the required open GL settings
-		ConfigEntry<DebugMode> debugModeConfig = Config.Client.Advanced.Debugging.debugMode;
-		if (debugModeConfig.get() == DebugMode.SHOW_DETAIL_WIREFRAME
-			|| debugModeConfig.get() == DebugMode.SHOW_GENMODE_WIREFRAME
-			|| debugModeConfig.get() == DebugMode.SHOW_WIREFRAME
-			|| debugModeConfig.get() == DebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
+		ConfigEntry<EDebugMode> debugModeConfig = Config.Client.Advanced.Debugging.debugMode;
+		if (debugModeConfig.get() == EDebugMode.SHOW_DETAIL_WIREFRAME
+			|| debugModeConfig.get() == EDebugMode.SHOW_GENMODE_WIREFRAME
+			|| debugModeConfig.get() == EDebugMode.SHOW_WIREFRAME
+			|| debugModeConfig.get() == EDebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
 			//GL32.glDisable(GL32.GL_CULL_FACE);
 		}
@@ -276,7 +276,7 @@ public class a7LodRenderer
 	{
 		Color fogColor;
 		
-		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == FogColorMode.USE_SKY_COLOR)
+		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == EFogColorMode.USE_SKY_COLOR)
 			fogColor = MC_RENDER.getSkyColor();
 		else
 			fogColor = MC_RENDER.getFogColor(partialTicks);

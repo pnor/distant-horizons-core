@@ -16,15 +16,22 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
-package com.seibel.lod.core.enums.config;
 
-public enum LightGenerationMode
+package com.seibel.lod.core.enums.rendering;
+
+/**
+ * NEAR, FAR, or NEAR_AND_FAR.
+ * 
+ * @author James Seibel
+ * @version 2022-6-2
+ */
+public enum EFogDistance
 {
+	// Reminder:
+	// when adding items up the API minor version
+	// when removing items up the API major version
 	
-	// Fake in light values based on height maps
-	FAST,
-	
-	// Run the light engine though the chunk to generate proper light values
-	FANCY
+	NEAR,
+	FAR,
+	NEAR_AND_FAR
 }

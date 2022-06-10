@@ -30,10 +30,10 @@ import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.CubicLodTemplate;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.enums.rendering.GLProxyContext;
+import com.seibel.lod.core.enums.ELodDirection;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
+import com.seibel.lod.core.enums.rendering.EDebugMode;
+import com.seibel.lod.core.enums.rendering.EGLProxyContext;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.BoolType;
@@ -174,7 +174,7 @@ public class RenderRegion implements AutoCloseable
 		LodRegion[] adjRegions = new LodRegion[4];
 		try {
 			if (renderBufferBack != null) renderBufferBack.onReuse();
-			for (LodDirection dir : LodDirection.ADJ_DIRECTIONS) {
+			for (ELodDirection dir : ELodDirection.ADJ_DIRECTIONS) {
 				adjRegions[dir.ordinal() - 2] = lodDim.getRegion(regionPos.x+dir.getNormal().x, regionPos.z+dir.getNormal().z);
 			}
 		} catch (Throwable t) {
@@ -212,9 +212,9 @@ public class RenderRegion implements AutoCloseable
 			try {
 				EVENT_LOGGER.trace("RenderRegion start Upload @ {}", regionPos);
 				GLProxy glProxy = GLProxy.getInstance();
-				GpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
-				GLProxyContext oldContext = glProxy.getGlContext();
-				glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
+				EGpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
+				EGLProxyContext oldContext = glProxy.getGlContext();
+				glProxy.setGlContext(EGLProxyContext.LOD_BUILDER);
 				try {
 					if (renderBufferBack == null) recreateBuffer(builder);
 					if (!renderBufferBack.tryUploadBuffers(builder, method)) {
@@ -257,7 +257,7 @@ public class RenderRegion implements AutoCloseable
 		byte minDetail = region.getMinDetailLevel();
 		
 		// Variable initialization
-		DebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
+		EDebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
 
 		// We ask the lod dimension which block we have to render given the player
 		// position
@@ -308,7 +308,7 @@ public class RenderRegion implements AutoCloseable
 			// We avoid cases where the adjPosition is in player chunk while the position is
 			// not
 			// to always have a wall underwater
-			for (LodDirection lodDirection : LodDirection.ADJ_DIRECTIONS) {
+			for (ELodDirection lodDirection : ELodDirection.ADJ_DIRECTIONS) {
 				try {
 					int xAdj = posX + lodDirection.getNormal().x;
 					int zAdj = posZ + lodDirection.getNormal().z;
@@ -359,8 +359,8 @@ public class RenderRegion implements AutoCloseable
 						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getDataView(adjDetail,
 								childXAdj, childZAdj);
 						adjData[lodDirection.ordinal() - 2][1] = adjRegion.getDataView(adjDetail,
-								childXAdj + (lodDirection.getAxis()==LodDirection.Axis.X ? 0 : 1),
-								childZAdj + (lodDirection.getAxis()==LodDirection.Axis.Z ? 0 : 1));
+								childXAdj + (lodDirection.getAxis()== ELodDirection.Axis.X ? 0 : 1),
+								childZAdj + (lodDirection.getAxis()== ELodDirection.Axis.Z ? 0 : 1));
 					}
 				} catch (RuntimeException e) {
 					EVENT_LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, posX, posZ, lodDirection);

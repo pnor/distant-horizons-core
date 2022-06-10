@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.builders.lodBuilding;
 
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 
 /**
  * This is used to easily configure how LodChunks are generated.
@@ -38,7 +38,7 @@ public class LodBuilderConfig
 	/** default: true */
 	public boolean useSolidBlocksInColorGen;
 	/** default: server */
-	public DistanceGenerationMode distanceGenerationMode;
+	public EDistanceGenerationMode distanceGenerationMode;
 	public boolean quickFillWithVoid;
 	
 	/**
@@ -48,7 +48,7 @@ public class LodBuilderConfig
 	 * useSolidBlocksInColorGen = true <br>
 	 * generationMode = Server <br>
 	 */
-	public LodBuilderConfig(DistanceGenerationMode newDistanceGenerationMode)
+	public LodBuilderConfig(EDistanceGenerationMode newDistanceGenerationMode)
 	{
 		useHeightmap = false;
 		useBiomeColors = false;
@@ -58,7 +58,7 @@ public class LodBuilderConfig
 	}
 	
 	public static LodBuilderConfig getFillVoidConfig() {
-		LodBuilderConfig config = new LodBuilderConfig(DistanceGenerationMode.NONE);
+		LodBuilderConfig config = new LodBuilderConfig(EDistanceGenerationMode.NONE);
 		config.quickFillWithVoid = true;
 		return config;
 	}

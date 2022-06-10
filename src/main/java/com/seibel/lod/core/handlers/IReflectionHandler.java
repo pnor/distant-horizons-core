@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.handlers;
 
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
+import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 
 /**
@@ -40,7 +40,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 public interface IReflectionHandler extends IBindable
 {
 	/** @return Whether Optifine is set to render fog or not. */
-	FogDrawMode getFogDrawMode();
+	EFogDrawMode getFogDrawMode();
 	
 	/** @return if Vivecraft is present. Attempts to find the "VRRenderer" class. */
 	boolean vivecraftPresent();

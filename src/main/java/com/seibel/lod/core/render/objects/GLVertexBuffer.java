@@ -22,7 +22,7 @@ package com.seibel.lod.core.render.objects;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL32;
 
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 
 /**
  * This is a container for a OpenGL
@@ -58,7 +58,7 @@ public class GLVertexBuffer extends GLBuffer
 		return GL32.GL_ARRAY_BUFFER;
 	}
 	
-	public void uploadBuffer(ByteBuffer bb, int vertCount, GpuUploadMethod uploadMethod, int maxExpensionSize) {
+	public void uploadBuffer(ByteBuffer bb, int vertCount, EGpuUploadMethod uploadMethod, int maxExpensionSize) {
 		if (vertCount < 0) throw new IllegalArgumentException("VertCount is negative!");
 		// If size is zero, just ignore it.
 		if (bb.limit()-bb.position() != 0) {
@@ -68,7 +68,7 @@ public class GLVertexBuffer extends GLBuffer
 		vertexCount = vertCount;
 	}
 
-	public ByteBuffer mapBuffer(int targetSize, GpuUploadMethod uploadMethod, int maxExpensionSize)
+	public ByteBuffer mapBuffer(int targetSize, EGpuUploadMethod uploadMethod, int maxExpensionSize)
 	{
 		return super.mapBuffer(targetSize, uploadMethod, maxExpensionSize,
 				uploadMethod.useBufferStorage ? GL32.GL_MAP_WRITE_BIT :

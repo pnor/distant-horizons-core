@@ -19,10 +19,10 @@
 
 package com.seibel.lod.core.wrapperInterfaces.config;
 
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
-import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.RendererType;
+import com.seibel.lod.core.enums.rendering.EFogDrawMode;
+import com.seibel.lod.core.enums.rendering.EFogColorMode;
+import com.seibel.lod.core.enums.rendering.EFogDistance;
+import com.seibel.lod.core.enums.rendering.ERendererType;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
@@ -62,28 +62,28 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			@Deprecated
 			interface IQuality
 			{
-				HorizontalResolution getDrawResolution();
-				void setDrawResolution(HorizontalResolution newHorizontalResolution);
+				EHorizontalResolution getDrawResolution();
+				void setDrawResolution(EHorizontalResolution newHorizontalResolution);
 
 				int getLodChunkRenderDistance();
 				void setLodChunkRenderDistance(int newLodChunkRenderDistance);
 
-				VerticalQuality getVerticalQuality();
-				void setVerticalQuality(VerticalQuality newVerticalQuality);
+				EVerticalQuality getVerticalQuality();
+				void setVerticalQuality(EVerticalQuality newVerticalQuality);
 
 				int getHorizontalScale();
 				void setHorizontalScale(int newHorizontalScale);
 
-				HorizontalQuality getHorizontalQuality();
-				void setHorizontalQuality(HorizontalQuality newHorizontalQuality);
+				EHorizontalQuality getHorizontalQuality();
+				void setHorizontalQuality(EHorizontalQuality newHorizontalQuality);
 
-				DropoffQuality getDropoffQuality();
-				void setDropoffQuality(DropoffQuality newDropoffQuality);
-				default DropoffQuality getResolvedDropoffQuality() {
-					DropoffQuality dropoffQuality = getDropoffQuality();
-					if (dropoffQuality == DropoffQuality.AUTO)
+				EDropoffQuality getDropoffQuality();
+				void setDropoffQuality(EDropoffQuality newDropoffQuality);
+				default EDropoffQuality getResolvedDropoffQuality() {
+					EDropoffQuality dropoffQuality = getDropoffQuality();
+					if (dropoffQuality == EDropoffQuality.AUTO)
 						dropoffQuality = getLodChunkRenderDistance() < 128 ?
-								DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
+								EDropoffQuality.SMOOTH_DROPOFF : EDropoffQuality.PERFORMANCE_FOCUSED;
 					return dropoffQuality;
 				}
 
@@ -93,14 +93,14 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			@Deprecated
 			interface IFogQuality
 			{
-				FogDistance getFogDistance();
-				void setFogDistance(FogDistance newFogDistance);
+				EFogDistance getFogDistance();
+				void setFogDistance(EFogDistance newFogDistance);
 
-				FogDrawMode getFogDrawMode();
-				void setFogDrawMode(FogDrawMode newFogDrawMode);
+				EFogDrawMode getFogDrawMode();
+				void setFogDrawMode(EFogDrawMode newFogDrawMode);
 
-				FogColorMode getFogColorMode();
-				void setFogColorMode(FogColorMode newFogColorMode);
+				EFogColorMode getFogColorMode();
+				void setFogColorMode(EFogColorMode newFogColorMode);
 
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);
@@ -120,8 +120,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					double getFarFogMax();
 					void setFarFogMax(double newFarFogMax);
 
-					FogSetting.FogType getFarFogType();
-					void setFarFogType(FogSetting.FogType newFarFogType);
+					EFogSetting.FogType getFarFogType();
+					void setFarFogType(EFogSetting.FogType newFarFogType);
 
 					double getFarFogDensity();
 					void setFarFogDensity(double newFarFogDensity);
@@ -129,11 +129,11 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					IHeightFog heightFog();
 					@Deprecated
 					interface IHeightFog {
-						HeightFogMixMode getHeightFogMixMode();
-						void setHeightFogMixMode(HeightFogMixMode newHeightFogMixMode);
+						EHeightFogMixMode getHeightFogMixMode();
+						void setHeightFogMixMode(EHeightFogMixMode newHeightFogMixMode);
 
-						HeightFogMode getHeightFogMode();
-						void setHeightFogMode(HeightFogMode newHeightFogMode);
+						EHeightFogMode getHeightFogMode();
+						void setHeightFogMode(EHeightFogMode newHeightFogMode);
 
 						double getHeightFogHeight();
 						void setHeightFogHeight(double newHeightFogHeight);
@@ -150,14 +150,14 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						double getHeightFogMax();
 						void setHeightFogMax(double newHeightFogMax);
 
-						FogSetting.FogType getHeightFogType();
-						void setHeightFogType(FogSetting.FogType newFarFogType);
+						EFogSetting.FogType getHeightFogType();
+						void setHeightFogType(EFogSetting.FogType newFarFogType);
 
 						double getHeightFogDensity();
 						void setHeightFogDensity(double newHeightFogDensity);
 
-						default FogSetting computeHeightFogSetting() {
-							return new FogSetting(
+						default EFogSetting computeHeightFogSetting() {
+							return new EFogSetting(
 									getHeightFogStart(),
 									getHeightFogEnd(),
 									getHeightFogMin(),
@@ -167,8 +167,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 							);
 						}
 					}
-					default FogSetting computeFarFogSetting() {
-						return new FogSetting(
+					default EFogSetting computeFarFogSetting() {
+						return new EFogSetting(
 								getFarFogStart(),
 								getFarFogEnd(),
 								getFarFogMin(),
@@ -185,8 +185,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				boolean getDisableDirectionalCulling();
 				void setDisableDirectionalCulling(boolean newDisableDirectionalCulling);
 
-				VanillaOverdraw getVanillaOverdraw();
-				void setVanillaOverdraw(VanillaOverdraw newVanillaOverdraw);
+				EVanillaOverdraw getVanillaOverdraw();
+				void setVanillaOverdraw(EVanillaOverdraw newVanillaOverdraw);
 
 				int getOverdrawOffset();
 				void setOverdrawOffset(int newOverdrawOffset);
@@ -231,8 +231,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 		@Deprecated
 		interface IMultiplayer
 		{
-			ServerFolderNameMode getServerFolderNameMode();
-			void setServerFolderNameMode(ServerFolderNameMode newServerFolderNameMode);
+			EServerFolderNameMode getServerFolderNameMode();
+			void setServerFolderNameMode(EServerFolderNameMode newServerFolderNameMode);
 
 			double getMultiDimensionRequiredSimilarity();
 			void setMultiDimensionRequiredSimilarity(double newMultiDimensionMinimumSimilarityPercent);
@@ -251,25 +251,25 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			boolean getEnableDistantGeneration();
 			void setEnableDistantGeneration(boolean newEnableDistantGeneration);
 
-			DistanceGenerationMode getDistanceGenerationMode();
-			void setDistanceGenerationMode(DistanceGenerationMode newDistanceGenerationMode);
+			EDistanceGenerationMode getDistanceGenerationMode();
+			void setDistanceGenerationMode(EDistanceGenerationMode newDistanceGenerationMode);
 
-			LightGenerationMode getLightGenerationMode();
-			void setLightGenerationMode(LightGenerationMode newLightGenerationMode);
+			ELightGenerationMode getLightGenerationMode();
+			void setLightGenerationMode(ELightGenerationMode newLightGenerationMode);
 
-			GenerationPriority getGenerationPriority();
-			void setGenerationPriority(GenerationPriority newGenerationPriority);
+			EGenerationPriority getGenerationPriority();
+			void setGenerationPriority(EGenerationPriority newGenerationPriority);
 			
-			default GenerationPriority getResolvedGenerationPriority() {
-				GenerationPriority priority = getGenerationPriority();
+			default EGenerationPriority getResolvedGenerationPriority() {
+				EGenerationPriority priority = getGenerationPriority();
 				IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-				if (priority == GenerationPriority.AUTO)
-					priority = MC.hasSinglePlayerServer() ? GenerationPriority.FAR_FIRST : GenerationPriority.BALANCED;
+				if (priority == EGenerationPriority.AUTO)
+					priority = MC.hasSinglePlayerServer() ? EGenerationPriority.FAR_FIRST : EGenerationPriority.BALANCED;
 				return priority;
 			}
 
-			BlocksToAvoid getBlocksToAvoid();
-			void setBlockToAvoid(BlocksToAvoid newBlockToAvoid);
+			EBlocksToAvoid getBlocksToAvoid();
+			void setBlockToAvoid(EBlocksToAvoid newBlockToAvoid);
 
 			Boolean getTintWithAvoidedBlocks();
 			void setTintWithAvoidedBlocks(Boolean shouldTint);
@@ -309,11 +309,11 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			@Deprecated
 			interface IDebugging
 			{
-				RendererType getRendererType();
-				void setRendererType(RendererType newRendererType);
+				ERendererType getRendererType();
+				void setRendererType(ERendererType newRendererType);
 
-				DebugMode getDebugMode();
-				void setDebugMode(DebugMode newDebugMode);
+				EDebugMode getDebugMode();
+				void setDebugMode(EDebugMode newDebugMode);
 
 				boolean getDebugKeybindingsEnabled();
 				void setDebugKeybindingsEnabled(boolean newEnableDebugKeybindings);
@@ -335,45 +335,45 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					 * NetworkEvent //NOT IMPL YET
 					*/
 
-					LoggerMode getLogWorldGenEvent();
-					void setLogWorldGenEvent(LoggerMode newLogWorldGenEvent);
+					ELoggerMode getLogWorldGenEvent();
+					void setLogWorldGenEvent(ELoggerMode newLogWorldGenEvent);
 
-					LoggerMode getLogWorldGenPerformance();
-					void setLogWorldGenPerformance(LoggerMode newLogWorldGenPerformance);
+					ELoggerMode getLogWorldGenPerformance();
+					void setLogWorldGenPerformance(ELoggerMode newLogWorldGenPerformance);
 
-					LoggerMode getLogWorldGenLoadEvent();
-					void setLogWorldGenLoadEvent(LoggerMode newLogWorldGenLoadEvent);
+					ELoggerMode getLogWorldGenLoadEvent();
+					void setLogWorldGenLoadEvent(ELoggerMode newLogWorldGenLoadEvent);
 
-					LoggerMode getLogLodBuilderEvent();
-					void setLogLodBuilderEvent(LoggerMode newLogLodBuilderEvent);
+					ELoggerMode getLogLodBuilderEvent();
+					void setLogLodBuilderEvent(ELoggerMode newLogLodBuilderEvent);
 
-					LoggerMode getLogRendererBufferEvent();
-					void setLogRendererBufferEvent(LoggerMode newLogRendererBufferEvent);
+					ELoggerMode getLogRendererBufferEvent();
+					void setLogRendererBufferEvent(ELoggerMode newLogRendererBufferEvent);
 
-					LoggerMode getLogRendererGLEvent();
-					void setLogRendererGLEvent(LoggerMode newLogRendererGLEvent);
+					ELoggerMode getLogRendererGLEvent();
+					void setLogRendererGLEvent(ELoggerMode newLogRendererGLEvent);
 
-					LoggerMode getLogFileReadWriteEvent();
-					void setLogFileReadWriteEvent(LoggerMode newLogFileReadWriteEvent);
+					ELoggerMode getLogFileReadWriteEvent();
+					void setLogFileReadWriteEvent(ELoggerMode newLogFileReadWriteEvent);
 
-					LoggerMode getLogFileSubDimEvent();
-					void setLogFileSubDimEvent(LoggerMode newLogFileSubDimEvent);
+					ELoggerMode getLogFileSubDimEvent();
+					void setLogFileSubDimEvent(ELoggerMode newLogFileSubDimEvent);
 
-					LoggerMode getLogNetworkEvent();
-					void setLogNetworkEvent(LoggerMode newLogNetworkEvent);
+					ELoggerMode getLogNetworkEvent();
+					void setLogNetworkEvent(ELoggerMode newLogNetworkEvent);
 				}
 			}
 			@Deprecated
 			interface IBuffers
 			{
-				GpuUploadMethod getGpuUploadMethod();
-				void setGpuUploadMethod(GpuUploadMethod newGpuUploadMethod);
+				EGpuUploadMethod getGpuUploadMethod();
+				void setGpuUploadMethod(EGpuUploadMethod newGpuUploadMethod);
 
 				int getGpuUploadPerMegabyteInMilliseconds();
 				void setGpuUploadPerMegabyteInMilliseconds(int newMilliseconds);
 
-				BufferRebuildTimes getRebuildTimes();
-				void setRebuildTimes(BufferRebuildTimes newBufferRebuildTimes);
+				EBufferRebuildTimes getRebuildTimes();
+				void setRebuildTimes(EBufferRebuildTimes newBufferRebuildTimes);
 			}
 
 			boolean getLodOnlyMode();

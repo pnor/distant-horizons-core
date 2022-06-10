@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.core.enums.config.ServerFolderNameMode;
-import com.seibel.lod.core.enums.config.VanillaOverdraw;
+import com.seibel.lod.core.enums.config.EServerFolderNameMode;
+import com.seibel.lod.core.enums.config.EVanillaOverdraw;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.DHChunkPos;
@@ -261,18 +261,18 @@ public class LodUtil
 		
 		
 		// determine the format of the folder name
-		ServerFolderNameMode folderNameMode = CONFIG.client().multiplayer().getServerFolderNameMode();
-		if (folderNameMode == ServerFolderNameMode.AUTO)
+		EServerFolderNameMode folderNameMode = CONFIG.client().multiplayer().getServerFolderNameMode();
+		if (folderNameMode == EServerFolderNameMode.AUTO)
 		{
 			if (parsedIp.isLan())
 			{
 				// LAN
-				folderNameMode = ServerFolderNameMode.NAME_IP;
+				folderNameMode = EServerFolderNameMode.NAME_IP;
 			}
 			else
 			{
 				// normal multiplayer
-				folderNameMode = ServerFolderNameMode.NAME_IP_PORT;
+				folderNameMode = EServerFolderNameMode.NAME_IP_PORT;
 			}
 		}
 			
@@ -350,10 +350,10 @@ public class LodUtil
 
 	public static int computeOverdrawOffset(LodDimension lodDim) {
 		int chunkRenderDist = MC_RENDER.getRenderDistance() + 1;
-		VanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
-		if (overdraw == VanillaOverdraw.ALWAYS) return Integer.MAX_VALUE;
+		EVanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
+		if (overdraw == EVanillaOverdraw.ALWAYS) return Integer.MAX_VALUE;
 		int offset;
-		if (overdraw == VanillaOverdraw.NEVER) {
+		if (overdraw == EVanillaOverdraw.NEVER) {
 			offset = CONFIG.client().graphics().advancedGraphics().getOverdrawOffset();
 		} else {
 			if (chunkRenderDist < MINIMUM_RENDER_DISTANCE_FOR_FAR_OVERDRAW) {

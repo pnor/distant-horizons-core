@@ -20,7 +20,8 @@
 package com.seibel.lod.core.enums.config;
 import org.apache.logging.log4j.Level;
 
-public enum LoggerMode {
+public enum ELoggerMode
+{
     DISABLED(Level.OFF, Level.OFF),
     LOG_ALL_TO_FILE(Level.ALL, Level.OFF),
     LOG_ERROR_TO_CHAT(Level.ALL, Level.ERROR),
@@ -37,7 +38,7 @@ public enum LoggerMode {
     ;
     public final Level levelForFile;
     public final Level levelForChat;
-    LoggerMode(Level levelForFile, Level levelForChat) {
+    ELoggerMode(Level levelForFile, Level levelForChat) {
         this.levelForFile = levelForFile;
         this.levelForChat = levelForChat;
     }

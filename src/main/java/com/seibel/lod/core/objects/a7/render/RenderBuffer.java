@@ -19,12 +19,8 @@
  
 package com.seibel.lod.core.objects.a7.render;
 
-import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.StatsMap;
-
-import java.util.ConcurrentModificationException;
 
 public abstract class RenderBuffer implements AutoCloseable
 {

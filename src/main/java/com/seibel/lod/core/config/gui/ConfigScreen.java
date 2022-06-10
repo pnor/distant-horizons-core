@@ -1,6 +1,6 @@
 package com.seibel.lod.core.config.gui;
 
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
@@ -58,7 +58,7 @@ public class ConfigScreen extends AbstractScreen {
         buffer.rewind();
         GLVertexBuffer vbo = new GLVertexBuffer(false);
         vbo.bind();
-        vbo.uploadBuffer(buffer, 4, GpuUploadMethod.DATA, vertices.length * Float.BYTES);
+        vbo.uploadBuffer(buffer, 4, EGpuUploadMethod.DATA, vertices.length * Float.BYTES);
         return vbo;
     }
 

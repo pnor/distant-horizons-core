@@ -25,7 +25,7 @@ package com.seibel.lod.core.enums.rendering;
  * @author James Seibel
  * @version 8-28-2021
  */
-public enum DebugMode
+public enum EDebugMode
 {
 	/** LODs are rendered normally */
 	OFF,
@@ -54,12 +54,12 @@ public enum DebugMode
 	/** returns the next debug mode */
 	// Deprecated: use DebugMode.next() instead
 	@Deprecated
-	public DebugMode getNext()
+	public EDebugMode getNext()
 	{
 		return next(this);
 	}
 
-	public static DebugMode next(DebugMode type) {
+	public static EDebugMode next(EDebugMode type) {
 		switch (type) {
 			case OFF: return SHOW_WIREFRAME;
 			case SHOW_WIREFRAME: return SHOW_DETAIL;
@@ -72,7 +72,7 @@ public enum DebugMode
 		}
 	}
 
-	public static DebugMode previous(DebugMode type) {
+	public static EDebugMode previous(EDebugMode type) {
 		switch (type) {
 			case OFF: return SHOW_OVERLAPPING_QUADS_WIREFRAME;
 			case SHOW_OVERLAPPING_QUADS_WIREFRAME: return SHOW_OVERLAPPING_QUADS;

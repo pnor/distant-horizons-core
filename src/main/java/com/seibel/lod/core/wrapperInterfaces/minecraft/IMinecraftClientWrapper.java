@@ -22,7 +22,7 @@ package com.seibel.lod.core.wrapperInterfaces.minecraft;
 import java.io.File;
 import java.util.ArrayList;
 
-import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.DHChunkPos;
@@ -57,7 +57,7 @@ public interface IMinecraftClientWrapper extends IBindable
 	// method wrappers //
 	//=================//
 	
-	float getShade(LodDirection lodDirection);
+	float getShade(ELodDirection lodDirection);
 	
 	boolean hasSinglePlayerServer();
 	

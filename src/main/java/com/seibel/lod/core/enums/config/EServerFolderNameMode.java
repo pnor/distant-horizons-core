@@ -31,7 +31,7 @@ package com.seibel.lod.core.enums.config;
  * @author James Seibel
  * @version 3-7-2022
  */
-public enum ServerFolderNameMode
+public enum EServerFolderNameMode
 {
 	/**
 	 * NAME_IP for LAN connections <Br>

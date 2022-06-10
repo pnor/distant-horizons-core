@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.api.internal.ClientApi;
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.LodRenderer;
@@ -34,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder.BufferFiller;
 import com.seibel.lod.core.render.GLProxy;
@@ -60,7 +59,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 	}
 	
 	@Override
-	protected boolean uploadBuffers(LodQuadBuilder builder, GpuUploadMethod method)
+	protected boolean uploadBuffers(LodQuadBuilder builder, EGpuUploadMethod method)
 	{
 		// if (builder.getCurrentNeededVertexBuffers()>6) return false;
 
@@ -121,7 +120,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 		});
 	}
 	
-	private void _uploadBuffersDirect(LodQuadBuilder builder, GpuUploadMethod method) {
+	private void _uploadBuffersDirect(LodQuadBuilder builder, EGpuUploadMethod method) {
 		resize(builder.getCurrentNeededVertexBufferCount());
 		long remainingNS = 0;
 		long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
@@ -162,7 +161,7 @@ public class SimpleRenderBuffer extends RenderBuffer
 		}
 	}
 
-	private void _uploadBuffersMapped(LodQuadBuilder builder, GpuUploadMethod method)
+	private void _uploadBuffersMapped(LodQuadBuilder builder, EGpuUploadMethod method)
 	{
 		resize(builder.getCurrentNeededVertexBufferCount());
 		for (int i=0; i<vbos.length; i++) {

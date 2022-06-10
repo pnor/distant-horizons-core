@@ -20,10 +20,10 @@
 package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.api.internal.ClientApi;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.enums.config.DropoffQuality;
-import com.seibel.lod.core.enums.config.GenerationPriority;
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
+import com.seibel.lod.core.enums.config.EDropoffQuality;
+import com.seibel.lod.core.enums.config.EGenerationPriority;
+import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
@@ -337,11 +337,11 @@ public class LodDimension
 		}
 		isExpanding = true;
 		
-		VerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
-		DropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
-		if (dropoffQuality == DropoffQuality.AUTO)
+		EVerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
+		EDropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
+		if (dropoffQuality == EDropoffQuality.AUTO)
 			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
-					DropoffQuality.SMOOTH_DROPOFF : DropoffQuality.PERFORMANCE_FOCUSED;
+					EDropoffQuality.SMOOTH_DROPOFF : EDropoffQuality.PERFORMANCE_FOCUSED;
 		int dropoffSwitch = dropoffQuality.fastModeSwitch;
 		// don't run the expander multiple times
 		// for the same location
@@ -462,7 +462,7 @@ public class LodDimension
 	 * Returns every position that need to be generated based on the position of the player
 	 */
 	public PosToGenerateContainer getPosToGenerate(int maxDataToGenerate, int playerBlockPosX, int playerBlockPosZ,
-			GenerationPriority priority, DistanceGenerationMode genMode)
+			EGenerationPriority priority, EDistanceGenerationMode genMode)
 	{
 		PosToGenerateContainer posToGenerate;
 		posToGenerate = new PosToGenerateContainer(maxDataToGenerate, playerBlockPosX, playerBlockPosZ);
@@ -470,7 +470,7 @@ public class LodDimension
 		
 		// This ensures that we don't spawn way too many regions without finish flushing them first.
 		//if (dirtiedRegionsRoughCount > 16) return posToGenerate;
-		GenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? GenerationPriority.NEAR_FIRST : priority;
+		EGenerationPriority allowedPriority = dirtiedRegionsRoughCount>12 ? EGenerationPriority.NEAR_FIRST : priority;
 		Pos2D minPos = regions.getMinInRange();
 		iterateByDistance((int x, int z) -> {
 			boolean isCloseRange = (Math.abs(x-halfWidth)+Math.abs(z-halfWidth)<=2);
@@ -592,7 +592,7 @@ public class LodDimension
 	}
 	
 	/** Returns true if a region exists at the given LevelPos */
-	public boolean doesDataExist(byte detailLevel, int posX, int posZ, DistanceGenerationMode requiredMode)
+	public boolean doesDataExist(byte detailLevel, int posX, int posZ, EDistanceGenerationMode requiredMode)
 	{
 		LodRegion region = getRegion(detailLevel, posX, posZ);
 		return region != null && region.doesDataExist(detailLevel, posX, posZ, requiredMode);
@@ -602,7 +602,7 @@ public class LodDimension
 	 * Loads the region at the given RegionPos from file,
 	 * if a file exists for that region.
 	 */
-	public LodRegion getRegionFromFile(DHRegionPos regionPos, byte detailLevel, VerticalQuality verticalQuality)
+	public LodRegion getRegionFromFile(DHRegionPos regionPos, byte detailLevel, EVerticalQuality verticalQuality)
 	{
 		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, regionPos, verticalQuality) : 
 			new LodRegion(detailLevel, regionPos, verticalQuality);
@@ -611,7 +611,7 @@ public class LodDimension
 	 * Loads the region at the given region from file,
 	 * if a file exists for that region.
 	 */
-	public LodRegion getRegionFromFile(LodRegion existingRegion, byte detailLevel, VerticalQuality verticalQuality)
+	public LodRegion getRegionFromFile(LodRegion existingRegion, byte detailLevel, EVerticalQuality verticalQuality)
 	{
 		return fileHandler != null ? fileHandler.loadRegionFromFile(detailLevel, existingRegion, verticalQuality) : 
 			new LodRegion(detailLevel, existingRegion.getRegionPos(), verticalQuality);

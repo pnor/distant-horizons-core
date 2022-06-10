@@ -40,8 +40,8 @@ import com.seibel.lod.core.api.internal.ClientApi;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
+import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.objects.lod.LevelContainer;
 import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
@@ -145,9 +145,9 @@ public class LodDimensionFileHandler
 			if (!vertQualFile.isDirectory())
 				continue;
 			
-			if (vertQualFile.getName().equals(VerticalQuality.HIGH.toString()) ||
-					vertQualFile.getName().equals(VerticalQuality.MEDIUM.toString()) ||
-					vertQualFile.getName().equals(VerticalQuality.LOW.toString()))
+			if (vertQualFile.getName().equals(EVerticalQuality.HIGH.toString()) ||
+					vertQualFile.getName().equals(EVerticalQuality.MEDIUM.toString()) ||
+					vertQualFile.getName().equals(EVerticalQuality.LOW.toString()))
 			{
 				File[] subFiles = vertQualFile.listFiles();
 				for (File subFile : subFiles)
@@ -155,12 +155,12 @@ public class LodDimensionFileHandler
 					if (!subFile.isDirectory())
 						continue;
 					
-					if (subFile.getName().equals(DistanceGenerationMode.FULL.toString()) ||
-							subFile.getName().equals(DistanceGenerationMode.FEATURES.toString()) ||
-							subFile.getName().equals(DistanceGenerationMode.SURFACE.toString()) ||
-							subFile.getName().equals(DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT.toString()) ||
-							subFile.getName().equals(DistanceGenerationMode.BIOME_ONLY.toString()) ||
-							subFile.getName().equals(DistanceGenerationMode.NONE.toString()))
+					if (subFile.getName().equals(EDistanceGenerationMode.FULL.toString()) ||
+							subFile.getName().equals(EDistanceGenerationMode.FEATURES.toString()) ||
+							subFile.getName().equals(EDistanceGenerationMode.SURFACE.toString()) ||
+							subFile.getName().equals(EDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT.toString()) ||
+							subFile.getName().equals(EDistanceGenerationMode.BIOME_ONLY.toString()) ||
+							subFile.getName().equals(EDistanceGenerationMode.NONE.toString()))
 					{
 						LOGGER.info("Noticed old save structure files. Starting merge process...");
 						LodDimensionOldFileStructureHandler oldFileStructHandler = new LodDimensionOldFileStructureHandler(this);
@@ -168,11 +168,11 @@ public class LodDimensionFileHandler
 						{
 							// I got the lock to merge file.
 							LOGGER.info("Updating VerticalQuality LOW...");
-							oldFileStructHandler.mergeOldFileStructureForVertQuality(VerticalQuality.LOW);
+							oldFileStructHandler.mergeOldFileStructureForVertQuality(EVerticalQuality.LOW);
 							LOGGER.info("Updating VerticalQuality MEDIUM...");
-							oldFileStructHandler.mergeOldFileStructureForVertQuality(VerticalQuality.MEDIUM);
+							oldFileStructHandler.mergeOldFileStructureForVertQuality(EVerticalQuality.MEDIUM);
 							LOGGER.info("Updating VerticalQuality HIGH...");
-							oldFileStructHandler.mergeOldFileStructureForVertQuality(VerticalQuality.HIGH);
+							oldFileStructHandler.mergeOldFileStructureForVertQuality(EVerticalQuality.HIGH);
 							LOGGER.info("Update completed.");
 						}
 						else
@@ -199,7 +199,7 @@ public class LodDimensionFileHandler
 	 * Returns a new LodRegion at the given coordinates.
 	 * Returns an empty region if the file doesn't exist.
 	 */
-	public LodRegion loadRegionFromFile(byte detailLevel, DHRegionPos regionPos, VerticalQuality verticalQuality)
+	public LodRegion loadRegionFromFile(byte detailLevel, DHRegionPos regionPos, EVerticalQuality verticalQuality)
 	{
 		// Get one from the region hot cache
 		LodRegion region = regionToSave.get(regionPos);
@@ -214,7 +214,7 @@ public class LodDimensionFileHandler
 	 * Returns the LodRegion that is filled at the given coordinates.
 	 * Returns an empty region if the file doesn't exist.
 	 */
-	public LodRegion loadRegionFromFile(byte detailLevel, LodRegion region, VerticalQuality verticalQuality)
+	public LodRegion loadRegionFromFile(byte detailLevel, LodRegion region, EVerticalQuality verticalQuality)
 	{
 		if (region.getVerticalQuality().compareTo(verticalQuality) < 0)
 		{
@@ -313,7 +313,7 @@ public class LodDimensionFileHandler
 	// Save to File //
 	//==============//
 	
-	public void saveDirect(int posX, int posZ, VerticalQuality vertQual, VerticalLevelContainer dataContainer)
+	public void saveDirect(int posX, int posZ, EVerticalQuality vertQual, VerticalLevelContainer dataContainer)
 	{
 		File file = new File(getFileBasePath() + vertQual + File.separatorChar +
 				DETAIL_FOLDER_NAME_PREFIX + dataContainer.detailLevel + File.separatorChar +
@@ -683,7 +683,7 @@ public class LodDimensionFileHandler
 	 * <p>
 	 * Returns null if there is an IO or security Exception.
 	 */
-	private File getRegionFile(int regionX, int regionZ, byte detail, VerticalQuality vertQuality)
+	private File getRegionFile(int regionX, int regionZ, byte detail, EVerticalQuality vertQuality)
 	{
 		return new File(getFileBasePath() + vertQuality + File.separatorChar +
 				DETAIL_FOLDER_NAME_PREFIX + detail + File.separatorChar +
@@ -691,7 +691,7 @@ public class LodDimensionFileHandler
 	}
 	
 	/** Returns null if no file is found */
-	private File getBestMatchingRegionFile(byte detailLevel, int regionX, int regionZ, VerticalQuality targetVertQuality)
+	private File getBestMatchingRegionFile(byte detailLevel, int regionX, int regionZ, EVerticalQuality targetVertQuality)
 	{
 		// Search from least vertQuality to max vertQuality
 		do
@@ -700,7 +700,7 @@ public class LodDimensionFileHandler
 			if (file.exists())
 				return file; // Found target file.
 			
-			targetVertQuality = VerticalQuality.next(targetVertQuality);
+			targetVertQuality = EVerticalQuality.next(targetVertQuality);
 		}
 		while (targetVertQuality != null);
 		

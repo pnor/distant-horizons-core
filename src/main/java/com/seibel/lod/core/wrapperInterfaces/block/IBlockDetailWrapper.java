@@ -19,8 +19,8 @@
  
 package com.seibel.lod.core.wrapperInterfaces.block;
 
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.enums.config.BlocksToAvoid;
+import com.seibel.lod.core.enums.ELodDirection;
+import com.seibel.lod.core.enums.config.EBlocksToAvoid;
 import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 
@@ -30,8 +30,8 @@ public abstract class IBlockDetailWrapper
 	// Note: ALL value should be lazily-calculated
 	
 	// Note: This should be lazily-calculated if block needs tinting to be resolved
-	public abstract int getAndResolveFaceColor(LodDirection dir, IChunkWrapper chunk, DHBlockPos blockPos);
-	public abstract boolean hasFaceCullingFor(LodDirection dir);
+	public abstract int getAndResolveFaceColor(ELodDirection dir, IChunkWrapper chunk, DHBlockPos blockPos);
+	public abstract boolean hasFaceCullingFor(ELodDirection dir);
 	public abstract boolean hasNoCollision();
 	public abstract boolean noFaceIsFullFace();
 	
@@ -50,7 +50,7 @@ public abstract class IBlockDetailWrapper
 		return serialize();
 	}
 	
-	public boolean shouldRender(BlocksToAvoid mode)
+	public boolean shouldRender(EBlocksToAvoid mode)
 	{
 		return !((mode.noCollision && hasNoCollision()) || (mode.nonFull && noFaceIsFullFace()));
 	}

@@ -3,8 +3,8 @@ package com.seibel.lod.core.objects.a7.io;
 import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
+import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -38,7 +38,7 @@ public class LevelToFileMatcher {
             () -> CONFIG.client().advanced().debugging().debugSwitch().getLogFileSubDimEvent());
 
     /** Increasing this will increase accuracy but increase calculation time */
-    private static final VerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = VerticalQuality.LOW;
+    private static final EVerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = EVerticalQuality.LOW;
 
     public static final String THREAD_NAME = "Level-To-File-Matcher";
 
@@ -180,7 +180,7 @@ public class LevelToFileMatcher {
         newlyLoadedDim.regions.set(playerRegionPos.x, playerRegionPos.z, new LodRegion(LodUtil.BLOCK_DETAIL_LEVEL, playerRegionPos, VERTICAL_QUALITY_TO_TEST_WITH));
 
         // generate a LOD to test against
-        boolean lodGenerated = InternalApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(DistanceGenerationMode.FULL), true, true);
+        boolean lodGenerated = InternalApiShared.lodBuilder.generateLodNodeFromChunk(newlyLoadedDim, newlyLoadedChunk, new LodBuilderConfig(EDistanceGenerationMode.FULL), true, true);
         if (!lodGenerated)
             return null;
 
@@ -369,7 +369,7 @@ public class LevelToFileMatcher {
         // check if there is at least one VerticalQuality folder in this directory
         for (File internalFolder : potentialFolder.listFiles())
         {
-            if (VerticalQuality.getByName(internalFolder.getName()) != null)
+            if (EVerticalQuality.getByName(internalFolder.getName()) != null)
             {
                 // one of the internal folders is a VerticalQuality folder
                 return true;

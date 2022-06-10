@@ -17,25 +17,22 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.rendering;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
-public enum HeightFogMode
+/**
+ *
+ * @author Leonardo Amato
+ * @version 2022-6-9
+ */
+public enum EDhApiVerticalQuality
 {
-	ABOVE_CAMERA(true, true, false),
-	BELOW_CAMERA(true, false, true),
-	ABOVE_AND_BELOW_CAMERA(true, true, true),
-	ABOVE_SET_HEIGHT(false, true, false),
-	BELOW_SET_HEIGHT(false, false, true),
-	ABOVE_AND_BELOW_SET_HEIGHT(false, true, true);
+	// Reminder:
+	// when adding items: up the API minor version
+	// when removing items: up the API major version
 	
-	public final boolean basedOnCamera;
-	public final boolean above;
-	public final boolean below;
+	LOW,
+	MEDIUM,
+	HIGH,
+	ULTRA
 	
-	HeightFogMode(boolean basedOnCamera, boolean above, boolean below)
-	{
-		this.basedOnCamera = basedOnCamera;
-		this.above = above;
-		this.below = below;
-	}
 }

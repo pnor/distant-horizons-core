@@ -20,22 +20,26 @@
 package com.seibel.lod.core.enums.rendering;
 
 /**
- * Minecraft, Lod_Builder, None
+ * USE_OPTIFINE_FOG_SETTING, <br>
+ * FOG_ENABLED, <br>
+ * FOG_DISABLED <br>
  * 
  * @author James Seibel
- * @version 10-1-2021
+ * @version 2022-6-2
  */
-public enum GLProxyContext
+public enum EFogDrawMode
 {
-	/** Minecraft's render thread */
-	MINECRAFT,
+	// Reminder:
+	// when adding items up the API minor version
+	// when removing items up the API major version
 	
-	/** The context we send buffers to the GPU on */
-	LOD_BUILDER,
+	/**
+	 * Use whatever Fog setting optifine is using.
+	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
+	 */
+	USE_OPTIFINE_SETTING,
 	
-	/** A context that can be used for miscellaneous tasks, owned by the GLProxy */
-	PROXY_WORKER,
+	FOG_ENABLED,
+	FOG_DISABLED;
 	
-	/** used to un-bind threads */
-	NONE,
 }

@@ -17,37 +17,25 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.enums.rendering;
 
 /**
- * Lowest <br>
- * Low <br>
- * Medium <br>
- * High <br>
- * <br>
- * this indicates the base of the quadratic function we use for the quality drop off
+ * Minecraft, Lod_Builder, None
  * 
- * @author Leonardo Amato
- * @version 9-29-2021
+ * @author James Seibel
+ * @version 10-1-2021
  */
-public enum HorizontalQuality
+public enum EGLProxyContext
 {
-	/** 1.0 AKA Linear */
-	LOWEST(1.0f),
+	/** Minecraft's render thread */
+	MINECRAFT,
 	
-	/** exponent 1.5 */
-	LOW(1.5f),
+	/** The context we send buffers to the GPU on */
+	LOD_BUILDER,
 	
-	/** exponent 2.0 */
-	MEDIUM(2.0f),
+	/** A context that can be used for miscellaneous tasks, owned by the GLProxy */
+	PROXY_WORKER,
 	
-	/** exponent 2.2 */
-	HIGH(2.2f);
-	
-	public final double quadraticBase;
-	
-	HorizontalQuality(double distanceUnit)
-	{
-		this.quadraticBase = distanceUnit;
-	}
+	/** used to un-bind threads */
+	NONE,
 }

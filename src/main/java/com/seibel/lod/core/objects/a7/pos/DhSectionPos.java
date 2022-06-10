@@ -1,6 +1,6 @@
 package com.seibel.lod.core.objects.a7.pos;
 
-import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.util.LodUtil;
 
 import java.util.function.Consumer;
@@ -62,7 +62,7 @@ public class DhSectionPos {
         return new DhSectionPos((byte) (sectionDetail + 1), sectionX / 2, sectionZ / 2);
     }
 
-    public DhSectionPos getAdjacent(LodDirection dir) {
+    public DhSectionPos getAdjacent(ELodDirection dir) {
         return new DhSectionPos(sectionDetail, sectionX + dir.getNormal().x, sectionZ + dir.getNormal().z);
     }
 

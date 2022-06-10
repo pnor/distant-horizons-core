@@ -16,31 +16,34 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package com.seibel.lod.core.api.external.apiObjects.enums;
+ 
+package com.seibel.lod.core.enums.rendering;
 
 /**
- * USE_DEFAULT_FOG_COLOR, <br>
- * USE_SKY_COLOR, <br>
- * 
- * @author James Seibel
- * @version 2022-6-9
+ * basic                        <br>
+ * Ignore_Height                <br>
+ * Addition                     <br>
+ * Max                          <br>
+ * Multiply                     <br>
+ * Inverse_Multiply             <br>
+ * Limited_Addition             <br>
+ * Multiply_Addition            <br>
+ * Inverse_Multiply_Addition    <br>
+ * Average                      <br>
+ *
+ * @author Leetom
+ * @version 2022-4-14
  */
-public enum DhApiFogColorMode
+public enum EHeightFogMixMode
 {
-	// Reminder:
-	// when adding items up the API minor version
-	// when removing items up the API major version
-	
-	/** Fog uses Minecraft's fog color. */
-	USE_WORLD_FOG_COLOR,
-	
-	/**
-	 * Replicates the effect of the clear sky mod.
-	 * Making the fog blend in with the sky better
-	 * For it to look good you need one of the following mods:
-	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies
-	 * https://www.curseforge.com/minecraft/mc-mods/clear-skies-forge-port
-	 */
-	USE_SKY_COLOR,
+    BASIC,
+    IGNORE_HEIGHT,
+    ADDITION,
+    MAX,
+    MULTIPLY,
+    INVERSE_MULTIPLY,
+    LIMITED_ADDITION,
+    MULTIPLY_ADDITION,
+    INVERSE_MULTIPLY_ADDITION,
+    AVERAGE,
 }

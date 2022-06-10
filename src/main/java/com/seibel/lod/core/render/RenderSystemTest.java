@@ -19,8 +19,8 @@
  
 package com.seibel.lod.core.render;
 
-import com.seibel.lod.core.enums.config.GpuUploadMethod;
-import com.seibel.lod.core.enums.config.LoggerMode;
+import com.seibel.lod.core.enums.config.EGpuUploadMethod;
+import com.seibel.lod.core.enums.config.ELoggerMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 
@@ -42,9 +42,9 @@ public class RenderSystemTest {
     public RenderSystemTest() {}
 
     public static final ConfigBasedLogger logger = new ConfigBasedLogger(
-            LogManager.getLogger(RenderSystemTest.class), () -> LoggerMode.LOG_ALL_TO_CHAT);
+            LogManager.getLogger(RenderSystemTest.class), () -> ELoggerMode.LOG_ALL_TO_CHAT);
     public static final ConfigBasedSpamLogger spamLogger = new ConfigBasedSpamLogger(
-            LogManager.getLogger(RenderSystemTest.class), () -> LoggerMode.LOG_ALL_TO_CHAT, 1);
+            LogManager.getLogger(RenderSystemTest.class), () -> ELoggerMode.LOG_ALL_TO_CHAT, 1);
     private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 
     ShaderProgram basicShader;
@@ -86,7 +86,7 @@ public class RenderSystemTest {
         buffer.rewind();
         GLVertexBuffer vbo = new GLVertexBuffer(false);
         vbo.bind();
-        vbo.uploadBuffer(buffer, 4, GpuUploadMethod.DATA, vertices.length * Float.BYTES);
+        vbo.uploadBuffer(buffer, 4, EGpuUploadMethod.DATA, vertices.length * Float.BYTES);
         return vbo;
     }
 

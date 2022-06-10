@@ -29,7 +29,7 @@ package com.seibel.lod.core.enums.config;
  * @author James Seibel
  * @version 10-11-2021
  */
-public enum VanillaOverdraw
+public enum EVanillaOverdraw
 {
 	/** Dont draw LODs where a minecraft chunk could be. Use Overdraw Offset to tweak the border thickness */
 	NEVER,

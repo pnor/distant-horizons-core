@@ -20,13 +20,12 @@
 package com.seibel.lod.core.logging;
 
 import com.seibel.lod.core.api.internal.ClientApi;
-import com.seibel.lod.core.enums.config.LoggerMode;
+import com.seibel.lod.core.enums.config.ELoggerMode;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
 
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,10 +42,10 @@ public class ConfigBasedLogger {
         });
     }
 
-    private LoggerMode mode;
-    private final Supplier<LoggerMode> getter;
+    private ELoggerMode mode;
+    private final Supplier<ELoggerMode> getter;
     private final Logger logger;
-    public ConfigBasedLogger(Logger logger, Supplier<LoggerMode> configQuery) {
+    public ConfigBasedLogger(Logger logger, Supplier<ELoggerMode> configQuery) {
         getter = configQuery;
         mode = getter.get();
         this.logger = logger;
@@ -70,7 +69,7 @@ public class ConfigBasedLogger {
     public void update() {
         mode = getter.get();
     }
-    public boolean canMaybeLog() {return mode != LoggerMode.DISABLED;}
+    public boolean canMaybeLog() {return mode != ELoggerMode.DISABLED;}
 
     public void log(Level level, String str, Object... param) {
 

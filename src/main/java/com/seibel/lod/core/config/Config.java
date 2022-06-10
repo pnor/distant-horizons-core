@@ -20,10 +20,10 @@
 package com.seibel.lod.core.config;
 
 
-import com.seibel.lod.core.enums.rendering.FogDrawMode;
-import com.seibel.lod.core.enums.rendering.FogColorMode;
-import com.seibel.lod.core.enums.rendering.FogDistance;
-import com.seibel.lod.core.enums.rendering.RendererType;
+import com.seibel.lod.core.enums.rendering.EFogDrawMode;
+import com.seibel.lod.core.enums.rendering.EFogColorMode;
+import com.seibel.lod.core.enums.rendering.EFogDistance;
+import com.seibel.lod.core.enums.rendering.ERendererType;
 import com.seibel.lod.core.config.types.*;
 
 import com.seibel.lod.core.enums.config.*;
@@ -85,21 +85,21 @@ public class Config
 
             public static class Quality
             {
-                public static ConfigEntry<HorizontalResolution> drawResolution = new ConfigEntry.Builder<HorizontalResolution>()
-                        .set(HorizontalResolution.BLOCK)
+                public static ConfigEntry<EHorizontalResolution> drawResolution = new ConfigEntry.Builder<EHorizontalResolution>()
+                        .set(EHorizontalResolution.BLOCK)
                         .comment(""
                                 + "What is the maximum detail fake chunks should be drawn at? \n"
                                 + "This setting will only affect closer chunks.\n"
                                 + "Higher settings will increase memory and GPU usage. \n"
                                 + "\n"
-                                + HorizontalResolution.CHUNK + ": render 1 LOD for each Chunk. \n"
-                                + HorizontalResolution.HALF_CHUNK + ": render 4 LODs for each Chunk. \n"
-                                + HorizontalResolution.FOUR_BLOCKS + ": render 16 LODs for each Chunk. \n"
-                                + HorizontalResolution.TWO_BLOCKS + ": render 64 LODs for each Chunk. \n"
-                                + HorizontalResolution.BLOCK + ": render 256 LODs for each Chunk (width of one block). \n"
+                                + EHorizontalResolution.CHUNK + ": render 1 LOD for each Chunk. \n"
+                                + EHorizontalResolution.HALF_CHUNK + ": render 4 LODs for each Chunk. \n"
+                                + EHorizontalResolution.FOUR_BLOCKS + ": render 16 LODs for each Chunk. \n"
+                                + EHorizontalResolution.TWO_BLOCKS + ": render 64 LODs for each Chunk. \n"
+                                + EHorizontalResolution.BLOCK + ": render 256 LODs for each Chunk (width of one block). \n"
                                 + "\n"
-                                + "Lowest Quality: " + HorizontalResolution.CHUNK + "\n"
-                                + "Highest Quality: " + HorizontalResolution.BLOCK)
+                                + "Lowest Quality: " + EHorizontalResolution.CHUNK + "\n"
+                                + "Highest Quality: " + EHorizontalResolution.BLOCK)
                         .build();
 
                 public static ConfigEntry<Integer> lodChunkRenderDistance = new ConfigEntry.Builder<Integer>()
@@ -107,20 +107,20 @@ public class Config
                         .comment("The radius of the mod's render distance. (measured in chunks)")
                         .build();
 
-                public static ConfigEntry<VerticalQuality> verticalQuality = new ConfigEntry.Builder<VerticalQuality>()
-                        .set(VerticalQuality.MEDIUM)
+                public static ConfigEntry<EVerticalQuality> verticalQuality = new ConfigEntry.Builder<EVerticalQuality>()
+                        .set(EVerticalQuality.MEDIUM)
                         .comment(""
                                 + "This indicates how detailed fake chunks will represent \n"
                                 + " overhangs, caves, floating islands, ect. \n"
                                 + "Higher options will make the world more accurate, but"
                                 + " will increase memory and GPU usage. \n"
                                 + "\n"
-                                + VerticalQuality.LOW + ": uses at max 2 columns per position. \n"
-                                + VerticalQuality.MEDIUM + ": uses at max 4 columns per position. \n"
-                                + VerticalQuality.HIGH + ": uses at max 8 columns per position. \n"
+                                + EVerticalQuality.LOW + ": uses at max 2 columns per position. \n"
+                                + EVerticalQuality.MEDIUM + ": uses at max 4 columns per position. \n"
+                                + EVerticalQuality.HIGH + ": uses at max 8 columns per position. \n"
                                 + "\n"
-                                + "Lowest Quality: " + VerticalQuality.LOW + "\n"
-                                + "Highest Quality: " + VerticalQuality.HIGH)
+                                + "Lowest Quality: " + EVerticalQuality.LOW + "\n"
+                                + "Highest Quality: " + EVerticalQuality.HIGH)
                         .build();
 
                 public static ConfigEntry<Integer> horizontalScale = new ConfigEntry.Builder<Integer>()
@@ -131,27 +131,27 @@ public class Config
                                 + " but will increase memory and GPU usage.")
                         .build();
 
-                public static ConfigEntry<HorizontalQuality> horizontalQuality = new ConfigEntry.Builder<HorizontalQuality>()
-                        .set(HorizontalQuality.MEDIUM)
+                public static ConfigEntry<EHorizontalQuality> horizontalQuality = new ConfigEntry.Builder<EHorizontalQuality>()
+                        .set(EHorizontalQuality.MEDIUM)
                         .comment(""
                                 + "This indicates how quickly fake chunks decrease in quality the further away they are. \n"
                                 + "Higher settings will render higher quality fake chunks farther away, \n"
                                 + " but will increase memory and GPU usage.")
                         .build();
 
-                public static ConfigEntry<DropoffQuality> dropoffQuality = new ConfigEntry.Builder<DropoffQuality>()
-                        .set(DropoffQuality.AUTO)
+                public static ConfigEntry<EDropoffQuality> dropoffQuality = new ConfigEntry.Builder<EDropoffQuality>()
+                        .set(EDropoffQuality.AUTO)
                         .comment(""
                                 + "This determines how lod level drop off will be done. \n"
                                 + "\n"
-                                + DropoffQuality.SMOOTH_DROPOFF + ": \n"
+                                + EDropoffQuality.SMOOTH_DROPOFF + ": \n"
                                 + "    The lod level is calculated for each point, making the drop off a smooth circle. \n"
-                                + DropoffQuality.PERFORMANCE_FOCUSED + ": \n"
+                                + EDropoffQuality.PERFORMANCE_FOCUSED + ": \n"
                                 + "    One detail level for an entire region. Minimize CPU usage and \n"
                                 + "     improve terrain refresh delay, especially for high Lod render distance. \n"
-                                + DropoffQuality.AUTO + ": \n"
-                                + "    Use "+ DropoffQuality.SMOOTH_DROPOFF + " for less then 128 Lod render distance, \n"
-                                + "     or "+ DropoffQuality.PERFORMANCE_FOCUSED +" otherwise.")
+                                + EDropoffQuality.AUTO + ": \n"
+                                + "    Use "+ EDropoffQuality.SMOOTH_DROPOFF + " for less then 128 Lod render distance, \n"
+                                + "     or "+ EDropoffQuality.PERFORMANCE_FOCUSED +" otherwise.")
                         .build();
 
                 public static ConfigEntry<Integer> lodBiomeBlending = new ConfigEntry.Builder<Integer>()
@@ -171,34 +171,34 @@ public class Config
 
             public static class FogQuality
             {
-                public static ConfigEntry<FogDistance> fogDistance = new ConfigEntry.Builder<FogDistance>()
-                        .set(FogDistance.FAR)
+                public static ConfigEntry<EFogDistance> fogDistance = new ConfigEntry.Builder<EFogDistance>()
+                        .set(EFogDistance.FAR)
                         .comment(""
                                 + "At what distance should Fog be drawn on the fake chunks? \n"
                                 + "\n"
                                 + "This setting shouldn't affect performance.")
                         .build();
 
-                public static ConfigEntry<FogDrawMode> fogDrawMode = new ConfigEntry.Builder<FogDrawMode>()
-                        .set(FogDrawMode.FOG_ENABLED)
+                public static ConfigEntry<EFogDrawMode> fogDrawMode = new ConfigEntry.Builder<EFogDrawMode>()
+                        .set(EFogDrawMode.FOG_ENABLED)
                         .comment(""
                                 + "When should fog be drawn? \n"
                                 + "\n"
-                                + FogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
-                                + "If Optifine isn't installed this defaults to " + FogDrawMode.FOG_ENABLED + ". \n"
-                                + FogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
-                                + FogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
+                                + EFogDrawMode.USE_OPTIFINE_SETTING + ": Use whatever Fog setting Optifine is using.\n"
+                                + "If Optifine isn't installed this defaults to " + EFogDrawMode.FOG_ENABLED + ". \n"
+                                + EFogDrawMode.FOG_ENABLED + ": Never draw fog on the LODs \n"
+                                + EFogDrawMode.FOG_DISABLED + ": Always draw fast fog on the LODs \n"
                                 + "\n"
                                 + "Disabling fog will improve GPU performance.")
                         .build();
 
-                public static ConfigEntry<FogColorMode> fogColorMode = new ConfigEntry.Builder<FogColorMode>()
-                        .set(FogColorMode.USE_WORLD_FOG_COLOR)
+                public static ConfigEntry<EFogColorMode> fogColorMode = new ConfigEntry.Builder<EFogColorMode>()
+                        .set(EFogColorMode.USE_WORLD_FOG_COLOR)
                         .comment(""
                                 + "What color should fog use? \n"
                                 + "\n"
-                                + FogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
-                                + FogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
+                                + EFogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
+                                + EFogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
                                 + "\n"
                                 + "This setting doesn't affect performance.")
                         .build();
@@ -256,14 +256,14 @@ public class Config
                                     + "    '1.0': Fully fog color.")
                             .build();
 
-                    public static ConfigEntry<FogSetting.FogType> farFogType = new ConfigEntry.Builder<FogSetting.FogType>()
-                            .set(FogSetting.FogType.EXPONENTIAL_SQUARED)
+                    public static ConfigEntry<EFogSetting.FogType> farFogType = new ConfigEntry.Builder<EFogSetting.FogType>()
+                            .set(EFogSetting.FogType.EXPONENTIAL_SQUARED)
                             .comment(""
                                     + "How the fog thickness should be calculated from distance? \n"
                                     + "\n"
-                                    + FogSetting.FogType.LINEAR + ": Linear based on distance (will ignore 'density')\n"
-                                    + FogSetting.FogType.EXPONENTIAL + ": 1/(e^(distance*density)) \n"
-                                    + FogSetting.FogType.EXPONENTIAL_SQUARED + ": 1/(e^((distance*density)^2)")
+                                    + EFogSetting.FogType.LINEAR + ": Linear based on distance (will ignore 'density')\n"
+                                    + EFogSetting.FogType.EXPONENTIAL + ": 1/(e^(distance*density)) \n"
+                                    + EFogSetting.FogType.EXPONENTIAL_SQUARED + ": 1/(e^((distance*density)^2)")
                             .build();
 
                     public static ConfigEntry<Double> farFogDensity = new ConfigEntry.Builder<Double>()
@@ -275,36 +275,36 @@ public class Config
 
 
                     public static class HeightFog {
-                        public static ConfigEntry<HeightFogMixMode> heightFogMixMode = new ConfigEntry.Builder<HeightFogMixMode>()
-                                .set(HeightFogMixMode.BASIC)
+                        public static ConfigEntry<EHeightFogMixMode> heightFogMixMode = new ConfigEntry.Builder<EHeightFogMixMode>()
+                                .set(EHeightFogMixMode.BASIC)
                                 .comment(""
                                         + "How the height should effect the fog thickness combined with the normal function? \n"
                                         + "\n"
-                                        + HeightFogMixMode.BASIC + ": No special height fog effect. Fog is calculated based on camera distance \n"
-                                        + HeightFogMixMode.IGNORE_HEIGHT + ": Ignore height completely. Fog is calculated based on horizontal distance \n"
-                                        + HeightFogMixMode.ADDITION + ": heightFog + farFog \n"
-                                        + HeightFogMixMode.MAX + ": max(heightFog, farFog) \n"
-                                        + HeightFogMixMode.MULTIPLY + ": heightFog * farFog \n"
-                                        + HeightFogMixMode.INVERSE_MULTIPLY + ": 1 - (1-heightFog) * (1-farFog) \n"
-                                        + HeightFogMixMode.LIMITED_ADDITION + ": farFog + max(farFog, heightFog) \n"
-                                        + HeightFogMixMode.MULTIPLY_ADDITION + ": farFog + farFog * heightFog \n"
-                                        + HeightFogMixMode.INVERSE_MULTIPLY_ADDITION + ": farFog + 1 - (1-heightFog) * (1-farFog) \n"
-                                        + HeightFogMixMode.AVERAGE + ": farFog*0.5 + heightFog*0.5 \n"
+                                        + EHeightFogMixMode.BASIC + ": No special height fog effect. Fog is calculated based on camera distance \n"
+                                        + EHeightFogMixMode.IGNORE_HEIGHT + ": Ignore height completely. Fog is calculated based on horizontal distance \n"
+                                        + EHeightFogMixMode.ADDITION + ": heightFog + farFog \n"
+                                        + EHeightFogMixMode.MAX + ": max(heightFog, farFog) \n"
+                                        + EHeightFogMixMode.MULTIPLY + ": heightFog * farFog \n"
+                                        + EHeightFogMixMode.INVERSE_MULTIPLY + ": 1 - (1-heightFog) * (1-farFog) \n"
+                                        + EHeightFogMixMode.LIMITED_ADDITION + ": farFog + max(farFog, heightFog) \n"
+                                        + EHeightFogMixMode.MULTIPLY_ADDITION + ": farFog + farFog * heightFog \n"
+                                        + EHeightFogMixMode.INVERSE_MULTIPLY_ADDITION + ": farFog + 1 - (1-heightFog) * (1-farFog) \n"
+                                        + EHeightFogMixMode.AVERAGE + ": farFog*0.5 + heightFog*0.5 \n"
                                         + "\n"
                                         + "Note that for 'BASIC' mode and 'IGNORE_HEIGHT' mode, fog settings for height fog has no effect.")
                                 .build();
 
-                        public static ConfigEntry<HeightFogMode> heightFogMode = new ConfigEntry.Builder<HeightFogMode>()
-                                .set(HeightFogMode.ABOVE_AND_BELOW_CAMERA)
+                        public static ConfigEntry<EHeightFogMode> heightFogMode = new ConfigEntry.Builder<EHeightFogMode>()
+                                .set(EHeightFogMode.ABOVE_AND_BELOW_CAMERA)
                                 .comment(""
                                         + "Where should the height fog be located? \n"
                                         + "\n"
-                                        + HeightFogMode.ABOVE_CAMERA + ": Height fog starts from camera to the sky \n"
-                                        + HeightFogMode.BELOW_CAMERA + ": Height fog starts from camera to the void \n"
-                                        + HeightFogMode.ABOVE_AND_BELOW_CAMERA + ": Height fog starts from camera to both the sky and the void \n"
-                                        + HeightFogMode.ABOVE_SET_HEIGHT + ": Height fog starts from a set height to the sky \n"
-                                        + HeightFogMode.BELOW_SET_HEIGHT + ": Height fog starts from a set height to the void \n"
-                                        + HeightFogMode.ABOVE_AND_BELOW_SET_HEIGHT + ": Height fog starts from a set height to both the sky and the void")
+                                        + EHeightFogMode.ABOVE_CAMERA + ": Height fog starts from camera to the sky \n"
+                                        + EHeightFogMode.BELOW_CAMERA + ": Height fog starts from camera to the void \n"
+                                        + EHeightFogMode.ABOVE_AND_BELOW_CAMERA + ": Height fog starts from camera to both the sky and the void \n"
+                                        + EHeightFogMode.ABOVE_SET_HEIGHT + ": Height fog starts from a set height to the sky \n"
+                                        + EHeightFogMode.BELOW_SET_HEIGHT + ": Height fog starts from a set height to the void \n"
+                                        + EHeightFogMode.ABOVE_AND_BELOW_SET_HEIGHT + ": Height fog starts from a set height to both the sky and the void")
                                 .build();
 
                         public static ConfigEntry<Double> heightFogHeight = new ConfigEntry.Builder<Double>()
@@ -348,14 +348,14 @@ public class Config
                                         + "    '1.0': Fully fog color.")
                                 .build();
 
-                        public static ConfigEntry<FogSetting.FogType> heightFogType = new ConfigEntry.Builder<FogSetting.FogType>()
-                                .set(FogSetting.FogType.EXPONENTIAL_SQUARED)
+                        public static ConfigEntry<EFogSetting.FogType> heightFogType = new ConfigEntry.Builder<EFogSetting.FogType>()
+                                .set(EFogSetting.FogType.EXPONENTIAL_SQUARED)
                                 .comment(""
                                         + "How the fog thickness should be calculated from height? \n"
                                         + "\n"
-                                        + FogSetting.FogType.LINEAR + ": Linear based on height (will ignore 'density')\n"
-                                        + FogSetting.FogType.EXPONENTIAL + ": 1/(e^(height*density)) \n"
-                                        + FogSetting.FogType.EXPONENTIAL_SQUARED + ": 1/(e^((height*density)^2)")
+                                        + EFogSetting.FogType.LINEAR + ": Linear based on height (will ignore 'density')\n"
+                                        + EFogSetting.FogType.EXPONENTIAL + ": 1/(e^(height*density)) \n"
+                                        + EFogSetting.FogType.EXPONENTIAL_SQUARED + ": 1/(e^((height*density)^2)")
                                 .build();
 
                         public static ConfigEntry<Double> heightFogDensity = new ConfigEntry.Builder<Double>()
@@ -382,19 +382,19 @@ public class Config
                                 + "Disable this if you see LODs disappearing at the corners of your vision.")
                         .build();
 
-                public static ConfigEntry<VanillaOverdraw> vanillaOverdraw = new ConfigEntry.Builder<VanillaOverdraw>()
-                        .set(VanillaOverdraw.DYNAMIC)
+                public static ConfigEntry<EVanillaOverdraw> vanillaOverdraw = new ConfigEntry.Builder<EVanillaOverdraw>()
+                        .set(EVanillaOverdraw.DYNAMIC)
                         .comment(""
                                 + "How often should LODs be drawn on top of regular chunks? \n"
                                 + "HALF and ALWAYS will prevent holes in the world, \n"
                                 + " but may look odd for transparent blocks or in caves. \n"
                                 + "\n"
-                                + VanillaOverdraw.NEVER + ": \n"
+                                + EVanillaOverdraw.NEVER + ": \n"
                                 + "    LODs won't render on top of vanilla chunks. Use Overdraw offset to change the border offset. \n"
-                                + VanillaOverdraw.DYNAMIC + ": \n"
+                                + EVanillaOverdraw.DYNAMIC + ": \n"
                                 + "    LODs will render on top of distant vanilla chunks to hide delayed loading. \n"
                                 + "    Will dynamically decide the border offset based on vanilla render distance. \n"
-                                + VanillaOverdraw.ALWAYS + ": \n"
+                                + EVanillaOverdraw.ALWAYS + ": \n"
                                 + "    LODs will render on all vanilla chunks preventing all holes in the world. \n"
                                 + "\n"
                                 + "This setting shouldn't affect performance.")
@@ -501,8 +501,8 @@ public class Config
                             + "Note that in server, distant generation is always off.")
                     .build();
 
-            public static ConfigEntry<DistanceGenerationMode> distanceGenerationMode = new ConfigEntry.Builder<DistanceGenerationMode>()
-                    .set(DistanceGenerationMode.FEATURES)
+            public static ConfigEntry<EDistanceGenerationMode> distanceGenerationMode = new ConfigEntry.Builder<EDistanceGenerationMode>()
+                    .set(EDistanceGenerationMode.FEATURES)
                     .comment(""
                             + "How detailed should fake chunks be generated outside the vanilla render distance? \n"
                             + "\n"
@@ -512,34 +512,34 @@ public class Config
                             + " may perform in comparison to each other. \n"
                             + "(Note that all modes will load in already existing chunks) \n"
                             + "\n"
-                            + DistanceGenerationMode.NONE + " \n"
+                            + EDistanceGenerationMode.NONE + " \n"
                             + "Only run the Generator to load in already existing chunks. \n"
                             + "\n"
-                            + DistanceGenerationMode.BIOME_ONLY + " \n"
+                            + EDistanceGenerationMode.BIOME_ONLY + " \n"
                             + "Only generate the biomes and use the biome's \n"
                             + " grass color, water color, or snow color. \n"
                             + "Doesn't generate height, everything is shown at sea level. \n"
                             + " - Fastest (2-5 ms) \n"
                             + "\n"
-                            + DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT + " \n"
-                            + "Same as " + DistanceGenerationMode.BIOME_ONLY + ", except instead \n"
+                            + EDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT + " \n"
+                            + "Same as " + EDistanceGenerationMode.BIOME_ONLY + ", except instead \n"
                             + " of always using sea level as the LOD height \n"
                             + " different biome types (mountain, ocean, forest, etc.) \n"
                             + " use predetermined heights to simulate having height data. \n"
                             + " - Fastest (2-5 ms) \n"
                             + "\n"
-                            + DistanceGenerationMode.SURFACE + " \n"
+                            + EDistanceGenerationMode.SURFACE + " \n"
                             + "Generate the world surface, \n"
                             + " this does NOT include trees, \n"
                             + " or structures. \n"
                             + " - Faster (10-20 ms) \n"
                             + "\n"
-                            + DistanceGenerationMode.FEATURES + " \n"
+                            + EDistanceGenerationMode.FEATURES + " \n"
                             + "Generate everything except structures. \n"
                             + "WARNING: This may cause world generation bugs or instability! \n"
                             + " - Fast (15-20 ms) \n"
                             + "\n"
-                            + DistanceGenerationMode.FULL + " \n"
+                            + EDistanceGenerationMode.FULL + " \n"
                             + "Ask the local server to generate/load each chunk. \n"
                             + "This will show player made structures, which can \n"
                             + " be useful if you are adding the mod to a pre-existing world. \n"
@@ -550,61 +550,61 @@ public class Config
                             + " depending on how many world generation threads you have allocated.")
                     .build();
 
-            public static ConfigEntry<LightGenerationMode> lightGenerationMode = new ConfigEntry.Builder<LightGenerationMode>()
-                    .set(LightGenerationMode.FANCY)
+            public static ConfigEntry<ELightGenerationMode> lightGenerationMode = new ConfigEntry.Builder<ELightGenerationMode>()
+                    .set(ELightGenerationMode.FANCY)
                     .comment(""
                             + "How should block and sky lights be processed for distant generation? \n"
                             + "\n"
                             + "Note that this include already existing chunks since vanilla \n"
                             + " does not store sky light values to save file. \n"
                             + "\n"
-                            + LightGenerationMode.FAST + ": Use height map to fake the light values. \n"
-                            + LightGenerationMode.FANCY + ": Use actaul light engines to generate proper values. \n"
+                            + ELightGenerationMode.FAST + ": Use height map to fake the light values. \n"
+                            + ELightGenerationMode.FANCY + ": Use actaul light engines to generate proper values. \n"
                             + "\n"
                             + "This will effect generation speed, but not the rendering performance.")
                     .build();
 
-            public static ConfigEntry<GenerationPriority> generationPriority = new ConfigEntry.Builder<GenerationPriority>()
-                    .set(GenerationPriority.NEAR_FIRST)
+            public static ConfigEntry<EGenerationPriority> generationPriority = new ConfigEntry.Builder<EGenerationPriority>()
+                    .set(EGenerationPriority.NEAR_FIRST)
                     .comment(""
                             + "In what priority should fake chunks be generated outside the vanilla render distance? \n"
                             + "\n"
-                            + GenerationPriority.FAR_FIRST + " \n"
+                            + EGenerationPriority.FAR_FIRST + " \n"
                             + "Fake chunks are generated from lowest to highest detail \n"
                             + " with a priority for far away regions. \n"
                             + "This fills in the world fastest, but you will have large low detail \n"
                             + " blocks for a while while the generation happens. \n"
                             + "\n"
-                            + GenerationPriority.NEAR_FIRST + " \n"
+                            + EGenerationPriority.NEAR_FIRST + " \n"
                             + "Fake chunks are generated around the player \n"
                             + " in a spiral, similar to vanilla minecraft. \n"
                             + "Best used when on a server since we can't generate \n"
                             + " fake chunks. \n"
                             + "\n"
-                            + GenerationPriority.BALANCED + " \n"
-                            + "A mix between "+GenerationPriority.NEAR_FIRST+"and"+GenerationPriority.FAR_FIRST+". \n"
+                            + EGenerationPriority.BALANCED + " \n"
+                            + "A mix between "+ EGenerationPriority.NEAR_FIRST+"and"+ EGenerationPriority.FAR_FIRST+". \n"
                             + "First prioritise completing nearby highest detail chunks, \n"
                             + " then focus on filling in the low detail areas away from the player. \n"
                             + "\n"
-                            + GenerationPriority.AUTO + " \n"
-                            + "Uses " + GenerationPriority.BALANCED + " when on a single player world \n"
-                            + " and " + GenerationPriority.NEAR_FIRST + " when connected to a server. \n"
+                            + EGenerationPriority.AUTO + " \n"
+                            + "Uses " + EGenerationPriority.BALANCED + " when on a single player world \n"
+                            + " and " + EGenerationPriority.NEAR_FIRST + " when connected to a server. \n"
                             + "\n"
                             + "This shouldn't affect performance.")
                     .build();
 
-            public static ConfigEntry<BlocksToAvoid> blocksToAvoid = new ConfigEntry.Builder<BlocksToAvoid>()
-                    .set(BlocksToAvoid.BOTH)
+            public static ConfigEntry<EBlocksToAvoid> blocksToAvoid = new ConfigEntry.Builder<EBlocksToAvoid>()
+                    .set(EBlocksToAvoid.BOTH)
                     .comment(""
                             + "When generating fake chunks, what blocks should be ignored? \n"
                             + "Ignored blocks don't affect the height of the fake chunk, but might affect the color. \n"
-                            + "So using " + BlocksToAvoid.BOTH + " will prevent snow covered blocks from appearing one block too tall, \n"
+                            + "So using " + EBlocksToAvoid.BOTH + " will prevent snow covered blocks from appearing one block too tall, \n"
                             + " but will still show the snow's color.\n"
                             + "\n"
-                            + BlocksToAvoid.NONE + ": Use all blocks when generating fake chunks \n"
-                            + BlocksToAvoid.NON_FULL + ": Only use full blocks when generating fake chunks (ignores slabs, lanterns, torches, tall grass, etc.) \n"
-                            + BlocksToAvoid.NO_COLLISION + ": Only use solid blocks when generating fake chunks (ignores tall grass, torches, etc.) \n"
-                            + BlocksToAvoid.BOTH + ": Only use full solid blocks when generating fake chunks \n"
+                            + EBlocksToAvoid.NONE + ": Use all blocks when generating fake chunks \n"
+                            + EBlocksToAvoid.NON_FULL + ": Only use full blocks when generating fake chunks (ignores slabs, lanterns, torches, tall grass, etc.) \n"
+                            + EBlocksToAvoid.NO_COLLISION + ": Only use solid blocks when generating fake chunks (ignores tall grass, torches, etc.) \n"
+                            + EBlocksToAvoid.BOTH + ": Only use full solid blocks when generating fake chunks \n"
                             + "\n"
                             + "This wont't affect performance.")
                     .build();
@@ -621,15 +621,15 @@ public class Config
 
         public static class Multiplayer
         {
-            public static ConfigEntry<ServerFolderNameMode> serverFolderNameMode = new ConfigEntry.Builder<ServerFolderNameMode>()
-                    .set(ServerFolderNameMode.AUTO)
+            public static ConfigEntry<EServerFolderNameMode> serverFolderNameMode = new ConfigEntry.Builder<EServerFolderNameMode>()
+                    .set(EServerFolderNameMode.AUTO)
                     .comment(""
                             + " What multiplayer save folders should be named. \n"
                             + "\n"
-                            + " " + ServerFolderNameMode.AUTO + ": " + ServerFolderNameMode.NAME_IP + " for LAN connections, " + ServerFolderNameMode.NAME_IP_PORT + " for all others. \n"
-                            + " " + ServerFolderNameMode.NAME_ONLY + ": Example: \"Minecraft Server\" \n"
-                            + " " + ServerFolderNameMode.NAME_IP + ": Example: \"Minecraft Server IP 192.168.1.40\" \n"
-                            + " " + ServerFolderNameMode.NAME_IP_PORT + ": Example: \"Minecraft Server IP 192.168.1.40:25565\"")
+                            + " " + EServerFolderNameMode.AUTO + ": " + EServerFolderNameMode.NAME_IP + " for LAN connections, " + EServerFolderNameMode.NAME_IP_PORT + " for all others. \n"
+                            + " " + EServerFolderNameMode.NAME_ONLY + ": Example: \"Minecraft Server\" \n"
+                            + " " + EServerFolderNameMode.NAME_IP + ": Example: \"Minecraft Server IP 192.168.1.40\" \n"
+                            + " " + EServerFolderNameMode.NAME_IP_PORT + ": Example: \"Minecraft Server IP 192.168.1.40:25565\"")
                     .build();
 
             public static ConfigEntry<Double> multiDimensionRequiredSimilarity = new ConfigEntry.Builder<Double>()
@@ -730,29 +730,29 @@ public class Config
 
             public static class Debugging
             {
-                public static ConfigEntry<RendererType> rendererType = new ConfigEntry.Builder<RendererType>()
-                        .set(RendererType.DEFAULT)
+                public static ConfigEntry<ERendererType> rendererType = new ConfigEntry.Builder<ERendererType>()
+                        .set(ERendererType.DEFAULT)
                         .comment(""
                                 + "What renderer is active? \n"
                                 + "\n"
-                                + RendererType.DEFAULT + ": Default lod renderer \n"
-                                + RendererType.DEBUG + ": Debug testing renderer \n"
-                                + RendererType.DISABLED + ": Disable rendering")
+                                + ERendererType.DEFAULT + ": Default lod renderer \n"
+                                + ERendererType.DEBUG + ": Debug testing renderer \n"
+                                + ERendererType.DISABLED + ": Disable rendering")
                         .build();
 
-                public static ConfigEntry<DebugMode> debugMode = new ConfigEntry.Builder<DebugMode>()
-                        .set(DebugMode.OFF)
+                public static ConfigEntry<EDebugMode> debugMode = new ConfigEntry.Builder<EDebugMode>()
+                        .set(EDebugMode.OFF)
                         .comment(""
                                 + "Should specialized colors/rendering modes be used? \n"
                                 + "\n"
-                                + DebugMode.OFF + ": Fake chunks will be drawn with their normal colors. \n"
-                                + DebugMode.SHOW_WIREFRAME + ": Fake chunks will be drawn as wireframes. \n"
-                                + DebugMode.SHOW_DETAIL + ": Fake chunks color will be based on their detail level. \n"
-                                + DebugMode.SHOW_DETAIL_WIREFRAME + ": Fake chunks color will be based on their detail level, drawn as a wireframe. \n"
-                                + DebugMode.SHOW_GENMODE + ": Fake chunks color will be based on their distant generation mode. \n"
-                                + DebugMode.SHOW_GENMODE_WIREFRAME + ": Fake chunks color will be based on their distant generation mode, drawn as a wireframe. \n"
-                                + DebugMode.SHOW_OVERLAPPING_QUADS + ": Fake chunks will be drawn with total white, but overlapping quads will be drawn with red. \n"
-                                + DebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME + ": Fake chunks will be drawn with total white, \n"
+                                + EDebugMode.OFF + ": Fake chunks will be drawn with their normal colors. \n"
+                                + EDebugMode.SHOW_WIREFRAME + ": Fake chunks will be drawn as wireframes. \n"
+                                + EDebugMode.SHOW_DETAIL + ": Fake chunks color will be based on their detail level. \n"
+                                + EDebugMode.SHOW_DETAIL_WIREFRAME + ": Fake chunks color will be based on their detail level, drawn as a wireframe. \n"
+                                + EDebugMode.SHOW_GENMODE + ": Fake chunks color will be based on their distant generation mode. \n"
+                                + EDebugMode.SHOW_GENMODE_WIREFRAME + ": Fake chunks color will be based on their distant generation mode, drawn as a wireframe. \n"
+                                + EDebugMode.SHOW_OVERLAPPING_QUADS + ": Fake chunks will be drawn with total white, but overlapping quads will be drawn with red. \n"
+                                + EDebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME + ": Fake chunks will be drawn with total white, \n"
                                 + " but overlapping quads will be drawn with red, drawn as a wireframe.")
                         .build();
 
@@ -778,64 +778,64 @@ public class Config
                      * FileSubDimEvent
                      * NetworkEvent //NOT IMPL YET
                      */
-                    public static ConfigEntry<LoggerMode> logWorldGenEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
+                    public static ConfigEntry<ELoggerMode> logWorldGenEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about the world generation process. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logWorldGenPerformance = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE)
+                    public static ConfigEntry<ELoggerMode> logWorldGenPerformance = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_FILE)
                             .comment(""
                                     + "If enabled, the mod will log performance about the world generation process. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logWorldGenLoadEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE)
+                    public static ConfigEntry<ELoggerMode> logWorldGenLoadEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about the world generation process. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logLodBuilderEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
+                    public static ConfigEntry<ELoggerMode> logLodBuilderEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about the LOD generation process. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logRendererBufferEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
+                    public static ConfigEntry<ELoggerMode> logRendererBufferEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about the renderer buffer process. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logRendererGLEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
+                    public static ConfigEntry<ELoggerMode> logRendererGLEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about the renderer OpenGL process. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logFileReadWriteEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
+                    public static ConfigEntry<ELoggerMode> logFileReadWriteEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about file read/write operations. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logFileSubDimEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
+                    public static ConfigEntry<ELoggerMode> logFileSubDimEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about file sub-dimension operations. \n"
                                     + "This can be useful for debugging.")
                             .build();
 
-                    public static ConfigEntry<LoggerMode> logNetworkEvent = new ConfigEntry.Builder<LoggerMode>()
-                            .set(LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
+                    public static ConfigEntry<ELoggerMode> logNetworkEvent = new ConfigEntry.Builder<ELoggerMode>()
+                            .set(ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE)
                             .comment(""
                                     + "If enabled, the mod will log information about network operations. \n"
                                     + "This can be useful for debugging.")
@@ -846,22 +846,22 @@ public class Config
 
             public static class Buffers
             {
-                public static ConfigEntry<GpuUploadMethod> gpuUploadMethod = new ConfigEntry.Builder<GpuUploadMethod>()
-                        .set(GpuUploadMethod.AUTO)
+                public static ConfigEntry<EGpuUploadMethod> gpuUploadMethod = new ConfigEntry.Builder<EGpuUploadMethod>()
+                        .set(EGpuUploadMethod.AUTO)
                         .comment(""
                                 + "What method should be used to upload geometry to the GPU? \n"
                                 + "\n"
-                                + GpuUploadMethod.AUTO + ": Picks the best option based on the GPU you have. \n"
-                                + GpuUploadMethod.BUFFER_STORAGE + ": Default for NVIDIA if OpenGL 4.5 is supported. \n"
+                                + EGpuUploadMethod.AUTO + ": Picks the best option based on the GPU you have. \n"
+                                + EGpuUploadMethod.BUFFER_STORAGE + ": Default for NVIDIA if OpenGL 4.5 is supported. \n"
                                 + "    Fast rendering, no stuttering. \n"
-                                + GpuUploadMethod.SUB_DATA + ": Backup option for NVIDIA. \n"
+                                + EGpuUploadMethod.SUB_DATA + ": Backup option for NVIDIA. \n"
                                 + "    Fast rendering but may stutter when uploading. \n"
-                                + GpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly the best option for integrated GPUs. \n"
+                                + EGpuUploadMethod.BUFFER_MAPPING + ": Slow rendering but won't stutter when uploading. Possibly the best option for integrated GPUs. \n"
                                 + "    Default option for AMD/Intel. \n"
                                 + "    May end up storing buffers in System memory. \n"
                                 + "    Fast rendering if in GPU memory, slow if in system memory, \n"
                                 + "     but won't stutter when uploading.  \n"
-                                + GpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
+                                + EGpuUploadMethod.DATA + ": Fast rendering but will stutter when uploading. \n"
                                 + "    Backup option for AMD/Intel. \n"
                                 + "    Fast rendering but may stutter when uploading. \n"
                                 + "\n"
@@ -883,8 +883,8 @@ public class Config
                                 + " and determined the best method for your hardware first.")
                         .build();
 
-                public static ConfigEntry<BufferRebuildTimes> rebuildTimes = new ConfigEntry.Builder<BufferRebuildTimes>()
-                        .set(BufferRebuildTimes.NORMAL)
+                public static ConfigEntry<EBufferRebuildTimes> rebuildTimes = new ConfigEntry.Builder<EBufferRebuildTimes>()
+                        .set(EBufferRebuildTimes.NORMAL)
                         .comment(""
                                 + "How frequently should vertex buffers (geometry) be rebuilt and sent to the GPU? \n"
                                 + "Higher settings may cause stuttering, but will prevent holes in the world")

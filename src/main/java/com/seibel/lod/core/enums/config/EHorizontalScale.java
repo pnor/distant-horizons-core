@@ -2,7 +2,6 @@
  *    This file is part of the Distant Horizons mod (formerly the LOD Mod),
  *    licensed under the GNU LGPL v3 License.
  *
- *    Copyright (C) 2022  Tom Lee (TomTheFurry)
  *    Copyright (C) 2020-2022  James Seibel
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -17,33 +16,34 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.seibel.lod.core.enums.config;
 
 /**
- * AUTO <br>
- * SMOOTH_DROPOFF <br>
- * PERFORMANCE_FOCUSED <br>
+ * Low <br>
+ * Medium <br>
+ * High <br>
  * <br>
- * Determines how lod level drop off should be done
+ * this is a quality scale for the detail drop-off
  * 
- * @author Tom Lee
- * @version 7-1-2022
+ * @author Leonardo Amato
+ * @version 9-25-2021
  */
-public enum DropoffQuality {
-
-	/** SMOOTH_DROPOFF when <128 lod view distance, or PERFORMANCE_FOCUSED otherwise */
-	AUTO(-1),
+public enum EHorizontalScale
+{
+	/** Lods are 2D with heightMap */
+	LOW(64),
 	
-	SMOOTH_DROPOFF(10),
+	/** Lods expand in three dimension */
+	MEDIUM(128),
 	
-	PERFORMANCE_FOCUSED(0);
+	/** Lods expand in three dimension */
+	HIGH(256);
 	
-	public final int fastModeSwitch;
+	public final int distanceUnit;
 	
-	DropoffQuality(int fastModeSwitch) {
-		this.fastModeSwitch = fastModeSwitch;
+	EHorizontalScale(int distanceUnit)
+	{
+		this.distanceUnit = distanceUnit;
 	}
-	
-	
 }

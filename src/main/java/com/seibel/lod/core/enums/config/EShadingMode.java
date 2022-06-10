@@ -16,32 +16,26 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+ 
 package com.seibel.lod.core.enums.config;
 
 /**
- * heightmap <br>
- * multi_lod <br>
+ * NONE, GAME_SHADING
  * 
- * @author Leonardo Amato
- * @version 11-16-2021
+ * @author James Seibel
+ * @version 7-25-2020
  */
-public enum BlocksToAvoid
+public enum EShadingMode
 {
-	NONE(false, false),
+	/**
+	 * LODs will have darker sides and bottoms to simulate
+	 * Minecraft's fast lighting.
+	 */
+	GAME_SHADING,
 	
-	NON_FULL(true, false),
-	
-	NO_COLLISION(false, true),
-	
-	BOTH(true, true);
-	
-	public final boolean nonFull;
-	public final boolean noCollision;
-	
-	BlocksToAvoid(boolean nonFull, boolean noCollision)
-	{
-		this.nonFull = nonFull;
-		this.noCollision = noCollision;
-	}
+	/**
+	 * LODs will use ambient occlusion to mimic Minecraft's
+	 * Fancy lighting.
+	 */
+	AMBIENT_OCCLUSION
 }

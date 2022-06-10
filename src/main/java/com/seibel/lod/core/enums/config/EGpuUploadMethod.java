@@ -25,7 +25,7 @@ package com.seibel.lod.core.enums.config;
  * @author James Seibel
  * @version 12-1-2021
  */
-public enum GpuUploadMethod
+public enum EGpuUploadMethod
 {
 	/** Picks the best option based on the GPU the user has. */
 	AUTO(false, false),
@@ -62,7 +62,7 @@ public enum GpuUploadMethod
 	
 	public final boolean useEarlyMapping;
 	public final boolean useBufferStorage;
-	GpuUploadMethod(boolean useEarlyMapping, boolean useBufferStorage) {
+	EGpuUploadMethod(boolean useEarlyMapping, boolean useBufferStorage) {
 		this.useEarlyMapping = useEarlyMapping;
 		this.useBufferStorage = useBufferStorage;
 	}

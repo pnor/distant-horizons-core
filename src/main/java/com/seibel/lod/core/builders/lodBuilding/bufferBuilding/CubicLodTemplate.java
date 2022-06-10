@@ -19,7 +19,7 @@
 
 package com.seibel.lod.core.builders.lodBuilding.bufferBuilding;
 
-import com.seibel.lod.core.enums.rendering.DebugMode;
+import com.seibel.lod.core.enums.rendering.EDebugMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.a7.datatype.column.ColumnArrayView;
@@ -41,7 +41,7 @@ public class CubicLodTemplate
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
 	public static void addLodToBuffer(long data, long topData, long botData, LodDataView[][] adjData,
-                                      boolean[] adjFillBlack, byte detailLevel, int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, DebugMode debugging)
+                                      boolean[] adjFillBlack, byte detailLevel, int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, EDebugMode debugging)
 	{
 		short width = (short) (1 << detailLevel);
 		short x = (short) LevelPosUtil.convert(detailLevel, offsetPosX, LodUtil.BLOCK_DETAIL_LEVEL);
@@ -107,7 +107,7 @@ public class CubicLodTemplate
 				topData, botData, adjData, adjFillBlack); // setAdjData
 	}
 
-	public static void addLodToBuffer(long data, long topData, long botData, ColumnArrayView[][] adjData, byte detailLevel, int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, DebugMode debugging)
+	public static void addLodToBuffer(long data, long topData, long botData, ColumnArrayView[][] adjData, byte detailLevel, int offsetPosX, int offsetOosZ, LodQuadBuilder quadBuilder, EDebugMode debugging)
 	{
 		short width = (short) (1 << detailLevel);
 		short x = (short) LevelPosUtil.convert(detailLevel, offsetPosX, LodUtil.BLOCK_DETAIL_LEVEL);

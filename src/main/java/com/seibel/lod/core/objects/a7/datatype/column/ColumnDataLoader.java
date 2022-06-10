@@ -1,7 +1,7 @@
 package com.seibel.lod.core.objects.a7.datatype.column;
 
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.objects.a7.data.DataFileHandler;
@@ -45,7 +45,7 @@ public class ColumnDataLoader extends DataSourceSaver {
         return generateFilePathAndName(levelFolderPath, sectionPos, Config.Client.Graphics.Quality.verticalQuality.get());
     }
 
-    public File generateFilePathAndName(File levelFolderPath, DhSectionPos sectionPos, VerticalQuality quality) {
+    public File generateFilePathAndName(File levelFolderPath, DhSectionPos sectionPos, EVerticalQuality quality) {
         return new File(levelFolderPath, "cache" + File.separator + quality.toString() + File.separator +
                 String.format("%s_v%d-%s%s", clazz.getSimpleName(), COLUMN_DATA_LOADER_VERSION,
                 sectionPos.serialize(), DataFileHandler.FILE_EXTENSION));
@@ -54,8 +54,8 @@ public class ColumnDataLoader extends DataSourceSaver {
     @Override
     public List<File> foldersToScan(File levelFolderPath) {
         File cacheFolder = new File(levelFolderPath, "cache");
-        List<File> foldersToScan = new ArrayList<>(VerticalQuality.values().length);
-        for (VerticalQuality q : VerticalQuality.values()) {
+        List<File> foldersToScan = new ArrayList<>(EVerticalQuality.values().length);
+        for (EVerticalQuality q : EVerticalQuality.values()) {
             foldersToScan.add(new File(cacheFolder, q.toString()));
         }
         return foldersToScan;

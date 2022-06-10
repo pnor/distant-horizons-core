@@ -1,6 +1,6 @@
 package com.seibel.lod.core.objects.a7.datatype.column;
 
-import com.seibel.lod.core.enums.LodDirection;
+import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.LodQuadTree;
@@ -9,8 +9,6 @@ import com.seibel.lod.core.objects.a7.data.DataSourceLoader;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.a7.render.RenderDataSource;
 import com.seibel.lod.core.objects.a7.render.RenderBuffer;
-import com.seibel.lod.core.util.LodThreadFactory;
-import com.seibel.lod.core.util.LodUtil;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -18,8 +16,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
@@ -268,8 +264,8 @@ public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
 
     private void tryBuildBuffer(LodQuadTree quadTree) {
         if (inBuildRenderBuffer == null) {
-            ColumnDatatype[] data = new ColumnDatatype[LodDirection.ADJ_DIRECTIONS.length];
-            for (LodDirection direction : LodDirection.ADJ_DIRECTIONS) {
+            ColumnDatatype[] data = new ColumnDatatype[ELodDirection.ADJ_DIRECTIONS.length];
+            for (ELodDirection direction : ELodDirection.ADJ_DIRECTIONS) {
                 LodSection section = quadTree.getSection(sectionPos.getAdjacent(direction)); //FIXME: Handle traveling through different detail levels
                 if (section.getRenderContainer() != null && section.getRenderContainer() instanceof ColumnRenderBuffer) {
                     data[direction.ordinal()-2] = ((ColumnDatatype) section.getRenderContainer());

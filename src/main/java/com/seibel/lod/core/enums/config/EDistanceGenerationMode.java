@@ -33,7 +33,7 @@ package com.seibel.lod.core.enums.config;
  * @author Leonardo Amato
  * @version 8-7-2021
  */
-public enum DistanceGenerationMode
+public enum EDistanceGenerationMode
 {
 	/**
 	 * Don't generate anything except just load in already existing chunks
@@ -82,31 +82,31 @@ public enum DistanceGenerationMode
 	 */
 	FULL((byte) 6);
 	
-	public static DistanceGenerationMode RENDERABLE = DistanceGenerationMode.BIOME_ONLY;
+	public static EDistanceGenerationMode RENDERABLE = EDistanceGenerationMode.BIOME_ONLY;
 	
 	/**
 	 * The higher the number the more complete the generation is.
 	 */
 	public final byte complexity;
 	
-	DistanceGenerationMode(byte complexity)
+	EDistanceGenerationMode(byte complexity)
 	{
 		this.complexity = complexity;
 	}
 	
 	// Note: return null if out of range
-	public static DistanceGenerationMode previous(DistanceGenerationMode mode) {
+	public static EDistanceGenerationMode previous(EDistanceGenerationMode mode) {
 		switch (mode) {
 		case FULL:
-			return DistanceGenerationMode.FEATURES;
+			return EDistanceGenerationMode.FEATURES;
 		case FEATURES:
-			return DistanceGenerationMode.SURFACE;
+			return EDistanceGenerationMode.SURFACE;
 		case SURFACE:
-			return DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
+			return EDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
 		case BIOME_ONLY_SIMULATE_HEIGHT:
-			return DistanceGenerationMode.BIOME_ONLY;
+			return EDistanceGenerationMode.BIOME_ONLY;
 		case BIOME_ONLY:
-			return DistanceGenerationMode.NONE;
+			return EDistanceGenerationMode.NONE;
 		case NONE:
 		default:
 			return null;
@@ -114,18 +114,18 @@ public enum DistanceGenerationMode
 	}
 	
 	// Note: return null if out of range
-	public static DistanceGenerationMode next(DistanceGenerationMode mode) {
+	public static EDistanceGenerationMode next(EDistanceGenerationMode mode) {
 		switch (mode) {
 		case FEATURES:
-			return DistanceGenerationMode.FULL;
+			return EDistanceGenerationMode.FULL;
 		case SURFACE:
-			return DistanceGenerationMode.FEATURES;
+			return EDistanceGenerationMode.FEATURES;
 		case BIOME_ONLY_SIMULATE_HEIGHT:
-			return DistanceGenerationMode.SURFACE;
+			return EDistanceGenerationMode.SURFACE;
 		case BIOME_ONLY:
-			return DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
+			return EDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
 		case NONE:
-			return DistanceGenerationMode.BIOME_ONLY;
+			return EDistanceGenerationMode.BIOME_ONLY;
 		case FULL:
 		default:
 			return null;

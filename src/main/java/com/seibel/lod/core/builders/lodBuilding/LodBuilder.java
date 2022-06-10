@@ -23,9 +23,9 @@ import java.util.ConcurrentModificationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.seibel.lod.core.enums.LodDirection;
-import com.seibel.lod.core.enums.config.BlocksToAvoid;
-import com.seibel.lod.core.enums.config.DistanceGenerationMode;
+import com.seibel.lod.core.enums.ELodDirection;
+import com.seibel.lod.core.enums.config.EBlocksToAvoid;
+import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.DHBlockPos;
@@ -96,12 +96,12 @@ public class LodBuilder
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim, boolean genAll)
 	{
 		// Block change event
-		generateLodNodeAsync(chunk, lodWorld, dim, DistanceGenerationMode.FULL, true, genAll, ()->{},
+		generateLodNodeAsync(chunk, lodWorld, dim, EDistanceGenerationMode.FULL, true, genAll, ()->{},
 				()->{generateLodNodeAsync(chunk,lodWorld,dim, genAll);});
 	}
 	
 	public void generateLodNodeAsync(IChunkWrapper chunk, LodWorld lodWorld, IDimensionTypeWrapper dim,
-			DistanceGenerationMode generationMode, boolean override, boolean genAll, Runnable endCallback, Runnable retryCallback)
+			EDistanceGenerationMode generationMode, boolean override, boolean genAll, Runnable endCallback, Runnable retryCallback)
 	{
 		if (lodWorld == null || lodWorld.getIsWorldNotLoaded()) {
 			endCallback.run();
@@ -366,18 +366,18 @@ public class LodBuilder
 		System.arraycopy(result, 0, data, dataOffset, maxVerticalData);
 	}
 
-	public static final LodDirection[] DIRECTIONS = new LodDirection[] {
-			LodDirection.UP,
-			LodDirection.DOWN,
-			LodDirection.WEST,
-			LodDirection.EAST,
-			LodDirection.NORTH,
-			LodDirection.SOUTH };
+	public static final ELodDirection[] DIRECTIONS = new ELodDirection[] {
+			ELodDirection.UP,
+			ELodDirection.DOWN,
+			ELodDirection.WEST,
+			ELodDirection.EAST,
+			ELodDirection.NORTH,
+			ELodDirection.SOUTH };
 	
 	private boolean hasCliffFace(IChunkWrapper chunk, int x, int y, int z) {
-		for (LodDirection dir : DIRECTIONS) {
+		for (ELodDirection dir : DIRECTIONS) {
 			IBlockDetailWrapper block = chunk.getBlockDetailAtFace(x, y, z, dir);
-			if (block == null || !block.hasFaceCullingFor(LodDirection.OPPOSITE_DIRECTIONS[dir.ordinal()]))
+			if (block == null || !block.hasFaceCullingFor(ELodDirection.OPPOSITE_DIRECTIONS[dir.ordinal()]))
 				return true;
 		}
 		return false;
@@ -555,14 +555,14 @@ public class LodBuilder
 	/** Is the block at the given blockPos a valid LOD point? */
 	private boolean isLayerValidLodPoint(IBlockDetailWrapper blockDetail)
 	{
-		BlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
+		EBlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
 		return blockDetail != null && blockDetail.shouldRender(avoid);
 	}
 	
 	/** Is the block at the given blockPos a valid LOD point? */
 	private boolean isLayerValidLodPoint(IChunkWrapper chunk, int x, int y, int z)
 	{
-		BlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
+		EBlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
 		IBlockDetailWrapper block = chunk.getBlockDetail(x, y, z);
 		return block != null && block.shouldRender(avoid);
 	}

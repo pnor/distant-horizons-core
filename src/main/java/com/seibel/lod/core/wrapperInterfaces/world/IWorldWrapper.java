@@ -21,7 +21,7 @@ package com.seibel.lod.core.wrapperInterfaces.world;
 
 import java.io.File;
 
-import com.seibel.lod.core.enums.WorldType;
+import com.seibel.lod.core.enums.EWorldType;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
@@ -36,7 +36,7 @@ public interface IWorldWrapper extends IBindable
 {
 	IDimensionTypeWrapper getDimensionType();
 	
-	WorldType getWorldType();
+	EWorldType getWorldType();
 	
 	int getBlockLight(int x, int y, int z);
 	

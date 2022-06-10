@@ -33,7 +33,7 @@ import java.util.concurrent.Future;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
-import com.seibel.lod.core.enums.config.VerticalQuality;
+import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.lod.VerticalLevelContainer;
 import com.seibel.lod.core.util.LodUtil;
@@ -72,10 +72,10 @@ public class LodDimensionOldFileStructureHandler
 	
 	private static class TempLodRegion {
 		final VerticalLevelContainer[] containers;
-		final VerticalQuality vertQual;
+		final EVerticalQuality vertQual;
 		final int posX;
 		final int posZ;
-		TempLodRegion(VerticalQuality vertQual, DHRegionPos pos) {
+		TempLodRegion(EVerticalQuality vertQual, DHRegionPos pos) {
 			this.vertQual = vertQual;
 			posX = pos.x;
 			posZ = pos.z;
@@ -165,7 +165,7 @@ public class LodDimensionOldFileStructureHandler
 		}
 	}
 	
-	private void loadAndMergeAndSaveRegion(VerticalQuality verticalQuality, DHRegionPos regionPos)
+	private void loadAndMergeAndSaveRegion(EVerticalQuality verticalQuality, DHRegionPos regionPos)
 	{
 		LOGGER.info("Merging region "+regionPos+" at "+verticalQuality+"...");
 		TempLodRegion region = new TempLodRegion(verticalQuality, regionPos);
@@ -195,7 +195,7 @@ public class LodDimensionOldFileStructureHandler
 		}
 	}
 	
-	private HashSet<DHRegionPos> scanOldRegionFiles(VerticalQuality vertQual, OldDistanceGenerationMode genMode) {
+	private HashSet<DHRegionPos> scanOldRegionFiles(EVerticalQuality vertQual, OldDistanceGenerationMode genMode) {
 		HashSet<DHRegionPos> result = new HashSet<DHRegionPos>();
 		File baseBaseFolder = new File(getFileBasePath() + vertQual + File.separatorChar + genMode);
 		if (!baseBaseFolder.exists()) return result;
@@ -215,13 +215,13 @@ public class LodDimensionOldFileStructureHandler
 		return result;
 	}
 	
-	private void renameOldFileStructure(VerticalQuality vertQual, OldDistanceGenerationMode genMode) {
+	private void renameOldFileStructure(EVerticalQuality vertQual, OldDistanceGenerationMode genMode) {
 		File baseBaseFolder = new File(getFileBasePath() + vertQual + File.separatorChar + genMode);
 		if (!baseBaseFolder.exists()) return;
 		baseBaseFolder.renameTo(new File(getFileBasePath() + vertQual + File.separatorChar + genMode + RETIRED_OLD_STRUCT_POSTFIX));
 	}
 	
-	public void mergeOldFileStructureForVertQuality(VerticalQuality vertQual) {
+	public void mergeOldFileStructureForVertQuality(EVerticalQuality vertQual) {
 		File baseFile = new File(getFileBasePath() + vertQual);
 		if (!baseFile.exists()) return;
 		if (!baseFile.isDirectory()) return;
