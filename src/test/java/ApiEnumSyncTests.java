@@ -1,22 +1,43 @@
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiVerticalQuality;
+/*
+ *    This file is part of the Distant Horizons mod (formerly the LOD Mod),
+ *    licensed under the GNU LGPL v3 License.
+ *
+ *    Copyright (C) 2020-2022  James Seibel
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published by
+ *    the Free Software Foundation, version 3.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiEnumAssembly;
+import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
+import com.seibel.lod.core.enums.CoreEnumAssembly;
 import com.seibel.lod.core.enums.config.VerticalQuality;
 import com.seibel.lod.core.util.EnumUtil;
 import org.junit.Test;
 import org.junit.Assert;
 
+import java.util.ArrayList;
+
 /**
  * These tests were primary created to confirm that the
  * API enums are properly synced with their Core variants.
  *
- *
  * @author James Seibel
- * @version 2022-6-6
+ * @version 2022-6-9
  */
 public class ApiEnumSyncTests
 {
 	
-	/** This is just a quick example to confirm the testing system is set up correctly. */
+	/** This is just a quick demo to confirm the testing system is set up correctly. */
 	@Test
 	public void ExampleTests()
 	{
@@ -28,38 +49,79 @@ public class ApiEnumSyncTests
 	@Test
 	public void ConfirmEnumsAreSynced()
 	{
-		//================================//
-		// base case tests to make sure   //
-		// the tests are set up correctly //
-		//================================//
+		//=================//
+		// test validation //
+		//=================//
 		
-		// this should always succeed (comparing the same enum to itself)
-		AssertEnumsValuesAreEqual(VerticalQuality.class, VerticalQuality.class, true);
+		// this should always succeed (comparing an enum to itself)
+		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(VerticalQuality.class, VerticalQuality.class), true);
 		// this should always fail (two completely different enums)
-		AssertEnumsValuesAreEqual(VerticalQuality.class, DhApiFogDistance.class, false);
+		AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(VerticalQuality.class, DhApiFogDrawMode.class), false);
 		
 		
 		
-		//=========================//
-		// actual enum comparisons //
-		//=========================//
 		
-		// TODO using reflection I should be able to automatically find and compare each enum in the Api to its corresponding Core object
-		AssertEnumsValuesAreEqual(VerticalQuality.class, DhApiVerticalQuality.class);
+		//================//
+		// Api enum Setup //
+		//================//
+		
+		// make sure the enum packages are loaded
+		new DhApiEnumAssembly();
+		new CoreEnumAssembly();
+		
+		// get the list of API enums
+		ArrayList<Class<? extends Enum<?>>> apiEnumClassList = new ArrayList<>();
+		ArrayList<String> apiEnumPackageNames = EnumTestHelper.findPackageNamesStartingWith(DhApiEnumAssembly.class.getPackage().getName());
+		for (String apiEnumPackageName : apiEnumPackageNames)
+		{
+			apiEnumClassList.addAll(EnumTestHelper.getAllEnumsFromPackage(apiEnumPackageName));
+		}
+		
+		// get the list of core enums
+		ArrayList<Class<? extends Enum<?>>> coreEnumClassList = new ArrayList<>();
+		ArrayList<String> coreEnumPackageNames = EnumTestHelper.findPackageNamesStartingWith(CoreEnumAssembly.class.getPackage().getName());
+		for (String coreEnumPackageName : coreEnumPackageNames)
+		{
+			coreEnumClassList.addAll(EnumTestHelper.getAllEnumsFromPackage(coreEnumPackageName));
+		}
+		
+		
+		//======================//
+		// Api enum comparisons //
+		//======================//
+		
+		// compare each API enum to its corresponding Core enum
+		for (Class<? extends Enum<?>> apiEnumClass : apiEnumClassList)
+		{
+			String coreEnumName = apiEnumClass.getSimpleName().substring(DhApiEnumAssembly.API_ENUM_PREFIX.length());
+			boolean coreEnumFound = false;
+			
+			// find the core enum to compare against
+			for (Class<? extends Enum<?>> coreEnumClass : coreEnumClassList)
+			{
+				if (coreEnumClass.getSimpleName().equals(coreEnumName))
+				{
+					AssertEnumsValuesAreEqual(EnumUtil.compareEnumClassesByValues(coreEnumClass, apiEnumClass), true);
+					coreEnumFound = true;
+					break;
+				}
+			}
+			
+			if (!coreEnumFound)
+			{
+				Assert.fail("API enum [" + coreEnumName + "] not found in Core.");
+			}
+		}
+		
+		
 	}
 	
 	
 	
-	
-	private <Ta extends Enum<Ta>, Tb extends Enum<Tb>> void AssertEnumsValuesAreEqual(Class<Ta> alphaEnum, Class<Tb> betaEnum)
+	/** Helper method to make enum comparisons a little cleaner */
+	private void AssertEnumsValuesAreEqual(EnumUtil.EnumComparisonResult comparisonResult, boolean assertEqual)
 	{
-		AssertEnumsValuesAreEqual(alphaEnum, betaEnum, true);
-	}
-	private <Ta extends Enum<Ta>, Tb extends Enum<Tb>> void AssertEnumsValuesAreEqual(Class<Ta> alphaEnum, Class<Tb> betaEnum, boolean shouldBeEqual)
-	{
-		EnumUtil.EnumComparisonResult comparisonResult = EnumUtil.compareEnumsByValues(alphaEnum, betaEnum);
-		
-		if (shouldBeEqual)
+		if (assertEqual)
 		{
 			Assert.assertTrue(comparisonResult.failMessage, comparisonResult.success);
 		}

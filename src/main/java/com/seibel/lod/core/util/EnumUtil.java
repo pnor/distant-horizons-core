@@ -1,3 +1,22 @@
+/*
+ *    This file is part of the Distant Horizons mod (formerly the LOD Mod),
+ *    licensed under the GNU LGPL v3 License.
+ *
+ *    Copyright (C) 2020-2022  James Seibel
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published by
+ *    the Free Software Foundation, version 3.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.seibel.lod.core.util;
 
 import java.io.InvalidObjectException;
@@ -41,10 +60,10 @@ public class EnumUtil
 	 * Example output: <Br>
 	 * "NEAR, FAR, NEAR_AND_FAR"
 	 */
-	public static <T extends Enum<T>> String createEnumCsv(Class<T> enumType)
+	public static String createEnumCsv(Class<? extends Enum<?>> enumType)
 	{
 		StringBuilder str = new StringBuilder();
-		T[] enumValues = enumType.getEnumConstants();
+		Enum<?>[] enumValues = enumType.getEnumConstants();
 		
 		for (int i = 0; i < enumValues.length; i++)
 		{
@@ -63,10 +82,10 @@ public class EnumUtil
 	}
 	
 	/** Returns true if both enums contain the same values. */
-	public static <Ta extends Enum<Ta>, Tb extends Enum<Tb>> EnumComparisonResult compareEnumsByValues(Class<Ta> alphaEnum, Class<Tb> betaEnum)
+	public static EnumComparisonResult compareEnumClassesByValues(Class<? extends Enum<?>> alphaEnum, Class<? extends Enum<?>> betaEnum)
 	{
-		Ta[] alphaValues = alphaEnum.getEnumConstants();
-		Tb[] betaValues = betaEnum.getEnumConstants();
+		Enum<?>[] alphaValues = alphaEnum.getEnumConstants();
+		Enum<?>[] betaValues = betaEnum.getEnumConstants();
 		
 		// compare the number of enum values
 		if (alphaValues.length != betaValues.length)
@@ -75,10 +94,10 @@ public class EnumUtil
 		}
 		
 		// check that each value exists in both enums
-		for(Ta alphaVal : alphaValues)
+		for(Enum<?> alphaVal : alphaValues)
 		{
 			boolean valueFoundInBothEnums = false;
-			for(Tb betaVal : betaValues)
+			for(Enum<?> betaVal : betaValues)
 			{
 				if (alphaVal.name().equals(betaVal.name()))
 				{
@@ -98,7 +117,7 @@ public class EnumUtil
 		return new EnumComparisonResult(true, "");
 	}
 	/** helper method */
-	public static <Ta extends Enum<Ta>, Tb extends Enum<Tb>> String createFailMessageHeader(Class<Ta> alphaEnum, Class<Tb> betaEnum)
+	public static String createFailMessageHeader(Class<? extends Enum<?>> alphaEnum, Class<? extends Enum<?>> betaEnum)
 	{
 		return "The enums [" + alphaEnum.getSimpleName() + "] and [" + betaEnum.getSimpleName() + "] aren't equal: ";
 	}
