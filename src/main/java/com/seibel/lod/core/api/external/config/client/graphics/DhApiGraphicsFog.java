@@ -1,6 +1,6 @@
 package com.seibel.lod.core.api.external.config.client.graphics;
 
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
 import com.seibel.lod.core.api.external.apiObjects.objects.DhApiConfig_v1;
 import com.seibel.lod.core.config.Config.Client.Graphics.FogQuality;
@@ -24,7 +24,7 @@ public class DhApiGraphicsFog
 	{ return new DhApiConfig_v1<>(FogQuality.fogDrawMode); }
 	
 	/** Returns the config related to the fog draw type. */
-	public static DhApiConfig_v1<DhApiFogColorMode> getFogColorConfig_v1()
+	public static DhApiConfig_v1<FogColorMode> getFogColorConfig_v1()
 	{ return new DhApiConfig_v1<>(FogQuality.fogColorMode); }
 	
 	/** Returns the config related to disabling vanilla fog. */

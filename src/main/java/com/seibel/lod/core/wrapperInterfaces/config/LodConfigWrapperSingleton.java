@@ -1,7 +1,7 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
 import com.seibel.lod.core.config.Config;
@@ -235,13 +235,13 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 
 
 				@Override
-				public DhApiFogColorMode getFogColorMode()
+				public FogColorMode getFogColorMode()
 				{
 					return Config.Client.Graphics.FogQuality.fogColorMode.get();
 				}
 
 				@Override
-				public void setFogColorMode(DhApiFogColorMode newFogColorMode)
+				public void setFogColorMode(FogColorMode newFogColorMode)
 				{
 					Config.Client.Graphics.FogQuality.fogColorMode.set(newFogColorMode);
 				}

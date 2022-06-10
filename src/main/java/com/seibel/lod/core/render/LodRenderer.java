@@ -39,7 +39,7 @@ import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.lod.LodDimension;
@@ -432,7 +432,7 @@ public class LodRenderer
 	{
 		Color fogColor;
 		
-		if (CONFIG.client().graphics().fogQuality().getFogColorMode() == DhApiFogColorMode.USE_SKY_COLOR)
+		if (CONFIG.client().graphics().fogQuality().getFogColorMode() == FogColorMode.USE_SKY_COLOR)
 			fogColor = MC_RENDER.getSkyColor();
 		else
 			fogColor = MC_RENDER.getFogColor(partialTicks);

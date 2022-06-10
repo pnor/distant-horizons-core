@@ -20,7 +20,7 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
 import com.seibel.lod.core.enums.config.*;
@@ -99,8 +99,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				DhApiFogDrawMode getFogDrawMode();
 				void setFogDrawMode(DhApiFogDrawMode newFogDrawMode);
 
-				DhApiFogColorMode getFogColorMode();
-				void setFogColorMode(DhApiFogColorMode newFogColorMode);
+				FogColorMode getFogColorMode();
+				void setFogColorMode(FogColorMode newFogColorMode);
 
 				boolean getDisableVanillaFog();
 				void setDisableVanillaFog(boolean newDisableVanillaFog);

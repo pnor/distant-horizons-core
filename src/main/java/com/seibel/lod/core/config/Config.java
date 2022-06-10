@@ -21,7 +21,7 @@ package com.seibel.lod.core.config;
 
 
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDrawMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogDistance;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
 import com.seibel.lod.core.config.types.*;
@@ -192,13 +192,13 @@ public class Config
                                 + "Disabling fog will improve GPU performance.")
                         .build();
 
-                public static ConfigEntry<DhApiFogColorMode> fogColorMode = new ConfigEntry.Builder<DhApiFogColorMode>()
-                        .set(DhApiFogColorMode.USE_WORLD_FOG_COLOR)
+                public static ConfigEntry<FogColorMode> fogColorMode = new ConfigEntry.Builder<FogColorMode>()
+                        .set(FogColorMode.USE_WORLD_FOG_COLOR)
                         .comment(""
                                 + "What color should fog use? \n"
                                 + "\n"
-                                + DhApiFogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
-                                + DhApiFogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
+                                + FogColorMode.USE_WORLD_FOG_COLOR + ": Use the world's fog color. \n"
+                                + FogColorMode.USE_SKY_COLOR + ": Use the sky's color. \n"
                                 + "\n"
                                 + "This setting doesn't affect performance.")
                         .build();

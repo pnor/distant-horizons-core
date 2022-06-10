@@ -1,7 +1,6 @@
 package com.seibel.lod.core.api.external.config.client.graphics;
 
 import com.seibel.lod.core.api.external.apiObjects.objects.DhApiConfig_v1;
-import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.api.external.apiObjects.enums.DhApiRendererType;
 import com.seibel.lod.core.config.Config.Client.Graphics.Quality;
 import com.seibel.lod.core.config.Config.Client.Advanced.Debugging;

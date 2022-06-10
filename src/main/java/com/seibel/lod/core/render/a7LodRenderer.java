@@ -23,7 +23,7 @@ import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.config.types.ConfigEntry;
 import com.seibel.lod.core.enums.rendering.DebugMode;
-import com.seibel.lod.core.api.external.apiObjects.enums.DhApiFogColorMode;
+import com.seibel.lod.core.enums.rendering.FogColorMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
@@ -276,7 +276,7 @@ public class a7LodRenderer
 	{
 		Color fogColor;
 		
-		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == DhApiFogColorMode.USE_SKY_COLOR)
+		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == FogColorMode.USE_SKY_COLOR)
 			fogColor = MC_RENDER.getSkyColor();
 		else
 			fogColor = MC_RENDER.getFogColor(partialTicks);
