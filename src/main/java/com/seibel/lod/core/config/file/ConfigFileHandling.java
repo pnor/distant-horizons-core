@@ -160,7 +160,11 @@ public class ConfigFileHandling {
         } catch (Exception e) {
             System.out.println("Loading file failed because of this expectation:\n"+e);
             try { // Now try remaking the file and loading it
-                Files.deleteIfExists(ConfigPath);
+                Path configFilePath = ConfigPath.getParent();
+                if (!configFilePath.toFile().exists())
+                    Files.createDirectory(configFilePath);
+                else
+                    Files.deleteIfExists(ConfigPath);
                 Files.createFile(ConfigPath);
                 config.load();
             } catch (IOException ex) {
