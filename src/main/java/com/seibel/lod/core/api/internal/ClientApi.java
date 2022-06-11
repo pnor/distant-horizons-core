@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.rendering.ERendererType;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
@@ -47,7 +48,6 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
@@ -75,7 +75,6 @@ public class ClientApi
 	
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	private static final EventApi EVENT_API = EventApi.INSTANCE;
 
@@ -174,8 +173,8 @@ public class ClientApi
 			ConfigBasedLogger.updateAll();
 			ConfigBasedSpamLogger.updateAll(doFlush);
 
-			if (InternalApiShared.previousVertQual != CONFIG.client().graphics().quality().getVerticalQuality()) {
-				InternalApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
+			if (InternalApiShared.previousVertQual != Config.Client.Graphics.Quality.verticalQuality.get()) {
+				InternalApiShared.previousVertQual = Config.Client.Graphics.Quality.verticalQuality.get();
 				EventApi.INSTANCE.worldUnloadEvent(MC.getWrappedServerWorld());
 				EventApi.INSTANCE.worldLoadEvent(MC.getWrappedClientWorld());
 				return;
@@ -264,7 +263,7 @@ public class ClientApi
 			
 			
 			
-			if (CONFIG.client().advanced().debugging().getRendererType() == ERendererType.DEFAULT)
+			if (Config.Client.Advanced.Debugging.rendererType.get() == ERendererType.DEFAULT)
 			{
 				// Note to self:
 				// if "unspecified" shows up in the pie chart, it is
@@ -290,7 +289,7 @@ public class ClientApi
 				}
 				profiler.pop(); // end LOD
 				profiler.push("terrain"); // go back into "terrain"
-			} else if (CONFIG.client().advanced().debugging().getRendererType() == ERendererType.DEBUG) {
+			} else if (Config.Client.Advanced.Debugging.rendererType.get() == ERendererType.DEBUG) {
 				IProfilerWrapper profiler = MC.getProfiler();
 				profiler.pop(); // get out of "terrain"
 				profiler.push("LODTestRendering");
@@ -302,7 +301,7 @@ public class ClientApi
 			// these can't be set until after the buffers are built (in renderer.drawLODs)
 			// otherwise the buffers may be set to the wrong size, or not changed at all
 			InternalApiShared.previousChunkRenderDistance = MC_RENDER.getRenderDistance();
-			InternalApiShared.previousLodRenderDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance();
+			InternalApiShared.previousLodRenderDistance = Config.Client.Graphics.Quality.lodChunkRenderDistance.get();
 		}
 		catch (Exception e)
 		{
@@ -346,21 +345,21 @@ public class ClientApi
 	// Trigger once on key press, with CLIENT PLAYER.
 	public void keyPressedEvent(int glfwKey)
 	{
-		if (!CONFIG.client().advanced().debugging().getDebugKeybindingsEnabled())
+		if (!Config.Client.Advanced.Debugging.enableDebugKeybindings.get())
 			return;
 		
 		if (glfwKey == GLFW.GLFW_KEY_F8)
 		{
-			CONFIG.client().advanced().debugging()
-					.setDebugMode(CONFIG.client().advanced().debugging().getDebugMode().getNext());
-			MC.sendChatMessage("F8: Set debug mode to " + CONFIG.client().advanced().debugging().getDebugMode());
+			Config.Client.Advanced.Debugging
+					.debugMode.set(Config.Client.Advanced.Debugging.debugMode.get().getNext());
+			MC.sendChatMessage("F8: Set debug mode to " + Config.Client.Advanced.Debugging.debugMode.get());
 		}
 		
 		if (glfwKey == GLFW.GLFW_KEY_F6)
 		{
-			CONFIG.client().advanced().debugging()
-					.setRendererType(ERendererType.next(CONFIG.client().advanced().debugging().getRendererType()));
-			MC.sendChatMessage("F6: Set rendering to " + CONFIG.client().advanced().debugging().getRendererType());
+			Config.Client.Advanced.Debugging
+					.rendererType.set(ERendererType.next(Config.Client.Advanced.Debugging.rendererType.get()));
+			MC.sendChatMessage("F6: Set rendering to " + Config.Client.Advanced.Debugging.rendererType.get());
 		}
 		
 		if (glfwKey == GLFW.GLFW_KEY_P)

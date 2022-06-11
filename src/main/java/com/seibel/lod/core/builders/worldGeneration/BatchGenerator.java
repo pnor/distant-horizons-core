@@ -20,6 +20,7 @@
 package com.seibel.lod.core.builders.worldGeneration;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.enums.config.EGenerationPriority;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
@@ -29,7 +30,6 @@ import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
@@ -43,12 +43,11 @@ public class BatchGenerator
 	public static final boolean ENABLE_GENERATOR_STATS_LOGGING = false;
 
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	public AbstractBatchGenerationEnvionmentWrapper generationGroup;
 	public LodDimension targetLodDim;
 	public static final int generationGroupSize = 4;
-	public static int previousThreadCount = CONFIG.client().advanced().threading()._getWorldGenerationThreadPoolSize();
+	public static int previousThreadCount = Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()<1 ? 1 : (int) Math.ceil(Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get());
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	
 	private int estimatedSampleNeeded = 128;
@@ -72,8 +71,8 @@ public class BatchGenerator
 			LOGGER.info("1.18 Experimental Chunk Generator reinitialized");
 		}
 
-		EDistanceGenerationMode mode = CONFIG.client().worldGenerator().getDistanceGenerationMode();
-		int newThreadCount = CONFIG.client().advanced().threading()._getWorldGenerationThreadPoolSize();
+		EDistanceGenerationMode mode = Config.Client.WorldGenerator.distanceGenerationMode.get();
+		int newThreadCount = Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()<1 ? 1 : (int) Math.ceil(Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get());
 		if (newThreadCount != previousThreadCount) {
 			generationGroup.resizeThreadPool(newThreadCount);
 			previousThreadCount = newThreadCount;
@@ -81,7 +80,7 @@ public class BatchGenerator
 		if (estimatedPointsToQueue < newThreadCount)
 			estimatedPointsToQueue = newThreadCount;
 
-		EGenerationPriority priority = CONFIG.client().worldGenerator().getGenerationPriority();
+		EGenerationPriority priority = Config.Client.WorldGenerator.generationPriority.get();
 		if (priority == EGenerationPriority.AUTO)
 			priority = MC.hasSinglePlayerServer() ? EGenerationPriority.FAR_FIRST : EGenerationPriority.NEAR_FIRST;
 
@@ -106,7 +105,7 @@ public class BatchGenerator
 		// round the player's block position down to the nearest chunk BlockPos
 		int playerPosX = MC.getPlayerBlockPos().getX();
 		int playerPosZ = MC.getPlayerBlockPos().getZ();
-		double runTimeRatio = CONFIG.client().advanced().threading()._getWorldGenerationPartialRunTime();
+		double runTimeRatio = Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()>1 ? 1.0 : Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get();
 
 		PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(estimatedSampleNeeded, playerPosX, playerPosZ,
 				priority, mode);

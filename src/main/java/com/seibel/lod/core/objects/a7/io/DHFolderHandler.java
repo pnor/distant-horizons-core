@@ -1,11 +1,11 @@
 package com.seibel.lod.core.objects.a7.io;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EServerFolderNameMode;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.ParsedIp;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import org.apache.logging.log4j.LogManager;
 
@@ -19,9 +19,8 @@ public class DHFolderHandler {
      */
     public static final String INVALID_FILE_CHARACTERS_REGEX = "[\\\\/:*?\"<>|]";
     private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-    private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
     public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodDimensionFinder.class),
-            () -> CONFIG.client().advanced().debugging().debugSwitch().getLogFileSubDimEvent());
+            () -> Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.get());
 
     public static File getCurrentWorldFolder() {
         File dimensionFolder;
@@ -80,7 +79,7 @@ public class DHFolderHandler {
 
 
         // determine the format of the folder name
-        EServerFolderNameMode folderNameMode = CONFIG.client().multiplayer().getServerFolderNameMode();
+        EServerFolderNameMode folderNameMode = Config.Client.Multiplayer.serverFolderNameMode.get();
         if (folderNameMode == EServerFolderNameMode.AUTO)
         {
             if (parsedIp.isLan())

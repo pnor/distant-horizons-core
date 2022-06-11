@@ -21,6 +21,7 @@ package com.seibel.lod.core.api.internal;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.EWorldType;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
@@ -33,7 +34,6 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
@@ -56,7 +56,6 @@ public class EventApi
 	
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 	
 	/**
@@ -91,7 +90,7 @@ public class EventApi
 		if (InternalApiShared.isShuttingDown)
 			return;
 
-		if (CONFIG.client().worldGenerator().getEnableDistantGeneration())
+		if (Config.Client.WorldGenerator.enableDistantGeneration.get())
 		{
 			if (lastWorldGenTickDelta <= 0) {
 				lastWorldGenTickDelta = 20; // 20 ticks is 1 second. We don't need to refresh world gen status every tick.
@@ -154,7 +153,7 @@ public class EventApi
 		// make sure the correct LODs are being rendered
 		// (if this isn't done the previous world's LODs may be drawn)
 		ClientApi.renderer.regenerateLODsNextFrame();
-		InternalApiShared.previousVertQual = CONFIG.client().graphics().quality().getVerticalQuality();
+		InternalApiShared.previousVertQual = Config.Client.Graphics.Quality.verticalQuality.get();
 	}
 	
 	/** This is also called when the user disconnects from a server+ */
@@ -235,10 +234,10 @@ public class EventApi
 		// calculate how wide the dimension(s) should be in regions
 		int chunksWide;
 		if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
-			chunksWide = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(),
+			chunksWide = Math.min(Config.Client.Graphics.Quality.lodChunkRenderDistance.get(),
 					LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * 2 + 1;
 		else
-			chunksWide = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 2 + 1;
+			chunksWide = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() * 2 + 1;
 		
 		int newWidth = (int) Math.ceil(chunksWide / (float) LodUtil.REGION_WIDTH_IN_CHUNKS);
 		// make sure we have an odd number of regions

@@ -23,6 +23,7 @@ import java.util.ConcurrentModificationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.enums.config.EBlocksToAvoid;
 import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
@@ -40,7 +41,6 @@ import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
@@ -59,10 +59,9 @@ public class LodBuilder
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 
 	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodBuilder.class),
-			() -> config.client().advanced().debugging().debugSwitch().getLogLodBuilderEvent());
+			() -> Config.Client.Advanced.Debugging.DebugSwitch.logLodBuilderEvent.get());
 	
 	/** This cannot be final! Different world have different height, and in menu, this causes Null Exceptions*/
 	//public static final short MIN_WORLD_HEIGHT = MC.getWrappedClientWorld().getMinHeight();
@@ -337,7 +336,7 @@ public class LodBuilder
 		boolean topBlock = true;
 		if (y < chunk.getMinBuildHeight())
 			dataToMerge[0] = DataPointUtil.createVoidDataPoint(generation);
-		int maxConnectedLods = LodBuilder.config.client().graphics().quality().getVerticalQuality().maxVerticalData[0];
+		int maxConnectedLods = Config.Client.Graphics.Quality.verticalQuality.get().maxVerticalData[0];
 		while (y >= chunk.getMinBuildHeight()) {
 			int height = determineHeightPointFrom(chunk, config, x, y, z);
 			// If the lod is at the default height, it must be void data
@@ -394,7 +393,7 @@ public class LodBuilder
 		if (strictEdge)
 		{
 			IBlockDetailWrapper blockAbove = chunk.getBlockDetail(xAbs, yAbs + 1, zAbs);
-			if (blockAbove != null && config.client().worldGenerator().getTintWithAvoidedBlocks() && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
+			if (blockAbove != null && Config.Client.WorldGenerator.tintWithAvoidedBlocks.get() && !blockAbove.shouldRender(Config.Client.WorldGenerator.blocksToAvoid.get()))
 			{ // The above block is skipped. Lets use its skipped color for current block
 				currentBlockDetail = blockAbove;
 			}
@@ -458,7 +457,7 @@ public class LodBuilder
 			colorInt = 0;
 			if (chunk.blockPosInsideChunk(x, y+1, z)) {
 				IBlockDetailWrapper blockAbove = chunk.getBlockDetail(x, y+1, z);
-				if (blockAbove != null && config.client().worldGenerator().getTintWithAvoidedBlocks() && !blockAbove.shouldRender(config.client().worldGenerator().getBlocksToAvoid()))
+				if (blockAbove != null && Config.Client.WorldGenerator.tintWithAvoidedBlocks.get() && !blockAbove.shouldRender(Config.Client.WorldGenerator.blocksToAvoid.get()))
 				{  // The above block is skipped. Lets use its skipped color for current block
 					colorInt = blockAbove.getAndResolveFaceColor(null, chunk, new DHBlockPos(x, y+1, z));
 				}
@@ -555,14 +554,14 @@ public class LodBuilder
 	/** Is the block at the given blockPos a valid LOD point? */
 	private boolean isLayerValidLodPoint(IBlockDetailWrapper blockDetail)
 	{
-		EBlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
+		EBlocksToAvoid avoid = Config.Client.WorldGenerator.blocksToAvoid.get();
 		return blockDetail != null && blockDetail.shouldRender(avoid);
 	}
 	
 	/** Is the block at the given blockPos a valid LOD point? */
 	private boolean isLayerValidLodPoint(IChunkWrapper chunk, int x, int y, int z)
 	{
-		EBlocksToAvoid avoid = config.client().worldGenerator().getBlocksToAvoid();
+		EBlocksToAvoid avoid = Config.Client.WorldGenerator.blocksToAvoid.get();
 		IBlockDetailWrapper block = chunk.getBlockDetail(x, y, z);
 		return block != null && block.shouldRender(avoid);
 	}

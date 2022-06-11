@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.logging.SpamReducedLogger;
@@ -35,7 +36,6 @@ import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLBuffer;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import org.apache.logging.log4j.Logger;
 
@@ -69,8 +69,7 @@ public class LodBufferBuilderFactory {
 			}
 		}
 	}
-	
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	
@@ -82,7 +81,7 @@ public class LodBufferBuilderFactory {
 	/** The threads used to generate buffers. */
 	private static LodThreadFactory bufferBuilderThreadFactory = new LodThreadFactory("BufferBuilder",
 			Thread.NORM_PRIORITY - 2);
-	private static int previousBufferBuilderThreads = CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads();
+	private static int previousBufferBuilderThreads = Config.Client.Advanced.Threading.numberOfBufferBuilderThreads.get();
 	public static ExecutorService bufferBuilderThreads = Executors.newFixedThreadPool(previousBufferBuilderThreads, bufferBuilderThreadFactory);
 
 	/** The thread used to upload buffers. */
@@ -173,7 +172,7 @@ public class LodBufferBuilderFactory {
 		}
 		bufferBuilderThreads.shutdownNow();
 		bufferUploadThread.shutdownNow();
-		previousBufferBuilderThreads = CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads();
+		previousBufferBuilderThreads = Config.Client.Advanced.Threading.numberOfBufferBuilderThreads.get();
 		bufferBuilderThreadFactory = new LodThreadFactory("BufferBuilder", Thread.NORM_PRIORITY - 2);
 		bufferBuilderThreads = Executors.newFixedThreadPool(previousBufferBuilderThreads, bufferBuilderThreadFactory);
 		
@@ -187,7 +186,7 @@ public class LodBufferBuilderFactory {
 			int playerZ, boolean fullRegen) {
 		//ArrayList<RenderRegion> regionsToCleanup = new ArrayList<RenderRegion>();
 		try {
-			if (previousBufferBuilderThreads != CONFIG.client().advanced().threading().getNumberOfBufferBuilderThreads())
+			if (previousBufferBuilderThreads != Config.Client.Advanced.Threading.numberOfBufferBuilderThreads.get())
 				resetThreadPools(false);
 			regionsListLock.lockInterruptibly();
 			if (ENABLE_EVENT_LOGGING)
@@ -195,10 +194,10 @@ public class LodBufferBuilderFactory {
 					lodDim, renderRegions==null ? "NULL" : renderRegions.toString());
 			long startTime = System.currentTimeMillis();
 
-			boolean doCaveCulling = CONFIG.client().graphics().advancedGraphics().getEnableCaveCulling();
+			boolean doCaveCulling = Config.Client.Graphics.AdvancedGraphics.enableCaveCulling.get();
 			doCaveCulling &= !lodDim.dimension.hasCeiling();
 			doCaveCulling &= lodDim.dimension.hasSkyLight();
-			doCaveCulling &= playerY > CONFIG.client().graphics().advancedGraphics().getCaveCullingHeight() + 5;
+			doCaveCulling &= playerY > Config.Client.Graphics.AdvancedGraphics.caveCullingHeight.get() + 5;
 			int playerSkylight = MC.getPlayerSkylight(); // if fail returns -1.
 			doCaveCulling &= playerSkylight > 7;
 

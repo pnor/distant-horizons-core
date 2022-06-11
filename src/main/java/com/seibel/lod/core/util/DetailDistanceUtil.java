@@ -19,9 +19,8 @@
 
 package com.seibel.lod.core.util;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EHorizontalQuality;
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 /**
  * 
@@ -30,22 +29,20 @@ import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
  */
 public class DetailDistanceUtil
 {
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-
-	private static byte minDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
+	private static byte minDetail = Config.Client.Graphics.Quality.drawResolution.get().detailLevel;
 	private static final byte maxDetail = LodUtil.DETAIL_OPTIONS;
 	private static final double minDistance = 0;
-	private static double distanceUnit = 16 * CONFIG.client().graphics().quality().getHorizontalScale();
-	private static double maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 2;
-	private static double logBase = Math.log(CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase);
+	private static double distanceUnit = 16 * Config.Client.Graphics.Quality.horizontalScale.get();
+	private static double maxDistance = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() * 16 * 2;
+	private static double logBase = Math.log(Config.Client.Graphics.Quality.horizontalQuality.get().quadraticBase);
 	
 	
 	public static void updateSettings()
 	{
-		distanceUnit = 16 * CONFIG.client().graphics().quality().getHorizontalScale();
-		minDetail = CONFIG.client().graphics().quality().getDrawResolution().detailLevel;
-		maxDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * 16 * 8;
-		logBase = Math.log(CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase);
+		distanceUnit = 16 * Config.Client.Graphics.Quality.horizontalScale.get();
+		minDetail = Config.Client.Graphics.Quality.drawResolution.get().detailLevel;
+		maxDistance = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() * 16 * 8;
+		logBase = Math.log(Config.Client.Graphics.Quality.horizontalQuality.get().quadraticBase);
 	}
 	
 	public static double baseDistanceFunction(int detail)
@@ -57,11 +54,11 @@ public class DetailDistanceUtil
 		
 		detail-=minDetail;
 		
-		if (CONFIG.client().graphics().quality().getHorizontalQuality() == EHorizontalQuality.LOWEST)
+		if (Config.Client.Graphics.Quality.horizontalQuality.get() == EHorizontalQuality.LOWEST)
 			return ((double)detail * distanceUnit);
 		else
 		{
-			double base = CONFIG.client().graphics().quality().getHorizontalQuality().quadraticBase;
+			double base = Config.Client.Graphics.Quality.horizontalQuality.get().quadraticBase;
 			return Math.pow(base, detail) * distanceUnit;
 		}
 	}
@@ -81,7 +78,7 @@ public class DetailDistanceUtil
 		
 		int detail;
 		
-		if (CONFIG.client().graphics().quality().getHorizontalQuality() == EHorizontalQuality.LOWEST)
+		if (Config.Client.Graphics.Quality.horizontalQuality.get() == EHorizontalQuality.LOWEST)
 			detail = (int) (distance/distanceUnit);
 		else
 			detail = (int) (Math.log(distance/distanceUnit) / logBase);
@@ -104,7 +101,7 @@ public class DetailDistanceUtil
 	
 	public static int getMaxVerticalData(int detail)
 	{
-		return CONFIG.client().graphics().quality().getVerticalQuality().maxVerticalData[detail];
+		return Config.Client.Graphics.Quality.verticalQuality.get().maxVerticalData[detail];
 	}
 	
 }

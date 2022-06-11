@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.render;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.enums.rendering.EFogDistance;
 import com.seibel.lod.core.enums.rendering.*;
@@ -72,7 +73,7 @@ public class LodFogConfig
 	/** sets all fog options from the config */
 	private LodFogConfig(EFogDrawMode fogDrawMode)
 	{
-		earthCurveRatio = CONFIG.client().graphics().advancedGraphics().getEarthCurveRatio(); //FIXME: Move this out of here
+		earthCurveRatio = Config.Client.Graphics.AdvancedGraphics.earthCurveRatio.get(); //FIXME: Move this out of here
 
 		if (fogDrawMode != EFogDrawMode.FOG_DISABLED)
 		{

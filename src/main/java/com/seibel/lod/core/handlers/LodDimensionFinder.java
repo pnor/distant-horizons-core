@@ -22,6 +22,7 @@ package com.seibel.lod.core.handlers;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 
 import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.handlers.dimensionFinder.PlayerData;
 import com.seibel.lod.core.handlers.dimensionFinder.SubDimCompare;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
@@ -38,7 +39,6 @@ import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
@@ -60,10 +60,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LodDimensionFinder
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodDimensionFinder.class),
-			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogFileSubDimEvent());
+			() -> Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.get());
 	
 	/** Increasing this will increase accuracy but increase calculation time */
 	private static final EVerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = EVerticalQuality.LOW;
@@ -119,7 +118,7 @@ public class LodDimensionFinder
 			{
 				// attempt to get the file handler
 				File saveDir;
-				if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0)
+				if (Config.Client.Multiplayer.multiDimensionRequiredSimilarity.get() == 0)
 				{
 					// only allow 1 sub dimension per world
 					saveDir = getDefaultSubDimensionFolder(dimensionTypeWrapper);

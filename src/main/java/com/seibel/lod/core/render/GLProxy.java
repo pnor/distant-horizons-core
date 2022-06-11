@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -44,7 +45,6 @@ import com.seibel.lod.core.enums.rendering.EGLProxyContext;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.util.GLMessage;
 import com.seibel.lod.core.util.GLMessageOutputStream;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 /**
@@ -67,15 +67,14 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 public class GLProxy
 {
 	public static final boolean OVERWIDE_VANILLA_GL_LOGGER = ModInfo.IS_DEV_BUILD;
-	
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
+
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	
 	private ExecutorService workerThread = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat(GLProxy.class.getSimpleName() + "-Worker-Thread").build());
 	
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	public static final ConfigBasedLogger GL_LOGGER = new ConfigBasedLogger(LogManager.getLogger(GLProxy.class),
-			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererGLEvent());
+			() -> Config.Client.Advanced.Debugging.DebugSwitch.logRendererGLEvent.get());
 
 	private static GLProxy instance = null;
 	
@@ -418,7 +417,7 @@ public class GLProxy
 	}
 	
 	public EGpuUploadMethod getGpuUploadMethod() {
-		EGpuUploadMethod method = CONFIG.client().advanced().buffers().getGpuUploadMethod();
+		EGpuUploadMethod method = Config.Client.Advanced.Buffers.gpuUploadMethod.get();
 
 		if (!bufferStorageSupported && method == EGpuUploadMethod.BUFFER_STORAGE)
 		{

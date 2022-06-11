@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.api.internal.InternalApiShared;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.objects.DHBlockPos;
@@ -47,7 +48,6 @@ import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
 import com.seibel.lod.core.objects.math.Vec3f;
 import com.seibel.lod.core.objects.opengl.RenderRegion;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
@@ -62,12 +62,11 @@ import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
  */
 public class LodRenderer
 {
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodRenderer.class),
-			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererBufferEvent());
+			() -> Config.Client.Advanced.Debugging.DebugSwitch.logRendererBufferEvent.get());
 
 	public static ConfigBasedSpamLogger tickLogger = new ConfigBasedSpamLogger(LogManager.getLogger(LodRenderer.class),
-			() -> CONFIG.client().advanced().debugging().debugSwitch().getLogRendererBufferEvent(),1);
+			() -> Config.Client.Advanced.Debugging.DebugSwitch.logRendererBufferEvent.get(),1);
 	public static final boolean ENABLE_DRAW_LAG_SPIKE_LOGGING = false;
 	public static final boolean ENABLE_DUMP_GL_STATE = true;
 	public static final long DRAW_LAG_SPIKE_THRESHOLD_NS = TimeUnit.NANOSECONDS.convert(20, TimeUnit.MILLISECONDS);
@@ -184,7 +183,7 @@ public class LodRenderer
 		drawSaveGLState.end("drawSaveGLState");
 
 		GLProxy glProxy = GLProxy.getInstance();
-		if (canVanillaFogBeDisabled && CONFIG.client().graphics().fogQuality().getDisableVanillaFog())
+		if (canVanillaFogBeDisabled && Config.Client.Graphics.FogQuality.disableVanillaFog.get())
 			if (!MC_RENDER.tryDisableVanillaFog())
 				canVanillaFogBeDisabled = false;
 		
@@ -248,10 +247,10 @@ public class LodRenderer
 		drawBindBuff.end("drawBindBuff");
 		// set the required open GL settings
 		LagSpikeCatcher drawSetPolygon = new LagSpikeCatcher();
-		if (CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_DETAIL_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_GENMODE_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_WIREFRAME
-			|| CONFIG.client().advanced().debugging().getDebugMode() == EDebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
+		if (Config.Client.Advanced.Debugging.debugMode.get() == EDebugMode.SHOW_DETAIL_WIREFRAME
+			|| Config.Client.Advanced.Debugging.debugMode.get() == EDebugMode.SHOW_GENMODE_WIREFRAME
+			|| Config.Client.Advanced.Debugging.debugMode.get() == EDebugMode.SHOW_WIREFRAME
+			|| Config.Client.Advanced.Debugging.debugMode.get() == EDebugMode.SHOW_OVERLAPPING_QUADS_WIREFRAME) {
 			GL32.glPolygonMode(GL32.GL_FRONT_AND_BACK, GL32.GL_LINE);
 			//GL32.glDisable(GL32.GL_CULL_FACE);
 		}
@@ -301,9 +300,9 @@ public class LodRenderer
 		int farPlaneBlockDistance;
 		// required for setupFog and setupProjectionMatrix
 		if (MC.getWrappedClientWorld().getDimensionType().hasCeiling())
-			farPlaneBlockDistance = Math.min(CONFIG.client().graphics().quality().getLodChunkRenderDistance(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
+			farPlaneBlockDistance = Math.min(Config.Client.Graphics.Quality.lodChunkRenderDistance.get(), LodUtil.CEILED_DIMENSION_MAX_RENDER_DISTANCE) * LodUtil.CHUNK_WIDTH;
 		else
-			farPlaneBlockDistance = CONFIG.client().graphics().quality().getLodChunkRenderDistance() * LodUtil.CHUNK_WIDTH;
+			farPlaneBlockDistance = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() * LodUtil.CHUNK_WIDTH;
 		drawCalculateParams.end("drawCalculateParams");
 
 		Mat4f combinedMatrix = createCombinedMatrix(baseProjectionMatrix, baseModelViewMatrix,
@@ -337,7 +336,7 @@ public class LodRenderer
 		profiler.popPush("LOD draw");
 		LagSpikeCatcher draw = new LagSpikeCatcher();
 		
-		boolean cullingDisabled = CONFIG.client().graphics().advancedGraphics().getDisableDirectionalCulling();
+		boolean cullingDisabled = Config.Client.Graphics.AdvancedGraphics.disableDirectionalCulling.get();
 		Vec3d cameraPos = MC_RENDER.getCameraExactPosition();
 		DHBlockPos cameraBlockPos = MC_RENDER.getCameraBlockPosition();
 		Vec3f cameraDir = MC_RENDER.getLookAtVector();
@@ -432,7 +431,7 @@ public class LodRenderer
 	{
 		Color fogColor;
 		
-		if (CONFIG.client().graphics().fogQuality().getFogColorMode() == EFogColorMode.USE_SKY_COLOR)
+		if (Config.Client.Graphics.FogQuality.fogColorMode.get() == EFogColorMode.USE_SKY_COLOR)
 			fogColor = MC_RENDER.getSkyColor();
 		else
 			fogColor = MC_RENDER.getFogColor(partialTicks);
@@ -465,9 +464,9 @@ public class LodRenderer
 		Mat4f lodProj = projMat.copy();
 
 		float nearClipPlane;
-		if (CONFIG.client().advanced().getLodOnlyMode()) {
+		if (Config.Client.Advanced.lodOnlyMode.get()) {
 			nearClipPlane = 0.1f;
-		} else if (CONFIG.client().graphics().advancedGraphics().getUseExtendedNearClipPlane()) {
+		} else if (Config.Client.Graphics.AdvancedGraphics.useExtendedNearClipPlane.get()) {
 			nearClipPlane = Math.min((vanillaBlockRenderedDistance-16f),8f*16f);
 		} else {
 			nearClipPlane = 16f;
@@ -529,7 +528,7 @@ public class LodRenderer
 		// if the player is high enough, draw all LODs
 		IWorldWrapper world = MC.getWrappedClientWorld();
 		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight() ||
-			CONFIG.client().advanced().getLodOnlyMode()) {
+				Config.Client.Advanced.lodOnlyMode.get()) {
 			if (vanillaChunks != null) {
 				vanillaChunks = null;
 				return true;
@@ -564,25 +563,25 @@ public class LodRenderer
 		boolean tryFullGen = false;
 
 		// check if the view distance or config changed
-		if (InternalApiShared.previousLodRenderDistance != CONFIG.client().graphics().quality().getLodChunkRenderDistance()
+		if (InternalApiShared.previousLodRenderDistance != Config.Client.Graphics.Quality.lodChunkRenderDistance.get()
 					|| chunkRenderDistance != prevRenderDistance
-					|| prevFogDistance != CONFIG.client().graphics().fogQuality().getFogDistance())
+					|| prevFogDistance != Config.Client.Graphics.FogQuality.fogDistance.get())
 		{
 			DetailDistanceUtil.updateSettings(); // FIXME: This should NOT be here!
-			prevFogDistance = CONFIG.client().graphics().fogQuality().getFogDistance();
+			prevFogDistance = Config.Client.Graphics.FogQuality.fogDistance.get();
 			prevRenderDistance = chunkRenderDistance;
 			tryFullGen = true;
-		} else if (CONFIG.client().advanced().debugging().getDebugMode() != previousDebugMode)
+		} else if (Config.Client.Advanced.Debugging.debugMode.get() != previousDebugMode)
 		{ // did the user change the debug setting?
-			previousDebugMode = CONFIG.client().advanced().debugging().getDebugMode();
+			previousDebugMode = Config.Client.Advanced.Debugging.debugMode.get();
 			tryFullGen = true;
 		}
 		
 		// check if the player has moved
-		if (newTime - prevPlayerPosTime > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveTimeout) { 
+		if (newTime - prevPlayerPosTime > Config.Client.Advanced.Buffers.rebuildTimes.get().playerMoveTimeout) {
 			if (lastUpdatedPos == null
-				|| Math.abs(newPos.getX() - lastUpdatedPos.getX()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16
-				|| Math.abs(newPos.getZ() - lastUpdatedPos.getZ()) > CONFIG.client().advanced().buffers().getRebuildTimes().playerMoveDistance*16)
+				|| Math.abs(newPos.getX() - lastUpdatedPos.getX()) > Config.Client.Advanced.Buffers.rebuildTimes.get().playerMoveDistance*16
+				|| Math.abs(newPos.getZ() - lastUpdatedPos.getZ()) > Config.Client.Advanced.Buffers.rebuildTimes.get().playerMoveDistance*16)
 			{
 				shouldUpdateChunks = true;
 			}
@@ -590,14 +589,14 @@ public class LodRenderer
 		}
 
 		// check if the vanilla rendered chunks changed
-		if (newTime - prevVanillaChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().renderedChunkTimeout)
+		if (newTime - prevVanillaChunkTime > Config.Client.Advanced.Buffers.rebuildTimes.get().renderedChunkTimeout)
 		{
 			shouldUpdateChunks = true;
 			prevVanillaChunkTime = newTime;
 		}
 
 		// check if there is any newly generated terrain to show
-		if (newTime - prevChunkTime > CONFIG.client().advanced().buffers().getRebuildTimes().chunkChangeTimeout)
+		if (newTime - prevChunkTime > Config.Client.Advanced.Buffers.rebuildTimes.get().chunkChangeTimeout)
 		{
 			tryPartialGen = true;
 			prevChunkTime = newTime;

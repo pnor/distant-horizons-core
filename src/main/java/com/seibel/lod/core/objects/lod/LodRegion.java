@@ -23,6 +23,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.enums.config.EDropoffQuality;
 import com.seibel.lod.core.enums.config.EGenerationPriority;
@@ -34,6 +35,7 @@ import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 /**
  * This object holds all loaded LevelContainers acting as a quad tree for a
@@ -296,7 +298,7 @@ public class LodRegion {
 	}
 
 	public byte getRenderDetailLevelAt(int playerPosX, int playerPosZ, byte detailLevel, int offsetX, int offsetZ) {
-		EGenerationPriority generationPriority = CONFIG.client().worldGenerator().getResolvedGenerationPriority();
+		EGenerationPriority generationPriority = getResolvedGenerationPriority();
 		EDropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getResolvedDropoffQuality();
 
 		double minDistance = LevelPosUtil.minDistance(LodUtil.REGION_DETAIL_LEVEL, regionPosX, regionPosZ,
@@ -321,11 +323,27 @@ public class LodRegion {
 			int playerPosZ)
 	{
 		// use FAR_FIRST on local worlds and NEAR_FIRST on servers
-		EGenerationPriority generationPriority = CONFIG.client().worldGenerator().getResolvedGenerationPriority();
+		EGenerationPriority generationPriority = getResolvedGenerationPriority();
 
 		EDropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getResolvedDropoffQuality();
 		
 		getPosToRender(posToRender, playerPosX, playerPosZ, generationPriority, dropoffQuality);
+	}
+
+	private EGenerationPriority getResolvedGenerationPriority() {
+		EGenerationPriority priority = Config.Client.WorldGenerator.generationPriority.get();
+		IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
+		if (priority == EGenerationPriority.AUTO)
+			priority = MC.hasSinglePlayerServer() ? EGenerationPriority.FAR_FIRST : EGenerationPriority.BALANCED;
+		return priority;
+	}
+
+	private EDropoffQuality getResolvedDropoffQuality() {
+		EDropoffQuality dropoffQuality = Config.Client.Graphics.Quality.dropoffQuality.get();
+		if (dropoffQuality == EDropoffQuality.AUTO)
+			dropoffQuality = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() < 128 ?
+					EDropoffQuality.SMOOTH_DROPOFF : EDropoffQuality.PERFORMANCE_FOCUSED;
+		return dropoffQuality;
 	}
 
 	/**

@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.wrapperInterfaces.config;
 
+import com.seibel.lod.core.config.Config;
+import com.seibel.lod.core.config.types.ConfigCategory;
 import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.enums.rendering.EFogColorMode;
 import com.seibel.lod.core.enums.rendering.EFogDistance;
@@ -80,9 +82,9 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				EDropoffQuality getDropoffQuality();
 				void setDropoffQuality(EDropoffQuality newDropoffQuality);
 				default EDropoffQuality getResolvedDropoffQuality() {
-					EDropoffQuality dropoffQuality = getDropoffQuality();
+					EDropoffQuality dropoffQuality = Config.Client.Graphics.Quality.dropoffQuality.get();
 					if (dropoffQuality == EDropoffQuality.AUTO)
-						dropoffQuality = getLodChunkRenderDistance() < 128 ?
+						dropoffQuality = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() < 128 ?
 								EDropoffQuality.SMOOTH_DROPOFF : EDropoffQuality.PERFORMANCE_FOCUSED;
 					return dropoffQuality;
 				}
@@ -158,12 +160,12 @@ public interface ILodConfigWrapperSingleton extends IBindable
 
 						default EFogSetting computeHeightFogSetting() {
 							return new EFogSetting(
-									getHeightFogStart(),
-									getHeightFogEnd(),
-									getHeightFogMin(),
-									getHeightFogMax(),
-									getHeightFogDensity(),
-									getHeightFogType()
+									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogDensity.get(),
+									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogEnd.get(),
+									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMin.get(),
+									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMax.get(),
+									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogDensity.get(),
+									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogType.get()
 							);
 						}
 					}
@@ -261,7 +263,7 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			void setGenerationPriority(EGenerationPriority newGenerationPriority);
 			
 			default EGenerationPriority getResolvedGenerationPriority() {
-				EGenerationPriority priority = getGenerationPriority();
+				EGenerationPriority priority = Config.Client.WorldGenerator.generationPriority.get();
 				IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 				if (priority == EGenerationPriority.AUTO)
 					priority = MC.hasSinglePlayerServer() ? EGenerationPriority.FAR_FIRST : EGenerationPriority.BALANCED;
@@ -295,12 +297,12 @@ public interface ILodConfigWrapperSingleton extends IBindable
 				void setNumberOfWorldGenerationThreads(double newNumberOfWorldGenerationThreads);
 				default int _getWorldGenerationThreadPoolSize()
 				{
-					return getNumberOfWorldGenerationThreads()<1 ? 1 :
-							(int) Math.ceil(getNumberOfWorldGenerationThreads());
+					return Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()<1 ? 1 :
+							(int) Math.ceil(Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get());
 				}
 				default double _getWorldGenerationPartialRunTime()
 				{
-					return getNumberOfWorldGenerationThreads()>1 ? 1.0 : getNumberOfWorldGenerationThreads();
+					return Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()>1 ? 1.0 : Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get();
 				}
 
 				int getNumberOfBufferBuilderThreads();

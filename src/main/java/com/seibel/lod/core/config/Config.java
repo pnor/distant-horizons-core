@@ -215,6 +215,7 @@ public class Config
 
 
                 public static class AdvancedFog {
+                    // TODO: Make some of the option here floats rather than doubles (the ClassicConfigGUI dosnt support floats)
                     private static final Double FOG_RANGE_MIN = 0.0;
                     private static final Double FOG_RANGE_MAX = Math.sqrt(2.0);
 
@@ -421,7 +422,7 @@ public class Config
                                 + "This setting shouldn't affect performance.")
                         .build();
 
-                public static ConfigEntry<Double> brightnessMultiplier = new ConfigEntry.Builder<Double>()
+                public static ConfigEntry<Double> brightnessMultiplier = new ConfigEntry.Builder<Double>() // TODO: Make this a float (the ClassicConfigGUI dosnt support floats)
                         .set(1.0)
                         .comment(""
                                 + "How bright fake chunk colors are. \n"
@@ -431,7 +432,7 @@ public class Config
                                 + " 2 = near white")
                         .build();
 
-                public static ConfigEntry<Double> saturationMultiplier = new ConfigEntry.Builder<Double>()
+                public static ConfigEntry<Double> saturationMultiplier = new ConfigEntry.Builder<Double>() // TODO: Make this a float (the ClassicConfigGUI dosnt support floats)
                         .set(1.0)
                         .comment(""
                                 + "How saturated fake chunk colors are. \n"

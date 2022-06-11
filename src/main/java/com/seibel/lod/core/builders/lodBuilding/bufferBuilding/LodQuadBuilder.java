@@ -29,12 +29,10 @@ import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.enums.ELodDirection.Axis;
 import com.seibel.lod.core.enums.config.EGpuUploadMethod;
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
@@ -45,8 +43,6 @@ import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
  */
 public class LodQuadBuilder
 {
-	static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	
 	public final boolean skipQuadsWithZeroSkylight;
 	public final short skyLightCullingBelow;
 	

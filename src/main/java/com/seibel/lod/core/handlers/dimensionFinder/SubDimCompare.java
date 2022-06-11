@@ -19,8 +19,7 @@
  
 package com.seibel.lod.core.handlers.dimensionFinder;
 
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import com.seibel.lod.core.config.Config;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -36,9 +35,6 @@ import java.io.File;
  */
 public class SubDimCompare implements Comparable<SubDimCompare>
 {
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	
-	
 	public int equalDataPoints = 0;
 	public int totalDataPoints = 0;
 	public int playerPosDist = 0;
@@ -79,7 +75,7 @@ public class SubDimCompare implements Comparable<SubDimCompare>
 	/** Returns true if this sub dimension is close enough to be considered a valid sub dimension */
 	public boolean isValidSubDim()
 	{
-		double minimumSimilarityRequired = CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity();
+		double minimumSimilarityRequired = Config.Client.Multiplayer.multiDimensionRequiredSimilarity.get();
 		return this.getPercentEqual() >= minimumSimilarityRequired || this.playerPosDist <= 3;
 	}
 }

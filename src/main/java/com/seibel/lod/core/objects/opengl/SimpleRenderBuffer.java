@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
@@ -34,20 +35,17 @@ import org.lwjgl.opengl.GL32;
 
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.enums.config.EGpuUploadMethod;
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder.BufferFiller;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderProgram;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.StatsMap;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import static com.seibel.lod.core.render.GLProxy.GL_LOGGER;
 
 public class SimpleRenderBuffer extends RenderBuffer
 {
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = 1_000_000;
 
 	GLVertexBuffer[] vbos;
@@ -123,8 +121,8 @@ public class SimpleRenderBuffer extends RenderBuffer
 	private void _uploadBuffersDirect(LodQuadBuilder builder, EGpuUploadMethod method) {
 		resize(builder.getCurrentNeededVertexBufferCount());
 		long remainingNS = 0;
-		long BPerNS = CONFIG.client().advanced().buffers().getGpuUploadPerMegabyteInMilliseconds();
-		
+		long BPerNS = Config.Client.Advanced.Buffers.gpuUploadPerMegabyteInMilliseconds.get();
+
 		int i = 0;
 		Iterator<ByteBuffer> iter = builder.makeVertexBuffers();
 		while (iter.hasNext()) {

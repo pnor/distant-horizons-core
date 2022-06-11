@@ -20,6 +20,7 @@
 package com.seibel.lod.core.objects.lod;
 
 import com.seibel.lod.core.api.internal.ClientApi;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.enums.config.EDropoffQuality;
 import com.seibel.lod.core.enums.config.EGenerationPriority;
@@ -33,7 +34,6 @@ import com.seibel.lod.core.objects.PosToGenerateContainer;
 import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.MovableGridRingList;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +62,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class LodDimension
 {
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	
@@ -337,10 +336,10 @@ public class LodDimension
 		}
 		isExpanding = true;
 		
-		EVerticalQuality verticalQuality = CONFIG.client().graphics().quality().getVerticalQuality();
-		EDropoffQuality dropoffQuality = CONFIG.client().graphics().quality().getDropoffQuality();
+		EVerticalQuality verticalQuality = Config.Client.Graphics.Quality.verticalQuality.get();
+		EDropoffQuality dropoffQuality = Config.Client.Graphics.Quality.dropoffQuality.get();
 		if (dropoffQuality == EDropoffQuality.AUTO)
-			dropoffQuality = CONFIG.client().graphics().quality().getLodChunkRenderDistance() < 128 ?
+			dropoffQuality = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() < 128 ?
 					EDropoffQuality.SMOOTH_DROPOFF : EDropoffQuality.PERFORMANCE_FOCUSED;
 		int dropoffSwitch = dropoffQuality.fastModeSwitch;
 		// don't run the expander multiple times

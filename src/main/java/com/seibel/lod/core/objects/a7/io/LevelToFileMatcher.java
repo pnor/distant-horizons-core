@@ -3,6 +3,7 @@ package com.seibel.lod.core.objects.a7.io;
 import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.handlers.LodDimensionFileHandler;
@@ -20,7 +21,6 @@ import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.util.DataPointUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import org.apache.logging.log4j.LogManager;
@@ -33,9 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LevelToFileMatcher {
     private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-    private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
     public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodDimensionFinder.class),
-            () -> CONFIG.client().advanced().debugging().debugSwitch().getLogFileSubDimEvent());
+            () -> Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.get());
 
     /** Increasing this will increase accuracy but increase calculation time */
     private static final EVerticalQuality VERTICAL_QUALITY_TO_TEST_WITH = EVerticalQuality.LOW;
@@ -73,7 +72,7 @@ public class LevelToFileMatcher {
     private void tick() {
         // prevent multiple threads running at the same time
 
-        if (CONFIG.client().multiplayer().getMultiDimensionRequiredSimilarity() == 0 || MC.hasSinglePlayerServer()) {
+        if (Config.Client.Multiplayer.multiDimensionRequiredSimilarity.get() == 0 || MC.hasSinglePlayerServer()) {
             File saveDir = getLevelFolderWithoutSimilarityMatching();
             foundLevel = new DHLevel(dhWorld, saveDir, currentWorld);
         } else {

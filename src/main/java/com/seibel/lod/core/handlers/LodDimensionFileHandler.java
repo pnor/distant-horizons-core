@@ -33,9 +33,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.api.internal.ClientApi;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
@@ -65,9 +64,8 @@ import org.apache.logging.log4j.LogManager;
  */
 public class LodDimensionFileHandler
 {
-	private static final ILodConfigWrapperSingleton config = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodDimensionFileHandler.class),
-			() -> config.client().advanced().debugging().debugSwitch().getLogFileReadWriteEvent());
+			() -> Config.Client.Advanced.Debugging.DebugSwitch.logFileReadWriteEvent.get());
 	
 	public static final boolean ENABLE_SAVE_THREAD_LOGGING = true;
 	public static final boolean ENABLE_SAVE_REGION_LOGGING = false;

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EServerFolderNameMode;
 import com.seibel.lod.core.enums.config.EVanillaOverdraw;
 import com.seibel.lod.core.handlers.IReflectionHandler;
@@ -38,7 +39,6 @@ import com.seibel.lod.core.objects.opengl.LodVertexFormat;
 import com.seibel.lod.core.util.gridList.EdgeDistanceBooleanGrid;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
@@ -54,7 +54,6 @@ public class LodUtil
 {
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
@@ -261,7 +260,7 @@ public class LodUtil
 		
 		
 		// determine the format of the folder name
-		EServerFolderNameMode folderNameMode = CONFIG.client().multiplayer().getServerFolderNameMode();
+		EServerFolderNameMode folderNameMode = Config.Client.Multiplayer.serverFolderNameMode.get();
 		if (folderNameMode == EServerFolderNameMode.AUTO)
 		{
 			if (parsedIp.isLan())
@@ -350,11 +349,11 @@ public class LodUtil
 
 	public static int computeOverdrawOffset(LodDimension lodDim) {
 		int chunkRenderDist = MC_RENDER.getRenderDistance() + 1;
-		EVanillaOverdraw overdraw = CONFIG.client().graphics().advancedGraphics().getVanillaOverdraw();
+		EVanillaOverdraw overdraw = Config.Client.Graphics.AdvancedGraphics.vanillaOverdraw.get();
 		if (overdraw == EVanillaOverdraw.ALWAYS) return Integer.MAX_VALUE;
 		int offset;
 		if (overdraw == EVanillaOverdraw.NEVER) {
-			offset = CONFIG.client().graphics().advancedGraphics().getOverdrawOffset();
+			offset = Config.Client.Graphics.AdvancedGraphics.overdrawOffset.get();
 		} else {
 			if (chunkRenderDist < MINIMUM_RENDER_DISTANCE_FOR_FAR_OVERDRAW) {
 				offset = 1;

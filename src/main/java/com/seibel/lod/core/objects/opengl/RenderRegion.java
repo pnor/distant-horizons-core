@@ -30,11 +30,11 @@ import com.seibel.lod.core.api.internal.ClientApi;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.CubicLodTemplate;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
+import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 import com.seibel.lod.core.enums.rendering.EDebugMode;
 import com.seibel.lod.core.enums.rendering.EGLProxyContext;
-import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.BoolType;
 import com.seibel.lod.core.objects.LodDataView;
@@ -52,14 +52,11 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.util.gridList.PosArrayGridList;
-import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
 import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
 public class RenderRegion implements AutoCloseable
 {
-	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	
 	/** stores if the region at the given x and z index needs to be regenerated */
 	// Use int because I need Tri state:
 	private final AtomicInteger needRegen = new AtomicInteger(2);
@@ -189,7 +186,7 @@ public class RenderRegion implements AutoCloseable
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				EVENT_LOGGER.trace("RenderRegion start QuadBuild @ {}", regionPos);
-				int skyLightCullingBelow = CONFIG.client().graphics().advancedGraphics().getCaveCullingHeight();
+				int skyLightCullingBelow = Config.Client.Graphics.AdvancedGraphics.caveCullingHeight.get();
 				// FIXME: Clamp also to the max world height.
 				skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
 				LodQuadBuilder builder = new LodQuadBuilder(doCaveCulling, skyLightCullingBelow);
@@ -257,7 +254,7 @@ public class RenderRegion implements AutoCloseable
 		byte minDetail = region.getMinDetailLevel();
 		
 		// Variable initialization
-		EDebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
+		EDebugMode debugMode = Config.Client.Advanced.Debugging.debugMode.get();
 
 		// We ask the lod dimension which block we have to render given the player
 		// position
