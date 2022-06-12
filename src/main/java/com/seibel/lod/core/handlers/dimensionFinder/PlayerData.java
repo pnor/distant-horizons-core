@@ -107,11 +107,17 @@ public class PlayerData
 	/** Writes everything from this object to the file given. */
 	public void toTomlFile(CommentedFileConfig toml)
 	{
-		// player block pos
-		toml.add(PLAYER_BLOCK_POS_X_PATH, playerBlockPos.getX());
-		toml.add(PLAYER_BLOCK_POS_Y_PATH, playerBlockPos.getY());
-		toml.add(PLAYER_BLOCK_POS_Z_PATH, playerBlockPos.getZ());
-		
+		if (playerBlockPos == null)
+		{
+			toml.remove(PLAYER_BLOCK_POS_X_PATH);
+			toml.remove(PLAYER_BLOCK_POS_Y_PATH);
+			toml.remove(PLAYER_BLOCK_POS_Z_PATH);
+		} else {
+			// player block pos
+			toml.add(PLAYER_BLOCK_POS_X_PATH, playerBlockPos.getX());
+			toml.add(PLAYER_BLOCK_POS_Y_PATH, playerBlockPos.getY());
+			toml.add(PLAYER_BLOCK_POS_Z_PATH, playerBlockPos.getZ());
+		}
 		toml.save();
 	}
 	
