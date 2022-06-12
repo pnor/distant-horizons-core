@@ -18,7 +18,6 @@
  */
 
 package com.seibel.lod.core;
-
 /**
  * This file is similar to mcmod.info
  * <br>
