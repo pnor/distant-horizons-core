@@ -175,6 +175,15 @@ public class RenderRegion implements AutoCloseable
 			for (LodDirection dir : LodDirection.ADJ_DIRECTIONS) {
 				adjRegions[dir.ordinal() - 2] = lodDim.getRegion(regionPos.x+dir.getNormal().x, regionPos.z+dir.getNormal().z);
 			}
+		} catch (NullPointerException | ArrayIndexOutOfBoundsException e) { // HOTFIX: Error ignoring for a concurrency caused issue
+			setNeedRegen();
+			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
+				EVENT_LOGGER.error("\"Lod Builder Starter\""
+								+ " encountered error on catching exceptions and fallback on starting build task: ",
+						new ConcurrentModificationException("RenderRegion Illegal State"));
+			}
+			EVENT_LOGGER.info("\"Lod Builder Starter\" failed due to possible known concurrency issue: ", e);
+			return CompletableFuture.completedFuture(null);
 		} catch (Throwable t) {
 			setNeedRegen();
 			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
@@ -200,6 +209,9 @@ public class RenderRegion implements AutoCloseable
 					buildRun.run();
 				EVENT_LOGGER.trace("RenderRegion end QuadBuild @ {}", regionPos);
 				return builder;
+			} catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
+				EVENT_LOGGER.info("\"LodNodeBufferBuilder\" failed due to possible known concurrency issue: ", e);
+				throw e; // HOTFIX: Error ignoring for a concurrency caused issue
 			} catch (Throwable e3) {
 				EVENT_LOGGER.error("\"LodNodeBufferBuilder\" was unable to build quads: ", e3);
 				throw e3;

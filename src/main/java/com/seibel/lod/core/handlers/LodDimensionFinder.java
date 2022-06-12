@@ -47,6 +47,7 @@ import org.apache.logging.log4j.LogManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.UUID;
@@ -532,7 +533,7 @@ public class LodDimensionFinder
 				newDimension.mkdirs();
 				
 				File oldDataNewPath = new File(newDimension.getPath() + File.separatorChar + folder.getName());
-				Files.move(folder.toPath(), oldDataNewPath.toPath());
+				Files.move(folder.toPath(), oldDataNewPath.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			}
 			else
 			{
