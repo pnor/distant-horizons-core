@@ -24,7 +24,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 /**
  * Checks if a mod is loaded
  *
- * @author coolGi2007
+ * @author coolGi
  * @version 3-5-2022
  */
 public interface IModChecker extends IBindable {

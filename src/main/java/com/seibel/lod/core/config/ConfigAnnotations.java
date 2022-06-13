@@ -28,9 +28,12 @@ import java.lang.annotation.Target;
  * Where the annotations for the config are defined
  * If there is no annotation then the config will not touch it
  *
- * @author coolGi2007
+ * REMOVED IN a1.7
+ *
+ * @author coolGi
  * @version 02-07-2022
  */
+@Deprecated
 public class ConfigAnnotations {
     /** A textField, button, etc. that can be interacted with */
     @Retention(RetentionPolicy.RUNTIME)
