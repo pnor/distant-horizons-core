@@ -5,9 +5,9 @@ package com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces;
  *
  * @param <T>
  * @author James Seibel
- * @version 2022-6-9
+ * @version 2022-6-13
  */
-public interface IDhApiConfig_v1<T>
+public interface IDhApiConfig<T>
 {
 	/**
 	 * Returns the active value for this config. <br>

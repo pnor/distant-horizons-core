@@ -1,6 +1,6 @@
-package com.seibel.lod.core.api.externalImplementation.apiObjects.wrappers;
+package com.seibel.lod.core.api.implementation.wrappers;
 
-import com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces.IDhApiConfig_v1;
+import com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces.IDhApiConfig;
 import com.seibel.lod.core.config.types.ConfigEntry;
 
 /**
@@ -8,9 +8,9 @@ import com.seibel.lod.core.config.types.ConfigEntry;
  *
  * @param <T>
  * @author James Seibel
- * @version 2022-6-9
+ * @version 2022-6-13
  */
-public class DhApiConfig_v1<T> implements IDhApiConfig_v1<T>
+public class DhApiConfig<T> implements IDhApiConfig<T>
 {
 	private final ConfigEntry<T> configEntry;
 	
@@ -19,7 +19,7 @@ public class DhApiConfig_v1<T> implements IDhApiConfig_v1<T>
 	 * This constructor should only be called internally. <br>
 	 * There is no reason to create this object.
 	 */
-	public DhApiConfig_v1(ConfigEntry<T> newConfigEntry)
+	public DhApiConfig(ConfigEntry<T> newConfigEntry)
 	{
 		this.configEntry = newConfigEntry;
 	}
