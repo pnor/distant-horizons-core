@@ -3,6 +3,7 @@ package com.seibel.lod.core.objects.a7.datatype.column;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.data.*;
+import com.seibel.lod.core.objects.a7.io.file.DataMetaFile;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
@@ -20,11 +21,10 @@ public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConv
     }
 
     @Override
-    public LodDataSource loadData(DataFile dataFile, DHLevel level) {
+    public LodDataSource loadData(DataMetaFile dataFile, InputStream data, DHLevel level) {
         //TODO: Add decompressor here
         try (
-                FileInputStream fin = dataFile.getDataContent();
-                XZCompressorInputStream xzIn = new XZCompressorInputStream(fin);
+                XZCompressorInputStream xzIn = new XZCompressorInputStream(data);
                 DataInputStream dis = new DataInputStream(xzIn);
         ) {
             return new OldColumnDatatype(dataFile.pos, dis, dataFile.loaderVersion, level, 1);

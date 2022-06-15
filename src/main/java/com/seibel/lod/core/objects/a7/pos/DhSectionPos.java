@@ -96,7 +96,7 @@ public class DhSectionPos {
                 sectionZ == that.sectionZ;
     }
 
-    // Serialize() is different from toString() as this reqires it to NEVER be changed, and should be in a short format
+    // Serialize() is different from toString() as this requires it to NEVER be changed, and should be in a short format
     public String serialize() {
         return "[" + sectionDetail + ',' + sectionX + ',' + sectionZ + ']';
     }

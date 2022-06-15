@@ -2,9 +2,8 @@ package com.seibel.lod.core.objects.a7.data;
 
 import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.objects.a7.DHLevel;
-import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
+import com.seibel.lod.core.objects.a7.io.file.DataMetaFile;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,14 +37,14 @@ public abstract class DataSourceLoader {
             return false;
         })) {
             throw new IllegalArgumentException("Loader for class " + clazz + " that supports one of the version in "
-                    + loaderSupportedVersions + " already registered!");
+                    + Arrays.toString(loaderSupportedVersions) + " already registered!");
         }
         datatypeIdRegistry.put(datatypeId, clazz);
         loaderRegistry.put(datatypeId, this);
     }
 
     // Can return null as meaning the requirement is not met
-    public abstract LodDataSource loadData(DataFile dataFile, DHLevel level) throws IOException;
+    public abstract LodDataSource loadData(DataMetaFile dataFile, InputStream data, DHLevel level) throws IOException;
 
     public List<File> foldersToScan(File levelFolderPath) {
         return Collections.emptyList();

@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+@Deprecated
 public class DataFile {
     //Metadata format:
     //
@@ -86,6 +87,8 @@ public class DataFile {
         this.dataType = loader.clazz;
         this.loaderVersion = loaderVersion;
     }
+
+
     public FileInputStream getDataContent() throws IOException {
         FileInputStream fin = new FileInputStream(path);
         int toSkip = METADATA_SIZE;
@@ -103,14 +106,7 @@ public class DataFile {
     }
 
     LodDataSource load(DHLevel level) {
-        if (loadedData != null) return loadedData;
-        try {
-            loadedData = loader.loadData(this, level);
-            return loadedData;
-        } catch (IOException e) {
-            //FIXME: Log and review this handling
-            return null;
-        }
+        throw new UnsupportedOperationException("Deprecated");
     }
 
     public boolean verifyPath() {
