@@ -1,9 +1,6 @@
 package com.seibel.lod.core.objects.a7.io.file;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.lang.ref.SoftReference;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -12,9 +9,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 
 import com.seibel.lod.core.logging.DhLoggerBuilder;
+import com.seibel.lod.core.objects.a7.DHLevel;
+import com.seibel.lod.core.objects.a7.data.DataSourceLoader;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
+import com.seibel.lod.core.objects.a7.datatype.column.DataSourceSaver;
+import com.seibel.lod.core.objects.a7.datatype.column.OldDataSourceLoader;
 import com.seibel.lod.core.objects.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.objects.a7.io.MetaFile;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
@@ -23,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 
 public class DataMetaFile extends MetaFile {
 	public static Logger LOGGER = DhLoggerBuilder.getLogger("FileMetadata");
+
+	private final DHLevel level;
 	AtomicInteger localVersion = new AtomicInteger(); // This MUST be atomic
 	
 	// The '?' type should either be:
@@ -68,13 +72,15 @@ public class DataMetaFile extends MetaFile {
 	}
 
 	// Load a metaFile in this path. It also automatically read the metadata.
-	public DataMetaFile(File path) throws IOException {
+	public DataMetaFile(DHLevel level, File path) throws IOException {
 		super(path);
+		this.level = level;
 	}
 
 	// Make a new MetaFile. It doesn't load or write any metadata itself.
-	public DataMetaFile(File path, DhSectionPos pos) {
+	public DataMetaFile(DHLevel level, File path, DhSectionPos pos) {
 		super(path, pos);
+		this.level = level;
 	}
 	
 	public boolean isValid(int version) {
@@ -148,7 +154,7 @@ public class DataMetaFile extends MetaFile {
 			localVer = localVersion.incrementAndGet();
 			swapWriteQueue();
 			// TODO: Use _backQueue to apply the changes into the data.
-			// TODO: Trigger a save to disk.
+			write(data);
 		} else localVer = localVersion.get();
 		data.setLocalVersion(localVer);
 		// Finally, return the data.
@@ -166,7 +172,7 @@ public class DataMetaFile extends MetaFile {
 
 		// Load the file.
 		try (FileInputStream fio = getDataContent()){
-			return loader.loadData(this, fio, null); // FIXME: somehow get the level object????
+			return loader.loadData(this, fio, level);
 		} catch (IOException e) {
 			LOGGER.warn("Failed to load file {}. Dropping file.", path, e);
 			return null;
@@ -195,6 +201,31 @@ public class DataMetaFile extends MetaFile {
 			return loadOrGetCached(fileWriterThreads).thenApply((unused) -> null); // This will flush the data to disk.
 		} else {
 			return CompletableFuture.completedFuture(null);
+		}
+	}
+
+	private void write(LodDataSource data) {
+		DataSourceSaver saver;
+		if (loader instanceof DataSourceSaver) saver = (DataSourceSaver) loader;
+		else if (loader instanceof OldDataSourceLoader) saver = ((OldDataSourceLoader) loader).getNewSaver();
+		else saver = null;
+		if (saver == null) return;
+
+		BiConsumer<MetaFile, OutputStream> dataWriter = (meta, out) -> {
+			meta.dataLevel = data.getDataDetail();
+			meta.dataType = DataSourceLoader.datatypeIdRegistry.get(saver.datatypeId);
+			meta.loader = saver;
+			meta.loaderVersion = saver.getSaverVersion();
+			try {
+				saver.saveData(level, data, this, out);
+			} catch (IOException e) {
+				LOGGER.error("Failed to save data for file {}", path, e);
+			}
+		};
+		try {
+			super.writeData(dataWriter);
+		} catch (IOException e) {
+			LOGGER.error("Failed to write data for file {}", path, e);
 		}
 	}
 }

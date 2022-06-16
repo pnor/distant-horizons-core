@@ -6,9 +6,8 @@ import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface DataSource {
+public interface DataSourceProvider {
     CompletableFuture<LodDataSource> read(DhSectionPos pos);
     void write(DhSectionPos sectionPos, FullDatatype chunkData);
-
     CompletableFuture<Void> flushAndSave();
 }

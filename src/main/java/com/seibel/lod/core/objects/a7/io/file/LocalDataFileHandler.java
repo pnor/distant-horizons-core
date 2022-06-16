@@ -2,9 +2,10 @@ package com.seibel.lod.core.objects.a7.io.file;
 
 import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
+import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
 import com.seibel.lod.core.objects.a7.datatype.full.FullDatatype;
-import com.seibel.lod.core.objects.a7.io.DataSource;
+import com.seibel.lod.core.objects.a7.io.DataSourceProvider;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-public class LocalDataFileHandler implements DataSource {
+public class LocalDataFileHandler implements DataSourceProvider {
     // Note: Single main thread only for now. May make it multi-thread later, depending on the usage.
 	ExecutorService fileReaderThread = LodUtil.makeSingleThreadPool("FileReaderThread");
     Logger logger = DhLoggerBuilder.getLogger("LocalDataFileHandler");
@@ -29,8 +30,10 @@ public class LocalDataFileHandler implements DataSource {
     boolean isScanned = false;
 
     File saveDir;
-    public LocalDataFileHandler(File saveRootDir) {
+    final DHLevel level;
+    public LocalDataFileHandler(DHLevel level, File saveRootDir) {
         this.saveDir = saveRootDir;
+        this.level = level;
     }
 
     /*
@@ -42,7 +45,7 @@ public class LocalDataFileHandler implements DataSource {
         { // Sort files by pos.
             for (File file : detectedFiles) {
                 try {
-                    DataMetaFile metaFile = new DataMetaFile(file);
+                    DataMetaFile metaFile = new DataMetaFile(level, file);
                     filesByPos.put(metaFile.pos, metaFile);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -115,7 +118,7 @@ public class LocalDataFileHandler implements DataSource {
         }
         // Slow path: if there is no file for this section, create one.
 
-        DataMetaFile newMetaFile = new DataMetaFile(saveDir, sectionPos);
+        DataMetaFile newMetaFile = new DataMetaFile(level, saveDir, sectionPos);
 
         // We add to the queue first so on CAS onto the map, no other thread
         // will see the new file without our write entry.

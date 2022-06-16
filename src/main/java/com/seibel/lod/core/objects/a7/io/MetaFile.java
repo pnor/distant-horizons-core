@@ -1,15 +1,23 @@
 package com.seibel.lod.core.objects.a7.io;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.util.function.BiConsumer;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
 
-import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.objects.a7.data.DataSourceLoader;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 import com.seibel.lod.core.util.LodUtil;
+import net.fabricmc.mapping.tree.Mapped;
 
-public abstract class MetaFile {
+public class MetaFile {
     //Metadata format:
     //
     //    4 bytes: magic bytes: "DHv0" (in ascii: 0x44 48 76 30) (this also signal the metadata format)
@@ -94,8 +102,8 @@ public abstract class MetaFile {
 
     protected void updateMetaData() throws IOException {
         validatePath();
-        try (FileInputStream fin = new FileInputStream(path)) {
-            MappedByteBuffer buffer = fin.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, METADATA_SIZE);
+        try (FileChannel channel = FileChannel.open(path.toPath(), StandardOpenOption.READ)) {
+            MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, METADATA_SIZE);
             int magic = buffer.getInt();
             if (magic != METADATA_MAGIC_BYTES) {
                 throw new IOException("Invalid file: Magic bytes check failed.");
@@ -122,6 +130,52 @@ public abstract class MetaFile {
             }
             this.dataType = loader.clazz;
             this.loaderVersion = loaderVersion;
+        }
+    }
+
+    protected void writeData(BiConsumer<MetaFile, OutputStream> dataWriter) throws IOException {
+        validatePath();
+        File tempFile = File.createTempFile("", "tmp", path.getParentFile());
+        tempFile.deleteOnExit();
+        try (FileChannel file = FileChannel.open(tempFile.toPath(),
+                StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            {
+                file.position(METADATA_SIZE);
+                int checksum;
+                try (OutputStream channelOut = Channels.newOutputStream(file);
+                     BufferedOutputStream bufferedOut = new BufferedOutputStream(channelOut); // TODO: Is default buffer size ok? Do we even need to buffer?
+                     CheckedOutputStream checkedOut = new CheckedOutputStream(bufferedOut, new Adler32())) { // TODO: Is Adler32 ok?
+                    dataWriter.accept(this, checkedOut);
+                    checksum = (int) checkedOut.getChecksum().getValue();
+                    timestamp = System.currentTimeMillis(); // TODO: Do we need to use server synced time?
+                                                            // Warn: This may become an attack vector! Be careful!
+                }
+                file.position(0);
+                // Write metadata
+                ByteBuffer buff = ByteBuffer.allocate(METADATA_SIZE);
+                buff.putInt(METADATA_MAGIC_BYTES);
+                buff.putInt(pos.sectionX);
+                buff.putInt(Integer.MIN_VALUE); // Unused
+                buff.putInt(pos.sectionZ);
+                buff.putInt(checksum);
+                buff.put(pos.sectionDetail);
+                buff.put(dataLevel);
+                buff.put(loaderVersion);
+                buff.put(Byte.MIN_VALUE); // Unused
+                buff.putLong(loader.datatypeId);
+                buff.putLong(timestamp);
+                LodUtil.assertTrue(buff.remaining() == 0);
+                buff.flip();
+                file.write(buff);
+            }
+            file.close();
+            // Atomic move / replace the actual file
+            Files.move(tempFile.toPath(), path.toPath(), StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.COPY_ATTRIBUTES);
+        } finally {
+            try {
+                boolean i = tempFile.delete(); // Delete temp file. Ignore errors if fails.
+            } catch (Exception ignored) {}
         }
     }
 }

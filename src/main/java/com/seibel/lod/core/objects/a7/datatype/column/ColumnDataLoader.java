@@ -5,6 +5,7 @@ import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.objects.a7.DHLevel;
 import com.seibel.lod.core.objects.a7.data.DataFileHandler;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
+import com.seibel.lod.core.objects.a7.io.MetaFile;
 import com.seibel.lod.core.objects.a7.io.file.DataMetaFile;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 
@@ -34,9 +35,11 @@ public class ColumnDataLoader extends DataSourceSaver {
     }
 
     @Override
-    public void saveData(DHLevel level, LodDataSource loadedData, DataOutputStream out) throws IOException {
+    public void saveData(DHLevel level, LodDataSource loadedData, MetaFile file, OutputStream out) throws IOException {
         //TODO: Add compressor here
-        ((ColumnDatatype) loadedData).writeData(out);
+        try (DataOutputStream dos = new DataOutputStream(out)) {
+            ((ColumnDatatype) loadedData).writeData(dos);
+        }
     }
 
     @Override
