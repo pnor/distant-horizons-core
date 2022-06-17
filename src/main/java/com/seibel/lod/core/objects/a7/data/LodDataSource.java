@@ -9,4 +9,5 @@ public interface LodDataSource {
     DataSourceLoader getLatestLoader();
     DhSectionPos getSectionPos();
     byte getDataDetail();
+    void setLocalVersion(int localVer);
 }

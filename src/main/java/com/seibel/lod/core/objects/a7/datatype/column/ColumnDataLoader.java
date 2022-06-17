@@ -3,9 +3,10 @@ package com.seibel.lod.core.objects.a7.datatype.column;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.objects.a7.DHLevel;
-import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.objects.a7.data.DataFileHandler;
 import com.seibel.lod.core.objects.a7.data.LodDataSource;
+import com.seibel.lod.core.objects.a7.io.MetaFile;
+import com.seibel.lod.core.objects.a7.io.file.DataMetaFile;
 import com.seibel.lod.core.objects.a7.pos.DhSectionPos;
 
 import java.io.*;
@@ -21,11 +22,10 @@ public class ColumnDataLoader extends DataSourceSaver {
     }
 
     @Override
-    public LodDataSource loadData(DataFile dataFile, DHLevel level) {
+    public LodDataSource loadData(DataMetaFile dataFile, InputStream data, DHLevel level) {
         try (
-                FileInputStream fin = dataFile.getDataContent();
                 //TODO: Add decompressor here
-                DataInputStream dis = new DataInputStream(fin);
+                DataInputStream dis = new DataInputStream(data);
              ) {
             return new ColumnDatatype(dataFile.pos, dis, dataFile.loaderVersion, level);
         } catch (IOException e) {
@@ -35,9 +35,11 @@ public class ColumnDataLoader extends DataSourceSaver {
     }
 
     @Override
-    public void saveData(DHLevel level, LodDataSource loadedData, DataOutputStream out) throws IOException {
+    public void saveData(DHLevel level, LodDataSource loadedData, MetaFile file, OutputStream out) throws IOException {
         //TODO: Add compressor here
-        ((ColumnDatatype) loadedData).writeData(out);
+        try (DataOutputStream dos = new DataOutputStream(out)) {
+            ((ColumnDatatype) loadedData).writeData(dos);
+        }
     }
 
     @Override
