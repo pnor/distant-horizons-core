@@ -282,212 +282,213 @@
   "Lod Only Mode §6(ONLY FOR FUN)§r",
   "lod.config.client.advanced.lodOnlyMode.@tooltip":
   "Due to some demand for playing without vanilla terrains, \nwe decided to add this mode for fun. \n\n§6NOTE§r: Do not report any issues when this mode is on! \n  Again, this setting is only for fun, and mod \n  compatibility is not guaranteed. \n",
-  "lod.config.enum.HorizontalResolution.BLOCK":
+
+  "lod.config.enum.EHorizontalResolution.BLOCK":
 	"Block",
-  "lod.config.enum.HorizontalResolution.TWO_BLOCKS":
+  "lod.config.enum.EHorizontalResolution.TWO_BLOCKS":
 	"2 blocks",
-  "lod.config.enum.HorizontalResolution.FOUR_BLOCKS":
+  "lod.config.enum.EHorizontalResolution.FOUR_BLOCKS":
 	"4 blocks",
-  "lod.config.enum.HorizontalResolution.HALF_CHUNK":
+  "lod.config.enum.EHorizontalResolution.HALF_CHUNK":
 	"Half a chunk",
-  "lod.config.enum.HorizontalResolution.CHUNK":
+  "lod.config.enum.EHorizontalResolution.CHUNK":
 	"Chunk",
-  "lod.config.enum.VerticalQuality.LOW":
+  "lod.config.enum.EVerticalQuality.LOW":
 	"Low",
-  "lod.config.enum.VerticalQuality.MEDIUM":
+  "lod.config.enum.EVerticalQuality.MEDIUM":
 	"Medium",
-  "lod.config.enum.VerticalQuality.HIGH":
+  "lod.config.enum.EVerticalQuality.HIGH":
 	"High",
-  "lod.config.enum.VerticalQuality.ULTRA":
+  "lod.config.enum.EVerticalQuality.ULTRA":
   "Ultra",
-  "lod.config.enum.HorizontalScale.LOW":
+  "lod.config.enum.EHorizontalScale.LOW":
 	"Low",
-  "lod.config.enum.HorizontalScale.MEDIUM":
+  "lod.config.enum.EHorizontalScale.MEDIUM":
 	"Medium",
-  "lod.config.enum.HorizontalScale.HIGH":
+  "lod.config.enum.EHorizontalScale.HIGH":
 	"High",
-  "lod.config.enum.HorizontalQuality.LOWEST":
+  "lod.config.enum.EHorizontalQuality.LOWEST":
 	"Lowest",
-  "lod.config.enum.HorizontalQuality.LOW":
+  "lod.config.enum.EHorizontalQuality.LOW":
 	"Low",
-  "lod.config.enum.HorizontalQuality.MEDIUM":
+  "lod.config.enum.EHorizontalQuality.MEDIUM":
 	"Medium",
-  "lod.config.enum.HorizontalQuality.HIGH":
+  "lod.config.enum.EHorizontalQuality.HIGH":
 	"High",
-  "lod.config.enum.FogDistance.NEAR":
+  "lod.config.enum.EFogDistance.NEAR":
 	"Near",
-  "lod.config.enum.FogDistance.FAR":
+  "lod.config.enum.EFogDistance.FAR":
 	"Far",
-  "lod.config.enum.FogDistance.NEAR_AND_FAR":
+  "lod.config.enum.EFogDistance.NEAR_AND_FAR":
 	"Near and far",
-  "lod.config.enum.FogDrawMode.USE_OPTIFINE_SETTING":
+  "lod.config.enum.EFogDrawMode.USE_OPTIFINE_SETTING":
 	"Use modded settings",
-  "lod.config.enum.FogDrawMode.FOG_ENABLED":
+  "lod.config.enum.EFogDrawMode.FOG_ENABLED":
 	"Enabled",
-  "lod.config.enum.FogDrawMode.FOG_DISABLED":
+  "lod.config.enum.EFogDrawMode.FOG_DISABLED":
 	"Disabled",
-  "lod.config.enum.FogColorMode.USE_WORLD_FOG_COLOR":
+  "lod.config.enum.EFogColorMode.USE_WORLD_FOG_COLOR":
 	"Use world fog",
-  "lod.config.enum.FogColorMode.USE_SKY_COLOR":
+  "lod.config.enum.EFogColorMode.USE_SKY_COLOR":
 	"Use sky color",
-  "lod.config.enum.FogType.LINEAR":
+  "lod.config.enum.EFogType.LINEAR":
     "Linear",
-  "lod.config.enum.FogType.EXPONENTIAL":
+  "lod.config.enum.EFogType.EXPONENTIAL":
     "Exponential",
-  "lod.config.enum.FogType.EXPONENTIAL_SQUARED":
+  "lod.config.enum.EFogType.EXPONENTIAL_SQUARED":
     "Exponential Squared",
-  "lod.config.enum.HeightFogMode.ABOVE_CAMERA":
+  "lod.config.enum.EHeightFogMode.ABOVE_CAMERA":
   "Above Camera",
-  "lod.config.enum.HeightFogMode.BELOW_CAMERA":
+  "lod.config.enum.EHeightFogMode.BELOW_CAMERA":
   "Below Camera",
-  "lod.config.enum.HeightFogMode.ABOVE_AND_BELOW_CAMERA":
+  "lod.config.enum.EHeightFogMode.ABOVE_AND_BELOW_CAMERA":
   "Above And Below Camera",
-  "lod.config.enum.HeightFogMode.ABOVE_SET_HEIGHT":
+  "lod.config.enum.EHeightFogMode.ABOVE_SET_HEIGHT":
   "Above Set Height",
-  "lod.config.enum.HeightFogMode.BELOW_SET_HEIGHT":
+  "lod.config.enum.EHeightFogMode.BELOW_SET_HEIGHT":
   "Below Set Height",
-  "lod.config.enum.HeightFogMode.ABOVE_AND_BELOW_SET_HEIGHT":
+  "lod.config.enum.EHeightFogMode.ABOVE_AND_BELOW_SET_HEIGHT":
   "Above And Below Set Height",
-  "lod.config.enum.HeightFogMixMode.BASIC":
+  "lod.config.enum.EHeightFogMixMode.BASIC":
   "Basic",
-  "lod.config.enum.HeightFogMixMode.IGNORE_HEIGHT":
+  "lod.config.enum.EHeightFogMixMode.IGNORE_HEIGHT":
   "Ignore Height",
-  "lod.config.enum.HeightFogMixMode.ADDITION":
+  "lod.config.enum.EHeightFogMixMode.ADDITION":
   "Addition",
-  "lod.config.enum.HeightFogMixMode.MAX":
+  "lod.config.enum.EHeightFogMixMode.MAX":
   "Max",
-  "lod.config.enum.HeightFogMixMode.MULTIPLY":
+  "lod.config.enum.EHeightFogMixMode.MULTIPLY":
   "Multiply",
-  "lod.config.enum.HeightFogMixMode.INVERSE_MULTIPLY":
+  "lod.config.enum.EHeightFogMixMode.INVERSE_MULTIPLY":
   "Inverse Multiply",
-  "lod.config.enum.HeightFogMixMode.LIMITED_ADDITION":
+  "lod.config.enum.EHeightFogMixMode.LIMITED_ADDITION":
   "Limited Addition",
-  "lod.config.enum.HeightFogMixMode.MULTIPLY_ADDITION":
+  "lod.config.enum.EHeightFogMixMode.MULTIPLY_ADDITION":
   "Multiply Addition",
-  "lod.config.enum.HeightFogMixMode.INVERSE_MULTIPLY_ADDITION":
+  "lod.config.enum.EHeightFogMixMode.INVERSE_MULTIPLY_ADDITION":
   "Inverse Multiply Addition",
-  "lod.config.enum.HeightFogMixMode.AVERAGE":
+  "lod.config.enum.EHeightFogMixMode.AVERAGE":
   "Average",
-  "lod.config.enum.LodTemplate.CUBIC":
+  "lod.config.enum.ELodTemplate.CUBIC":
 	"Cubic",
-  "lod.config.enum.LodTemplate.TRIANGULAR":
+  "lod.config.enum.ELodTemplate.TRIANGULAR":
 	"Triangular",
-  "lod.config.enum.LodTemplate.DYNAMIC":
+  "lod.config.enum.ELodTemplate.DYNAMIC":
 	"Dynamic",
-  "lod.config.enum.VanillaOverdraw.NEVER":
+  "lod.config.enum.EVanillaOverdraw.NEVER":
 	"Never",
-  "lod.config.enum.VanillaOverdraw.DYNAMIC":
+  "lod.config.enum.EVanillaOverdraw.DYNAMIC":
 	"Dynamic",
-  "lod.config.enum.VanillaOverdraw.ALWAYS":
+  "lod.config.enum.EVanillaOverdraw.ALWAYS":
 	"Always",
-  "lod.config.enum.VanillaOverdraw.BORDER":
+  "lod.config.enum.EVanillaOverdraw.BORDER":
 	"Border",
-  "lod.config.enum.GenerationPriority.AUTO":
+  "lod.config.enum.EGenerationPriority.AUTO":
 	"Auto",
-  "lod.config.enum.GenerationPriority.NEAR_FIRST":
+  "lod.config.enum.EGenerationPriority.NEAR_FIRST":
 	"Near first",
-  "lod.config.enum.GenerationPriority.BALANCED":
+  "lod.config.enum.EGenerationPriority.BALANCED":
 	"Balanced",
-  "lod.config.enum.GenerationPriority.FAR_FIRST":
+  "lod.config.enum.EGenerationPriority.FAR_FIRST":
 	"Far first",
-  "lod.config.enum.DistanceGenerationMode.NONE":
+  "lod.config.enum.EDistanceGenerationMode.NONE":
 	"Existing Only",
-  "lod.config.enum.DistanceGenerationMode.BIOME_ONLY":
+  "lod.config.enum.EDistanceGenerationMode.BIOME_ONLY":
 	"Biome only",
-  "lod.config.enum.DistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT":
+  "lod.config.enum.EDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT":
 	"Biome only simulate height",
-  "lod.config.enum.DistanceGenerationMode.SURFACE":
+  "lod.config.enum.EDistanceGenerationMode.SURFACE":
 	"Surface",
-  "lod.config.enum.DistanceGenerationMode.FEATURES":
+  "lod.config.enum.EDistanceGenerationMode.FEATURES":
 	"Features",
-  "lod.config.enum.DistanceGenerationMode.FULL":
+  "lod.config.enum.EDistanceGenerationMode.FULL":
 	"Full",
-  "lod.config.enum.BlocksToAvoid.NONE":
+  "lod.config.enum.EBlocksToAvoid.NONE":
 	"None",
-  "lod.config.enum.BlocksToAvoid.NON_FULL":
+  "lod.config.enum.EBlocksToAvoid.NON_FULL":
 	"Non full",
-  "lod.config.enum.BlocksToAvoid.NO_COLLISION":
+  "lod.config.enum.EBlocksToAvoid.NO_COLLISION":
 	"No collision",
-  "lod.config.enum.BlocksToAvoid.BOTH":
+  "lod.config.enum.EBlocksToAvoid.BOTH":
 	"Both",
-  "lod.config.enum.RendererType.DEFAULT":
+  "lod.config.enum.ERendererType.DEFAULT":
     "Default",
-  "lod.config.enum.RendererType.DEBUG":
+  "lod.config.enum.ERendererType.DEBUG":
     "Debug",
-  "lod.config.enum.RendererType.DISABLED":
+  "lod.config.enum.ERendererType.DISABLED":
     "Disabled",
-  "lod.config.enum.DebugMode.OFF":
+  "lod.config.enum.EDebugMode.OFF":
 	"Off",
-  "lod.config.enum.DebugMode.SHOW_WIREFRAME":
+  "lod.config.enum.EDebugMode.SHOW_WIREFRAME":
 	"Show wireframe",
-  "lod.config.enum.DebugMode.SHOW_DETAIL":
+  "lod.config.enum.EDebugMode.SHOW_DETAIL":
 	"Show detail",
-  "lod.config.enum.DebugMode.SHOW_DETAIL_WIREFRAME":
+  "lod.config.enum.EDebugMode.SHOW_DETAIL_WIREFRAME":
 	"Show detail with wireframe",
-  "lod.config.enum.DebugMode.SHOW_GENMODE":
+  "lod.config.enum.EDebugMode.SHOW_GENMODE":
 	"Show generation mode",
-  "lod.config.enum.DebugMode.SHOW_GENMODE_WIREFRAME":
+  "lod.config.enum.EDebugMode.SHOW_GENMODE_WIREFRAME":
 	"Show generation mode with wireframe",
-  "lod.config.enum.LoggerMode.DISABLED":
+  "lod.config.enum.ELoggerMode.DISABLED":
     "Disabled",
-  "lod.config.enum.LoggerMode.LOG_ALL_TO_FILE":
+  "lod.config.enum.ELoggerMode.LOG_ALL_TO_FILE":
     "File: All, Chat: Off",
-  "lod.config.enum.LoggerMode.LOG_ERROR_TO_CHAT":
+  "lod.config.enum.ELoggerMode.LOG_ERROR_TO_CHAT":
     "File: All, Chat: Error",
-  "lod.config.enum.LoggerMode.LOG_WARNING_TO_CHAT":
+  "lod.config.enum.ELoggerMode.LOG_WARNING_TO_CHAT":
     "File: All, Chat: Warning",
-  "lod.config.enum.LoggerMode.LOG_INFO_TO_CHAT":
+  "lod.config.enum.ELoggerMode.LOG_INFO_TO_CHAT":
     "File: All, Chat: Info",
-  "lod.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT":
+  "lod.config.enum.ELoggerMode.LOG_DEBUG_TO_CHAT":
     "File: All, Chat: Debug",
-  "lod.config.enum.LoggerMode.LOG_ALL_TO_CHAT":
+  "lod.config.enum.ELoggerMode.LOG_ALL_TO_CHAT":
     "File: All, Chat: All",
-  "lod.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_FILE":
+  "lod.config.enum.ELoggerMode.LOG_ERROR_TO_CHAT_AND_FILE":
     "File: Error, Chat: Error",
-  "lod.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_FILE":
+  "lod.config.enum.ELoggerMode.LOG_WARNING_TO_CHAT_AND_FILE":
     "File: Warning, Chat: Warning",
-  "lod.config.enum.LoggerMode.LOG_INFO_TO_CHAT_AND_FILE":
+  "lod.config.enum.ELoggerMode.LOG_INFO_TO_CHAT_AND_FILE":
     "File: Info, Chat: Info",
-  "lod.config.enum.LoggerMode.LOG_DEBUG_TO_CHAT_AND_FILE":
+  "lod.config.enum.ELoggerMode.LOG_DEBUG_TO_CHAT_AND_FILE":
     "File: Debug, Chat: Debug",
-  "lod.config.enum.LoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE":
+  "lod.config.enum.ELoggerMode.LOG_WARNING_TO_CHAT_AND_INFO_TO_FILE":
     "File: Info, Chat: Warning",
-  "lod.config.enum.LoggerMode.LOG_ERROR_TO_CHAT_AND_INFO_TO_FILE":
+  "lod.config.enum.ELoggerMode.LOG_ERROR_TO_CHAT_AND_INFO_TO_FILE":
     "File: Info, Chat: Error",
-  "lod.config.enum.GpuUploadMethod.AUTO":
+  "lod.config.enum.EGpuUploadMethod.AUTO":
 	"Auto",
-  "lod.config.enum.GpuUploadMethod.BUFFER_STORAGE":
+  "lod.config.enum.EGpuUploadMethod.BUFFER_STORAGE":
 	"Buffer storage",
-  "lod.config.enum.GpuUploadMethod.SUB_DATA":
+  "lod.config.enum.EGpuUploadMethod.SUB_DATA":
 	"Sub data",
-  "lod.config.enum.GpuUploadMethod.BUFFER_MAPPING":
+  "lod.config.enum.EGpuUploadMethod.BUFFER_MAPPING":
 	"Buffer mapping",
-  "lod.config.enum.GpuUploadMethod.DATA":
+  "lod.config.enum.EGpuUploadMethod.DATA":
 	"Data",
-  "lod.config.enum.BufferRebuildTimes.FREQUENT":
+  "lod.config.enum.EBufferRebuildTimes.FREQUENT":
 	"Frequent",
-  "lod.config.enum.BufferRebuildTimes.NORMAL":
+  "lod.config.enum.EBufferRebuildTimes.NORMAL":
 	"Normal",
-  "lod.config.enum.BufferRebuildTimes.RARE":
+  "lod.config.enum.EBufferRebuildTimes.RARE":
 	"Rare",
-  "lod.config.enum.DropoffQuality.AUTO":
+  "lod.config.enum.EDropoffQuality.AUTO":
 	"Auto",
-  "lod.config.enum.DropoffQuality.SMOOTH_DROPOFF":
+  "lod.config.enum.EDropoffQuality.SMOOTH_DROPOFF":
 	"Smooth dropoff",
-  "lod.config.enum.DropoffQuality.PERFORMANCE_FOCUSED":
+  "lod.config.enum.EDropoffQuality.PERFORMANCE_FOCUSED":
 	"Performance focused",
-  "lod.config.enum.LightGenerationMode.FAST":
+  "lod.config.enum.ELightGenerationMode.FAST":
 	"Fast",
-  "lod.config.enum.LightGenerationMode.FANCY":
+  "lod.config.enum.ELightGenerationMode.FANCY":
 	"Fancy",
-  "lod.config.enum.ServerFolderNameMode.AUTO":
+  "lod.config.enum.EServerFolderNameMode.AUTO":
 	"Auto",
-  "lod.config.enum.ServerFolderNameMode.NAME_ONLY":
+  "lod.config.enum.EServerFolderNameMode.NAME_ONLY":
 	"Name Only",
-  "lod.config.enum.ServerFolderNameMode.NAME_IP":
+  "lod.config.enum.EServerFolderNameMode.NAME_IP":
 	"Name and IP",
-  "lod.config.enum.ServerFolderNameMode.NAME_IP_PORT":
+  "lod.config.enum.EServerFolderNameMode.NAME_IP_PORT":
 	"Name, IP, Port",
-  "lod.config.enum.ServerFolderNameMode.NAME_IP_PORT_MC_VERSION":
+  "lod.config.enum.EServerFolderNameMode.NAME_IP_PORT_MC_VERSION":
 	"Name, IP, Port, MC version"
 }
