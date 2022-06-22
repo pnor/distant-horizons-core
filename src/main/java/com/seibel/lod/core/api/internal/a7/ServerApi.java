@@ -21,8 +21,8 @@ package com.seibel.lod.core.api.internal.a7;
 
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.objects.a7.DHWorld;
-import com.seibel.lod.core.objects.a7.Server;
+import com.seibel.lod.core.a7.DHWorld;
+import com.seibel.lod.core.a7.Server;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
