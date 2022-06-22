@@ -3,7 +3,7 @@ package com.seibel.lod.core.a7.datatype.column;
 import com.seibel.lod.core.a7.data.DataSourceLoader;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.LodDataView;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class OldColumnDatatype implements IColumnDatatype {
     }
 
     // Load from data stream with maxVerticalSize loaded from the data stream
-    public OldColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DHLevel level, int sectionSizeOffset) throws IOException {
+    public OldColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DhClientServerLevel level, int sectionSizeOffset) throws IOException {
         this.sectionSizeOffset = (byte) sectionSizeOffset;
         this.sectionPos = sectionPos;
         yOffset = level.getMinY();

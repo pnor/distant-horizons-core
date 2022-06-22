@@ -1,8 +1,9 @@
 package com.seibel.lod.core.a7.data;
 
 import com.google.common.collect.HashMultimap;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.io.file.DataMetaFile;
+import com.seibel.lod.core.a7.level.ILevel;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public abstract class DataSourceLoader {
     }
 
     // Can return null as meaning the requirement is not met
-    public abstract LodDataSource loadData(DataMetaFile dataFile, InputStream data, DHLevel level) throws IOException;
+    public abstract LodDataSource loadData(DataMetaFile dataFile, InputStream data, ILevel level) throws IOException;
 
     public List<File> foldersToScan(File levelFolderPath) {
         return Collections.emptyList();

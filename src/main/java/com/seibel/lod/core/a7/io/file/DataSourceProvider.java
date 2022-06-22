@@ -6,7 +6,7 @@ import com.seibel.lod.core.a7.pos.DhSectionPos;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface DataSourceProvider {
+public interface DataSourceProvider extends AutoCloseable {
     CompletableFuture<LodDataSource> read(DhSectionPos pos);
     void write(DhSectionPos sectionPos, FullDatatype chunkData);
     CompletableFuture<Void> flushAndSave();

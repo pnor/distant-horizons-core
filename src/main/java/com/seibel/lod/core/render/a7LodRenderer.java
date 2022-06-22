@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.render;
 
+import com.seibel.lod.core.a7.level.IClientLevel;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.config.types.ConfigEntry;
@@ -28,7 +29,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.objects.DHBlockPos;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.render.RenderBufferHandler;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.objects.math.Vec3d;
@@ -82,14 +83,14 @@ public class a7LodRenderer
 	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
 
 	public EDebugMode previousDebugMode = null;
-	public final DHLevel level;
+	public final IClientLevel level;
 
 	// The shader program
 	LodRenderProgram shaderProgram = null;
 	public QuadElementBuffer quadIBO = null;
 	public boolean isSetupComplete = false;
 
-	public a7LodRenderer(DHLevel level)
+	public a7LodRenderer(IClientLevel level)
 	{
 		this.level = level;
 	}
@@ -127,7 +128,7 @@ public class a7LodRenderer
 			MC_RENDER.tryDisableVanillaFog();
 
 		// The Buffer manager
-		RenderBufferHandler bufferHandler = level.renderBufferHandler;
+		RenderBufferHandler bufferHandler = level.getRenderBufferHandler();
 		
 		//===================//
 		// draw params setup //

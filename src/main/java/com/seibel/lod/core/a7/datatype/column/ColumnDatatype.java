@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.render.RenderBuffer;
 import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.objects.LodDataView;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.LodQuadTree;
 import com.seibel.lod.core.a7.LodSection;
 import com.seibel.lod.core.a7.render.RenderDataSource;
@@ -70,7 +70,7 @@ public class ColumnDatatype implements RenderDataSource, IColumnDatatype {
         return result;
     }
     // Load from data stream with maxVerticalSize loaded from the data stream
-    public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DHLevel level) throws IOException {
+    public ColumnDatatype(DhSectionPos sectionPos, DataInputStream inputData, int version, DhClientServerLevel level) throws IOException {
         this.sectionPos = sectionPos;
         yOffset = level.getMinY();
         byte detailLevel = inputData.readByte();

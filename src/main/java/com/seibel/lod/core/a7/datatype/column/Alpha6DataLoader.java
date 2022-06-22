@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.data.OldFileConverter;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.objects.a7.data.*;
 import com.seibel.lod.core.a7.io.file.DataMetaFile;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
@@ -24,7 +24,7 @@ public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConv
     }
 
     @Override
-    public LodDataSource loadData(DataMetaFile dataFile, InputStream data, DHLevel level) {
+    public LodDataSource loadData(DataMetaFile dataFile, InputStream data, DhClientServerLevel level) {
         //TODO: Add decompressor here
         try (
                 XZCompressorInputStream xzIn = new XZCompressorInputStream(data);
@@ -70,7 +70,7 @@ public class Alpha6DataLoader extends OldDataSourceLoader implements OldFileConv
     }
 
     @Override
-    public List<DataFile> scanAndConvert(File levelFolder, DHLevel level) {
+    public List<DataFile> scanAndConvert(File levelFolder, DhClientServerLevel level) {
 
         List<DataFile> files = new ArrayList<>();
 

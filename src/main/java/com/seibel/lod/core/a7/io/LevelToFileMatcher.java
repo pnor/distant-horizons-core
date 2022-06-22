@@ -1,24 +1,15 @@
 package com.seibel.lod.core.a7.io;
 
 import com.seibel.lod.core.a7.world.DhClientWorld;
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilderConfig;
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
-import com.seibel.lod.core.enums.config.EVerticalQuality;
-import com.seibel.lod.core.handlers.LodDimensionFileHandler;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.handlers.dimensionFinder.PlayerData;
 import com.seibel.lod.core.handlers.dimensionFinder.SubDimCompare;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.DHChunkPos;
-import com.seibel.lod.core.objects.DHRegionPos;
-import com.seibel.lod.core.a7.level.DHLevel;
-import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.objects.lod.LodRegion;
-import com.seibel.lod.core.util.DataPointUtil;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
@@ -46,7 +37,7 @@ public class LevelToFileMatcher implements AutoCloseable {
     private final AtomicBoolean determiningWorldFolder = new AtomicBoolean(false);
     private final ILevelWrapper currentLevel;
     private final DhClientWorld world;
-    private volatile DHLevel foundLevel = null;
+    private volatile DhClientServerLevel foundLevel = null;
     private final File[] potentialFiles;
     private final File levelsFolder;
 
@@ -60,12 +51,12 @@ public class LevelToFileMatcher implements AutoCloseable {
             LOGGER.info("No potential level files found. Creating a new sub dimension with ID {}...",
                     LodUtil.shortenString(newId, 8));
             File folder = new File(levelsFolder, newId);
-            foundLevel = new DHLevel(world, folder, targetWorld);
+            foundLevel = new DhClientServerLevel(world, folder, targetWorld);
         }
     }
 
     // May return null, where at this moment the level is not yet known
-    public DHLevel tryGetLevel() {
+    public DhClientServerLevel tryGetLevel() {
         tick();
         return foundLevel;
     }
@@ -84,7 +75,7 @@ public class LevelToFileMatcher implements AutoCloseable {
                 // attempt to get the file handler
                 File saveDir = attemptToDetermineSubDimensionFolder();
                 if (saveDir == null) return;
-                foundLevel = new DHLevel(world, saveDir, currentLevel);
+                foundLevel = new DhClientServerLevel(world, saveDir, currentLevel);
             } catch (IOException e) {
                 LOGGER.error("Unable to set the dimension file handler for level [" + currentLevel + "]. Error: ", e);
             } finally {

@@ -27,7 +27,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.logging.SpamReducedLogger;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.world.DhWorld;
 import com.seibel.lod.core.a7.Server;
 import com.seibel.lod.core.objects.math.Mat4f;
@@ -199,7 +199,7 @@ public class ClientApi
 			if (world == null) return;
 			DhWorld DhWorld = SharedApi.currentWorld;
 			if (DhWorld == null) return;
-			DHLevel level = (SharedApi.currentServer == null) ? DhWorld.getOrLoadLevel(world) : DhWorld.getLevel(world);
+			DhClientServerLevel level = (SharedApi.currentServer == null) ? DhWorld.getOrLoadLevel(world) : DhWorld.getLevel(world);
 			if (level == null) return;
 
 			if (prefLoggerEnabled) {

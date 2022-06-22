@@ -14,7 +14,7 @@ import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-public class RenderFileHandler implements RenderDataProvider {
+public class RenderFileHandler implements RenderSourceProvider {
     final File renderCacheFolder;
     final DataSourceProvider dataSourceProvider;
     ExecutorService renderCacheThread = LodUtil.makeSingleThreadPool("RenderCacheThread");
@@ -30,11 +30,18 @@ public class RenderFileHandler implements RenderDataProvider {
         return null;
     }
 
-    public CompletableFuture<RenderDataSource> read(DhSectionPos pos) {
+    @Override
+    public void write(DhSectionPos sectionPos, FullDatatype chunkData) {
+
+    }
+
+    @Override
+    public CompletableFuture<Void> flushAndSave() {
         return null;
     }
 
-    public void write(DhSectionPos sectionPos, FullDatatype chunkData) {
-        `
+    @Override
+    public void close() {
+
     }
 }

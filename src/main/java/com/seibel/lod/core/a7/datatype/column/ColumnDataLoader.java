@@ -6,7 +6,7 @@ import com.seibel.lod.core.a7.io.MetaFile;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.io.file.DataMetaFile;
 
 import java.io.*;
@@ -22,7 +22,7 @@ public class ColumnDataLoader extends DataSourceSaver {
     }
 
     @Override
-    public LodDataSource loadData(DataMetaFile dataFile, InputStream data, DHLevel level) {
+    public LodDataSource loadData(DataMetaFile dataFile, InputStream data, DhClientServerLevel level) {
         try (
                 //TODO: Add decompressor here
                 DataInputStream dis = new DataInputStream(data);
@@ -35,7 +35,7 @@ public class ColumnDataLoader extends DataSourceSaver {
     }
 
     @Override
-    public void saveData(DHLevel level, LodDataSource loadedData, MetaFile file, OutputStream out) throws IOException {
+    public void saveData(DhClientServerLevel level, LodDataSource loadedData, MetaFile file, OutputStream out) throws IOException {
         //TODO: Add compressor here
         try (DataOutputStream dos = new DataOutputStream(out)) {
             ((ColumnDatatype) loadedData).writeData(dos);
@@ -43,7 +43,7 @@ public class ColumnDataLoader extends DataSourceSaver {
     }
 
     @Override
-    public File generateFilePathAndName(File levelFolderPath, DHLevel level, DhSectionPos sectionPos) {
+    public File generateFilePathAndName(File levelFolderPath, DhClientServerLevel level, DhSectionPos sectionPos) {
         return generateFilePathAndName(levelFolderPath, sectionPos, Config.Client.Graphics.Quality.verticalQuality.get());
     }
 

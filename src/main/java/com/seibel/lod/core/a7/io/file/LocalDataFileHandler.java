@@ -3,9 +3,10 @@ package com.seibel.lod.core.a7.io.file;
 import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.datatype.full.FullDatatype;
+import com.seibel.lod.core.a7.level.IServerLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -29,8 +30,8 @@ public class LocalDataFileHandler implements DataSourceProvider {
     boolean isScanned = false;
 
     File saveDir;
-    final DHLevel level;
-    public LocalDataFileHandler(DHLevel level, File saveRootDir) {
+    final IServerLevel level;
+    public LocalDataFileHandler(IServerLevel level, File saveRootDir) {
         this.saveDir = saveRootDir;
         this.level = level;
     }
@@ -143,5 +144,10 @@ public class LocalDataFileHandler implements DataSourceProvider {
 
     private File computeDefaultFilePath(DhSectionPos pos) { //TODO: Temp code as we haven't decided on the file naming & location yet.
         return new File(saveDir, pos.serialize() + ".lod");
+    }
+
+    @Override
+    public void close() {
+         //TODO
     }
 }

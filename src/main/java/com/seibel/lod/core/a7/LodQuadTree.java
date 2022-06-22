@@ -23,16 +23,12 @@ import java.util.ArrayList;
  *      -by loading from file
  *      -by adding data with the lodBuilder
  */
-public abstract class LodQuadTree {
-
+public class LodQuadTree {
 
     /**
-     * //TODO add static configs here
-     * //These configs are updated someway
-     * Comment: all config value should be via the class that extends this class, and
-     *          by implementing different abstract methods - LeeTom
+     * Note: all config value should be via the class that extends this class, and
+     *          by implementing different abstract methods
      */
-    
     
     public final byte numbersOfSectionLevels;
     public final byte startingSectionLevel;
@@ -99,6 +95,7 @@ public abstract class LodQuadTree {
 
     final SectionDetailLayer[] sectionDetailLayers;
     public final int viewDistance;
+    private final RenderDataProvider renderDataProvider;
     
     /**
      * Constructor of the quadTree
@@ -106,8 +103,9 @@ public abstract class LodQuadTree {
      * @param initialPlayerX player x coordinate
      * @param initialPlayerZ player z coordinate
      */
-    public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ) {
+    public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ, RenderDataProvider provider) {
         ColumnDatatype.REGISTER(); //FIXME: This is a hack to make sure the datatype is registered
+        renderDataProvider = provider;
 
         assertContainerTypeConfigCorrect();
         this.viewDistance = viewDistance;
@@ -260,9 +258,6 @@ public abstract class LodQuadTree {
     public int getFurthestDistance(byte detailLevel) {
         return (int)Math.ceil(DetailDistanceUtil.getDrawDistanceFromDetail(detailLevel));
     }
-
-    public abstract RenderDataProvider getRenderDataProvider();
-
     
     /**
      * Given a section pos at level n this method returns the parent section at level n+1
@@ -294,10 +289,6 @@ public abstract class LodQuadTree {
                     .move(playerPos.x >> sectLevel, playerPos.z >> sectLevel,
                     LodSection::dispose);
         }
-
-
-
-
 
         // First tick pass: update all sections' childCount from bottom level to top level. Step:
         //   If sectLevel is bottom && section != null:
@@ -473,7 +464,7 @@ public abstract class LodQuadTree {
                     section.dispose();
                 } else {
                     if (!section.isLoaded() && !section.isLoading()) {
-                        section.load(getRenderDataProvider(), containerType);
+                        section.load(renderDataProvider, containerType);
                     }
                     if (section.childCount == 4) section.enableRender(this);
                     if (section.childCount == 0) section.disableRender();

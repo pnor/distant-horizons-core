@@ -1,9 +1,9 @@
 package com.seibel.lod.core.a7.save.structure;
 
 import com.seibel.lod.core.a7.io.LevelToFileMatcher;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
+import com.seibel.lod.core.a7.level.IServerLevel;
 import com.seibel.lod.core.a7.world.DhClientWorld;
-import com.seibel.lod.core.a7.world.DhWorld;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EServerFolderNameMode;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ClientOnlySaveStructure extends SaveStructure {
@@ -83,14 +82,15 @@ public class ClientOnlySaveStructure extends SaveStructure {
         this.world = world;
     }
 
+    //FIXME: how do i deal with either creating a ClientServerLevel, or a ServerLevel here???
     @Override
-    public DHLevel tryGetLevel(ILevelWrapper wrapper) {
+    public IServerLevel tryGetLevel(ILevelWrapper wrapper) {
         if (Config.Client.Multiplayer.multiDimensionRequiredSimilarity.get() == 0) {
             if (fileMatcher != null) {
                 fileMatcher.close();
                 fileMatcher = null;
             }
-            return new DHLevel(world, getLevelFolderWithoutSimilarityMatching(wrapper), wrapper);
+            return new DhClientServerLevel(world, getLevelFolderWithoutSimilarityMatching(wrapper), wrapper);
         }
 
         if (fileMatcher == null || !fileMatcher.isFindingLevel(wrapper)) {
@@ -99,7 +99,7 @@ public class ClientOnlySaveStructure extends SaveStructure {
                     (File[]) getMatchingLevelFolders(wrapper).toArray());
         }
 
-        DHLevel level = fileMatcher.tryGetLevel();
+        DhClientServerLevel level = fileMatcher.tryGetLevel();
         if (level != null) {
             fileMatcher.close();
             fileMatcher = null;

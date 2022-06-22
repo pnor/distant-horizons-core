@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.render.RenderDataSource;
 import com.seibel.lod.core.a7.render.RenderDataSourceLoader;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;
@@ -21,7 +21,7 @@ class ColumnRenderLoader extends RenderDataSourceLoader {
     }
 
     @Override
-    public RenderDataSource construct(List<LodDataSource> dataSources, DhSectionPos sectionPos, DHLevel level) {
+    public RenderDataSource construct(List<LodDataSource> dataSources, DhSectionPos sectionPos, DhClientServerLevel level) {
         if (dataSources.size() == 0) return null;
 
         // Check for direct casting
@@ -111,7 +111,7 @@ class ColumnRenderLoader extends RenderDataSourceLoader {
     }
 
     @Override
-    public List<DataFile> selectFiles(DhSectionPos sectionPos, DHLevel level, List<DataFile>[] availableFiles) {
+    public List<DataFile> selectFiles(DhSectionPos sectionPos, DhClientServerLevel level, List<DataFile>[] availableFiles) {
         byte targetDataLevel = (byte) (sectionPos.sectionDetail - ColumnDatatype.SECTION_SIZE_OFFSET);
         //No support for loading higher than the target level yet.
         byte maxDataLevel = LodUtil.min((byte) (availableFiles.length - 1), targetDataLevel);

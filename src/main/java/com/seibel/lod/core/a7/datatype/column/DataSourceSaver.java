@@ -4,8 +4,9 @@ import com.seibel.lod.core.a7.data.DataFileHandler;
 import com.seibel.lod.core.a7.data.DataSourceLoader;
 import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.io.MetaFile;
+import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,10 +17,10 @@ public abstract class DataSourceSaver extends DataSourceLoader {
         super(clazz, datatypeId, loaderSupportedVersions);
     }
 
-    public abstract void saveData(DHLevel level, LodDataSource loadedData, MetaFile file, OutputStream dataStream) throws IOException;
+    public abstract void saveData(ILevel level, LodDataSource loadedData, MetaFile file, OutputStream dataStream) throws IOException;
     // generate the default file path and file name based on various parameters.
     // Ensure the file extension is '.lod'!
-    public File generateFilePathAndName(File levelFolderPath, DHLevel level, DhSectionPos sectionPos) {
+    public File generateFilePathAndName(File levelFolderPath, DhClientServerLevel level, DhSectionPos sectionPos) {
         return new File(levelFolderPath, String.format("%s_v%d-%s%s", clazz.getSimpleName(), getSaverVersion(),
                 sectionPos.serialize(), DataFileHandler.FILE_EXTENSION));
     }

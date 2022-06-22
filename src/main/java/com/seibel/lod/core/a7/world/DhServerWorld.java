@@ -1,9 +1,7 @@
 package com.seibel.lod.core.a7.world;
 
 import com.seibel.lod.core.a7.WorldEnvironment;
-import com.seibel.lod.core.a7.io.LevelToFileMatcher;
-import com.seibel.lod.core.a7.level.DHLevel;
-import com.seibel.lod.core.a7.save.structure.ClientOnlySaveStructure;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.save.structure.LocalSaveStructure;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.util.DetailDistanceUtil;
@@ -13,7 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class DhServerWorld extends DhWorld implements IServerWorld {
-    private final HashMap<ILevelWrapper, DHLevel> levels;
+    private final HashMap<ILevelWrapper, DhClientServerLevel> levels;
     public final LocalSaveStructure saveStructure;
 
     public DhServerWorld() {
@@ -23,9 +21,9 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
     }
 
     @Override
-    public DHLevel getOrLoadLevel(ILevelWrapper wrapper) {
+    public DhClientServerLevel getOrLoadLevel(ILevelWrapper wrapper) {
         if (!levels.containsKey(wrapper)) {
-            DHLevel level = saveStructure.tryGetLevel(wrapper);
+            DhClientServerLevel level = saveStructure.tryGetLevel(wrapper);
             if (level != null) {
                 levels.put(wrapper, level);
             }
@@ -34,7 +32,7 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
     }
 
     @Override
-    public DHLevel getLevel(ILevelWrapper wrapper) {
+    public DhClientServerLevel getLevel(ILevelWrapper wrapper) {
         return levels.get(wrapper);
     }
 
@@ -49,9 +47,9 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
 
     public void tick() {
         int newViewDistance = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() * 16;
-        Iterator<DHLevel> iterator = levels.values().iterator();
+        Iterator<DhClientServerLevel> iterator = levels.values().iterator();
         while (iterator.hasNext()) {
-            DHLevel level = iterator.next();
+            DhClientServerLevel level = iterator.next();
             if (level.viewDistance != newViewDistance) {
                 level.close();
                 iterator.remove();
@@ -66,14 +64,14 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
 
     @Override
     public void saveAndFlush() {
-        for (DHLevel level : levels.values()) {
+        for (DhClientServerLevel level : levels.values()) {
             level.saveFlush();
         }
     }
 
     @Override
     public void close() {
-        for (DHLevel level : levels.values()) {
+        for (DhClientServerLevel level : levels.values()) {
             LOGGER.info("Unloading level for world " + level.level.getDimensionType().getDimensionName());
             level.close();
         }

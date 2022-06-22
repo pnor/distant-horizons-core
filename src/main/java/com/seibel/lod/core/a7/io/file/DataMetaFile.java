@@ -15,9 +15,11 @@ import com.seibel.lod.core.a7.data.DataSourceLoader;
 import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.a7.io.MetaFile;
+import com.seibel.lod.core.a7.level.ILevel;
+import com.seibel.lod.core.a7.level.IServerLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.datatype.column.DataSourceSaver;
 import com.seibel.lod.core.a7.datatype.column.OldDataSourceLoader;
 import com.seibel.lod.core.util.LodUtil;
@@ -26,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 public class DataMetaFile extends MetaFile {
 	public static Logger LOGGER = DhLoggerBuilder.getLogger("FileMetadata");
 
-	private final DHLevel level;
+	private final ILevel level;
 	AtomicInteger localVersion = new AtomicInteger(); // This MUST be atomic
 	
 	// The '?' type should either be:
@@ -72,13 +74,13 @@ public class DataMetaFile extends MetaFile {
 	}
 
 	// Load a metaFile in this path. It also automatically read the metadata.
-	public DataMetaFile(DHLevel level, File path) throws IOException {
+	public DataMetaFile(ILevel level, File path) throws IOException {
 		super(path);
 		this.level = level;
 	}
 
 	// Make a new MetaFile. It doesn't load or write any metadata itself.
-	public DataMetaFile(DHLevel level, File path, DhSectionPos pos) {
+	public DataMetaFile(ILevel level, File path, DhSectionPos pos) {
 		super(path, pos);
 		this.level = level;
 	}
