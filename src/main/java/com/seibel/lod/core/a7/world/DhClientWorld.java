@@ -1,67 +1,60 @@
-package com.seibel.lod.core.a7;
+package com.seibel.lod.core.a7.world;
 
-import com.seibel.lod.core.a7.io.DHFolderHandler;
+import com.seibel.lod.core.a7.WorldEnvironment;
 import com.seibel.lod.core.a7.io.LevelToFileMatcher;
+import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.save.structure.ClientOnlySaveStructure;
+import com.seibel.lod.core.a7.save.structure.LocalSaveStructure;
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.EventLoop;
 import com.seibel.lod.core.util.LodUtil;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
-import org.apache.logging.log4j.Logger;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
-import java.io.Closeable;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 
-public class DHWorld implements Closeable {
-    private static final Logger LOGGER = DhLoggerBuilder.getLogger("DHWorld");
+public class DhClientWorld extends DhWorld implements IClientWorld {
 
-    private final File saveDir;
-    private final HashMap<IWorldWrapper, DHLevel> levels;
-    private LevelToFileMatcher levelToFileMatcher = null;
+    private final HashMap<ILevelWrapper, DHLevel> levels;
+    public final ClientOnlySaveStructure saveStructure;
 
     public ExecutorService dhTickerThread = LodUtil.makeSingleThreadPool("DHTickerThread", 2);
     public EventLoop eventLoop = new EventLoop(dhTickerThread, this::tick);
 
-    public DHWorld() {
-        //Note: this changes the singleplayer lod save location.
-        saveDir = DHFolderHandler.getCurrentWorldFolder();
+    public DhClientWorld() {
+        super(WorldEnvironment.Client_Only);
+        saveStructure = new ClientOnlySaveStructure(this);
         levels = new HashMap<>();
     }
 
-    public DHLevel getOrLoadLevel(IWorldWrapper wrapper) {
+    @Override
+    public DHLevel getOrLoadLevel(ILevelWrapper wrapper) {
         if (!levels.containsKey(wrapper)) {
-            if (levelToFileMatcher == null || levelToFileMatcher.getTargetWorld() != wrapper) {
-                LOGGER.info("Loading level for world " + wrapper.getDimensionType().getDimensionName());
-                levelToFileMatcher = new LevelToFileMatcher(this, saveDir, wrapper);
-            }
-            DHLevel level = levelToFileMatcher.tryGetLevel();
+            DHLevel level = saveStructure.tryGetLevel(wrapper);
             if (level != null) {
                 levels.put(wrapper, level);
-                levelToFileMatcher = null;
-                return level;
-            } else {
-                return null;
             }
+            return level;
         } else return levels.get(wrapper);
     }
 
-    public DHLevel getLevel(IWorldWrapper wrapper) {
+    @Override
+    public DHLevel getLevel(ILevelWrapper wrapper) {
         return levels.get(wrapper);
     }
 
-    public void unloadLevel(IWorldWrapper wrapper) {
+    @Override
+    public void unloadLevel(ILevelWrapper wrapper) {
         if (levels.containsKey(wrapper)) {
             LOGGER.info("Unloading level for world " + wrapper.getDimensionType().getDimensionName());
             levels.get(wrapper).close();
-            levels.remove(wrapper);
+            levels.remove(wrapper).close();
         }
     }
 
-    public void tick() {
+    private void tick() {
         int newViewDistance = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() * 16;
         Iterator<DHLevel> iterator = levels.values().iterator();
         while (iterator.hasNext()) {
@@ -73,13 +66,13 @@ public class DHWorld implements Closeable {
         }
         DetailDistanceUtil.updateSettings();
     }
-    public void doWorldGen() {
-    }
+
     public void asyncTick() {
         eventLoop.tick();
     }
 
-    public void save() {
+    @Override
+    public void saveAndFlush() {
         for (DHLevel level : levels.values()) {
             level.saveFlush();
         }
@@ -93,5 +86,10 @@ public class DHWorld implements Closeable {
             level.close();
         }
         levels.clear();
+    }
+
+    @Override
+    public void render() {
+
     }
 }

@@ -35,6 +35,7 @@ import com.seibel.lod.core.render.objects.GLState;
 import com.seibel.lod.core.util.*;
 import com.seibel.lod.core.util.gridList.*;
 import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.lwjgl.opengl.GL32;
 
@@ -51,7 +52,6 @@ import com.seibel.lod.core.objects.opengl.RenderRegion;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
  * This is where all the magic happens. <br>
@@ -526,7 +526,7 @@ public class LodRenderer
 	// returns whether anything changed
 	private boolean updateVanillaRenderedChunks(LodDimension lodDim) {
 		// if the player is high enough, draw all LODs
-		IWorldWrapper world = MC.getWrappedClientWorld();
+		ILevelWrapper world = MC.getWrappedClientWorld();
 		if (lastUpdatedPos.getY() > world.getHeight()-world.getMinHeight() ||
 				Config.Client.Advanced.lodOnlyMode.get()) {
 			if (vanillaChunks != null) {

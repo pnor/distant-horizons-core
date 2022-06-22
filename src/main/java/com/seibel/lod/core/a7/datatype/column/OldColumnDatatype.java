@@ -3,7 +3,7 @@ package com.seibel.lod.core.a7.datatype.column;
 import com.seibel.lod.core.a7.data.DataSourceLoader;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.objects.LodDataView;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 
 import java.io.DataInputStream;
 import java.io.IOException;

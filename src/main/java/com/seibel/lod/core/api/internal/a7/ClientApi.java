@@ -27,8 +27,8 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.logging.SpamReducedLogger;
-import com.seibel.lod.core.a7.DHLevel;
-import com.seibel.lod.core.a7.DHWorld;
+import com.seibel.lod.core.a7.level.DHLevel;
+import com.seibel.lod.core.a7.world.DhWorld;
 import com.seibel.lod.core.a7.Server;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
@@ -37,7 +37,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -116,7 +116,7 @@ public class ClientApi
 
 	public void clientServerConnected() {
 		SharedApi.currentServer = new Server(false);
-		SharedApi.currentWorld = new DHWorld();
+		SharedApi.currentWorld = new DhWorld(enviroment);
 	}
 	public void clientServerDisconnected() {
 		SharedApi.currentWorld.close();
@@ -124,22 +124,22 @@ public class ClientApi
 		SharedApi.currentServer = null;
 	}
 	
-	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
+	public void clientChunkLoadEvent(IChunkWrapper chunk, ILevelWrapper world)
 	{
 		//TODO: Implement
 	}
-	public void clientChunkSaveEvent(IChunkWrapper chunk, IWorldWrapper world)
+	public void clientChunkSaveEvent(IChunkWrapper chunk, ILevelWrapper world)
 	{
 		//TODO: Implement
 	}
 
-	public void clientLevelUnloadEvent(IWorldWrapper world)
+	public void clientLevelUnloadEvent(ILevelWrapper world)
 	{
 		if (SharedApi.currentWorld != null) {
 			SharedApi.currentWorld.unloadLevel(world);
 		}
 	}
-	public void clientLevelLoadEvent(IWorldWrapper world)
+	public void clientLevelLoadEvent(ILevelWrapper world)
 	{
 		//TODO: Maybe make DHLevel init no longer depend on needing player entity in single player
 		if (SharedApi.currentWorld != null) {
@@ -189,7 +189,7 @@ public class ClientApi
 		profiler.pop();
 	}
 	
-	public void renderLods(IWorldWrapper world, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
+	public void renderLods(ILevelWrapper world, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		IProfilerWrapper profiler = MC.getProfiler();
 		profiler.pop(); // get out of "terrain"
@@ -197,9 +197,9 @@ public class ClientApi
 		try {
 			if (!MC.playerExists()) return;
 			if (world == null) return;
-			DHWorld dhWorld = SharedApi.currentWorld;
-			if (dhWorld == null) return;
-			DHLevel level = (SharedApi.currentServer == null) ? dhWorld.getOrLoadLevel(world) : dhWorld.getLevel(world);
+			DhWorld DhWorld = SharedApi.currentWorld;
+			if (DhWorld == null) return;
+			DHLevel level = (SharedApi.currentServer == null) ? DhWorld.getOrLoadLevel(world) : DhWorld.getLevel(world);
 			if (level == null) return;
 
 			if (prefLoggerEnabled) {

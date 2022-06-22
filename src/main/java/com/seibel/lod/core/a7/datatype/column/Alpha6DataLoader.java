@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.data.OldFileConverter;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 import com.seibel.lod.core.objects.a7.data.*;
 import com.seibel.lod.core.a7.io.file.DataMetaFile;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;

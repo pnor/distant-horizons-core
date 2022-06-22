@@ -21,10 +21,8 @@ package com.seibel.lod.core.wrapperInterfaces;
 
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
-import com.seibel.lod.core.objects.DHBlockPos;
-import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
 
 /**
@@ -36,5 +34,5 @@ import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenera
 public interface IWrapperFactory extends IBindable 
 {
 	AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(LodBuilder newLodBuilder,
-			LodDimension newLodDimension, IWorldWrapper worldWrapper);
+			LodDimension newLodDimension, ILevelWrapper worldWrapper);
 }

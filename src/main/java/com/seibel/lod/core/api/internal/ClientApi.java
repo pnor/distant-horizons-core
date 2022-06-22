@@ -30,6 +30,7 @@ import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.render.RenderSystemTest;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.Level;
 import com.seibel.lod.core.handlers.LodDimensionFinder;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +52,6 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
 /**
  * This holds the methods that should be called
@@ -142,7 +142,7 @@ public class ClientApi
 	private final ConcurrentHashMap.KeySetView<DHChunkPos,Boolean> generating = ConcurrentHashMap.newKeySet();
 	public final ConcurrentHashMap.KeySetView<DHChunkPos,Boolean> toBeLoaded = ConcurrentHashMap.newKeySet();
 	
-	public void clientChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world)
+	public void clientChunkLoadEvent(IChunkWrapper chunk, ILevelWrapper world)
 	{
 		LagSpikeCatcher clientChunkLoad = new LagSpikeCatcher();
 		//ApiShared.LOGGER.info("Lod Generating add: "+chunk.getLongChunkPos());
@@ -187,7 +187,7 @@ public class ClientApi
 			if (!MC.playerExists() || InternalApiShared.lodWorld.getIsWorldNotLoaded())
 				return;
 			
-			IWorldWrapper world = MC.getWrappedClientWorld();
+			ILevelWrapper world = MC.getWrappedClientWorld();
 			if (world == null)
 				return;
 			LodDimension lodDim = InternalApiShared.lodWorld.getLodDimension(world.getDimensionType());

@@ -44,30 +44,6 @@ public class DHFolderHandler {
             throw new RuntimeException("Critical error: Unable to get world folder directory", e);
         }
 
-        // move any old data folders if they exist
-        File[] subFolders = dimensionFolder.listFiles();
-        if (subFolders != null) {
-            for (File folder : subFolders)
-            {
-                //FIXME: Errr... What to do here?
-                /*
-                if (VerticalQuality.getByName(folder.getName()) != null)
-                {
-                    // this is a LOD save folder
-                    // create a new sub dimension and move the data into it
-                    File newDimension = GetDimensionFolder(dimensionType, subDimensionName);
-                    newDimension.mkdirs();
-
-                    File oldDataNewPath = new File(newDimension.getPath() + File.separatorChar + folder.getName());
-                    Files.move(folder.toPath(), oldDataNewPath.toPath());
-                }
-                else
-                {
-                    // ignore this folder
-                }
-                 */
-            }
-        }
         return dimensionFolder;
     }
     private static String getServerFolderName()

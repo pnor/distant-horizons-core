@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.render.RenderDataSource;
 import com.seibel.lod.core.a7.render.RenderDataSourceLoader;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 import com.seibel.lod.core.objects.a7.data.DataFile;
 import com.seibel.lod.core.util.DetailDistanceUtil;
 import com.seibel.lod.core.util.LodUtil;

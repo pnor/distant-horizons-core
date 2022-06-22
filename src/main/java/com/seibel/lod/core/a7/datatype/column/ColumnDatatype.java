@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.render.RenderBuffer;
 import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.objects.LodDataView;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 import com.seibel.lod.core.a7.LodQuadTree;
 import com.seibel.lod.core.a7.LodSection;
 import com.seibel.lod.core.a7.render.RenderDataSource;

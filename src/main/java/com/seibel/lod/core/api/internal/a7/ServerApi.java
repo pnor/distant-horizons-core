@@ -21,11 +21,11 @@ package com.seibel.lod.core.api.internal.a7;
 
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.DHWorld;
+import com.seibel.lod.core.a7.world.DhWorld;
 import com.seibel.lod.core.a7.Server;
 import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.invoke.MethodHandles;
@@ -60,15 +60,15 @@ public class ServerApi
 		lastWorldGenTickDelta--;
 		if (SharedApi.currentWorld != null && lastWorldGenTickDelta <= 0) {
 			lastWorldGenTickDelta = 20;
-			DHWorld dhWorld = SharedApi.currentWorld;
-			dhWorld.tick();
+			DhWorld DhWorld = SharedApi.currentWorld;
+			DhWorld.tick();
 		}
 	}
 
 	//TODO: rename to serverLoadEvent
 	public void serverWorldLoadEvent() {
 		SharedApi.currentServer = new Server(!SharedApi.inDedicatedEnvironment);
-		SharedApi.currentWorld = new DHWorld();
+		SharedApi.currentWorld = new DhWorld(enviroment);
 		//TODO: Setup the network handler
 	}
 
@@ -80,12 +80,12 @@ public class ServerApi
 		SharedApi.currentServer = null;
 	}
 
-	public void serverLevelLoadEvent(IWorldWrapper world) {
+	public void serverLevelLoadEvent(ILevelWrapper world) {
 		//TODO: Maybe make DHLevel init no longer depend on needing player entity in single player
 		if (SharedApi.currentServer.isSinglePlayer) return;
 		SharedApi.currentWorld.getOrLoadLevel(world);
 	}
-	public void serverLevelUnloadEvent(IWorldWrapper world) {
+	public void serverLevelUnloadEvent(ILevelWrapper world) {
 		SharedApi.currentWorld.unloadLevel(world);
 	}
 
@@ -96,12 +96,12 @@ public class ServerApi
 
 
 	
-	public void chunkSaveEvent(IChunkWrapper chunk, IWorldWrapper world) {
+	public void chunkSaveEvent(IChunkWrapper chunk, ILevelWrapper world) {
 		//TODO
 	}
 
-	public void serverChunkLoadEvent(IChunkWrapper chunk, IWorldWrapper world) {
+	public void serverChunkLoadEvent(IChunkWrapper chunk, ILevelWrapper world) {
 	}
-	public void serverChunkSaveEvent(IChunkWrapper chunk, IWorldWrapper world) {
+	public void serverChunkSaveEvent(IChunkWrapper chunk, ILevelWrapper world) {
 	}
 }

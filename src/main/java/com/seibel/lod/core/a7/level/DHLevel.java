@@ -1,5 +1,8 @@
-package com.seibel.lod.core.a7;
+package com.seibel.lod.core.a7.level;
 
+import com.seibel.lod.core.a7.world.DhWorld;
+import com.seibel.lod.core.a7.LodQuadTree;
+import com.seibel.lod.core.a7.RenderDataProvider;
 import com.seibel.lod.core.a7.data.DataFileHandler;
 import com.seibel.lod.core.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.a7.render.RenderBufferHandler;
@@ -11,7 +14,7 @@ import com.seibel.lod.core.util.EventLoop;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
 import java.io.Closeable;
 import java.io.File;
@@ -25,13 +28,12 @@ public class DHLevel extends LodQuadTree implements Closeable {
     public final RenderBufferHandler renderBufferHandler;
     public final ExecutorService dhTickerThread = LodUtil.makeSingleThreadPool("DHLevelTickerThread", 2);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
-    public final IWorldWrapper level;
+    public final ILevelWrapper level;
     public a7LodRenderer renderer;
-    public final DHWorld world;
-
+    public final DhWorld world;
     public EventLoop eventLoop;
 
-    public DHLevel(DHWorld world, File saveFolder, IWorldWrapper level) {
+    public DHLevel(DhWorld world, File saveFolder, ILevelWrapper level) {
         super(Config.Client.Graphics.Quality.lodChunkRenderDistance.get()*16,
                 MC.getPlayerBlockPos().x,
                 MC.getPlayerBlockPos().z);

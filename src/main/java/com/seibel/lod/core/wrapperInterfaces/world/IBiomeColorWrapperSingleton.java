@@ -33,7 +33,7 @@ public interface IBiomeColorWrapperSingleton extends IBindable
 {
 	IBiomeColorWrapperSingleton getInstance();
 	
-	int getGrassColor(IWorldWrapper world, DHBlockPos blockPos);
-	int getWaterColor(IWorldWrapper world, DHBlockPos blockPos);
-	int getFoliageColor(IWorldWrapper world, DHBlockPos blockPos);
+	int getGrassColor(ILevelWrapper world, DHBlockPos blockPos);
+	int getWaterColor(ILevelWrapper world, DHBlockPos blockPos);
+	int getFoliageColor(ILevelWrapper world, DHBlockPos blockPos);
 }

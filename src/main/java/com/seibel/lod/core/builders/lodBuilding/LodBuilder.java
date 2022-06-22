@@ -43,7 +43,7 @@ import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -493,7 +493,7 @@ public class LodBuilder
 		if (blockLight == -1 || skyLight == -1)
 		{
 			
-			IWorldWrapper world = MC.getWrappedServerWorld();
+			ILevelWrapper world = MC.getWrappedServerWorld();
 			
 			if (world != null)
 			{

@@ -36,7 +36,7 @@ import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.invoke.MethodHandles;
@@ -124,7 +124,7 @@ public class EventApi
 	}
 	
 	/** This is also called when a new dimension loads */
-	public void worldLoadEvent(IWorldWrapper world)
+	public void worldLoadEvent(ILevelWrapper world)
 	{
 		if (ENABLE_STACK_DUMP_LOGGING)
 			LOGGER.info(
@@ -157,7 +157,7 @@ public class EventApi
 	}
 	
 	/** This is also called when the user disconnects from a server+ */
-	public void worldUnloadEvent(IWorldWrapper world)
+	public void worldUnloadEvent(ILevelWrapper world)
 	{
 		if (ENABLE_STACK_DUMP_LOGGING)
 			LOGGER.info(

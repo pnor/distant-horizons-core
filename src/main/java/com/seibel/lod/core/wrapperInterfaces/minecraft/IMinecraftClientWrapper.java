@@ -27,7 +27,7 @@ import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
 /**
  * Contains everything related to the Minecraft object.
@@ -86,9 +86,9 @@ public interface IMinecraftClientWrapper extends IBindable
 	 * the user is currently in.
 	 * @return null if no ServerWorld is available
 	 */
-	IWorldWrapper getWrappedServerWorld();
+	ILevelWrapper getWrappedServerWorld();
 	
-	IWorldWrapper getWrappedClientWorld();
+	ILevelWrapper getWrappedClientWorld();
 	
 	File getGameDirectory();
 	
@@ -101,7 +101,7 @@ public interface IMinecraftClientWrapper extends IBindable
 	int getPlayerSkylight();
 	
 	/** Returns all worlds available to the server */
-	ArrayList<IWorldWrapper> getAllServerWorlds();
+	ArrayList<ILevelWrapper> getAllServerWorlds();
 	
 	
 	

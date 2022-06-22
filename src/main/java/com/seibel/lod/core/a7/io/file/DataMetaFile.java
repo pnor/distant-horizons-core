@@ -17,7 +17,7 @@ import com.seibel.lod.core.a7.datatype.full.FullDatatype;
 import com.seibel.lod.core.a7.io.MetaFile;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 import com.seibel.lod.core.a7.datatype.column.DataSourceSaver;
 import com.seibel.lod.core.a7.datatype.column.OldDataSourceLoader;
 import com.seibel.lod.core.util.LodUtil;

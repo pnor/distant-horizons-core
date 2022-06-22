@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.data.DataSourceLoader;
 import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.io.MetaFile;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 
 import java.io.File;
 import java.io.IOException;

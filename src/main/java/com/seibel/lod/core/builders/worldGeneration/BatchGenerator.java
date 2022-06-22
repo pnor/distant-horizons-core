@@ -31,7 +31,7 @@ import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper.Steps;
 import org.apache.logging.log4j.Logger;
@@ -54,7 +54,7 @@ public class BatchGenerator
 	private int estimatedPointsToQueue = 1;
 
 	public BatchGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension) {
-		IWorldWrapper world = LodUtil.getServerWorldFromDimension(newLodDimension.dimension);
+		ILevelWrapper world = LodUtil.getServerWorldFromDimension(newLodDimension.dimension);
 		targetLodDim = newLodDimension;
 		generationGroup = FACTORY.createBatchGenerator(newLodBuilder, newLodDimension, world);
 		MC.sendChatMessage("NOTE: You are currently using Distant Horizon's Batch Chunk Pre-Generator.");
@@ -65,7 +65,7 @@ public class BatchGenerator
 	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder) {
 		if (lodDim != targetLodDim) {
 			stop(false);
-			IWorldWrapper dim = LodUtil.getServerWorldFromDimension(lodDim.dimension);
+			ILevelWrapper dim = LodUtil.getServerWorldFromDimension(lodDim.dimension);
 			generationGroup = FACTORY.createBatchGenerator(lodBuilder, lodDim, dim);
 			targetLodDim = lodDim;
 			LOGGER.info("1.18 Experimental Chunk Generator reinitialized");

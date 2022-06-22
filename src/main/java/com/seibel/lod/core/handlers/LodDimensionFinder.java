@@ -41,7 +41,7 @@ import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
@@ -437,7 +437,7 @@ public class LodDimensionFinder
 			{
 				// local world
 				
-				IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(newDimensionType);
+				ILevelWrapper serverWorld = LodUtil.getServerWorldFromDimension(newDimensionType);
 				return new File(serverWorld.getSaveFolder().getCanonicalFile().getPath() + File.separatorChar + "lod" + File.separatorChar + worldId);
 			}
 			else

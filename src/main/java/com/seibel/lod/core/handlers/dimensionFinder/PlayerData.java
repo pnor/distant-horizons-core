@@ -25,7 +25,9 @@ import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.DHBlockPos;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
+import org.lwjgl.system.CallbackI;
 
+import javax.annotation.Nullable;
 import java.io.File;
 
 /**
@@ -55,10 +57,18 @@ public class PlayerData
 	 * I'm not sure what this will look like for worlds that don't have a spawn point.
 	 */
 	public DHBlockPos worldSpawnPointBlockPos;
+	@Nullable
+	public static PlayerData tryGetPlayerData(IMinecraftClientWrapper mcClient) {
+		if (!mcClient.playerExists()) return null;
+		try {
+			return new PlayerData(mcClient);
+		} catch (RuntimeException e) {
+			// Player no longer exists due to concurrency. FIXME: Remember here is called not on main thread!!!
+			return null;
+		}
+	}
 	
-	
-	
-	public PlayerData(IMinecraftClientWrapper mc)
+	private PlayerData(IMinecraftClientWrapper mc)
 	{
 		updateData(mc);
 	}
@@ -66,24 +76,23 @@ public class PlayerData
 	public PlayerData(File dimensionFolder)
 	{
 		File file = getFileForDimensionFolder(dimensionFolder);
-		CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
-		
-		toml.load();
-		
-		
-		// get the player block pos if it is specified
-		if (toml.contains(PLAYER_BLOCK_POS_X_PATH)
-				&& toml.contains(PLAYER_BLOCK_POS_Y_PATH)
-				&& toml.contains(PLAYER_BLOCK_POS_Z_PATH))
-		{
-			int x = toml.getIntOrElse(PLAYER_BLOCK_POS_X_PATH, 0);
-			int y = toml.getIntOrElse(PLAYER_BLOCK_POS_Y_PATH, 0);
-			int z = toml.getIntOrElse(PLAYER_BLOCK_POS_Z_PATH, 0);
-			this.playerBlockPos = new DHBlockPos(x, y, z);
-		}
-		else
-		{
-			this.playerBlockPos = new DHBlockPos(0, 0, 0);
+		try (CommentedFileConfig toml = CommentedFileConfig.builder(file).build()) {
+			toml.load();
+
+			// get the player block pos if it is specified
+			if (toml.contains(PLAYER_BLOCK_POS_X_PATH)
+					&& toml.contains(PLAYER_BLOCK_POS_Y_PATH)
+					&& toml.contains(PLAYER_BLOCK_POS_Z_PATH))
+			{
+				int x = toml.getIntOrElse(PLAYER_BLOCK_POS_X_PATH, 0);
+				int y = toml.getIntOrElse(PLAYER_BLOCK_POS_Y_PATH, 0);
+				int z = toml.getIntOrElse(PLAYER_BLOCK_POS_Z_PATH, 0);
+				this.playerBlockPos = new DHBlockPos(x, y, z);
+			}
+			else
+			{
+				this.playerBlockPos = new DHBlockPos(0, 0, 0);
+			}
 		}
 	}
 	
@@ -98,10 +107,8 @@ public class PlayerData
 	/** Should be called often to make sure this object is up to date with the player's info */
 	public void updateData(IMinecraftClientWrapper mc)
 	{
-		if (mc.playerExists())
-		{
-			this.playerBlockPos = mc.getPlayerBlockPos();
-		}
+		this.playerBlockPos = mc.getPlayerBlockPos();
+		if (playerBlockPos == null) throw new RuntimeException("No player block pos!");
 	}
 	
 	/** Writes everything from this object to the file given. */

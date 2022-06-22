@@ -2,7 +2,7 @@ package com.seibel.lod.core.a7.data;
 
 import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.a7.RenderDataProvider;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 import com.seibel.lod.core.a7.datatype.column.DataSourceSaver;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.render.RenderDataSource;

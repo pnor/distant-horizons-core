@@ -3,10 +3,9 @@ package com.seibel.lod.core.a7.io.file;
 import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.datatype.full.FullDatatype;
-import com.seibel.lod.core.a7.io.DataSourceProvider;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
 

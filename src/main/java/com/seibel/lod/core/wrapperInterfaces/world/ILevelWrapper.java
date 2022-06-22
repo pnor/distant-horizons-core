@@ -32,7 +32,7 @@ import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
  * @author James Seibel
  * @version 3-5-2022
  */
-public interface IWorldWrapper extends IBindable
+public interface ILevelWrapper extends IBindable
 {
 	IDimensionTypeWrapper getDimensionType();
 	

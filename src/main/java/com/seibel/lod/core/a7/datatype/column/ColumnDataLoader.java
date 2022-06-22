@@ -6,7 +6,7 @@ import com.seibel.lod.core.a7.io.MetaFile;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 import com.seibel.lod.core.a7.io.file.DataMetaFile;
 
 import java.io.*;

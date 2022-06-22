@@ -34,7 +34,7 @@ import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.misc.ILightMapWrapper;
 import com.seibel.lod.core.wrapperInterfaces.modAccessor.ISodiumAccessor;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
 /**
  * Contains everything related to
@@ -105,7 +105,7 @@ public interface IMinecraftRenderWrapper extends IBindable
 		IWrapperFactory factory = SingletonHandler.get(IWrapperFactory.class);
 		IVersionConstants versionConstants = SingletonHandler.get(IVersionConstants.class);
 		IMinecraftClientWrapper minecraft = SingletonHandler.get(IMinecraftClientWrapper.class);
-		IWorldWrapper clientWorld = minecraft.getWrappedClientWorld();
+		ILevelWrapper clientWorld = minecraft.getWrappedClientWorld();
 
 		int chunkDist = this.getRenderDistance() + 1; // For some reason having '+1' is actually closer to real value
 		

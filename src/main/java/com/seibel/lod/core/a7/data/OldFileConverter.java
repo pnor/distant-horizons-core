@@ -1,6 +1,6 @@
 package com.seibel.lod.core.a7.data;
 
-import com.seibel.lod.core.a7.DHLevel;
+import com.seibel.lod.core.a7.level.DHLevel;
 
 import java.io.File;
 import java.util.List;

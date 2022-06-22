@@ -42,7 +42,7 @@ import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
+import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
 /**
  * This class holds methods and constants that may be used in multiple places.
@@ -165,15 +165,15 @@ public class LodUtil
 	 * Gets the ServerWorld for the relevant dimension.
 	 * @return null if there is no ServerWorld for the given dimension
 	 */
-	public static IWorldWrapper getServerWorldFromDimension(IDimensionTypeWrapper newDimension)
+	public static ILevelWrapper getServerWorldFromDimension(IDimensionTypeWrapper newDimension)
 	{
 		if(!MC.hasSinglePlayerServer())
 			return null;
 		
-		Iterable<IWorldWrapper> worlds = MC.getAllServerWorlds();
-		IWorldWrapper returnWorld = null;
+		Iterable<ILevelWrapper> worlds = MC.getAllServerWorlds();
+		ILevelWrapper returnWorld = null;
 		
-		for (IWorldWrapper world : worlds)
+		for (ILevelWrapper world : worlds)
 		{
 			if (world.getDimensionType() == newDimension)
 			{
@@ -200,7 +200,7 @@ public class LodUtil
 	 * world, if in multiplayer it will return the server name, IP,
 	 * and game version.
 	 */
-	public static String getWorldID(IWorldWrapper world)
+	public static String getWorldID(ILevelWrapper world)
 	{
 		if (MC.hasSinglePlayerServer())
 		{
@@ -229,14 +229,14 @@ public class LodUtil
 	 * dimension.
 	 */
 	@Deprecated // FIXME: There are soooo many duplicated methods doing the same thing everywhere
-	public static String getDimensionIDFromWorld(IWorldWrapper world)
+	public static String getDimensionIDFromWorld(ILevelWrapper world)
 	{
 		if (MC.hasSinglePlayerServer())
 		{
 			// this will return the world save location
 			// and the dimension folder
 			
-			IWorldWrapper serverWorld = LodUtil.getServerWorldFromDimension(world.getDimensionType());
+			ILevelWrapper serverWorld = LodUtil.getServerWorldFromDimension(world.getDimensionType());
 			if (serverWorld == null)
 				throw new NullPointerException("getDimensionIDFromWorld wasn't able to get the WorldWrapper for the dimension " + world.getDimensionType().getDimensionName());
 			
