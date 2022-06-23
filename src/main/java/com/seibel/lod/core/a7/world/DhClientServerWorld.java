@@ -4,9 +4,10 @@ import com.seibel.lod.core.a7.WorldEnvironment;
 import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.save.structure.LocalSaveStructure;
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
@@ -23,13 +24,11 @@ public class DhClientServerWorld extends DhWorld implements IClientWorld, IServe
 
     @Override
     public DhClientServerLevel getOrLoadLevel(ILevelWrapper wrapper) {
-        if (!levels.containsKey(wrapper)) {
-            DhClientServerLevel level = saveStructure.tryGetLevel(wrapper);
-            if (level != null) {
-                levels.put(wrapper, level);
-            }
-            return level;
-        } else return levels.get(wrapper);
+        return levels.computeIfAbsent(wrapper, (w) -> {
+            File levelFile = saveStructure.tryGetLevelFolder(w);
+            LodUtil.assertTrue(levelFile != null);
+            return new DhClientServerLevel(saveStructure, w);
+        });
     }
 
     @Override
@@ -56,11 +55,12 @@ public class DhClientServerWorld extends DhWorld implements IClientWorld, IServe
                 iterator.remove();
             }
         }
-        DetailDistanceUtil.updateSettings();
+        //DetailDistanceUtil.updateSettings();
+        levels.values().forEach(DhClientServerLevel::tick);
     }
 
     public void doWorldGen() {
-
+        levels.values().forEach(DhClientServerLevel::doWorldGen);
     }
 
     @Override

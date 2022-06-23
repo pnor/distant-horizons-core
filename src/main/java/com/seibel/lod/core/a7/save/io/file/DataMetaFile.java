@@ -1,4 +1,4 @@
-package com.seibel.lod.core.a7.io.file;
+package com.seibel.lod.core.a7.save.io.file;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -14,12 +14,10 @@ import java.util.function.BiConsumer;
 import com.seibel.lod.core.a7.data.DataSourceLoader;
 import com.seibel.lod.core.a7.data.LodDataSource;
 import com.seibel.lod.core.a7.datatype.full.FullDatatype;
-import com.seibel.lod.core.a7.io.MetaFile;
+import com.seibel.lod.core.a7.save.io.MetaFile;
 import com.seibel.lod.core.a7.level.ILevel;
-import com.seibel.lod.core.a7.level.IServerLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.datatype.column.DataSourceSaver;
 import com.seibel.lod.core.a7.datatype.column.OldDataSourceLoader;
 import com.seibel.lod.core.util.LodUtil;

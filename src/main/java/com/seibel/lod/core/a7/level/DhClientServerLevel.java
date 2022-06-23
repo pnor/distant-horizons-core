@@ -1,8 +1,9 @@
 package com.seibel.lod.core.a7.level;
 
 import com.seibel.lod.core.a7.LodQuadTree;
-import com.seibel.lod.core.a7.io.file.LocalDataFileHandler;
-import com.seibel.lod.core.a7.io.render.RenderFileHandler;
+import com.seibel.lod.core.a7.save.io.FileScanner;
+import com.seibel.lod.core.a7.save.io.file.LocalDataFileHandler;
+import com.seibel.lod.core.a7.save.io.render.RenderFileHandler;
 import com.seibel.lod.core.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.a7.render.RenderBufferHandler;
 import com.seibel.lod.core.a7.save.structure.LocalSaveStructure;
@@ -34,6 +35,7 @@ public class DhClientServerLevel implements IClientLevel, IServerLevel {
         tree = new LodQuadTree(Config.Client.Graphics.Quality.lodChunkRenderDistance.get()*16,
                 MC_CLIENT.getPlayerBlockPos().x, MC_CLIENT.getPlayerBlockPos().z, renderFileHandler);
         renderBufferHandler = new RenderBufferHandler(tree);
+        FileScanner.scanFile(save, level, dataFileHandler, renderFileHandler);
     }
 
     public void tick() {
@@ -85,5 +87,10 @@ public class DhClientServerLevel implements IClientLevel, IServerLevel {
     public void close() {
         renderFileHandler.close();
         //Note: Closing renderFileHandler will also close the dataFileHandler.
+    }
+
+    @Override
+    public void doWorldGen() {
+        //TODO
     }
 }

@@ -2,12 +2,12 @@ package com.seibel.lod.core.a7.datatype.column;
 
 import com.seibel.lod.core.a7.data.DataFileHandler;
 import com.seibel.lod.core.a7.data.LodDataSource;
-import com.seibel.lod.core.a7.io.MetaFile;
+import com.seibel.lod.core.a7.save.io.MetaFile;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.a7.level.DhClientServerLevel;
-import com.seibel.lod.core.a7.io.file.DataMetaFile;
+import com.seibel.lod.core.a7.save.io.file.DataMetaFile;
 
 import java.io.*;
 import java.util.ArrayList;

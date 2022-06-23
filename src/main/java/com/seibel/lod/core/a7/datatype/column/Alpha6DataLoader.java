@@ -7,7 +7,7 @@ import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.objects.a7.data.*;
-import com.seibel.lod.core.a7.io.file.DataMetaFile;
+import com.seibel.lod.core.a7.save.io.file.DataMetaFile;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
 import java.io.*;

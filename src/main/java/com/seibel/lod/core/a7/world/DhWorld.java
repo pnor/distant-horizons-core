@@ -2,6 +2,7 @@ package com.seibel.lod.core.a7.world;
 
 import com.seibel.lod.core.a7.WorldEnvironment;
 import com.seibel.lod.core.a7.level.DhClientServerLevel;
+import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import org.apache.logging.log4j.Logger;
@@ -17,9 +18,9 @@ public abstract class DhWorld implements Closeable {
     protected DhWorld(WorldEnvironment environment) {
         this.environment = environment;
     }
-    public abstract DhClientServerLevel getOrLoadLevel(ILevelWrapper wrapper);
+    public abstract ILevel getOrLoadLevel(ILevelWrapper wrapper);
 
-    public abstract DhClientServerLevel getLevel(ILevelWrapper wrapper);
+    public abstract ILevel getLevel(ILevelWrapper wrapper);
 
     public abstract void unloadLevel(ILevelWrapper wrapper);
     public abstract CompletableFuture<Void> saveAndFlush();

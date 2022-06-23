@@ -1,12 +1,8 @@
 package com.seibel.lod.core.a7.save.structure;
 
-import com.seibel.lod.core.a7.io.LevelToFileMatcher;
-import com.seibel.lod.core.a7.level.DhClientServerLevel;
-import com.seibel.lod.core.a7.level.IServerLevel;
-import com.seibel.lod.core.a7.world.DhClientWorld;
+import com.seibel.lod.core.a7.save.io.LevelToFileMatcher;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EServerFolderNameMode;
-import com.seibel.lod.core.enums.config.EVerticalQuality;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.ParsedIp;
 import com.seibel.lod.core.util.LodUtil;
@@ -16,6 +12,7 @@ import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -72,39 +69,37 @@ public class ClientOnlySaveStructure extends SaveStructure {
     }
 
     LevelToFileMatcher fileMatcher = null;
-    final DhClientWorld world;
+    final HashMap<ILevelWrapper, File> levelToFileMap = new HashMap<>();
 
     // Fit for Client_Only environment
-    public ClientOnlySaveStructure(DhClientWorld world) {
+    public ClientOnlySaveStructure() {
         folder = new File(MC_CLIENT.getGameDirectory().getPath() +
                 File.separatorChar + "Distant_Horizons_server_data" + File.separatorChar + getServerFolderName());
         if (!folder.exists()) folder.mkdirs(); //TODO: Deal with errors
-        this.world = world;
     }
 
-    //FIXME: how do i deal with either creating a ClientServerLevel, or a ServerLevel here???
     @Override
-    public IServerLevel tryGetLevel(ILevelWrapper wrapper) {
-        if (Config.Client.Multiplayer.multiDimensionRequiredSimilarity.get() == 0) {
-            if (fileMatcher != null) {
+    public File tryGetLevelFolder(ILevelWrapper level) {
+        return levelToFileMap.computeIfAbsent(level, (l) -> {
+            if (Config.Client.Multiplayer.multiDimensionRequiredSimilarity.get() == 0) {
+                if (fileMatcher != null) {
+                    fileMatcher.close();
+                    fileMatcher = null;
+                }
+                return getLevelFolderWithoutSimilarityMatching(l);
+            }
+            if (fileMatcher == null || !fileMatcher.isFindingLevel(l)) {
+                LOGGER.info("Loading level for world " + l.getDimensionType().getDimensionName());
+                fileMatcher = new LevelToFileMatcher(l, folder,
+                        (File[]) getMatchingLevelFolders(l).toArray());
+            }
+            File levelFile = fileMatcher.tryGetLevel();
+            if (levelFile != null) {
                 fileMatcher.close();
                 fileMatcher = null;
             }
-            return new DhClientServerLevel(world, getLevelFolderWithoutSimilarityMatching(wrapper), wrapper);
-        }
-
-        if (fileMatcher == null || !fileMatcher.isFindingLevel(wrapper)) {
-            LOGGER.info("Loading level for world " + wrapper.getDimensionType().getDimensionName());
-            fileMatcher = new LevelToFileMatcher(world, wrapper, folder,
-                    (File[]) getMatchingLevelFolders(wrapper).toArray());
-        }
-
-        DhClientServerLevel level = fileMatcher.tryGetLevel();
-        if (level != null) {
-            fileMatcher.close();
-            fileMatcher = null;
-        }
-        return level;
+            return levelFile;
+        });
     }
 
     private File getLevelFolderWithoutSimilarityMatching(ILevelWrapper level)
@@ -139,36 +134,34 @@ public class ClientOnlySaveStructure extends SaveStructure {
             // it needs to be a folder
             return false;
 
-        if (potentialFolder.listFiles() == null)
-            // it needs to have folders in it
-            return false;
-
-        // check if there is at least one VerticalQuality folder in this directory
-        for (File internalFolder : potentialFolder.listFiles())
-        {
-            if (EVerticalQuality.getByName(internalFolder.getName()) != null)
-            {
-                // one of the internal folders is a VerticalQuality folder
-                return true;
-            }
-        }
-
-        return false;
+        File[] files = potentialFolder.listFiles((f) -> f.isDirectory() &&
+                (f.getName().equalsIgnoreCase(RENDER_CACHE_FOLDER) || f.getName().equalsIgnoreCase(DATA_FOLDER)));
+        // it needs to have folders with specified names in it
+        return files != null && files.length != 0;
     }
 
 
     @Override
-    public File getRenderCacheFolder(ILevelWrapper world) {
-        return null;
+    public File getRenderCacheFolder(ILevelWrapper level) {
+        File levelFolder = levelToFileMap.get(level);
+        if (levelFolder == null) return null;
+        return new File(levelFolder, RENDER_CACHE_FOLDER);
     }
 
     @Override
-    public File getDataFolder(ILevelWrapper world) {
-        return null;
+    public File getDataFolder(ILevelWrapper level) {
+        File levelFolder = levelToFileMap.get(level);
+        if (levelFolder == null) return null;
+        return new File(levelFolder, DATA_FOLDER);
     }
 
     @Override
     public void close() {
         fileMatcher.close();
+    }
+
+    @Override
+    public String toString() {
+        return "[ClientOnlySave@"+folder.getName()+"]";
     }
 }

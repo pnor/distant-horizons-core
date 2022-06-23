@@ -1,8 +1,9 @@
 package com.seibel.lod.core.a7.level;
 
 import com.seibel.lod.core.a7.LodQuadTree;
-import com.seibel.lod.core.a7.io.file.RemoteDataFileHandler;
-import com.seibel.lod.core.a7.io.render.RenderFileHandler;
+import com.seibel.lod.core.a7.save.io.FileScanner;
+import com.seibel.lod.core.a7.save.io.file.RemoteDataFileHandler;
+import com.seibel.lod.core.a7.save.io.render.RenderFileHandler;
 import com.seibel.lod.core.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.a7.render.RenderBufferHandler;
 import com.seibel.lod.core.a7.save.structure.ClientOnlySaveStructure;
@@ -14,6 +15,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
+import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 
 public class DhClientLevel implements IClientLevel {
@@ -34,6 +36,7 @@ public class DhClientLevel implements IClientLevel {
                 MC_CLIENT.getPlayerBlockPos().x, MC_CLIENT.getPlayerBlockPos().z, renderFileHandler);
         renderBufferHandler = new RenderBufferHandler(tree);
         this.level = level;
+        FileScanner.scanFile(save, level, dataFileHandler, renderFileHandler);
     }
 
     public void tick() {

@@ -1,4 +1,4 @@
-package com.seibel.lod.core.a7.io;
+package com.seibel.lod.core.a7.save.io;
 
 import java.io.*;
 import java.nio.ByteBuffer;

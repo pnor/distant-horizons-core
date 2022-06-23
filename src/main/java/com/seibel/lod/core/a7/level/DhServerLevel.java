@@ -1,6 +1,7 @@
 package com.seibel.lod.core.a7.level;
 
-import com.seibel.lod.core.a7.io.file.LocalDataFileHandler;
+import com.seibel.lod.core.a7.save.io.FileScanner;
+import com.seibel.lod.core.a7.save.io.file.LocalDataFileHandler;
 import com.seibel.lod.core.a7.save.structure.LocalSaveStructure;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
@@ -15,6 +16,7 @@ public class DhServerLevel implements IServerLevel {
         this.save = save;
         this.level = level;
         dataFileHandler = new LocalDataFileHandler(this, save.getDataFolder(level));
+        FileScanner.scanFile(save, level, dataFileHandler, null);
     }
 
     public void tick() {
@@ -37,5 +39,10 @@ public class DhServerLevel implements IServerLevel {
     @Override
     public CompletableFuture<Void> save() {
         return dataFileHandler.flushAndSave();
+    }
+
+    @Override
+    public void doWorldGen() {
+
     }
 }

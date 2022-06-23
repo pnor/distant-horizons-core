@@ -1,4 +1,4 @@
-package com.seibel.lod.core.a7.io;
+package com.seibel.lod.core.a7.save.io;
 
 import com.seibel.lod.core.a7.world.DhClientWorld;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
@@ -36,27 +36,24 @@ public class LevelToFileMatcher implements AutoCloseable {
     /** If true the LodDimensionFileHelper is attempting to determine the folder for this dimension */
     private final AtomicBoolean determiningWorldFolder = new AtomicBoolean(false);
     private final ILevelWrapper currentLevel;
-    private final DhClientWorld world;
-    private volatile DhClientServerLevel foundLevel = null;
+    private volatile File foundLevel = null;
     private final File[] potentialFiles;
     private final File levelsFolder;
 
-    public LevelToFileMatcher(DhClientWorld DhWorld, ILevelWrapper targetWorld, File levelsFolder, File[] potentialFiles) {
+    public LevelToFileMatcher(ILevelWrapper targetWorld, File levelsFolder, File[] potentialFiles) {
         this.currentLevel = targetWorld;
-        this.world = DhWorld;
         this.potentialFiles = potentialFiles;
         this.levelsFolder = levelsFolder;
         if (potentialFiles.length == 0) {
             String newId = UUID.randomUUID().toString();
             LOGGER.info("No potential level files found. Creating a new sub dimension with ID {}...",
                     LodUtil.shortenString(newId, 8));
-            File folder = new File(levelsFolder, newId);
-            foundLevel = new DhClientServerLevel(world, folder, targetWorld);
+            foundLevel = new File(levelsFolder, newId);
         }
     }
 
     // May return null, where at this moment the level is not yet known
-    public DhClientServerLevel tryGetLevel() {
+    public File tryGetLevel() {
         tick();
         return foundLevel;
     }
@@ -74,8 +71,7 @@ public class LevelToFileMatcher implements AutoCloseable {
             try {
                 // attempt to get the file handler
                 File saveDir = attemptToDetermineSubDimensionFolder();
-                if (saveDir == null) return;
-                foundLevel = new DhClientServerLevel(world, saveDir, currentLevel);
+                if (saveDir != null) foundLevel = saveDir;
             } catch (IOException e) {
                 LOGGER.error("Unable to set the dimension file handler for level [" + currentLevel + "]. Error: ", e);
             } finally {

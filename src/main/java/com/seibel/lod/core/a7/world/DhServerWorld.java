@@ -1,17 +1,17 @@
 package com.seibel.lod.core.a7.world;
 
 import com.seibel.lod.core.a7.WorldEnvironment;
-import com.seibel.lod.core.a7.level.DhClientServerLevel;
+import com.seibel.lod.core.a7.level.DhServerLevel;
 import com.seibel.lod.core.a7.save.structure.LocalSaveStructure;
-import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.util.DetailDistanceUtil;
+import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
+import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 
 public class DhServerWorld extends DhWorld implements IServerWorld {
-    private final HashMap<ILevelWrapper, DhClientServerLevel> levels;
+    private final HashMap<ILevelWrapper, DhServerLevel> levels;
     public final LocalSaveStructure saveStructure;
 
     public DhServerWorld() {
@@ -21,18 +21,16 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
     }
 
     @Override
-    public DhClientServerLevel getOrLoadLevel(ILevelWrapper wrapper) {
-        if (!levels.containsKey(wrapper)) {
-            DhClientServerLevel level = saveStructure.tryGetLevel(wrapper);
-            if (level != null) {
-                levels.put(wrapper, level);
-            }
-            return level;
-        } else return levels.get(wrapper);
+    public DhServerLevel getOrLoadLevel(ILevelWrapper wrapper) {
+        return levels.computeIfAbsent(wrapper, (w) -> {
+            File levelFile = saveStructure.tryGetLevelFolder(wrapper);
+            LodUtil.assertTrue(levelFile != null);
+            return new DhServerLevel(saveStructure, w);
+        });
     }
 
     @Override
-    public DhClientServerLevel getLevel(ILevelWrapper wrapper) {
+    public DhServerLevel getLevel(ILevelWrapper wrapper) {
         return levels.get(wrapper);
     }
 
@@ -46,32 +44,22 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
     }
 
     public void tick() {
-        int newViewDistance = Config.Client.Graphics.Quality.lodChunkRenderDistance.get() * 16;
-        Iterator<DhClientServerLevel> iterator = levels.values().iterator();
-        while (iterator.hasNext()) {
-            DhClientServerLevel level = iterator.next();
-            if (level.viewDistance != newViewDistance) {
-                level.close();
-                iterator.remove();
-            }
-        }
-        DetailDistanceUtil.updateSettings();
+        levels.values().forEach(DhServerLevel::tick);
     }
 
     public void doWorldGen() {
+        levels.values().forEach(DhServerLevel::doWorldGen);
 
     }
 
     @Override
-    public void saveAndFlush() {
-        for (DhClientServerLevel level : levels.values()) {
-            level.saveFlush();
-        }
+    public CompletableFuture<Void> saveAndFlush() {
+        return CompletableFuture.allOf(levels.values().stream().map(DhServerLevel::save).toArray(CompletableFuture[]::new));
     }
 
     @Override
     public void close() {
-        for (DhClientServerLevel level : levels.values()) {
+        for (DhServerLevel level : levels.values()) {
             LOGGER.info("Unloading level for world " + level.level.getDimensionType().getDimensionName());
             level.close();
         }

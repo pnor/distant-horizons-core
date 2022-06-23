@@ -1,4 +1,4 @@
-package com.seibel.lod.core.a7.io;
+package com.seibel.lod.core.a7.save.io;
 
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EServerFolderNameMode;

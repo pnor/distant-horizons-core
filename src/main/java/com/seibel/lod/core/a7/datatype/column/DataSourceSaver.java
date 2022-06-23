@@ -3,7 +3,7 @@ package com.seibel.lod.core.a7.datatype.column;
 import com.seibel.lod.core.a7.data.DataFileHandler;
 import com.seibel.lod.core.a7.data.DataSourceLoader;
 import com.seibel.lod.core.a7.data.LodDataSource;
-import com.seibel.lod.core.a7.io.MetaFile;
+import com.seibel.lod.core.a7.save.io.MetaFile;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.level.DhClientServerLevel;
