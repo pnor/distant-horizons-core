@@ -1,8 +1,12 @@
 package com.seibel.lod.core.a7.datatype.full.accessor;
 
+import com.seibel.lod.core.a7.datatype.full.IdBiomeBlockStateMap;
+
 import java.util.Iterator;
 
 public interface IFullDataView {
+    IdBiomeBlockStateMap getMapping();
+
     SingleFullArrayView get(int index);
     SingleFullArrayView get(int x, int z);
     int width();

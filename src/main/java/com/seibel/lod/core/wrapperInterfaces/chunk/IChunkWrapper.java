@@ -23,6 +23,7 @@ import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
+import com.seibel.lod.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
 
 /**
@@ -99,4 +100,6 @@ public interface IChunkWrapper extends IBindable
 		
 		return hash;
 	}
+
+	IBlockStateWrapper getBlockState(int x, int y, int z);
 }

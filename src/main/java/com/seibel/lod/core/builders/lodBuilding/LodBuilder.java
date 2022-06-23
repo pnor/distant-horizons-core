@@ -215,7 +215,6 @@ public class LodBuilder
 		return chunk != null && chunk.isLightCorrect() && chunk.doesNearbyChunksExist();
 	}
 	
-	
 	private boolean writeAllLodNodeData(LodDimension lodDim, LodRegion region, int chunkX, int chunkZ,
 			long[] data, LodBuilderConfig config, boolean override)
 	{	

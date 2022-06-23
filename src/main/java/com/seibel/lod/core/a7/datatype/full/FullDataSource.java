@@ -1,5 +1,7 @@
 package com.seibel.lod.core.a7.datatype.full;
 
+import com.seibel.lod.core.a7.datatype.column.ColumnRenderSource;
+import com.seibel.lod.core.a7.datatype.full.accessor.FullArrayView;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.save.io.file.DataMetaFile;
 import com.seibel.lod.core.a7.datatype.LodDataSource;
@@ -12,11 +14,15 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class FullDataSource implements LodDataSource { // 1 chunk
-    private DhSectionPos sectionPos;
-    ArrayList<String> idMap;
-    protected FullDataSource() {
-        idMap = new ArrayList<String>();
+public class FullDataSource extends FullArrayView implements LodDataSource { // 1 chunk
+    public static final byte SECTION_SIZE_OFFSET = ColumnRenderSource.SECTION_SIZE_OFFSET;
+    public static final int SECTION_SIZE = 1 << SECTION_SIZE_OFFSET;
+    public static final byte LATEST_VERSION = 0;
+    private final DhSectionPos sectionPos;
+    private int localVersion = 0;
+    protected FullDataSource(DhSectionPos sectionPos) {
+        super(new IdBiomeBlockStateMap(), new long[SECTION_SIZE*SECTION_SIZE][0], SECTION_SIZE);
+        this.sectionPos = sectionPos;
     }
 
     @Override
@@ -26,36 +32,21 @@ public class FullDataSource implements LodDataSource { // 1 chunk
 
     @Override
     public byte getDataDetail() {
-        return 0;
+        return (byte) (sectionPos.sectionDetail-SECTION_SIZE_OFFSET);
     }
 
     @Override
     public void setLocalVersion(int localVer) {
-
+        localVersion = localVer;
     }
 
     @Override
     public byte getDataVersion() {
-        return 0;
+        return LATEST_VERSION;
     }
 
     @Override
     public void saveData(ILevel level, DataMetaFile file, OutputStream dataStream) throws IOException {
-
-    }
-
-    public static FullDataSource createNewFromChunk(IChunkWrapper chunk) {
-        FullDataSource dataContainer = new FullDataSource();
-        HashMap<String, Integer> idMap = new HashMap<String, Integer>();
-        
-        idMap.put(IdMappingUtil.BLOCKSTATE_ID_AIR, 0);
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                int y = chunk.getMaxY(x, z);
-                String currentBlockState = IdMappingUtil.BLOCKSTATE_ID_AIR;
-                // FIXME: Move LodBuilder code to here
-            }
-        }
-        return dataContainer;
+        //TODO
     }
 }
