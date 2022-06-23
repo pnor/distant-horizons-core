@@ -20,7 +20,7 @@
 package com.seibel.lod.core.a7.datatype.column;
 
 import com.seibel.lod.core.a7.datatype.column.accessor.ColumnArrayView;
-import com.seibel.lod.core.a7.datatype.column.accessor.ColumnDataView;
+import com.seibel.lod.core.a7.datatype.column.accessor.IColumnDataView;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.util.ColorUtil;
 
@@ -298,7 +298,7 @@ public class ColumnFormat
 	 * @param sourceData one or more columns of data
 	 * @param output one column of space for the result to be written to
 	 */
-	public static void mergeMultiData(ColumnDataView sourceData, ColumnArrayView output)
+	public static void mergeMultiData(IColumnDataView sourceData, ColumnArrayView output)
 	{
 		if (output.dataCount() != 1) throw new IllegalArgumentException("output must be only reserved for one datapoint!");
 		int inputVerticalSize = sourceData.verticalSize();

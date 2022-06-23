@@ -1,62 +1,49 @@
 package com.seibel.lod.core.a7.datatype.full;
 
-import com.seibel.lod.core.a7.level.ILevel;
-import com.seibel.lod.core.a7.save.io.file.DataMetaFile;
-import com.seibel.lod.core.a7.datatype.LodDataSource;
-import com.seibel.lod.core.a7.util.IdMappingUtil;
-import com.seibel.lod.core.a7.pos.DhSectionPos;
-import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
+// Static class for the data format:
+// ID: blockState id    Y: Height(signed)    DP: Depth(signed?)
+// =======Bit layout=======
+// __ __ __ __  __ __ __ __ <-- Top bits
+// YY YY YY YY  YY YY YY YY
+// YY YY YY YY  DP DP
+// DP DP DP DP  DP DP DP DP DP DP
+// ID ID ID ID  ID ID IO ID
+// ID ID ID ID  ID ID IO ID
+// ID ID ID ID  ID ID IO ID
+// ID ID ID ID  ID ID IO ID <-- Bottom bits
+//
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
+public class FullFormat {
 
-public class FullFormat implements LodDataSource { // 1 chunk
-    private DhSectionPos sectionPos;
-    ArrayList<String> idMap;
+    public static final int ID_WIDTH = 32;
+    public static final int DP_WIDTH = 12;
+    public static final int Y_WIDTH = 12;
+    public static final int ID_OFFSET = 0;
+    public static final int DP_OFFSET = ID_OFFSET + ID_WIDTH;
+    public static final int Y_OFFSET = DP_OFFSET + DP_WIDTH;
 
-    protected FullFormat() {
-        idMap = new ArrayList<String>();
+    public static final int ID_MASK = (int)Math.pow(2, ID_WIDTH) - 1;
+    public static final int DP_MASK = (int)Math.pow(2, DP_WIDTH) - 1;
+    public static final int Y_MASK = (int)Math.pow(2, Y_WIDTH) - 1;
+
+    public static long encode(int id, int depth, int y) {
+        long data = 0;
+        data |= id & ID_MASK;
+        data |= (long) (depth & DP_MASK) << DP_OFFSET;
+        data |= (long) (y & Y_MASK) << Y_OFFSET;
+        return data;
     }
 
-    @Override
-    public DhSectionPos getSectionPos() {
-        return sectionPos;
+    public static int getId(long data) {
+        return (int) (data & ID_MASK);
     }
 
-    @Override
-    public byte getDataDetail() {
-        return 0;
+    public static int getDepth(long data) {
+        return (int) (data << (64 - DP_OFFSET - DP_WIDTH) >> DP_OFFSET);
     }
 
-    @Override
-    public void setLocalVersion(int localVer) {
-
+    public static int getY(long data) {
+        return (int) (data << (64 - Y_OFFSET - Y_WIDTH) >> Y_OFFSET);
     }
 
-    @Override
-    public byte getDataVersion() {
-        return 0;
-    }
-
-    @Override
-    public void saveData(ILevel level, DataMetaFile file, OutputStream dataStream) throws IOException {
-
-    }
-
-    public static FullFormat createNewFromChunk(IChunkWrapper chunk) {
-        FullFormat dataContainer = new FullFormat();
-        HashMap<String, Integer> idMap = new HashMap<String, Integer>();
-        
-        idMap.put(IdMappingUtil.BLOCKSTATE_ID_AIR, 0);
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                int y = chunk.getMaxY(x, z);
-                String currentBlockState = IdMappingUtil.BLOCKSTATE_ID_AIR;
-                // FIXME: Move LodBuilder code to here
-            }
-        }
-        return dataContainer;
-    }
 }

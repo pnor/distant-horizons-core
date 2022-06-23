@@ -2,7 +2,7 @@ package com.seibel.lod.core.a7.save.io.file;
 
 import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.a7.datatype.LodDataSource;
-import com.seibel.lod.core.a7.datatype.full.Data;
+import com.seibel.lod.core.a7.datatype.full.FullFormat;
 import com.seibel.lod.core.a7.level.IServerLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
@@ -110,7 +110,7 @@ public class LocalDataFileHandler implements IDataSourceProvider {
     * This call is concurrent. I.e. it supports multiple threads calling this method at the same time.
      */
     @Override
-    public void write(DhSectionPos sectionPos, Data chunkData) {
+    public void write(DhSectionPos sectionPos, FullFormat chunkData) {
         DataMetaFile metaFile = files.get(sectionPos);
         if (metaFile != null) { // Fast path: if there is a file for this section, just write to it.
             metaFile.addToWriteQueue(chunkData);

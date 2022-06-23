@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.seibel.lod.core.a7.datatype.LodDataSource;
 import com.seibel.lod.core.a7.datatype.DataSourceLoader;
-import com.seibel.lod.core.a7.datatype.full.Data;
+import com.seibel.lod.core.a7.datatype.full.FullFormat;
 import com.seibel.lod.core.a7.save.io.MetaFile;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
@@ -36,13 +36,13 @@ public class DataMetaFile extends MetaFile {
 	//TODO: use ConcurrentAppendSingleSwapContainer<LodDataSource> instead of below:
 	private static class GuardedMultiAppendQueue {
 		ReentrantReadWriteLock appendLock = new ReentrantReadWriteLock();
-		ConcurrentLinkedQueue<Data> queue = new ConcurrentLinkedQueue<>();
+		ConcurrentLinkedQueue<FullFormat> queue = new ConcurrentLinkedQueue<>();
 	}
 	AtomicReference<GuardedMultiAppendQueue> writeQueue =
 			new AtomicReference<>(new GuardedMultiAppendQueue());
 	GuardedMultiAppendQueue _backQueue = new GuardedMultiAppendQueue();
 
-	public void addToWriteQueue(Data datatype) {
+	public void addToWriteQueue(FullFormat datatype) {
 		GuardedMultiAppendQueue queue = writeQueue.get();
 		// Using read lock is OK, because the queue's underlying data structure is thread-safe.
 		// This lock is only used to insure on polling the queue, that the queue is not being

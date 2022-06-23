@@ -1,7 +1,7 @@
 package com.seibel.lod.core.a7.save.io.render;
 
 import com.seibel.lod.core.a7.datatype.RenderSourceLoader;
-import com.seibel.lod.core.a7.datatype.full.Data;
+import com.seibel.lod.core.a7.datatype.full.FullFormat;
 import com.seibel.lod.core.a7.save.io.file.IDataSourceProvider;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
@@ -36,7 +36,7 @@ public class RenderFileHandler implements IRenderSourceProvider {
     }
 
     @Override
-    public void write(DhSectionPos sectionPos, Data chunkData) {
+    public void write(DhSectionPos sectionPos, FullFormat chunkData) {
 
     }
 

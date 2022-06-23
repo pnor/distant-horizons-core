@@ -2,7 +2,7 @@ package com.seibel.lod.core.a7.datatype.column.accessor;
 
 import java.util.Iterator;
 
-public interface ColumnDataView {
+public interface IColumnDataView {
     long get(int index);
 
     int size();
@@ -27,7 +27,8 @@ public interface ColumnDataView {
 
     int dataCount();
 
-    ColumnDataView subView(int dataIndexStart, int dataCount);
+    IColumnDataView subView(int dataIndexStart, int dataCount);
 
+    @Deprecated //This is unsafe for quadViews. And its a mess for multi-columns!
     void copyTo(long[] target, int offset);
 }

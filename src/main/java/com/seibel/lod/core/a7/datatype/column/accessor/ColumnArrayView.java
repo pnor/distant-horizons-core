@@ -5,7 +5,7 @@ import com.seibel.lod.core.a7.datatype.column.ColumnFormat;
 
 import java.util.Arrays;
 
-public final class ColumnArrayView implements ColumnDataView {
+public final class ColumnArrayView implements IColumnDataView {
     private final long[] data;
     private final int size; // size in longs
     private final int offset; // offset in longs
@@ -47,7 +47,7 @@ public final class ColumnArrayView implements ColumnDataView {
         Arrays.fill(data, offset, offset + size, value);
     }
 
-    public void copyFrom(ColumnDataView source, int outputDataIndexOffset) {
+    public void copyFrom(IColumnDataView source, int outputDataIndexOffset) {
         if (source.verticalSize() > vertSize) throw new IllegalArgumentException("source verticalSize must be <= self's verticalSize to copy");
         if (source.dataCount() + outputDataIndexOffset > dataCount()) throw new IllegalArgumentException("dataIndexStart + source.dataCount() must be <= self.dataCount() to copy");
         if (source.verticalSize() != vertSize) {
@@ -61,7 +61,7 @@ public final class ColumnArrayView implements ColumnDataView {
             source.copyTo(data, offset + outputDataIndexOffset * vertSize);
         }
     }
-    public void copyFrom(ColumnDataView source) {
+    public void copyFrom(IColumnDataView source) {
         copyFrom(source, 0);
     }
 
@@ -94,7 +94,7 @@ public final class ColumnArrayView implements ColumnDataView {
         return anyChange;
     }
 
-    public void changeVerticalSizeFrom(ColumnDataView source) {
+    public void changeVerticalSizeFrom(IColumnDataView source) {
         if (dataCount() != source.dataCount()) {
             throw new IllegalArgumentException("Cannot copy and resize to views with different dataCounts");
         }
@@ -107,7 +107,7 @@ public final class ColumnArrayView implements ColumnDataView {
         }
     }
 
-    public void mergeMultiDataFrom(ColumnDataView source) {
+    public void mergeMultiDataFrom(IColumnDataView source) {
         if (dataCount() != 1) {
             throw new IllegalArgumentException("output dataCount must be 1");
         }

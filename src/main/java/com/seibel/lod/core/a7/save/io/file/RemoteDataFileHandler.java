@@ -1,7 +1,7 @@
 package com.seibel.lod.core.a7.save.io.file;
 
 import com.seibel.lod.core.a7.datatype.LodDataSource;
-import com.seibel.lod.core.a7.datatype.full.Data;
+import com.seibel.lod.core.a7.datatype.full.FullFormat;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 
 import java.io.File;
@@ -20,7 +20,7 @@ public class RemoteDataFileHandler implements IDataSourceProvider {
     }
 
     @Override
-    public void write(DhSectionPos sectionPos, Data chunkData) {
+    public void write(DhSectionPos sectionPos, FullFormat chunkData) {
 
     }
 
