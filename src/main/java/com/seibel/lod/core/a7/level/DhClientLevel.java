@@ -1,7 +1,7 @@
 package com.seibel.lod.core.a7.level;
 
-import com.seibel.lod.core.a7.LodQuadTree;
-import com.seibel.lod.core.a7.save.io.FileScanner;
+import com.seibel.lod.core.a7.render.LodQuadTree;
+import com.seibel.lod.core.a7.util.FileScanner;
 import com.seibel.lod.core.a7.save.io.file.RemoteDataFileHandler;
 import com.seibel.lod.core.a7.save.io.render.RenderFileHandler;
 import com.seibel.lod.core.a7.pos.DhBlockPos2D;
@@ -15,7 +15,6 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 
-import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 
 public class DhClientLevel implements IClientLevel {
@@ -50,23 +49,11 @@ public class DhClientLevel implements IClientLevel {
     }
 
     @Override
-    public void startRenderer() {
-        //TODO
-
-    }
-
-    @Override
     public void render(Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks, IProfilerWrapper profiler) {
         if (renderer == null) {
             renderer = new a7LodRenderer(this);
         }
         renderer.drawLODs(mcModelViewMatrix, mcProjectionMatrix, partialTicks, profiler);
-    }
-
-    @Override
-    public void stopRenderer() {
-        //TODO
-
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 
-import com.seibel.lod.core.a7.data.DataSourceLoader;
+import com.seibel.lod.core.a7.datatype.DataSourceLoader;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.util.LodUtil;
 
@@ -49,7 +49,7 @@ public class MetaFile {
     //Loader stuff
     public DataSourceLoader loader;
     public Class<?> dataType;
-    public byte loaderVersion;
+    public byte dataVersion;
 
     // Load a metaFile in this path. It also automatically read the metadata.
     protected MetaFile(File path) throws IOException {
@@ -80,7 +80,7 @@ public class MetaFile {
                 throw new IOException("Invalid file: Data type loader not found: " + dataTypeId + "(v" + loaderVersion + ")");
             }
             this.dataType = loader.clazz;
-            this.loaderVersion = loaderVersion;
+            this.dataVersion = loaderVersion;
         }
     }
 
@@ -128,7 +128,7 @@ public class MetaFile {
                 throw new IOException("Invalid file: Data type loader not found: " + dataTypeId + "(v" + loaderVersion + ")");
             }
             this.dataType = loader.clazz;
-            this.loaderVersion = loaderVersion;
+            this.dataVersion = loaderVersion;
         }
     }
 
@@ -159,7 +159,7 @@ public class MetaFile {
                 buff.putInt(checksum);
                 buff.put(pos.sectionDetail);
                 buff.put(dataLevel);
-                buff.put(loaderVersion);
+                buff.put(dataVersion);
                 buff.put(Byte.MIN_VALUE); // Unused
                 buff.putLong(loader.datatypeId);
                 buff.putLong(timestamp);

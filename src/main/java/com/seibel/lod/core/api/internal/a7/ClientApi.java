@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.api.internal.a7;
 
+import com.seibel.lod.core.a7.level.IClientLevel;
+import com.seibel.lod.core.a7.world.*;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.EDebugMode;
@@ -28,7 +30,6 @@ import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
 import com.seibel.lod.core.logging.SpamReducedLogger;
 import com.seibel.lod.core.a7.level.DhClientServerLevel;
-import com.seibel.lod.core.a7.world.DhWorld;
 import com.seibel.lod.core.a7.Server;
 import com.seibel.lod.core.objects.math.Mat4f;
 import com.seibel.lod.core.render.GLProxy;
@@ -38,6 +39,7 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IProfilerWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
+import net.fabricmc.api.Environment;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,12 +82,6 @@ public class ClientApi
 			}
 		}
 	}
-	
-	/**
-	 * there is some setup that should only happen once,
-	 * once this is true that setup has completed
-	 */
-	private boolean firstTimeSetupComplete = false;
 	private boolean configOverrideReminderPrinted = false;
 	public boolean rendererDisabledBecauseOfExceptions = false;
 	private ClientApi()
@@ -114,41 +110,45 @@ public class ClientApi
 		if (MC != null) MC.sendChatMessage(prefix + str);
 	}
 
-	public void clientServerConnected() {
-		SharedApi.currentServer = new Server(false);
-		SharedApi.currentWorld = new DhWorld(enviroment);
+	public void onClientOnlyConnected() {
+		SharedApi.currentWorld = new DhClientWorld();
 	}
-	public void clientServerDisconnected() {
+	public void onClientOnlyDisconnected() {
 		SharedApi.currentWorld.close();
 		SharedApi.currentWorld = null;
-		SharedApi.currentServer = null;
 	}
 	
-	public void clientChunkLoadEvent(IChunkWrapper chunk, ILevelWrapper world)
+	public void clientChunkLoadEvent(IChunkWrapper chunk, ILevelWrapper level)
 	{
-		//TODO: Implement
-	}
-	public void clientChunkSaveEvent(IChunkWrapper chunk, ILevelWrapper world)
-	{
-		//TODO: Implement
-	}
-
-	public void clientLevelUnloadEvent(ILevelWrapper world)
-	{
-		if (SharedApi.currentWorld != null) {
-			SharedApi.currentWorld.unloadLevel(world);
+		if (SharedApi.getEnvironment() == WorldEnvironment.Client_Only) {
+			//TODO: Implement
 		}
 	}
-	public void clientLevelLoadEvent(ILevelWrapper world)
+	public void clientChunkSaveEvent(IChunkWrapper chunk, ILevelWrapper level)
 	{
-		//TODO: Maybe make DHLevel init no longer depend on needing player entity in single player
-		if (SharedApi.currentWorld != null) {
-			SharedApi.currentWorld.getOrLoadLevel(world);
+		if (SharedApi.getEnvironment() == WorldEnvironment.Client_Only) {
+			//TODO: Implement
+		}
+	}
+
+	public void clientLevelUnloadEvent(ILevelWrapper level)
+	{
+		if (SharedApi.currentWorld instanceof DhClientServerWorld) {
+			((DhClientServerWorld)SharedApi.currentWorld).disableRendering(level);
+		} else if (SharedApi.getEnvironment() == WorldEnvironment.Client_Only) {
+			SharedApi.currentWorld.unloadLevel(level);
+		}
+	}
+	public void clientLevelLoadEvent(ILevelWrapper level)
+	{
+		if (SharedApi.currentWorld instanceof DhClientServerWorld) {
+			((DhClientServerWorld)SharedApi.currentWorld).enableRendering(level);
+		} else if (SharedApi.getEnvironment() == WorldEnvironment.Client_Only) {
+			SharedApi.currentWorld.getOrLoadLevel(level); //TODO: This may need to be delayed to after player enters the level
 		}
 	}
 
 	private long lastFlush = 0;
-
 
 	public void rendererShutdownEvent() {
 		IProfilerWrapper profiler = MC.getProfiler();
@@ -176,15 +176,8 @@ public class ClientApi
 		ConfigBasedLogger.updateAll();
 		ConfigBasedSpamLogger.updateAll(doFlush);
 
-		if (SharedApi.currentWorld != null) {
-			if (ModInfo.IS_DEV_BUILD) {
-				// config overrides should only be used in the developer builds
-				applyDeveloperConfigOverrides();
-			}
-			if (SharedApi.currentServer == null) {
-				// In single player. Do client-side ticking system.
-				SharedApi.currentWorld.asyncTick();
-			}
+		if (SharedApi.currentWorld instanceof IClientWorld) {
+			((IClientWorld) SharedApi.currentWorld).clientTick();
 		}
 		profiler.pop();
 	}
@@ -199,16 +192,11 @@ public class ClientApi
 			if (world == null) return;
 			DhWorld DhWorld = SharedApi.currentWorld;
 			if (DhWorld == null) return;
-			DhClientServerLevel level = (SharedApi.currentServer == null) ? DhWorld.getOrLoadLevel(world) : DhWorld.getLevel(world);
-			if (level == null) return;
+			if (!(SharedApi.currentWorld instanceof IClientWorld)) return;
+			IClientLevel level = (IClientLevel)SharedApi.currentWorld;
 
 			if (prefLoggerEnabled) {
 				level.dumpRamUsage();
-			}
-
-			if (SharedApi.currentServer == null) {
-				// In multiplayer, without access to the server-side stuff. So we need to do some extra work.
-				level.asyncTick();
 			}
 
 			if (Config.Client.Advanced.Debugging.rendererType.get() == ERendererType.DEFAULT) {

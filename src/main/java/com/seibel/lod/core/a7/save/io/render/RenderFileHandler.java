@@ -1,11 +1,11 @@
 package com.seibel.lod.core.a7.save.io.render;
 
-import com.seibel.lod.core.a7.datatype.full.FullDatatype;
-import com.seibel.lod.core.a7.save.io.file.DataSourceProvider;
+import com.seibel.lod.core.a7.datatype.RenderSourceLoader;
+import com.seibel.lod.core.a7.datatype.full.Data;
+import com.seibel.lod.core.a7.save.io.file.IDataSourceProvider;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.render.RenderDataSource;
-import com.seibel.lod.core.a7.render.RenderDataSourceLoader;
+import com.seibel.lod.core.a7.datatype.LodRenderSource;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -14,19 +14,19 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-public class RenderFileHandler implements RenderSourceProvider {
+public class RenderFileHandler implements IRenderSourceProvider {
     final File renderCacheFolder;
-    final DataSourceProvider dataSourceProvider;
+    final IDataSourceProvider dataSourceProvider;
     ExecutorService renderCacheThread = LodUtil.makeSingleThreadPool("RenderCacheThread");
     Logger logger = DhLoggerBuilder.getLogger("RenderCache");
 
-    public RenderFileHandler(DataSourceProvider sourceProvider, File renderCacheFolder) {
+    public RenderFileHandler(IDataSourceProvider sourceProvider, File renderCacheFolder) {
         this.dataSourceProvider = sourceProvider;
         this.renderCacheFolder = renderCacheFolder;
     }
 
     @Override
-    public CompletableFuture<RenderDataSource> createRenderData(RenderDataSourceLoader renderSourceLoader, DhSectionPos pos) {
+    public CompletableFuture<LodRenderSource> createRenderData(RenderSourceLoader renderSourceLoader, DhSectionPos pos) {
         return null;
     }
 
@@ -36,7 +36,7 @@ public class RenderFileHandler implements RenderSourceProvider {
     }
 
     @Override
-    public void write(DhSectionPos sectionPos, FullDatatype chunkData) {
+    public void write(DhSectionPos sectionPos, Data chunkData) {
 
     }
 

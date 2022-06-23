@@ -1,8 +1,8 @@
 package com.seibel.lod.core.a7.save.io.file;
 
 import com.google.common.collect.HashMultimap;
-import com.seibel.lod.core.a7.data.LodDataSource;
-import com.seibel.lod.core.a7.datatype.full.FullDatatype;
+import com.seibel.lod.core.a7.datatype.LodDataSource;
+import com.seibel.lod.core.a7.datatype.full.Data;
 import com.seibel.lod.core.a7.level.IServerLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-public class LocalDataFileHandler implements DataSourceProvider {
+public class LocalDataFileHandler implements IDataSourceProvider {
     // Note: Single main thread only for now. May make it multi-thread later, depending on the usage.
 	ExecutorService fileReaderThread = LodUtil.makeSingleThreadPool("FileReaderThread");
     Logger logger = DhLoggerBuilder.getLogger("LocalDataFileHandler");
@@ -110,7 +110,7 @@ public class LocalDataFileHandler implements DataSourceProvider {
     * This call is concurrent. I.e. it supports multiple threads calling this method at the same time.
      */
     @Override
-    public void write(DhSectionPos sectionPos, FullDatatype chunkData) {
+    public void write(DhSectionPos sectionPos, Data chunkData) {
         DataMetaFile metaFile = files.get(sectionPos);
         if (metaFile != null) { // Fast path: if there is a file for this section, just write to it.
             metaFile.addToWriteQueue(chunkData);

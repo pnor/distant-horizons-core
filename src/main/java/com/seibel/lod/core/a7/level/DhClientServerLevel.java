@@ -1,7 +1,7 @@
 package com.seibel.lod.core.a7.level;
 
-import com.seibel.lod.core.a7.LodQuadTree;
-import com.seibel.lod.core.a7.save.io.FileScanner;
+import com.seibel.lod.core.a7.render.LodQuadTree;
+import com.seibel.lod.core.a7.util.FileScanner;
 import com.seibel.lod.core.a7.save.io.file.LocalDataFileHandler;
 import com.seibel.lod.core.a7.save.io.render.RenderFileHandler;
 import com.seibel.lod.core.a7.pos.DhBlockPos2D;
@@ -38,12 +38,14 @@ public class DhClientServerLevel implements IClientLevel, IServerLevel {
         FileScanner.scanFile(save, level, dataFileHandler, renderFileHandler);
     }
 
-    public void tick() {
+    public void clientTick() {
         tree.tick(new DhBlockPos2D(MC_CLIENT.getPlayerBlockPos()));
         renderBufferHandler.update();
     }
 
-    @Override
+    public void serverTick() {
+        //TODO Update network packet and stuff or state or etc..
+    }
     public void startRenderer() {
         //TODO
     }
@@ -56,7 +58,6 @@ public class DhClientServerLevel implements IClientLevel, IServerLevel {
         renderer.drawLODs(mcModelViewMatrix, mcProjectionMatrix, partialTicks, profiler);
     }
 
-    @Override
     public void stopRenderer() {
         renderFileHandler.flushAndSave(); //Ignore the completion feature so that this action is async
         //TODO

@@ -19,6 +19,9 @@
 
 package com.seibel.lod.core.api.internal.a7;
 
+import com.seibel.lod.core.a7.world.DhClientServerWorld;
+import com.seibel.lod.core.a7.world.DhServerWorld;
+import com.seibel.lod.core.a7.world.IServerWorld;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.a7.world.DhWorld;
@@ -44,8 +47,6 @@ public class ServerApi
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
 	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
 
-	private boolean isCurrentlyOnSinglePlayerServer = false;
-
 	private ServerApi()
 	{
 	}
@@ -57,51 +58,51 @@ public class ServerApi
 	private int lastWorldGenTickDelta = 0;
 	public void serverTickEvent()
 	{
-		lastWorldGenTickDelta--;
-		if (SharedApi.currentWorld != null && lastWorldGenTickDelta <= 0) {
-			lastWorldGenTickDelta = 20;
-			DhWorld DhWorld = SharedApi.currentWorld;
-			DhWorld.tick();
+		if (SharedApi.currentWorld instanceof IServerWorld) {
+			IServerWorld serverWorld = (IServerWorld) SharedApi.currentWorld;
+			serverWorld.serverTick();
+			lastWorldGenTickDelta--;
+			if (lastWorldGenTickDelta <= 0) {
+				serverWorld.doWorldGen();
+				lastWorldGenTickDelta = 20;
+			}
 		}
 	}
 
 	//TODO: rename to serverLoadEvent
-	public void serverWorldLoadEvent() {
-		SharedApi.currentServer = new Server(!SharedApi.inDedicatedEnvironment);
-		SharedApi.currentWorld = new DhWorld(enviroment);
-		//TODO: Setup the network handler
+	public void serverWorldLoadEvent(boolean isDedicatedEnvironment) {
+		if (isDedicatedEnvironment) {
+			SharedApi.currentWorld = new DhServerWorld();
+		} else {
+			SharedApi.currentWorld = new DhClientServerWorld();
+		}
 	}
 
 	//TODO: rename to serverUnloadEvent
 	public void serverWorldUnloadEvent() {
-		//TODO: Close the network handler
 		SharedApi.currentWorld.close();
 		SharedApi.currentWorld = null;
-		SharedApi.currentServer = null;
 	}
 
 	public void serverLevelLoadEvent(ILevelWrapper world) {
-		//TODO: Maybe make DHLevel init no longer depend on needing player entity in single player
-		if (SharedApi.currentServer.isSinglePlayer) return;
-		SharedApi.currentWorld.getOrLoadLevel(world);
+		if (SharedApi.currentWorld instanceof IServerWorld)
+			SharedApi.currentWorld.getOrLoadLevel(world);
 	}
 	public void serverLevelUnloadEvent(ILevelWrapper world) {
-		SharedApi.currentWorld.unloadLevel(world);
+		if (SharedApi.currentWorld instanceof IServerWorld)
+			SharedApi.currentWorld.unloadLevel(world);
 	}
 
 	@Deprecated
 	public void serverSaveEvent() {
-		SharedApi.currentWorld.save();
-	}
-
-
-	
-	public void chunkSaveEvent(IChunkWrapper chunk, ILevelWrapper world) {
-		//TODO
+		if (SharedApi.currentWorld instanceof IServerWorld)
+			SharedApi.currentWorld.saveAndFlush();
 	}
 
 	public void serverChunkLoadEvent(IChunkWrapper chunk, ILevelWrapper world) {
+		//TODO
 	}
 	public void serverChunkSaveEvent(IChunkWrapper chunk, ILevelWrapper world) {
+		//TODO
 	}
 }

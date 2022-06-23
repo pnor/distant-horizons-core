@@ -1,6 +1,5 @@
 package com.seibel.lod.core.a7.world;
 
-import com.seibel.lod.core.a7.WorldEnvironment;
 import com.seibel.lod.core.a7.level.DhServerLevel;
 import com.seibel.lod.core.a7.save.structure.LocalSaveStructure;
 import com.seibel.lod.core.util.LodUtil;
@@ -43,8 +42,8 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
         }
     }
 
-    public void tick() {
-        levels.values().forEach(DhServerLevel::tick);
+    public void serverTick() {
+        levels.values().forEach(DhServerLevel::serverTick);
     }
 
     public void doWorldGen() {

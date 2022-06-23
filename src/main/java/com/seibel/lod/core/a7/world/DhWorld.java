@@ -1,7 +1,5 @@
 package com.seibel.lod.core.a7.world;
 
-import com.seibel.lod.core.a7.WorldEnvironment;
-import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
@@ -24,4 +22,7 @@ public abstract class DhWorld implements Closeable {
 
     public abstract void unloadLevel(ILevelWrapper wrapper);
     public abstract CompletableFuture<Void> saveAndFlush();
+
+    @Override
+    public abstract void close();
 }

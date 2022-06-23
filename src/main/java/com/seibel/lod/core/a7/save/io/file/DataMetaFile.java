@@ -9,17 +9,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.BiConsumer;
 
-import com.seibel.lod.core.a7.data.DataSourceLoader;
-import com.seibel.lod.core.a7.data.LodDataSource;
-import com.seibel.lod.core.a7.datatype.full.FullDatatype;
+import com.seibel.lod.core.a7.datatype.LodDataSource;
+import com.seibel.lod.core.a7.datatype.DataSourceLoader;
+import com.seibel.lod.core.a7.datatype.full.Data;
 import com.seibel.lod.core.a7.save.io.MetaFile;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.datatype.column.DataSourceSaver;
-import com.seibel.lod.core.a7.datatype.column.OldDataSourceLoader;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -39,13 +36,13 @@ public class DataMetaFile extends MetaFile {
 	//TODO: use ConcurrentAppendSingleSwapContainer<LodDataSource> instead of below:
 	private static class GuardedMultiAppendQueue {
 		ReentrantReadWriteLock appendLock = new ReentrantReadWriteLock();
-		ConcurrentLinkedQueue<FullDatatype> queue = new ConcurrentLinkedQueue<>();
+		ConcurrentLinkedQueue<Data> queue = new ConcurrentLinkedQueue<>();
 	}
 	AtomicReference<GuardedMultiAppendQueue> writeQueue =
 			new AtomicReference<>(new GuardedMultiAppendQueue());
 	GuardedMultiAppendQueue _backQueue = new GuardedMultiAppendQueue();
 
-	public void addToWriteQueue(FullDatatype datatype) {
+	public void addToWriteQueue(Data datatype) {
 		GuardedMultiAppendQueue queue = writeQueue.get();
 		// Using read lock is OK, because the queue's underlying data structure is thread-safe.
 		// This lock is only used to insure on polling the queue, that the queue is not being
@@ -205,25 +202,18 @@ public class DataMetaFile extends MetaFile {
 	}
 
 	private void write(LodDataSource data) {
-		DataSourceSaver saver;
-		if (loader instanceof DataSourceSaver) saver = (DataSourceSaver) loader;
-		else if (loader instanceof OldDataSourceLoader) saver = ((OldDataSourceLoader) loader).getNewSaver();
-		else saver = null;
-		if (saver == null) return;
-
-		BiConsumer<MetaFile, OutputStream> dataWriter = (meta, out) -> {
-			meta.dataLevel = data.getDataDetail();
-			meta.dataType = DataSourceLoader.datatypeIdRegistry.get(saver.datatypeId);
-			meta.loader = saver;
-			meta.loaderVersion = saver.getSaverVersion();
-			try {
-				saver.saveData(level, data, this, out);
-			} catch (IOException e) {
-				LOGGER.error("Failed to save data for file {}", path, e);
-			}
-		};
 		try {
-			super.writeData(dataWriter);
+			super.writeData((meta, out) -> {
+				meta.dataLevel = data.getDataDetail();
+				meta.dataType = data.getClass();
+				meta.loader = DataSourceLoader.getLoader(data.getClass(), data.getDataVersion());
+				meta.dataVersion = data.getDataVersion();
+				try {
+					data.saveData(level, this, out);
+				} catch (IOException e) {
+					LOGGER.error("Failed to save data for file {}", path, e);
+				}
+			});
 		} catch (IOException e) {
 			LOGGER.error("Failed to write data for file {}", path, e);
 		}
