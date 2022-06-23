@@ -21,6 +21,7 @@ package com.seibel.lod.core.objects;
 
 import java.util.Objects;
 
+import com.seibel.lod.core.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 
@@ -79,6 +80,10 @@ public class DHChunkPos {
     public int getMinBlockZ()
     {
         return z << 4;
+    }
+
+    public DhBlockPos2D getMinBlockPos() {
+        return new DhBlockPos2D(x<<4, z<<4);
     }
 
     @Deprecated

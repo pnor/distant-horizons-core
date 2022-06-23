@@ -49,7 +49,7 @@ public class FullArrayView implements IFullDataView {
     }
 
     @Override
-    public IFullDataView subView(int size, int ox, int oz) {
+    public FullArrayView subView(int size, int ox, int oz) {
         return new FullArrayView(this, size, ox, oz);
     }
 

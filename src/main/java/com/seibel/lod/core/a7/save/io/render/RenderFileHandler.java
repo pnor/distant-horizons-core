@@ -1,11 +1,9 @@
 package com.seibel.lod.core.a7.save.io.render;
 
-import com.seibel.lod.core.a7.datatype.RenderSourceLoader;
 import com.seibel.lod.core.a7.datatype.full.FullFormat;
 import com.seibel.lod.core.a7.save.io.file.IDataSourceProvider;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
-import com.seibel.lod.core.a7.datatype.LodRenderSource;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -23,11 +21,6 @@ public class RenderFileHandler implements IRenderSourceProvider {
     public RenderFileHandler(IDataSourceProvider sourceProvider, File renderCacheFolder) {
         this.dataSourceProvider = sourceProvider;
         this.renderCacheFolder = renderCacheFolder;
-    }
-
-    @Override
-    public CompletableFuture<LodRenderSource> createRenderData(RenderSourceLoader renderSourceLoader, DhSectionPos pos) {
-        return null;
     }
 
     @Override

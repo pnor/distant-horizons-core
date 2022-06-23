@@ -3,12 +3,15 @@ package com.seibel.lod.core.a7.datatype.full;
 import com.seibel.lod.core.a7.datatype.column.ColumnRenderSource;
 import com.seibel.lod.core.a7.datatype.full.accessor.FullArrayView;
 import com.seibel.lod.core.a7.level.ILevel;
+import com.seibel.lod.core.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.a7.save.io.file.DataMetaFile;
 import com.seibel.lod.core.a7.datatype.LodDataSource;
 import com.seibel.lod.core.a7.util.IdMappingUtil;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -46,7 +49,20 @@ public class FullDataSource extends FullArrayView implements LodDataSource { // 
     }
 
     @Override
+    public void update(DHChunkPos chunkPos, ChunkSizedData data) {
+        if (getDataDetail() == 0) {
+            DhBlockPos2D blockOffset = chunkPos.getMinBlockPos().subtract(sectionPos.getSectionBBoxPos().getCorner());
+            data.shadowCopyTo(this.subView(16, blockOffset.x, blockOffset.z));
+        } else {
+            //TODO;
+        }
+    }
+
+    @Override
     public void saveData(ILevel level, DataMetaFile file, OutputStream dataStream) throws IOException {
         //TODO
+        try (DataOutputStream dos = new DataOutputStream(dataStream)) {
+            dos.writeInt(size);
+        }
     }
 }

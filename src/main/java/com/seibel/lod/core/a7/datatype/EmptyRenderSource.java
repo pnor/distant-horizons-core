@@ -1,9 +1,11 @@
 package com.seibel.lod.core.a7.datatype;
 
+import com.seibel.lod.core.a7.datatype.full.ChunkSizedData;
 import com.seibel.lod.core.a7.level.IClientLevel;
 import com.seibel.lod.core.a7.render.LodQuadTree;
 import com.seibel.lod.core.a7.render.RenderBuffer;
 import com.seibel.lod.core.a7.save.io.render.RenderMetaFile;
+import com.seibel.lod.core.objects.DHChunkPos;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,5 +44,10 @@ public class EmptyRenderSource implements LodRenderSource {
     @Override
     public void saveRender(IClientLevel level, RenderMetaFile file, OutputStream dataStream) throws IOException {
         throw new UnsupportedOperationException("EmptyRenderSource should NEVER be saved!");
+    }
+
+    @Override
+    public void update(DHChunkPos chunkPos, ChunkSizedData chunkData) {
+
     }
 }

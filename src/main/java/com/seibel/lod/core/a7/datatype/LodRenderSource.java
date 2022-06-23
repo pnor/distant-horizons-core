@@ -1,5 +1,6 @@
 package com.seibel.lod.core.a7.datatype;
 
+import com.seibel.lod.core.a7.datatype.full.ChunkSizedData;
 import com.seibel.lod.core.a7.level.IClientLevel;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
@@ -7,6 +8,7 @@ import com.seibel.lod.core.a7.render.LodQuadTree;
 import com.seibel.lod.core.a7.render.RenderBuffer;
 import com.seibel.lod.core.a7.save.io.file.DataMetaFile;
 import com.seibel.lod.core.a7.save.io.render.RenderMetaFile;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.DHRegionPos;
 
 import java.io.IOException;
@@ -43,4 +45,5 @@ public interface LodRenderSource {
 
     void saveRender(IClientLevel level, RenderMetaFile file, OutputStream dataStream) throws IOException;
 
+    void update(DHChunkPos chunkPos, ChunkSizedData chunkData);
 }

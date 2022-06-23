@@ -4,11 +4,13 @@ import com.seibel.lod.core.a7.datatype.column.accessor.ColumnArrayView;
 import com.seibel.lod.core.a7.datatype.column.accessor.ColumnQuadView;
 import com.seibel.lod.core.a7.datatype.column.accessor.IColumnDatatype;
 import com.seibel.lod.core.a7.datatype.column.render.ColumnRenderBuffer;
+import com.seibel.lod.core.a7.datatype.full.ChunkSizedData;
 import com.seibel.lod.core.a7.level.IClientLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.render.RenderBuffer;
 import com.seibel.lod.core.a7.save.io.render.RenderMetaFile;
 import com.seibel.lod.core.enums.ELodDirection;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.render.LodQuadTree;
@@ -307,5 +309,10 @@ public class ColumnRenderSource implements LodRenderSource, IColumnDatatype {
         try (DataOutputStream dos = new DataOutputStream(dataStream)) {
             writeData(dos);
         }
+    }
+
+    @Override
+    public void update(DHChunkPos chunkPos, ChunkSizedData chunkData) {
+        //TODO Update render data directly
     }
 }
