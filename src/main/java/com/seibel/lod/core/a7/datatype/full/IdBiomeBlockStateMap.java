@@ -1,13 +1,19 @@
 package com.seibel.lod.core.a7.datatype.full;
 
+import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
 // WARNING: This is not THREAD-SAFE!
 public class IdBiomeBlockStateMap {
+    public static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
+
     public static final class Entry {
         public final IBiomeWrapper biome;
         public final IBlockStateWrapper blockState;
@@ -24,6 +30,18 @@ public class IdBiomeBlockStateMap {
             if (other == this) return true;
             if (!(other instanceof Entry)) return false;
             return ((Entry) other).biome.equals(biome) && ((Entry) other).blockState.equals(blockState);
+        }
+
+        public String serialize() {
+            return biome.serialize() + " " + blockState.serialize();
+        }
+
+        public static Entry deserialize(String str) throws IOException {
+            String[] strs = str.split(" ");
+            if (strs.length != 2) throw new IOException("Failed to deserialize BiomeBlockStateEntry");
+            IBiomeWrapper biome = FACTORY.deserializeBiomeWrapper(strs[0]);
+            IBlockStateWrapper blockState = FACTORY.deserializeBlockStateWrapper(strs[1]);
+            return new Entry(biome, blockState);
         }
     }
 

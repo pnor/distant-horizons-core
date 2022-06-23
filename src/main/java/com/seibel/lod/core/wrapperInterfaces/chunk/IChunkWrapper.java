@@ -41,10 +41,12 @@ public interface IChunkWrapper extends IBindable
 	int getHeightMapValue(int xRel, int zRel);
 	
 	IBiomeWrapper getBiome(int x, int y, int z);
-	
+
+	@Deprecated
 	IBlockDetailWrapper getBlockDetail(int x, int y, int z);
 
 	// Returns null if block doesn't exist. Note that this can cross chunk boundaries.
+	@Deprecated
 	IBlockDetailWrapper getBlockDetailAtFace(int x, int y, int z, ELodDirection dir);
 
 	@Deprecated

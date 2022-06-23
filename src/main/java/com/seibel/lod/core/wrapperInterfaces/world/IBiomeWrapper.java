@@ -37,5 +37,6 @@ public interface IBiomeWrapper extends IBindable
 	int getFolliageTint();
 	
 	int getWaterTint();
-	
+
+    String serialize();
 }
