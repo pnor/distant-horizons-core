@@ -19,6 +19,12 @@ public class IdBiomeBlockStateMap {
         public int hashCode() {
             return Objects.hash(biome, blockState);
         }
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) return true;
+            if (!(other instanceof Entry)) return false;
+            return ((Entry) other).biome.equals(biome) && ((Entry) other).blockState.equals(blockState);
+        }
     }
 
 
