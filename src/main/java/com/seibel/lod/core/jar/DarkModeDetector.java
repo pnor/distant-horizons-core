@@ -3,6 +3,8 @@ package com.seibel.lod.core.jar;
 import java.io.*;
 import java.util.regex.Pattern;
 
+import static com.seibel.lod.core.JarMain.getOperatingSystem;
+
 /**
  * A fork of iris'is dark mode detector (https://github.com/IrisShaders/Iris-Installer/blob/master/src/main/java/net/hypercubemc/iris_installer/DarkModeDetector.java)
  * Which is a fork of HanSolo's dark mode detector (https://gist.github.com/HanSolo/7cf10b86efff8ca2845bf5ec2dd0fe1d)
@@ -14,8 +16,6 @@ import java.util.regex.Pattern;
  * @author coolGi2007
  */
 public class DarkModeDetector {
-    public enum OperatingSystem {WINDOWS, MACOS, LINUX, SOLARIS, NONE}
-
     private static final String REGQUERY_UTIL = "reg query ";
     private static final String REGDWORD_TOKEN = "REG_DWORD";
     private static final String DARK_THEME_CMD = REGQUERY_UTIL + "\"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\"" + " /v AppsUseLightTheme";
@@ -28,7 +28,6 @@ public class DarkModeDetector {
                 return isMacOsDarkMode();
             case LINUX:
                 return checkLinuxDark();
-            case SOLARIS: // Idk anyone who uses solaris so we skip them
             default:
                 return false;
         }
@@ -63,7 +62,7 @@ public class DarkModeDetector {
     }
 
 
-    // On linux there are 2 popilar formats for theming
+    // On Linux there are 2 popular formats for theming
     // They are qt and gtk. We check the desktop environment and use that to pick which one to use (if none work then use GTK)
     public static boolean checkLinuxDark() {
         // Checks "/usr/bin" as "echo $XDG_CURRENT_DESKTOP" dosnt work in java and dosnt detect window managers
@@ -80,7 +79,7 @@ public class DarkModeDetector {
     }
 
     public static boolean GTKChecker() {
-        // Checks if the return to "gsettings get org.gnome.desktop.interface color-scheme" in terminal is 'prefer-dark' or contains thw word dark in it
+        // Checks if the return to "gsettings get org.gnome.desktop.interface color-scheme" in terminal is 'prefer-dark' or contains the word dark in it
         final Pattern darkThemeNamePattern = Pattern.compile(".*dark.*", Pattern.CASE_INSENSITIVE);
         return darkThemeNamePattern.matcher(query("gsettings get org.gnome.desktop.interface color-scheme")).matches();
     }
@@ -90,14 +89,14 @@ public class DarkModeDetector {
         // With that you grayscale the rgb and check if it is over/under 128
 
         // If there is a better way of doing this then please let me know
-        // This seems like the best way as qt dosnt have a preference and just stores pure color values
+        // This seems like the best way as qt dosnt have a dark/light preference and just stores pure color values
 
         try {
             File themeFile = new File(System.getProperty("user.home") + "/.config/Trolltech.conf");
 
             BufferedReader reader = new BufferedReader(new FileReader(themeFile));
             String themeLine = reader.readLine();
-            while (themeLine != null) { // Go trough each line till you find "KWinPalette\activeBackground"
+            while (themeLine != null) { // Go through each line till you find "KWinPalette\activeBackground"
                 if (themeLine.contains("KWinPalette\\activeBackground"))
                     break;
                 themeLine = reader.readLine();
@@ -117,46 +116,6 @@ public class DarkModeDetector {
     }
 
 
-
-
-    @Deprecated // I was going to do a check for each desktop before but decided to check the gtk and qt values instead
-    public static boolean XfceChecker() {
-        // Bit of a bad way of doing this but it checks "~/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml"
-        // Then it checks for line <property name="ThemeName" type="string" value="THEME_THINGY"/> and checks if that line includes the word dark
-
-
-        try { // Just wrap entire code in try/catch, fixes everything (TODO dont put everything in try/catch)
-            File themeFile = new File(System.getProperty("user.home") + "/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml");
-
-            BufferedReader reader = new BufferedReader(new FileReader(themeFile));
-            String themeLine = reader.readLine();
-            while (themeLine != null) { // Go trough each line till you find "KWinPalette\activeBackground"
-                if (themeLine.contains("name=\"ThemeName\""))
-                    break;
-                themeLine = reader.readLine();
-            }
-            reader.close();
-
-            return themeLine.toLowerCase().contains("dark");
-        } catch (Exception e) { e.printStackTrace(); return false;}
-    }
-
-
-
-    public static OperatingSystem getOperatingSystem() {
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            return OperatingSystem.WINDOWS;
-        } else if (os.contains("mac")) {
-            return OperatingSystem.MACOS;
-        } else if (os.contains("nix") || os.contains("nux")) {
-            return OperatingSystem.LINUX;
-        } else if (os.contains("sunos")) {
-            return OperatingSystem.SOLARIS;
-        } else {
-            return OperatingSystem.NONE;
-        }
-    }
 
     /** Runs a command trough command line */
     private static String query(String cmd) {
