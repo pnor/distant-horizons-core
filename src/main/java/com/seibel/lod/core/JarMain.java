@@ -2,6 +2,7 @@ package com.seibel.lod.core;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.jar.DarkModeDetector;
 import com.seibel.lod.core.jar.BaseJFrame;
@@ -9,6 +10,7 @@ import com.seibel.lod.core.jar.JarDependencySetup;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -38,26 +40,35 @@ public class JarMain {
         SingletonHandler.finishBinding();
         System.out.println("WARNING: The standalone jar still work in progress");
 
-        /*
-            To other devs
+        JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);
 
-            For now im just working on linux stuff (so i can use the linux file system when installing the mod)
-            once i got it working ill fix it for windows/mac
-         */
         if (!getOperatingSystem().equals(OperatingSystem.LINUX)) {
-            JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);
-            System.out.println("If you want the gui then please use linux for the time being.\nWindows and MacOS support will come later on");
-            return;
+            System.out.println("If you want the installer then please use linux for the time being.\nWindows and MacOS support will come later on");
         }
 
-        BaseJFrame frame = new BaseJFrame(false, false);
-        String[] optionsToChoose = {"Apple", "Orange", "Banana", "Pineapple", "None of the listed"};
+        BaseJFrame frame = new BaseJFrame(false, false).addExtraButtons();
+        String[] optionsToChoose = {"Apple", "Orange", "Banana", "Pineapple"};
         JComboBox<String> jTest = new JComboBox<>(optionsToChoose);
-        jTest.setBounds(80, 50, 140, 20);
+        jTest.setBounds(400, 250, 140, 20);
         frame.add(jTest);
+        jTest.addActionListener(e -> { System.out.println("test"); });
+
+        int logoHeight = 200;
+        int logoWidth = (int) ((double) logoHeight *2.21);
+        JPanel pane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                try {
+                    g.drawImage(ImageIO.read(JarMain.accessFile("logo.png")), (frame.getWidth()/2)-(logoWidth/2), 0,   logoWidth, logoHeight,this);
+                } catch (Exception e) {e.printStackTrace();}
+            }
+        };
+        pane.setBounds(0, 0, pane.getWidth(), pane.getHeight());
+
+        frame.add(pane);
 
 
-        frame.setLayout(null); // Remove the default layout
 
         frame.validate(); // Update to add the widgets
         frame.setVisible(true); // Start the ui
@@ -75,18 +86,18 @@ public class JarMain {
         } else if (os.contains("nix") || os.contains("nux")) {
             return OperatingSystem.LINUX;
         } else {
-            return OperatingSystem.NONE;
+            return OperatingSystem.NONE; // If you are the 0.00001% who don't use one of these 3 os's then you get light theme
         }
     }
 
     /** Get a file within the mods resources */
     public static InputStream accessFile(String resource) {
-
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         // this is the path within the jar file
-        InputStream input = JarMain.class.getResourceAsStream("/resources/" + resource);
+        InputStream input = loader.getResourceAsStream("/resources/" + resource);
         if (input == null) {
             // this is how we load file within editor (eg eclipse)
-            input = JarMain.class.getClassLoader().getResourceAsStream(resource);
+            input = loader.getResourceAsStream(resource);
         }
 
         return input;
