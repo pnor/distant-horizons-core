@@ -15,19 +15,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Example on how to register a loader:
- * <pre>
-     public static RenderDataSource testAndConstruct(LodDataSource dataSource, DhSectionPos sectionPos) {
-        ColumnRenderContainer container = new ColumnRenderContainer(10, -100);
-        container.startFillData(dataSource);
-        return container;
-     }
-     static {
-        RenderDataSource.registorLoader(ColumnRenderContainer::testAndConstruct, 0);
-     }
- </pre>
- */
 public interface LodRenderSource {
     void enableRender(LodQuadTree quadTree);
     void disableRender();
@@ -45,5 +32,7 @@ public interface LodRenderSource {
 
     void saveRender(IClientLevel level, RenderMetaFile file, OutputStream dataStream) throws IOException;
 
-    void update(DHChunkPos chunkPos, ChunkSizedData chunkData);
+    void update(ChunkSizedData chunkData);
+
+    byte getRenderVersion();
 }

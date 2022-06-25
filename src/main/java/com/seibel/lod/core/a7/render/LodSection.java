@@ -44,7 +44,7 @@ public class LodSection {
 
     public void load(IRenderSourceProvider renderDataProvider, RenderSourceLoader renderDataSourceClass) {
         if (loadFuture != null || lodRenderSource != null) throw new IllegalStateException("Reloading is not supported!");
-        loadFuture = renderDataProvider.createRenderData(renderDataSourceClass, pos);
+        loadFuture = renderDataProvider.read(pos);
     }
 
     public void tick(LodQuadTree quadTree) {

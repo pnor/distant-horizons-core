@@ -2,10 +2,12 @@ package com.seibel.lod.core.a7.save.io.file;
 
 import com.google.common.collect.HashMultimap;
 import com.seibel.lod.core.a7.datatype.LodDataSource;
+import com.seibel.lod.core.a7.datatype.full.ChunkSizedData;
 import com.seibel.lod.core.a7.datatype.full.FullFormat;
 import com.seibel.lod.core.a7.level.IServerLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.util.LodUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -21,15 +23,13 @@ import java.util.concurrent.ExecutorService;
 
 public class LocalDataFileHandler implements IDataSourceProvider {
     // Note: Single main thread only for now. May make it multi-thread later, depending on the usage.
-	ExecutorService fileReaderThread = LodUtil.makeSingleThreadPool("FileReaderThread");
-    Logger logger = DhLoggerBuilder.getLogger("LocalDataFileHandler");
-
-    ConcurrentHashMap<DhSectionPos, DataMetaFile> files = new ConcurrentHashMap<>();
-
-    boolean isScanned = false;
-
-    File saveDir;
+    private static final Logger LOGGER = DhLoggerBuilder.getLogger();
+    final ExecutorService fileReaderThread = LodUtil.makeSingleThreadPool("FileReaderThread");
+    final ConcurrentHashMap<DhSectionPos, DataMetaFile> files = new ConcurrentHashMap<>();
     final IServerLevel level;
+    final File saveDir;
+
+
     public LocalDataFileHandler(IServerLevel level, File saveRootDir) {
         this.saveDir = saveRootDir;
         this.level = level;
@@ -73,7 +73,7 @@ public class LocalDataFileHandler implements IDataSourceProvider {
                     sb.append(fileToUse.path);
                     sb.append("\n");
                     sb.append("(Other files will be renamed by appending \".old\" to their name.)");
-                    logger.warn(sb.toString());
+                    LOGGER.warn(sb.toString());
 
                     // Rename all other files with the same pos to .old
                     for (DataMetaFile metaFile : metaFiles) {
@@ -82,7 +82,7 @@ public class LocalDataFileHandler implements IDataSourceProvider {
                         try {
                             if (!metaFile.path.renameTo(oldFile)) throw new RuntimeException("Renaming failed");
                         } catch (Exception e) {
-                            logger.error("Failed to rename file: " + metaFile.path + " to " + oldFile, e);
+                            LOGGER.error("Failed to rename file: " + metaFile.path + " to " + oldFile, e);
                         }
                     }
                 }
@@ -110,7 +110,7 @@ public class LocalDataFileHandler implements IDataSourceProvider {
     * This call is concurrent. I.e. it supports multiple threads calling this method at the same time.
      */
     @Override
-    public void write(DhSectionPos sectionPos, FullFormat chunkData) {
+    public void write(DhSectionPos sectionPos, ChunkSizedData chunkData) {
         DataMetaFile metaFile = files.get(sectionPos);
         if (metaFile != null) { // Fast path: if there is a file for this section, just write to it.
             metaFile.addToWriteQueue(chunkData);
@@ -140,6 +140,14 @@ public class LocalDataFileHandler implements IDataSourceProvider {
             futures.add(metaFile.flushAndSave(fileReaderThread));
         }
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    }
+
+    @Override
+    public boolean isCacheValid(DhSectionPos sectionPos, long timestamp) {
+        DataMetaFile file = files.get(sectionPos);
+        if (file == null) return false;
+        //TODO
+        return true;
     }
 
     private File computeDefaultFilePath(DhSectionPos pos) { //TODO: Temp code as we haven't decided on the file naming & location yet.

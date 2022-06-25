@@ -312,7 +312,12 @@ public class ColumnRenderSource implements LodRenderSource, IColumnDatatype {
     }
 
     @Override
-    public void update(DHChunkPos chunkPos, ChunkSizedData chunkData) {
+    public void update(ChunkSizedData chunkData) {
         //TODO Update render data directly
+    }
+
+    @Override
+    public byte getRenderVersion() {
+        return LATEST_VERSION;
     }
 }

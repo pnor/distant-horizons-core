@@ -9,14 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 
 import com.seibel.lod.core.a7.datatype.DataSourceLoader;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.util.LodUtil;
+import org.apache.logging.log4j.Logger;
 
 public class MetaFile {
+    public static final Logger LOGGER = DhLoggerBuilder.getLogger("FileMetadata");
     //Metadata format:
     //
     //    4 bytes: magic bytes: "DHv0" (in ascii: 0x44 48 76 30) (this also signal the metadata format)
@@ -47,9 +51,8 @@ public class MetaFile {
     public byte dataLevel;
 
     //Loader stuff
-    public DataSourceLoader loader;
-    public Class<?> dataType;
-    public byte dataVersion;
+    public long dataTypeId;
+    public byte loaderVersion;
 
     // Load a metaFile in this path. It also automatically read the metadata.
     protected MetaFile(File path) throws IOException {
@@ -65,22 +68,15 @@ public class MetaFile {
             int x = buffer.getInt();
             int y = buffer.getInt(); // Unused
             int z = buffer.getInt();
-            int checksum = buffer.getInt();
+            checksum = buffer.getInt();
             byte detailLevel = buffer.get();
             dataLevel = buffer.get();
-            byte loaderVersion = buffer.get();
+            loaderVersion = buffer.get();
             byte unused = buffer.get();
-            long dataTypeId = buffer.getLong();
-            long timestamp = buffer.getLong();
+            dataTypeId = buffer.getLong();
+            timestamp = buffer.getLong();
             LodUtil.assertTrue(buffer.remaining() == 0);
-
-            this.pos = new DhSectionPos(detailLevel, x, z);
-            this.loader = DataSourceLoader.getLoader(dataTypeId, loaderVersion);
-            if (loader == null) {
-                throw new IOException("Invalid file: Data type loader not found: " + dataTypeId + "(v" + loaderVersion + ")");
-            }
-            this.dataType = loader.clazz;
-            this.dataVersion = loaderVersion;
+            pos = new DhSectionPos(detailLevel, x, z);
         }
     }
 
@@ -123,16 +119,11 @@ public class MetaFile {
             if (!newPos.equals(pos)) {
                 throw new IOException("Invalid file: Section position changed.");
             }
-            this.loader = DataSourceLoader.getLoader(dataTypeId, loaderVersion);
-            if (loader == null) {
-                throw new IOException("Invalid file: Data type loader not found: " + dataTypeId + "(v" + loaderVersion + ")");
-            }
-            this.dataType = loader.clazz;
-            this.dataVersion = loaderVersion;
+            this.loaderVersion = loaderVersion;
         }
     }
 
-    protected void writeData(BiConsumer<MetaFile, OutputStream> dataWriter) throws IOException {
+    protected void writeData(Consumer<OutputStream> dataWriter) throws IOException {
         validatePath();
         File tempFile = File.createTempFile("", "tmp", path.getParentFile());
         tempFile.deleteOnExit();
@@ -144,10 +135,8 @@ public class MetaFile {
                 try (OutputStream channelOut = Channels.newOutputStream(file);
                      BufferedOutputStream bufferedOut = new BufferedOutputStream(channelOut); // TODO: Is default buffer size ok? Do we even need to buffer?
                      CheckedOutputStream checkedOut = new CheckedOutputStream(bufferedOut, new Adler32())) { // TODO: Is Adler32 ok?
-                    dataWriter.accept(this, checkedOut);
+                    dataWriter.accept(checkedOut);
                     checksum = (int) checkedOut.getChecksum().getValue();
-                    timestamp = System.currentTimeMillis(); // TODO: Do we need to use server synced time?
-                                                            // Warn: This may become an attack vector! Be careful!
                 }
                 file.position(0);
                 // Write metadata
@@ -159,9 +148,9 @@ public class MetaFile {
                 buff.putInt(checksum);
                 buff.put(pos.sectionDetail);
                 buff.put(dataLevel);
-                buff.put(dataVersion);
+                buff.put(loaderVersion);
                 buff.put(Byte.MIN_VALUE); // Unused
-                buff.putLong(loader.datatypeId);
+                buff.putLong(dataTypeId);
                 buff.putLong(timestamp);
                 LodUtil.assertTrue(buff.remaining() == 0);
                 buff.flip();

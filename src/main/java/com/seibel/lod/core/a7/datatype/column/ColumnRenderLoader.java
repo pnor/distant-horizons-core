@@ -21,7 +21,7 @@ public class ColumnRenderLoader extends RenderSourceLoader {
                 //TODO: Add decompressor here
                 DataInputStream dis = new DataInputStream(data);
         ) {
-            return new ColumnRenderSource(dataFile.pos, dis, dataFile.dataVersion, level);
+            return new ColumnRenderSource(dataFile.pos, dis, dataFile.loaderVersion, level);
         }
     }
 
