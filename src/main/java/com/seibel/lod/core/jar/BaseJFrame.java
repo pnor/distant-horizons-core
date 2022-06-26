@@ -41,7 +41,7 @@ public class BaseJFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public BaseJFrame addExtraButtons() {
+    public BaseJFrame addExtraButtons() { // TODO: Change everything to paint rather than using J stuff
         // ========== LANGUAGE ==========
         int langBoxHeight = 25;
         int langBoxWidth = 100;
@@ -101,6 +101,27 @@ public class BaseJFrame extends JFrame {
         add(lightMode);
         add(darkMode);
 
+
+        return this;
+    }
+
+    public BaseJFrame addLogo() {
+        int logoHeight = 200;
+
+        JPanel logo = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                try {
+                    BufferedImage image = ImageIO.read(JarMain.accessFile("logo.png"));
+                    int logoWidth = (int) ((double) logoHeight * ((double) image.getWidth() / (double) image.getHeight())); // Calculate the aspect ratio and set the height correctly to not stretch it
+                    g.drawImage(image, (getWidth()/2)-(logoWidth/2), 0,   logoWidth, logoHeight,this); // Resize image and draw it
+                } catch (Exception e) {e.printStackTrace();}
+            }
+        };
+        logo.setBounds(logo.getX(), logo.getY(), logo.getWidth(), logo.getHeight());
+
+        add(logo);
 
         return this;
     }

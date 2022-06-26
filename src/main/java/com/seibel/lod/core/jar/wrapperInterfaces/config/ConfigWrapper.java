@@ -14,11 +14,8 @@ public class ConfigWrapper implements IConfigWrapper {
 
     public static void init() {
         try {
-            Object obj = new JSONParser().parse(JarMain.convertInputStreamToString(JarMain.accessFile("assets/lod/lang/"+ Locale.getDefault().toString().toLowerCase()+".json")));
-            jsonObject =  (JSONObject) obj;
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+            jsonObject = (JSONObject) new JSONParser().parse(JarMain.convertInputStreamToString(JarMain.accessFile("assets/lod/lang/"+ Locale.getDefault().toString().toLowerCase()+".json")));
+        } catch (ParseException e) { e.printStackTrace(); }
     }
 
     @Override

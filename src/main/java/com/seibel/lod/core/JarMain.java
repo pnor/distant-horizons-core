@@ -2,15 +2,13 @@ package com.seibel.lod.core;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.jar.DarkModeDetector;
 import com.seibel.lod.core.jar.BaseJFrame;
+import com.seibel.lod.core.jar.installer.GitlabGetter;
 import com.seibel.lod.core.jar.JarDependencySetup;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -22,6 +20,7 @@ import java.util.Locale;
  */
 public class JarMain {
     public static final boolean isDarkTheme = DarkModeDetector.isDarkMode();
+    public static boolean isOffline = GitlabGetter.netIsAvailable();
 
     public static void main(String[] args) {
         // Sets up the local
@@ -40,7 +39,7 @@ public class JarMain {
         SingletonHandler.finishBinding();
         System.out.println("WARNING: The standalone jar still work in progress");
 
-        JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);
+//        JOptionPane.showMessageDialog(null, "The GUI for the standalone jar isn't made yet\nIf you want to use the mod then put it in your mods folder", "Distant Horizons", JOptionPane.WARNING_MESSAGE);
 
         if (!getOperatingSystem().equals(OperatingSystem.LINUX)) {
             System.out.println("If you want the installer then please use linux for the time being.\nWindows and MacOS support will come later on");
@@ -53,22 +52,17 @@ public class JarMain {
         frame.add(jTest);
         jTest.addActionListener(e -> { System.out.println("test"); });
 
-        int logoHeight = 200;
-        int logoWidth = (int) ((double) logoHeight *2.21);
-        JPanel pane = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                try {
-                    g.drawImage(ImageIO.read(JarMain.accessFile("logo.png")), (frame.getWidth()/2)-(logoWidth/2), 0,   logoWidth, logoHeight,this);
-                } catch (Exception e) {e.printStackTrace();}
-            }
-        };
-        pane.setBounds(0, 0, pane.getWidth(), pane.getHeight());
 
-        frame.add(pane);
+        System.out.println(GitlabGetter.downloadAsString("https://gitlab.com/api/v4/projects/18204078/releases"));
+
+        // Fabric installer
+//        try {
+//            GitlabGetter.downloadAsFile("https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.0/fabric-installer-0.11.0.jar", new File(System.getProperty("java.io.tmpdir") + "/fabricInstaller.jar"));
+//            Runtime.getRuntime().exec("java -jar " + System.getProperty("java.io.tmpdir") + "/fabricInstaller.jar");
+//        } catch (Exception e) {e.printStackTrace();}
 
 
+        frame.addLogo();
 
         frame.validate(); // Update to add the widgets
         frame.setVisible(true); // Start the ui
