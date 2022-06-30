@@ -1,39 +1,57 @@
 package com.seibel.lod.core.api.implementation.wrappers;
 
 import com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces.IDhApiConfig;
+import com.seibel.lod.core.api.implementation.interfaces.IConverter;
+import com.seibel.lod.core.api.implementation.objects.DefaultConverter;
 import com.seibel.lod.core.config.types.ConfigEntry;
 
 /**
  * A wrapper used to interface with Distant Horizon's Config.
  *
- * @param <T>
+ * @param <apiType>
  * @author James Seibel
- * @version 2022-6-13
+ * @version 2022-6-30
  */
-public class DhApiConfig<T> implements IDhApiConfig<T>
+public class DhApiConfig<coreType, apiType> implements IDhApiConfig<apiType>
 {
-	private final ConfigEntry<T> configEntry;
+	private final ConfigEntry<coreType> configEntry;
+	
+	private final IConverter<coreType, apiType> configConverter;
 	
 	
 	/**
 	 * This constructor should only be called internally. <br>
-	 * There is no reason to create this object.
+	 * There is no reason for API users to create this object. <br><br>
+	 *
+	 * Uses the default object converter, this requires coreType and apiType to be the same.
 	 */
-	public DhApiConfig(ConfigEntry<T> newConfigEntry)
+	@SuppressWarnings("unchecked") // DefaultConverter's cast is safe
+	public DhApiConfig(ConfigEntry<coreType> newConfigEntry)
 	{
 		this.configEntry = newConfigEntry;
+		this.configConverter = (IConverter<coreType, apiType>) new DefaultConverter<coreType>();
+	}
+	
+	/**
+	 * This constructor should only be called internally. <br>
+	 * There is no reason for API users to create this object. <br><br>
+	 */
+	public DhApiConfig(ConfigEntry<coreType> newConfigEntry, IConverter<coreType, apiType> newConverter)
+	{
+		this.configEntry = newConfigEntry;
+		this.configConverter = newConverter;
 	}
 	
 	
-	public T getValue() { return this.configEntry.get(); }
-	public T getTrueValue() { return this.configEntry.getTrueValue(); }
-	public T getApiValue() { return this.configEntry.getApiValue(); }
+	public apiType getValue() { return this.configConverter.convertToApiType(this.configEntry.get()); }
+	public apiType getTrueValue() { return this.configConverter.convertToApiType(this.configEntry.getTrueValue()); }
+	public apiType getApiValue() { return this.configConverter.convertToApiType(this.configEntry.getApiValue()); }
 	
-	public boolean setValue(T newValue)
+	public boolean setValue(apiType newValue)
 	{
 		if (this.configEntry.allowApiOverride)
 		{
-			this.configEntry.setApiValue(newValue);
+			this.configEntry.setApiValue(this.configConverter.convertToCoreType(newValue));
 			return true;
 		}
 		else
@@ -44,8 +62,8 @@ public class DhApiConfig<T> implements IDhApiConfig<T>
 	
 	public boolean getCanBeOverrodeByApi() { return this.configEntry.allowApiOverride; }
 	
-	public T getDefaultValue() { return this.configEntry.getDefaultValue(); }
-	public T getMaxValue() { return this.configEntry.getMax(); }
-	public T getMinValue() { return this.configEntry.getMin(); }
+	public apiType getDefaultValue() { return this.configConverter.convertToApiType(configEntry.getDefaultValue()); }
+	public apiType getMaxValue() { return this.configConverter.convertToApiType(this.configEntry.getMax()); }
+	public apiType getMinValue() { return this.configConverter.convertToApiType(this.configEntry.getMin()); }
 	
 }
