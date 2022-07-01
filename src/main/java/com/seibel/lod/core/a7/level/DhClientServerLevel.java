@@ -33,7 +33,10 @@ public class DhClientServerLevel implements IClientLevel, IServerLevel {
     public DhClientServerLevel(LocalSaveStructure save, ILevelWrapper level) {
         this.level = level;
         this.save = save;
+        save.getDataFolder(level).mkdirs();
+        save.getRenderCacheFolder(level).mkdirs();
         dataFileHandler = new LocalDataFileHandler(this, save.getDataFolder(level));
+        LOGGER.info("Started DHLevel for {} with saves at {}", level, save);
     }
 
     public void clientTick() {
@@ -105,6 +108,7 @@ public class DhClientServerLevel implements IClientLevel, IServerLevel {
     @Override
     public void close() {
         dataFileHandler.close();
+        LOGGER.info("Closed DHLevel for {}", level);
     }
 
     @Override

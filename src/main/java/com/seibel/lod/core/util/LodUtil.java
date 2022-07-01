@@ -41,8 +41,11 @@ import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftSharedWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 /**
  * This class holds methods and constants that may be used in multiple places.
@@ -52,11 +55,8 @@ import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
  */
 public class LodUtil
 {
-	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.get(IMinecraftRenderWrapper.class);
-	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
-	private static final IReflectionHandler REFLECTION_HANDLER = SingletonHandler.get(IReflectionHandler.class);
-	private static final IVersionConstants VERSION_CONSTANTS = SingletonHandler.get(IVersionConstants.class);
+	private static final IMinecraftClientWrapper MC_CLIENT = SingletonHandler.getOrNull(IMinecraftClientWrapper.class);
+	private static final IMinecraftRenderWrapper MC_RENDER = SingletonHandler.getOrNull(IMinecraftRenderWrapper.class);
 	
 	/**
 	 * Vanilla render distances less than or equal to this will not allow partial
@@ -167,10 +167,10 @@ public class LodUtil
 	 */
 	public static ILevelWrapper getServerWorldFromDimension(IDimensionTypeWrapper newDimension)
 	{
-		if(!MC.hasSinglePlayerServer())
+		if(!MC_CLIENT.hasSinglePlayerServer())
 			return null;
 		
-		Iterable<ILevelWrapper> worlds = MC.getAllServerWorlds();
+		Iterable<ILevelWrapper> worlds = MC_CLIENT.getAllServerWorlds();
 		ILevelWrapper returnWorld = null;
 		
 		for (ILevelWrapper world : worlds)
@@ -202,7 +202,7 @@ public class LodUtil
 	 */
 	public static String getWorldID(ILevelWrapper world)
 	{
-		if (MC.hasSinglePlayerServer())
+		if (MC_CLIENT.hasSinglePlayerServer())
 		{
 			// chop off the dimension ID as it is not needed/wanted
 			String dimId = getDimensionIDFromWorld(world);
@@ -231,7 +231,7 @@ public class LodUtil
 	@Deprecated // FIXME: There are soooo many duplicated methods doing the same thing everywhere
 	public static String getDimensionIDFromWorld(ILevelWrapper world)
 	{
-		if (MC.hasSinglePlayerServer())
+		if (MC_CLIENT.hasSinglePlayerServer())
 		{
 			// this will return the world save location
 			// and the dimension folder
@@ -254,7 +254,7 @@ public class LodUtil
 	public static String getServerFolderName()
 	{
 		// parse the current server's IP
-		ParsedIp parsedIp = new ParsedIp(MC.getCurrentServerIp());
+		ParsedIp parsedIp = new ParsedIp(MC_CLIENT.getCurrentServerIp());
 		String serverIpCleaned = parsedIp.ip.replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
 		String serverPortCleaned = parsedIp.port != null ? parsedIp.port.replaceAll(INVALID_FILE_CHARACTERS_REGEX, "") : "";
 		
@@ -276,8 +276,8 @@ public class LodUtil
 		}
 			
 		
-		String serverName = MC.getCurrentServerName().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
-		String serverMcVersion = MC.getCurrentServerVersion().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
+		String serverName = MC_CLIENT.getCurrentServerName().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
+		String serverMcVersion = MC_CLIENT.getCurrentServerVersion().replaceAll(INVALID_FILE_CHARACTERS_REGEX, "");
 		
 		// generate the folder name
 		String folderName = "";
@@ -387,8 +387,8 @@ public class LodUtil
 						return new Pos2D(pos.getX(), pos.getZ());
 					}
 				},
-				MC.getPlayerChunkPos().getX() - renderDist,
-				MC.getPlayerChunkPos().getZ() - renderDist,
+				MC_CLIENT.getPlayerChunkPos().getX() - renderDist,
+				MC_CLIENT.getPlayerChunkPos().getZ() - renderDist,
 				renderDist * 2 + 1);
 	}
 	

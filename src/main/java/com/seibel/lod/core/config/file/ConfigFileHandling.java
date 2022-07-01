@@ -8,6 +8,7 @@ import com.seibel.lod.core.config.types.AbstractConfigType;
 import com.seibel.lod.core.config.types.ConfigEntry;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
+import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftSharedWrapper;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -23,7 +24,7 @@ import java.nio.file.Path;
  * @version 2022-5-26
  */
 public class ConfigFileHandling {
-    public static final Path ConfigPath = SingletonHandler.get(IMinecraftClientWrapper.class).getGameDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");
+    public static final Path ConfigPath = SingletonHandler.get(IMinecraftSharedWrapper.class).getInstallationDirectory().toPath().resolve("config").resolve(ModInfo.NAME+".toml");
 
     /** Saves the config to the file */
     public static void saveToFile() {

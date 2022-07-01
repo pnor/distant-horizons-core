@@ -28,7 +28,7 @@ public class FileScanner {
                     ).map(Path::toFile).collect(Collectors.toList())
                 );
             } catch (Exception e) {
-                LOGGER.error("Failed to scan and collect data files for {} in {}", level, save);
+                LOGGER.error("Failed to scan and collect data files for {} in {}", level, save, e);
             }
         }
         if (renderSource != null) {
@@ -38,7 +38,7 @@ public class FileScanner {
                         ).map(Path::toFile).collect(Collectors.toList())
                 );
             } catch (Exception e) {
-                LOGGER.error("Failed to scan and collect data files for {} in {}", level, save);
+                LOGGER.error("Failed to scan and collect data files for {} in {}", level, save, e);
             }
         }
     }

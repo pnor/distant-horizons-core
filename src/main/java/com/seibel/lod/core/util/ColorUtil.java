@@ -41,8 +41,6 @@ public class ColorUtil
 
 	public static final int RED = rgbToInt(255,0,0);
 	
-	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
-	
 	public static int rgbToInt(int red, int green, int blue)
 	{
 		return (0xFF << 24) | (red << 16) | (green << 8) | blue;

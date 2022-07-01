@@ -11,22 +11,27 @@ import java.io.File;
 public class LocalSaveStructure extends SaveStructure {
     private static final IMinecraftSharedWrapper MC = SingletonHandler.get(IMinecraftSharedWrapper.class);
 
+    private File debugPath = new File("");
+
     // Fit for Client_Server & Server_Only environment
     public LocalSaveStructure() {
     }
 
     @Override
     public File tryGetLevelFolder(ILevelWrapper wrapper) {
+        debugPath = new File(wrapper.getSaveFolder(), "Distant_Horizons");
         return new File(wrapper.getSaveFolder(), "Distant_Horizons");
     }
 
     @Override
     public File getRenderCacheFolder(ILevelWrapper level) {
+        debugPath = new File(level.getSaveFolder(), "Distant_Horizons");
         return new File(new File(level.getSaveFolder(), "Distant_Horizons"), RENDER_CACHE_FOLDER);
     }
 
     @Override
     public File getDataFolder(ILevelWrapper level) {
+        debugPath = new File(level.getSaveFolder(), "Distant_Horizons");
         return new File(new File(level.getSaveFolder(), "Distant_Horizons"), DATA_FOLDER);
     }
 
@@ -37,6 +42,6 @@ public class LocalSaveStructure extends SaveStructure {
 
     @Override
     public String toString() {
-        return "[LocalSave]";
+        return "[LocalSave at ["+debugPath+"] ]";
     }
 }

@@ -17,6 +17,7 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
         super(WorldEnvironment.Server_Only);
         saveStructure = new LocalSaveStructure();
         levels = new HashMap<>();
+        LOGGER.info("Started DhWorld of type {}", environment);
     }
 
     @Override
@@ -63,6 +64,7 @@ public class DhServerWorld extends DhWorld implements IServerWorld {
             level.close();
         }
         levels.clear();
+        LOGGER.info("Closed DhWorld of type {}", environment);
     }
 
 
