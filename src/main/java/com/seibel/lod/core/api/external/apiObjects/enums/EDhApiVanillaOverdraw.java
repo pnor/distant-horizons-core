@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * NEVER, 	<br>
@@ -31,7 +31,7 @@ package com.seibel.lod.core.enums.config;
  * @author James Seibel
  * @version 2022-6-30
  */
-public enum EVanillaOverdraw
+public enum EDhApiVanillaOverdraw
 {
 	// Reminder:
 	// when adding items up the API minor version
