@@ -35,7 +35,7 @@ public enum EFogDrawMode
 	
 	/**
 	 * Use whatever Fog setting optifine is using.
-	 * If optifine isn't installed this defaults to ALWAYS_DRAW_FOG.
+	 * If optifine isn't installed this defaults to FOG_ENABLED.
 	 */
 	USE_OPTIFINE_SETTING,
 	

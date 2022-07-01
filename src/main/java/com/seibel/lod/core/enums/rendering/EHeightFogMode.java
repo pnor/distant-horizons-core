@@ -19,8 +19,24 @@
 
 package com.seibel.lod.core.enums.rendering;
 
+/**
+ * ABOVE_CAMERA,				<br>
+ * BELOW_CAMERA,				<br>
+ * ABOVE_AND_BELOW_CAMERA,		<br>
+ * ABOVE_SET_HEIGHT,			<br>
+ * BELOW_SET_HEIGHT,			<br>
+ * ABOVE_AND_BELOW_SET_HEIGHT,	<br>
+ *
+ * @author Leetom
+ * @version 6-30-2022
+ */
 public enum EHeightFogMode
 {
+	// Reminder:
+	// when adding items up the API minor version
+	// when removing items up the API major version
+	
+	
 	ABOVE_CAMERA(true, true, false),
 	BELOW_CAMERA(true, false, true),
 	ABOVE_AND_BELOW_CAMERA(true, true, true),

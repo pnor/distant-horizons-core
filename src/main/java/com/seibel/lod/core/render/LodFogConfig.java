@@ -260,7 +260,7 @@ public class LodFogConfig
 		return str;
 	}
 	
-	private static String getFarFogMethod(EFogSetting.FogType fogType)
+	private static String getFarFogMethod(EFogFalloff fogType)
 	{
 		switch (fogType)
 		{
@@ -308,7 +308,7 @@ public class LodFogConfig
 	 * Example: <br>
 	 * <code>"	return linearFog(dist, heightFogStart, heightFogLength, heightFogMin, heightFogRange);"</code>
 	 */
-	private static String getHeightFogMethod(EFogSetting.FogType fogType)
+	private static String getHeightFogMethod(EFogFalloff fogType)
 	{
 		switch (fogType)
 		{

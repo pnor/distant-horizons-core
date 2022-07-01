@@ -257,14 +257,14 @@ public class Config
                                     + "    '1.0': Fully fog color.")
                             .build();
 
-                    public static ConfigEntry<EFogSetting.FogType> farFogType = new ConfigEntry.Builder<EFogSetting.FogType>()
-                            .set(EFogSetting.FogType.EXPONENTIAL_SQUARED)
+                    public static ConfigEntry<EFogFalloff> farFogType = new ConfigEntry.Builder<EFogFalloff>()
+                            .set(EFogFalloff.EXPONENTIAL_SQUARED)
                             .comment(""
-                                    + "How the fog thickness should be calculated from distance? \n"
+                                    + "How should the fog thickness should be calculated? \n"
                                     + "\n"
-                                    + EFogSetting.FogType.LINEAR + ": Linear based on distance (will ignore 'density')\n"
-                                    + EFogSetting.FogType.EXPONENTIAL + ": 1/(e^(distance*density)) \n"
-                                    + EFogSetting.FogType.EXPONENTIAL_SQUARED + ": 1/(e^((distance*density)^2)")
+                                    + EFogFalloff.LINEAR + ": Linear based on distance (will ignore 'density')\n"
+                                    + EFogFalloff.EXPONENTIAL + ": 1/(e^(distance*density)) \n"
+                                    + EFogFalloff.EXPONENTIAL_SQUARED + ": 1/(e^((distance*density)^2)")
                             .build();
 
                     public static ConfigEntry<Double> farFogDensity = new ConfigEntry.Builder<Double>()
@@ -349,14 +349,14 @@ public class Config
                                         + "    '1.0': Fully fog color.")
                                 .build();
 
-                        public static ConfigEntry<EFogSetting.FogType> heightFogType = new ConfigEntry.Builder<EFogSetting.FogType>()
-                                .set(EFogSetting.FogType.EXPONENTIAL_SQUARED)
+                        public static ConfigEntry<EFogFalloff> heightFogType = new ConfigEntry.Builder<EFogFalloff>()
+                                .set(EFogFalloff.EXPONENTIAL_SQUARED)
                                 .comment(""
                                         + "How the fog thickness should be calculated from height? \n"
                                         + "\n"
-                                        + EFogSetting.FogType.LINEAR + ": Linear based on height (will ignore 'density')\n"
-                                        + EFogSetting.FogType.EXPONENTIAL + ": 1/(e^(height*density)) \n"
-                                        + EFogSetting.FogType.EXPONENTIAL_SQUARED + ": 1/(e^((height*density)^2)")
+                                        + EFogFalloff.LINEAR + ": Linear based on height (will ignore 'density')\n"
+                                        + EFogFalloff.EXPONENTIAL + ": 1/(e^(height*density)) \n"
+                                        + EFogFalloff.EXPONENTIAL_SQUARED + ": 1/(e^((height*density)^2)")
                                 .build();
 
                         public static ConfigEntry<Double> heightFogDensity = new ConfigEntry.Builder<Double>()

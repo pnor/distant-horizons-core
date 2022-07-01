@@ -20,23 +20,38 @@
 package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
- * LOW,		<br>
- * MEDIUM,	<br>
- * HIGH,	<br>
- * ULTRA	<br>
+ * ABOVE_CAMERA,				<br>
+ * BELOW_CAMERA,				<br>
+ * ABOVE_AND_BELOW_CAMERA,		<br>
+ * ABOVE_SET_HEIGHT,			<br>
+ * BELOW_SET_HEIGHT,			<br>
+ * ABOVE_AND_BELOW_SET_HEIGHT,	<br>
  *
- * @author Leonardo Amato
- * @version 2022-6-9
+ * @author Leetom
+ * @version 6-30-2022
  */
-public enum EDhApiVerticalQuality
+public enum EDhApiHeightFogMode
 {
 	// Reminder:
-	// when adding items: up the API minor version
-	// when removing items: up the API major version
+	// when adding items up the API minor version
+	// when removing items up the API major version
 	
-	LOW,
-	MEDIUM,
-	HIGH,
-	ULTRA
 	
+	ABOVE_CAMERA(true, true, false),
+	BELOW_CAMERA(true, false, true),
+	ABOVE_AND_BELOW_CAMERA(true, true, true),
+	ABOVE_SET_HEIGHT(false, true, false),
+	BELOW_SET_HEIGHT(false, false, true),
+	ABOVE_AND_BELOW_SET_HEIGHT(false, true, true);
+	
+	public final boolean basedOnCamera;
+	public final boolean above;
+	public final boolean below;
+	
+	EDhApiHeightFogMode(boolean basedOnCamera, boolean above, boolean below)
+	{
+		this.basedOnCamera = basedOnCamera;
+		this.above = above;
+		this.below = below;
+	}
 }

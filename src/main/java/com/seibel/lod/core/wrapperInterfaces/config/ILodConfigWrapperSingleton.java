@@ -20,7 +20,6 @@
 package com.seibel.lod.core.wrapperInterfaces.config;
 
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.config.types.ConfigCategory;
 import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.enums.rendering.EFogColorMode;
 import com.seibel.lod.core.enums.rendering.EFogDistance;
@@ -122,8 +121,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 					double getFarFogMax();
 					void setFarFogMax(double newFarFogMax);
 
-					EFogSetting.FogType getFarFogType();
-					void setFarFogType(EFogSetting.FogType newFarFogType);
+					EFogFalloff getFarFogType();
+					void setFarFogType(EFogFalloff newFarFogType);
 
 					double getFarFogDensity();
 					void setFarFogDensity(double newFarFogDensity);
@@ -152,8 +151,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						double getHeightFogMax();
 						void setHeightFogMax(double newHeightFogMax);
 
-						EFogSetting.FogType getHeightFogType();
-						void setHeightFogType(EFogSetting.FogType newFarFogType);
+						EFogFalloff getHeightFogType();
+						void setHeightFogType(EFogFalloff newFarFogType);
 
 						double getHeightFogDensity();
 						void setHeightFogDensity(double newHeightFogDensity);

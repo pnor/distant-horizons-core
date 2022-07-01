@@ -20,16 +20,16 @@
 package com.seibel.lod.core.enums.rendering;
 
 /**
- * basic                        <br>
- * Ignore_Height                <br>
- * Addition                     <br>
- * Max                          <br>
- * Multiply                     <br>
- * Inverse_Multiply             <br>
- * Limited_Addition             <br>
- * Multiply_Addition            <br>
- * Inverse_Multiply_Addition    <br>
- * Average                      <br>
+ * BASIC                        <br>
+ * IGNORE_HEIGHT                <br>
+ * ADDITION                     <br>
+ * MAX                          <br>
+ * MULTIPLY                     <br>
+ * INVERSE_MULTIPLY             <br>
+ * LIMITED_ADDITION             <br>
+ * MULTIPLY_ADDITION            <br>
+ * INVERSE_MULTIPLY_ADDITION    <br>
+ * AVERAGE                      <br>
  *
  * @author Leetom
  * @version 2022-4-14

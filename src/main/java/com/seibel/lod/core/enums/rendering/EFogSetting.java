@@ -29,7 +29,7 @@ import java.util.Objects;
 public class EFogSetting
 {
     /** a FogSetting object with 0 for every value */
-    public static final EFogSetting EMPTY = new EFogSetting(0, 0, 0, 0,0, EFogSetting.FogType.LINEAR);
+    public static final EFogSetting EMPTY = new EFogSetting(0, 0, 0, 0,0, EFogFalloff.LINEAR);
     
     
 	public final double start;
@@ -37,9 +37,9 @@ public class EFogSetting
 	public final double min;
 	public final double max;
 	public final double density;
-	public final FogType fogType;
+	public final EFogFalloff fogType;
 	
-	public EFogSetting(double start, double end, double min, double max, double density, FogType fogType)
+	public EFogSetting(double start, double end, double min, double max, double density, EFogFalloff fogType)
 	{
 		this.start = start;
 		this.end = end;
@@ -64,14 +64,6 @@ public class EFogSetting
 	public int hashCode()
 	{
 		return Objects.hash(start, end, min, max, density, fogType);
-	}
-	
-	public enum FogType
-	{
-		LINEAR,
-		EXPONENTIAL,
-		EXPONENTIAL_SQUARED,
-		// TEXTURE_BASED, // TODO: Impl this
 	}
 	
 	

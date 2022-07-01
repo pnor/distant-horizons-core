@@ -287,7 +287,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogMax.get();
 					}
 					@Override
-					public EFogSetting.FogType getFarFogType() {
+					public EFogFalloff getFarFogType() {
 						return Config.Client.Graphics.FogQuality.AdvancedFog.farFogType.get();
 					}
 					@Override
@@ -312,7 +312,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 						Config.Client.Graphics.FogQuality.AdvancedFog.farFogMax.set(newFarFogMax);
 					}
 					@Override
-					public void setFarFogType(EFogSetting.FogType newFarFogType) {
+					public void setFarFogType(EFogFalloff newFarFogType) {
 						Config.Client.Graphics.FogQuality.AdvancedFog.farFogType.set(newFarFogType);
 					}
 					@Override
@@ -356,7 +356,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMax.get();
 						}
 						@Override
-						public EFogSetting.FogType getHeightFogType() {
+						public EFogFalloff getHeightFogType() {
 							return Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogType.get();
 						}
 						@Override
@@ -393,7 +393,7 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMax.set(newHeightFogMax);
 						}
 						@Override
-						public void setHeightFogType(EFogSetting.FogType newHeightFogType) {
+						public void setHeightFogType(EFogFalloff newHeightFogType) {
 							Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogType.set(newHeightFogType);
 						}
 						@Override

@@ -20,23 +20,20 @@
 package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
- * LOW,		<br>
- * MEDIUM,	<br>
- * HIGH,	<br>
- * ULTRA	<br>
- *
- * @author Leonardo Amato
- * @version 2022-6-9
+ * NEAR, <br>
+ * FAR, <br>
+ * NEAR_AND_FAR <br>
+ * 
+ * @author James Seibel
+ * @version 2022-6-2
  */
-public enum EDhApiVerticalQuality
+public enum EDhApiFogDistance
 {
 	// Reminder:
-	// when adding items: up the API minor version
-	// when removing items: up the API major version
+	// when adding items up the API minor version
+	// when removing items up the API major version
 	
-	LOW,
-	MEDIUM,
-	HIGH,
-	ULTRA
-	
+	NEAR,
+	FAR,
+	NEAR_AND_FAR
 }
