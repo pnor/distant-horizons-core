@@ -70,8 +70,8 @@ public class SingletonHandler
 		
 		return foundObject;
 	}
-	
-	
+
+
 	/**
 	 * Should only be called after all Binds have been done.
 	 * Calls the delayedSetup method for each dependency. <br> <br>

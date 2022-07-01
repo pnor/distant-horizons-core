@@ -179,18 +179,20 @@ public class ClientApi
 		profiler.pop();
 	}
 	
-	public void renderLods(ILevelWrapper world, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
+	public void renderLods(ILevelWrapper levelWrapper, Mat4f mcModelViewMatrix, Mat4f mcProjectionMatrix, float partialTicks)
 	{
 		IProfilerWrapper profiler = MC.getProfiler();
 		profiler.pop(); // get out of "terrain"
 		profiler.push("DH-RenderLevel");
 		try {
 			if (!MC.playerExists()) return;
-			if (world == null) return;
-			DhWorld DhWorld = SharedApi.currentWorld;
-			if (DhWorld == null) return;
+			if (levelWrapper == null) return;
+			DhWorld dhWorld = SharedApi.currentWorld;
+			if (dhWorld == null) return;
 			if (!(SharedApi.currentWorld instanceof IClientWorld)) return;
-			IClientLevel level = (IClientLevel)SharedApi.currentWorld;
+			//FIXME: Improve class hierarchy of DhWorld, IClientWorld, IServerWorld to fix all this hard casting
+			IClientLevel level = (IClientLevel) dhWorld.getOrLoadLevel(levelWrapper);
+			if (level == null) return; //Level is not ready yet.
 
 			if (prefLoggerEnabled) {
 				level.dumpRamUsage();
