@@ -40,25 +40,28 @@ public class RenderBufferHandler {
         //      the buffer is only unloaded if all children's buffers are ready. This will make the
         //      transition between buffers no longer causing any flicker.
         public void update() {
-            LodSection section = target.getSection(pos);
+            LodRenderSection section = target.getSection(pos);
             // If this fails, there may be concurrent modification of the quad tree
             //  (as this update() should be called from the same thread that calls update() on the quad tree)
             LodUtil.assertTrue(section != null);
             LodRenderSource container = section.getRenderContainer();
 
             // Update self's render buffer state
-            boolean shouldRender = section.isLoaded();
+            boolean shouldRender = section.canRender();
             if (!shouldRender) {
-                RenderBuffer buff = renderBufferSlot.getAndSet(null);
-                if (buff != null) {
-                    buff.close();
-                }
+                //TODO: Does this really need to force the old buffer to not be rendered?
+//                RenderBuffer buff = renderBufferSlot.getAndSet(null);
+//                if (buff != null) {
+//                    buff.close();
+//                }
             } else {
                 LodUtil.assertTrue(container != null); // section.isLoaded() should have ensured this
                 container.trySwapRenderBuffer(target, renderBufferSlot);
             }
 
             // Update children's render buffer state
+            // TODO: Improve this! (Checking section.isLoaded() as if its not loaded, it can only be because
+            //  it has children. (But this logic is... really hard to read!)
             boolean shouldHaveChildren = !section.isLoaded();
             if (shouldHaveChildren) {
                 if (children == null) {
@@ -73,6 +76,9 @@ public class RenderBufferHandler {
                 }
             } else {
                 if (children != null) {
+                    //FIXME: Concurrency issue here: If render thread is concurrently using the child's buffer,
+                    //  and this thread got priority to close the buffer, it causes a bug wher the render thread
+                    //  will be using a closed buffer!!!!
                     RenderBufferNode[] childs = children;
                     children = null;
                     for (RenderBufferNode child : childs) {
@@ -98,7 +104,7 @@ public class RenderBufferHandler {
 
     public RenderBufferHandler(LodQuadTree target) {
         this.target = target;
-        MovableGridRingList<LodSection> referenceList = target.getRingList((byte) (target.getNumbersOfSectionLevels() - 1));
+        MovableGridRingList<LodRenderSection> referenceList = target.getRingList((byte) (target.getNumbersOfSectionLevels() - 1));
         Pos2D center = referenceList.getCenter();
         renderBufferNodes = new MovableGridRingList<>(referenceList.getHalfSize(), center);
     }
@@ -113,12 +119,12 @@ public class RenderBufferHandler {
 
     public void update() {
         byte topDetail = (byte) (target.getNumbersOfSectionLevels() - 1);
-        MovableGridRingList<LodSection> referenceList = target.getRingList(topDetail);
+        MovableGridRingList<LodRenderSection> referenceList = target.getRingList(topDetail);
         Pos2D center = referenceList.getCenter();
         renderBufferNodes.move(center.x, center.y, RenderBufferNode::close); // Note: may lock the list
         renderBufferNodes.forEachPosOrdered((node, pos) -> {
             DhSectionPos sectPos = new DhSectionPos(topDetail, pos.x, pos.y);
-            LodSection section = target.getSection(sectPos);
+            LodRenderSection section = target.getSection(sectPos);
 
             if (section == null) {
                 // If section is null, but node exists, remove node

@@ -47,7 +47,11 @@ public class EmptyRenderSource implements LodRenderSource {
     }
 
     @Override
-    public void update(DHChunkPos chunkPos, ChunkSizedData chunkData) {
+    public void update(ChunkSizedData chunkData) {
+    }
 
+    @Override
+    public byte getRenderVersion() {
+        return 0;
     }
 }

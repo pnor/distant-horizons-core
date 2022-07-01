@@ -31,7 +31,7 @@ public class DhClientServerLevel implements IClientLevel, IServerLevel {
         this.level = level;
         this.save = save;
         dataFileHandler = new LocalDataFileHandler(this, save.getDataFolder(level));
-        renderFileHandler = new RenderFileHandler(dataFileHandler, save.getRenderCacheFolder(level));
+        renderFileHandler = new RenderFileHandler(dataFileHandler, this, save.getRenderCacheFolder(level));
         tree = new LodQuadTree(Config.Client.Graphics.Quality.lodChunkRenderDistance.get()*16,
                 MC_CLIENT.getPlayerBlockPos().x, MC_CLIENT.getPlayerBlockPos().z, renderFileHandler);
         renderBufferHandler = new RenderBufferHandler(tree);

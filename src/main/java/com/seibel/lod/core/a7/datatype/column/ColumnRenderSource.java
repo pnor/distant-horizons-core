@@ -10,11 +10,10 @@ import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.render.RenderBuffer;
 import com.seibel.lod.core.a7.save.io.render.RenderMetaFile;
 import com.seibel.lod.core.enums.ELodDirection;
-import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.LodDataView;
 import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.a7.render.LodQuadTree;
-import com.seibel.lod.core.a7.render.LodSection;
+import com.seibel.lod.core.a7.render.LodRenderSection;
 import com.seibel.lod.core.a7.datatype.LodRenderSource;
 
 import java.io.DataInputStream;
@@ -256,7 +255,7 @@ public class ColumnRenderSource implements LodRenderSource, IColumnDatatype {
         if (inBuildRenderBuffer == null) {
             ColumnRenderSource[] data = new ColumnRenderSource[ELodDirection.ADJ_DIRECTIONS.length];
             for (ELodDirection direction : ELodDirection.ADJ_DIRECTIONS) {
-                LodSection section = quadTree.getSection(sectionPos.getAdjacent(direction)); //FIXME: Handle traveling through different detail levels
+                LodRenderSection section = quadTree.getSection(sectionPos.getAdjacent(direction)); //FIXME: Handle traveling through different detail levels
                 if (section.getRenderContainer() != null && section.getRenderContainer() instanceof ColumnRenderBuffer) {
                     data[direction.ordinal()-2] = ((ColumnRenderSource) section.getRenderContainer());
                 }

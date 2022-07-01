@@ -30,7 +30,7 @@ public class DhClientLevel implements IClientLevel {
     public DhClientLevel(ClientOnlySaveStructure save, ILevelWrapper level) {
         this.save = save;
         dataFileHandler = new RemoteDataFileHandler();
-        renderFileHandler = new RenderFileHandler(dataFileHandler, save.getRenderCacheFolder(level));
+        renderFileHandler = new RenderFileHandler(dataFileHandler, this, save.getRenderCacheFolder(level));
         tree = new LodQuadTree(Config.Client.Graphics.Quality.lodChunkRenderDistance.get()*16,
                 MC_CLIENT.getPlayerBlockPos().x, MC_CLIENT.getPlayerBlockPos().z, renderFileHandler);
         renderBufferHandler = new RenderBufferHandler(tree);
@@ -38,14 +38,15 @@ public class DhClientLevel implements IClientLevel {
         FileScanner.scanFile(save, level, dataFileHandler, renderFileHandler);
     }
 
-    public void tick() {
-        tree.tick(new DhBlockPos2D(MC_CLIENT.getPlayerBlockPos()));
-        renderBufferHandler.update();
-    }
-
     @Override
     public void dumpRamUsage() {
         //TODO
+    }
+
+    @Override
+    public void clientTick() {
+        tree.tick(new DhBlockPos2D(MC_CLIENT.getPlayerBlockPos()));
+        renderBufferHandler.update();
     }
 
     @Override
