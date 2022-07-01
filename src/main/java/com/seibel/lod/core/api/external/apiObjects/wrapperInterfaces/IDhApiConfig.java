@@ -3,7 +3,7 @@ package com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces;
 /**
  * An interface for Distant Horizon's Config.
  *
- * @param <T>
+ * @param <T> The internal data type of this config.
  * @author James Seibel
  * @version 2022-6-13
  */

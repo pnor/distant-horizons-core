@@ -25,7 +25,7 @@ import java.io.InvalidObjectException;
  * Methods related to handling and using enums.
  *
  * @author James Seibel
- * @version 2022-6-6
+ * @version 2022-6-30
  */
 public class EnumUtil
 {
@@ -33,12 +33,12 @@ public class EnumUtil
 	 * Attempts to find the enum value with the given name
 	 * (ignoring case).
 	 *
-	 * @param enumType The class of the enum of parse
 	 * @param enumName the string value to parse
+	 * @param enumType The class of the enum of parse
 	 * @param <T> The Enum type to parse
 	 * @throws InvalidObjectException if no enum exists with the given enumName
 	 */
-	public static <T extends Enum<T>> T parseEnumIgnoreCase(Class<T> enumType, String enumName) throws InvalidObjectException
+	public static <T extends Enum<T>> T parseEnumIgnoreCase(String enumName, Class<T> enumType) throws InvalidObjectException
 	{
 		// attempt to find an enum with enumName
 		for (T enumValue : enumType.getEnumConstants())
@@ -52,6 +52,8 @@ public class EnumUtil
 		// no enum found
 		throw new InvalidObjectException("No Enum of type [" + enumType.getSimpleName() + "] exists with the name [" + enumName + "]. Possible enum values are: [" + createEnumCsv(enumType) + "]" );
 	}
+	
+	
 	
 	/**
 	 * Returns a comma separated list of all possible enum values
@@ -80,6 +82,8 @@ public class EnumUtil
 		
 		return str.toString();
 	}
+	
+	
 	
 	/** Returns true if both enums contain the same values. */
 	public static EnumComparisonResult compareEnumClassesByValues(Class<? extends Enum<?>> alphaEnum, Class<? extends Enum<?>> betaEnum)
