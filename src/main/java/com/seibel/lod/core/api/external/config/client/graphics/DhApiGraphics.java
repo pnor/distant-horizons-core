@@ -1,13 +1,11 @@
 package com.seibel.lod.core.api.external.config.client.graphics;
 
-import com.seibel.lod.core.api.external.apiObjects.enums.EDhApiFogDistance;
-import com.seibel.lod.core.api.external.apiObjects.enums.EDhApiRendererType;
-import com.seibel.lod.core.api.external.apiObjects.enums.EDhApiVanillaOverdraw;
+import com.seibel.lod.core.api.external.apiObjects.enums.*;
 import com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces.IDhApiConfig;
 import com.seibel.lod.core.api.implementation.objects.GenericEnumConverter;
 import com.seibel.lod.core.api.implementation.wrappers.DhApiConfig;
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.enums.config.EVanillaOverdraw;
+import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.EFogDistance;
 import com.seibel.lod.core.enums.rendering.ERendererType;
 import com.seibel.lod.core.config.Config.Client.Graphics.Quality;
@@ -37,6 +35,48 @@ public class DhApiGraphics
 	/** Returns the config related to how Distant Horizons is set to render. */
 	public static IDhApiConfig<EDhApiRendererType> getRenderingTypeConfig()
 	{ return new DhApiConfig<>(Debugging.rendererType, new GenericEnumConverter<>(ERendererType.class, EDhApiRendererType.class)); }
+	
+	
+	
+	//==================//
+	// graphic settings //
+	//==================//
+	
+	/**
+	 * Returns the config related to what the maximum detail level
+	 * Distant Horizons' fake chunks should be rendered at.
+	 */
+	public static IDhApiConfig<EDhApiHorizontalQuality> getMaxDetailLevelConfig()
+	{ return new DhApiConfig<>(Quality.drawResolution, new GenericEnumConverter<>(EHorizontalResolution.class, EDhApiHorizontalQuality.class)); }
+	
+	/**
+	 * Returns the config related to how detailed Distant Horizons fake chunks
+	 * should be on the vertical axis.
+	 */
+	public static IDhApiConfig<EDhApiVerticalQuality> getVerticalQualityConfig()
+	{ return new DhApiConfig<>(Quality.verticalQuality, new GenericEnumConverter<>(EVerticalQuality.class, EDhApiVerticalQuality.class)); }
+	
+	/**
+	 * Returns the config related to how quickly Distant Horizons fake chunks
+	 * drop in quality as they get farther away from the player.
+	 */
+	public static IDhApiConfig<EDhApiHorizontalQuality> getHorizontalQualityDropoffConfig()
+	{ return new DhApiConfig<>(Quality.horizontalQuality, new GenericEnumConverter<>(EHorizontalQuality.class, EDhApiHorizontalQuality.class)); }
+	
+	/**
+	 * Returns the config related to how quickly Distant Horizons fake chunks
+	 * drop in quality as they get farther away from the player.
+	 */
+	public static IDhApiConfig<EDhApiDropoffQuality> getHorizontalQualityDropoffMethodConfig()
+	{ return new DhApiConfig<>(Quality.dropoffQuality, new GenericEnumConverter<>(EDropoffQuality.class, EDhApiDropoffQuality.class)); }
+	
+	/**
+	 * Returns the config related to how smooth Distant Horizons fake chunk
+	 * biome blending should be generated.
+	 */
+	public static IDhApiConfig<Integer> getBiomeBlendingConfig()
+	{ return new DhApiConfig<>(Quality.lodBiomeBlending); }
+	
 	
 	
 	//===========================//

@@ -18,7 +18,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
  
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * AUTO <br>
@@ -30,7 +30,7 @@ package com.seibel.lod.core.enums.config;
  * @author Tom Lee
  * @version 7-1-2022
  */
-public enum EDropoffQuality
+public enum EDhApiDropoffQuality
 {
 	// Reminder:
 	// when adding items up the API minor version
@@ -46,7 +46,7 @@ public enum EDropoffQuality
 	
 	public final int fastModeSwitch;
 	
-	EDropoffQuality(int fastModeSwitch) {
+	EDhApiDropoffQuality(int fastModeSwitch) {
 		this.fastModeSwitch = fastModeSwitch;
 	}
 	

@@ -2,7 +2,6 @@
  *    This file is part of the Distant Horizons mod (formerly the LOD Mod),
  *    licensed under the GNU LGPL v3 License.
  *
- *    Copyright (C) 2022  Tom Lee (TomTheFurry)
  *    Copyright (C) 2020-2022  James Seibel
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -17,38 +16,43 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
-package com.seibel.lod.core.enums.config;
+
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
- * AUTO <br>
- * SMOOTH_DROPOFF <br>
- * PERFORMANCE_FOCUSED <br> <br>
+ * LOWEST <br>
+ * LOW <br>
+ * MEDIUM <br>
+ * HIGH <br> <br>
  *
- * Determines how lod level drop off should be done
- * 
- * @author Tom Lee
- * @version 7-1-2022
+ * this indicates the base of the quadratic function we use for the quality drop-off
+ *
+ * @author Leonardo Amato
+ * @version 9-29-2021
  */
-public enum EDropoffQuality
+public enum EDhApiHorizontalQuality
 {
 	// Reminder:
 	// when adding items up the API minor version
 	// when removing items up the API major version
 	
 	
-	/** SMOOTH_DROPOFF when <128 lod view distance, or PERFORMANCE_FOCUSED otherwise */
-	AUTO(-1),
+	/** 1.0 AKA Linear */
+	LOWEST(1.0f),
 	
-	SMOOTH_DROPOFF(10),
+	/** exponent 1.5 */
+	LOW(1.5f),
 	
-	PERFORMANCE_FOCUSED(0);
+	/** exponent 2.0 */
+	MEDIUM(2.0f),
 	
-	public final int fastModeSwitch;
+	/** exponent 2.2 */
+	HIGH(2.2f);
 	
-	EDropoffQuality(int fastModeSwitch) {
-		this.fastModeSwitch = fastModeSwitch;
+	public final double quadraticBase;
+	
+	EDhApiHorizontalQuality(double distanceUnit)
+	{
+		this.quadraticBase = distanceUnit;
 	}
-	
-	
 }
