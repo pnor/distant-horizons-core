@@ -1,15 +1,12 @@
 package com.seibel.lod.core.a7.render;
 
-import com.seibel.lod.core.a7.datatype.RenderSourceLoader;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.datatype.LodRenderSource;
 import com.seibel.lod.core.a7.save.io.render.IRenderSourceProvider;
 
 import java.util.concurrent.CompletableFuture;
 
-public class LodSection {
-    public static final int SUB_REGION_DATA_WIDTH = 16*16;
-
+public class LodRenderSection {
     public final DhSectionPos pos;
 
     /* Following used for LodQuadTree tick() method, and ONLY for that method! */
@@ -23,7 +20,7 @@ public class LodSection {
     private boolean isRenderEnabled = false;
 
     // Create sub region
-    public LodSection(DhSectionPos pos) {
+    public LodRenderSection(DhSectionPos pos) {
         this.pos = pos;
     }
 
@@ -42,7 +39,7 @@ public class LodSection {
         isRenderEnabled = false;
     }
 
-    public void load(IRenderSourceProvider renderDataProvider, RenderSourceLoader renderDataSourceClass) {
+    public void load(IRenderSourceProvider renderDataProvider) {
         if (loadFuture != null || lodRenderSource != null) throw new IllegalStateException("Reloading is not supported!");
         loadFuture = renderDataProvider.read(pos);
     }

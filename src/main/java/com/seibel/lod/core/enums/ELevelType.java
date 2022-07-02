@@ -25,9 +25,9 @@ package com.seibel.lod.core.enums;
  * @author James Seibel
  * @version 11-12-2021
  */
-public enum EWorldType
+public enum ELevelType
 {
-	ServerWorld,
-	ClientWorld,
+	ServerLevel,
+	ClientLevel,
 	Unknown
 }

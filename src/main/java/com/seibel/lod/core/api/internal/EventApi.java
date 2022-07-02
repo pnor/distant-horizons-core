@@ -22,7 +22,7 @@ package com.seibel.lod.core.api.internal;
 import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.worldGeneration.BatchGenerator;
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.enums.EWorldType;
+import com.seibel.lod.core.enums.ELevelType;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.DHChunkPos;
@@ -129,14 +129,14 @@ public class EventApi
 		if (ENABLE_STACK_DUMP_LOGGING)
 			LOGGER.info(
 					"WorldLoadEvent called here for "
-							+ (world.getWorldType() == EWorldType.ClientWorld ? "clientLevel" : "serverLevel"),
+							+ (world.getLevelType() == ELevelType.ClientLevel ? "clientLevel" : "serverLevel"),
 					new RuntimeException());
 		// Always ignore ServerWorld event
-		if (world.getWorldType() == EWorldType.ServerWorld)
+		if (world.getLevelType() == ELevelType.ServerLevel)
 			return;
 		isCurrentlyOnSinglePlayerServer = MC.hasSinglePlayerServer();
 		if (!InternalApiShared.isShuttingDown) LOGGER.warn("WorldLoadEvent called on {} while another world is loaded!",
-				(world.getWorldType() == EWorldType.ClientWorld ? "clientLevel" : "serverLevel"));
+				(world.getLevelType() == ELevelType.ClientLevel ? "clientLevel" : "serverLevel"));
 		InternalApiShared.isShuttingDown = false;
 		//DataPointUtil.WORLD_HEIGHT = world.getHeight();
 		LodBuilder.MIN_WORLD_HEIGHT = world.getMinHeight(); // This updates the World height
@@ -162,13 +162,13 @@ public class EventApi
 		if (ENABLE_STACK_DUMP_LOGGING)
 			LOGGER.info(
 					"WorldUnloadEvent called here for "
-							+ (world.getWorldType() == EWorldType.ClientWorld ? "clientLevel" : "serverLevel"),
+							+ (world.getLevelType() == ELevelType.ClientLevel ? "clientLevel" : "serverLevel"),
 					new RuntimeException());
 		
 		// If it's single player, ignore the client side world unload event
 		// Note: using isCurrentlyOnSinglePlayerServer as often API call unload event
 		// AFTER setting MC to not be in a singlePlayerServer
-		if (isCurrentlyOnSinglePlayerServer && world.getWorldType() == EWorldType.ClientWorld)
+		if (isCurrentlyOnSinglePlayerServer && world.getLevelType() == ELevelType.ClientLevel)
 			return;
 
 		// if this isn't done unfinished tasks may be left in the queue

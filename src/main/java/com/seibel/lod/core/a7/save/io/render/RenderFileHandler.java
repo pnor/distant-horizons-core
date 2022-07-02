@@ -1,6 +1,7 @@
 package com.seibel.lod.core.a7.save.io.render;
 
 import com.google.common.collect.HashMultimap;
+import com.seibel.lod.core.a7.datatype.EmptyRenderSource;
 import com.seibel.lod.core.a7.datatype.LodDataSource;
 import com.seibel.lod.core.a7.datatype.LodRenderSource;
 import com.seibel.lod.core.a7.datatype.RenderSourceLoader;
@@ -111,7 +112,15 @@ public class RenderFileHandler implements IRenderSourceProvider {
                 dataSourceProvider::isCacheValid,
                 dataSourceProvider::read,
                 level, computeDefaultFilePath(p), p));
-        return metaFile.loadOrGetCached(renderCacheThread);
+        return metaFile.loadOrGetCached(renderCacheThread).handle(
+                (render, e) -> {
+                    if (e != null) {
+                        LOGGER.error("Uncaught error on {}:", pos, e);
+                    }
+                    if (render != null) return render;
+                    return EmptyRenderSource.INSTANCE;
+                }
+        );
     }
 
     /*

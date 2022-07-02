@@ -70,8 +70,11 @@ public class SingletonHandler
 		
 		return foundObject;
 	}
-	
-	
+	public static <T> T getOrNull(Class<T> interfaceClass) throws ClassCastException
+	{
+		return dependencyHandler.get(interfaceClass);
+	}
+
 	/**
 	 * Should only be called after all Binds have been done.
 	 * Calls the delayedSetup method for each dependency. <br> <br>

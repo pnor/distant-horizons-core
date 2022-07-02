@@ -25,6 +25,7 @@ public class DhClientWorld extends DhWorld implements IClientWorld {
         super(WorldEnvironment.Client_Only);
         saveStructure = new ClientOnlySaveStructure();
         levels = new HashMap<>();
+        LOGGER.info("Started DhWorld of type {}", environment);
     }
 
     @Override
@@ -81,5 +82,6 @@ public class DhClientWorld extends DhWorld implements IClientWorld {
             level.close();
         }
         levels.clear();
+        LOGGER.info("Closed DhWorld of type {}", environment);
     }
 }

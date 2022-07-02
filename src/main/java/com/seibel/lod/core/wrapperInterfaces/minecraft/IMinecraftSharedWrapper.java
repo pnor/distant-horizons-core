@@ -6,7 +6,8 @@ import java.io.File;
 
 //TODO: Maybe have IMCClientWrapper & IMCDedicatedWrapper extend this interface???
 public interface IMinecraftSharedWrapper extends IBindable {
-    boolean isServerJar();
+    boolean isDedicatedServer();
+
     File getInstallationDirectory();
 
 }

@@ -70,7 +70,7 @@ public class LodDimensionFinder
 	public static final String THREAD_NAME = "Sub-Dimension-Finder";
 	public static final String DEFAULT_SAVE_DIMENSION_FOLDER = "_Default-Sub-Dimension";
 	
-	private PlayerData playerData = new PlayerData(MC);
+	private PlayerData playerData = null;//new PlayerData(MC);
 	private PlayerData firstSeenPlayerData = null;
 	
 	private volatile LodDimension foundLodDimension = null;
@@ -218,7 +218,7 @@ public class LodDimensionFinder
 		if (firstSeenPlayerData == null)
 		{
 			firstSeenPlayerData = playerData;
-			playerData = new PlayerData(MC);
+			playerData = null;//new PlayerData(MC);
 		}
 		
 		// relevant positions
@@ -571,7 +571,7 @@ public class LodDimensionFinder
 		
 		// determine the playerData
 		IMinecraftClientWrapper mc = SingletonHandler.get(IMinecraftClientWrapper.class);
-		PlayerData playerdata = new PlayerData(mc);
+		PlayerData playerdata = null;//new PlayerData(mc);
 		
 		// write the data to file
 		CommentedFileConfig toml = CommentedFileConfig.builder(file).build();
