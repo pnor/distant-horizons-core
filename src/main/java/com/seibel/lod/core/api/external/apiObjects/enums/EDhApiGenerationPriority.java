@@ -17,20 +17,20 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * AUTO <br>
  * Near_First <br>
  * Far_First <br> <br>
- *
+ * 
  * Determines which LODs should have priority when generating
  * outside the normal view distance.
  * 
  * @author Leonardo Amato
  * @version 12-1-2021
  */
-public enum EGenerationPriority
+public enum EDhApiGenerationPriority
 {
 	// Reminder:
 	// when adding items up the API minor version

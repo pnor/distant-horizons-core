@@ -17,31 +17,37 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
- * AUTO <br>
- * Near_First <br>
- * Far_First <br> <br>
+ * NONE, <br>
+ * NON_FULL, <br>
+ * NO_COLLISION, <br>
+ * BOTH, <br>
  *
- * Determines which LODs should have priority when generating
- * outside the normal view distance.
- * 
  * @author Leonardo Amato
- * @version 12-1-2021
+ * @version 2022-7-1
  */
-public enum EGenerationPriority
+public enum EDhApiBlocksToAvoid
 {
 	// Reminder:
 	// when adding items up the API minor version
 	// when removing items up the API major version
 	
-	/** NEAR_FIRST when connected to servers and BALANCED when on single player */
-	AUTO,
+	NONE(false, false),
 	
-	NEAR_FIRST,
+	NON_FULL(true, false),
 	
-	BALANCED,
+	NO_COLLISION(false, true),
 	
-	FAR_FIRST
+	BOTH(true, true);
+	
+	public final boolean nonFull;
+	public final boolean noCollision;
+	
+	EDhApiBlocksToAvoid(boolean nonFull, boolean noCollision)
+	{
+		this.nonFull = nonFull;
+		this.noCollision = noCollision;
+	}
 }

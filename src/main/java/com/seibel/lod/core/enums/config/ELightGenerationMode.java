@@ -19,12 +19,22 @@
  
 package com.seibel.lod.core.enums.config;
 
+/**
+ * FAST, <br>
+ * RANCY,
+ *
+ * @author Leetom
+ * @version 2022-7-1
+ */
 public enum ELightGenerationMode
 {
+	// Reminder:
+	// when adding items up the API minor version
+	// when removing items up the API major version
 	
-	// Fake in light values based on height maps
+	/** Fake light values using a height map */
 	FAST,
 	
-	// Run the light engine though the chunk to generate proper light values
+	/** Run the lighting engine though the chunk to generate proper light values */
 	FANCY
 }

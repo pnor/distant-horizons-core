@@ -16,32 +16,25 @@
  *    You should have received a copy of the GNU Lesser General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-package com.seibel.lod.core.enums.config;
+ 
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
- * AUTO <br>
- * Near_First <br>
- * Far_First <br> <br>
+ * FAST, <br>
+ * RANCY,
  *
- * Determines which LODs should have priority when generating
- * outside the normal view distance.
- * 
- * @author Leonardo Amato
- * @version 12-1-2021
+ * @author Leetom
+ * @version 2022-7-1
  */
-public enum EGenerationPriority
+public enum EDhApiLightGenerationMode
 {
 	// Reminder:
 	// when adding items up the API minor version
 	// when removing items up the API major version
 	
-	/** NEAR_FIRST when connected to servers and BALANCED when on single player */
-	AUTO,
+	/** Fake light values using a height map */
+	FAST,
 	
-	NEAR_FIRST,
-	
-	BALANCED,
-	
-	FAR_FIRST
+	/** Run the lighting engine though the chunk to generate proper light values */
+	FANCY
 }

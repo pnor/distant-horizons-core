@@ -20,14 +20,20 @@
 package com.seibel.lod.core.enums.config;
 
 /**
- * heightmap <br>
- * multi_lod <br>
- * 
+ * NONE, <br>
+ * NON_FULL, <br>
+ * NO_COLLISION, <br>
+ * BOTH, <br>
+ *
  * @author Leonardo Amato
- * @version 11-16-2021
+ * @version 2022-7-1
  */
 public enum EBlocksToAvoid
 {
+	// Reminder:
+	// when adding items up the API minor version
+	// when removing items up the API major version
+	
 	NONE(false, false),
 	
 	NON_FULL(true, false),

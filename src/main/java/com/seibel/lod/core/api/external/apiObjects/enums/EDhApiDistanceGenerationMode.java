@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * NONE <br>
@@ -33,7 +33,7 @@ package com.seibel.lod.core.enums.config;
  * @author Leonardo Amato
  * @version 2022-7-1
  */
-public enum EDistanceGenerationMode
+public enum EDhApiDistanceGenerationMode
 {
 	// Reminder:
 	// when adding items up the API minor version
@@ -41,7 +41,7 @@ public enum EDistanceGenerationMode
 	
 	
 	/** Don't generate anything except already existing chunks */
-	NONE((byte) 1),
+	NONE,
 	
 	/**
 	 * Only generate the biomes and use biome
@@ -50,7 +50,7 @@ public enum EDistanceGenerationMode
 	 * Doesn't generate height, everything is shown at sea level. <br>
 	 * Multithreaded - Fastest (2-5 ms)
 	 */
-	BIOME_ONLY((byte) 2),
+	BIOME_ONLY,
 	
 	/**
 	 * Same as BIOME_ONLY, except instead
@@ -58,7 +58,7 @@ public enum EDistanceGenerationMode
 	 * different biome types (mountain, ocean, forest, etc.)
 	 * use predetermined heights to simulate having height data.
 	 */
-	BIOME_ONLY_SIMULATE_HEIGHT((byte) 3),
+	BIOME_ONLY_SIMULATE_HEIGHT,
 	
 	/**
 	 * Generate the world surface,
@@ -66,7 +66,7 @@ public enum EDistanceGenerationMode
 	 * or structures. <br>
 	 * Multithreaded - Faster (10-20 ms)
 	 */
-	SURFACE((byte) 4),
+	SURFACE,
 	
 	/**
 	 * Generate including structures.
@@ -74,7 +74,7 @@ public enum EDistanceGenerationMode
 	 * since some features can cause concurrentModification exceptions. <br>
 	 * Multithreaded - Fast (15-20 ms)
 	 */
-	FEATURES((byte) 5),
+	FEATURES,
 	
 	/**
 	 * Ask the server to generate/load each chunk.
@@ -83,55 +83,6 @@ public enum EDistanceGenerationMode
 	 * are adding the mod on a pre-existing world. <br>
 	 * Single-threaded - Slow (15-50 ms, with spikes up to 200 ms)
 	 */
-	FULL((byte) 6);
+	FULL;
 	
-	public static EDistanceGenerationMode RENDERABLE = EDistanceGenerationMode.BIOME_ONLY;
-	
-	/**
-	 * The higher the number the more complete the generation is.
-	 */
-	public final byte complexity;
-	
-	EDistanceGenerationMode(byte complexity)
-	{
-		this.complexity = complexity;
-	}
-	
-	// Note: return null if out of range
-	public static EDistanceGenerationMode previous(EDistanceGenerationMode mode) {
-		switch (mode) {
-		case FULL:
-			return EDistanceGenerationMode.FEATURES;
-		case FEATURES:
-			return EDistanceGenerationMode.SURFACE;
-		case SURFACE:
-			return EDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
-		case BIOME_ONLY_SIMULATE_HEIGHT:
-			return EDistanceGenerationMode.BIOME_ONLY;
-		case BIOME_ONLY:
-			return EDistanceGenerationMode.NONE;
-		case NONE:
-		default:
-			return null;
-		}
-	}
-	
-	// Note: return null if out of range
-	public static EDistanceGenerationMode next(EDistanceGenerationMode mode) {
-		switch (mode) {
-		case FEATURES:
-			return EDistanceGenerationMode.FULL;
-		case SURFACE:
-			return EDistanceGenerationMode.FEATURES;
-		case BIOME_ONLY_SIMULATE_HEIGHT:
-			return EDistanceGenerationMode.SURFACE;
-		case BIOME_ONLY:
-			return EDistanceGenerationMode.BIOME_ONLY_SIMULATE_HEIGHT;
-		case NONE:
-			return EDistanceGenerationMode.BIOME_ONLY;
-		case FULL:
-		default:
-			return null;
-		}
-	}
 }
