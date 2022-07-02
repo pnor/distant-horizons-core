@@ -17,7 +17,9 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.rendering;
+package com.seibel.lod.core.objects;
+
+import com.seibel.lod.core.enums.rendering.EFogFalloff;
 
 import java.util.Objects;
 
@@ -26,10 +28,10 @@ import java.util.Objects;
  *
  * @version 2022-4-13
  */
-public class EFogSetting
+public class FogSettings
 {
     /** a FogSetting object with 0 for every value */
-    public static final EFogSetting EMPTY = new EFogSetting(0, 0, 0, 0,0, EFogFalloff.LINEAR);
+    public static final FogSettings EMPTY = new FogSettings(0, 0, 0, 0,0, EFogFalloff.LINEAR);
     
     
 	public final double start;
@@ -39,7 +41,7 @@ public class EFogSetting
 	public final double density;
 	public final EFogFalloff fogType;
 	
-	public EFogSetting(double start, double end, double min, double max, double density, EFogFalloff fogType)
+	public FogSettings(double start, double end, double min, double max, double density, EFogFalloff fogType)
 	{
 		this.start = start;
 		this.end = end;
@@ -56,7 +58,7 @@ public class EFogSetting
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		EFogSetting that = (EFogSetting) o;
+		FogSettings that = (FogSettings) o;
 		return Double.compare(that.start, start) == 0 && Double.compare(that.end, end) == 0 && Double.compare(that.min, min) == 0 && Double.compare(that.max, max) == 0 && Double.compare(that.density, density) == 0 && fogType == that.fogType;
 	}
 	

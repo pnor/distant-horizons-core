@@ -25,6 +25,7 @@ import com.seibel.lod.core.enums.rendering.EFogDistance;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.FogSettings;
 import com.seibel.lod.core.render.objects.Shader;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
 
@@ -50,8 +51,8 @@ public class LodFogConfig
 	
 	public static final boolean DEBUG_DUMP_GENERATED_CODE = false;
 	
-	public final EFogSetting farFogSetting;
-	public final EFogSetting heightFogSetting;
+	public final FogSettings farFogSetting;
+	public final FogSettings heightFogSetting;
 	public final EHeightFogMixMode heightFogMixMode;
 	public final EHeightFogMode heightFogMode;
 	public final float heightFogHeight;
@@ -239,8 +240,8 @@ public class LodFogConfig
 		str.append("// =======RUNTIME GENERATED DEFINE SECTION======== //\n");
 		str.append("#version 150 core\n");
 		
-		EFogSetting activeFarFogSetting = this.farFogSetting != null ? this.farFogSetting : EFogSetting.EMPTY;
-		EFogSetting activeHeightFogSetting = this.heightFogSetting != null ? this.heightFogSetting : EFogSetting.EMPTY;
+		FogSettings activeFarFogSetting = this.farFogSetting != null ? this.farFogSetting : FogSettings.EMPTY;
+		FogSettings activeHeightFogSetting = this.heightFogSetting != null ? this.heightFogSetting : FogSettings.EMPTY;
 		
 		str.append("\n" +
 			"#define farFogStart " + activeFarFogSetting.start + "\n" +

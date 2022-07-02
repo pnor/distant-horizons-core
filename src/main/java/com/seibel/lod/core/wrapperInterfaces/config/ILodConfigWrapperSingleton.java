@@ -28,6 +28,7 @@ import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
+import com.seibel.lod.core.objects.FogSettings;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 
 /**
@@ -157,8 +158,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 						double getHeightFogDensity();
 						void setHeightFogDensity(double newHeightFogDensity);
 
-						default EFogSetting computeHeightFogSetting() {
-							return new EFogSetting(
+						default FogSettings computeHeightFogSetting() {
+							return new FogSettings(
 									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogDensity.get(),
 									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogEnd.get(),
 									Config.Client.Graphics.FogQuality.AdvancedFog.HeightFog.heightFogMin.get(),
@@ -168,8 +169,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 							);
 						}
 					}
-					default EFogSetting computeFarFogSetting() {
-						return new EFogSetting(
+					default FogSettings computeFarFogSetting() {
+						return new FogSettings(
 								getFarFogStart(),
 								getFarFogEnd(),
 								getFarFogMin(),
