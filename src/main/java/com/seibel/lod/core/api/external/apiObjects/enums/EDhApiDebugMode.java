@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.rendering;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * OFF,									<br>
@@ -33,7 +33,7 @@ package com.seibel.lod.core.enums.rendering;
  * @author James Seibel
  * @version 2022-7-2
  */
-public enum EDebugMode
+public enum EDhApiDebugMode
 {
 	// Reminder:
 	// when adding items up the API minor version
@@ -64,37 +64,4 @@ public enum EDebugMode
 	/** Only draw overlapping LOD quads, and draws in wireframe. */
 	SHOW_OVERLAPPING_QUADS_WIREFRAME;
 	
-	/** returns the next debug mode */
-	// Deprecated: use DebugMode.next() instead
-	@Deprecated
-	public EDebugMode getNext()
-	{
-		return next(this);
-	}
-
-	public static EDebugMode next(EDebugMode type) {
-		switch (type) {
-			case OFF: return SHOW_WIREFRAME;
-			case SHOW_WIREFRAME: return SHOW_DETAIL;
-			case SHOW_DETAIL: return SHOW_DETAIL_WIREFRAME;
-			case SHOW_DETAIL_WIREFRAME: return SHOW_GENMODE;
-			case SHOW_GENMODE: return SHOW_GENMODE_WIREFRAME;
-			case SHOW_GENMODE_WIREFRAME: return SHOW_OVERLAPPING_QUADS;
-			case SHOW_OVERLAPPING_QUADS: return SHOW_OVERLAPPING_QUADS_WIREFRAME;
-			default: return OFF;
-		}
-	}
-
-	public static EDebugMode previous(EDebugMode type) {
-		switch (type) {
-			case OFF: return SHOW_OVERLAPPING_QUADS_WIREFRAME;
-			case SHOW_OVERLAPPING_QUADS_WIREFRAME: return SHOW_OVERLAPPING_QUADS;
-			case SHOW_OVERLAPPING_QUADS: return SHOW_GENMODE_WIREFRAME;
-			case SHOW_GENMODE_WIREFRAME: return SHOW_GENMODE;
-			case SHOW_GENMODE: return SHOW_DETAIL_WIREFRAME;
-			case SHOW_DETAIL_WIREFRAME: return SHOW_DETAIL;
-			case SHOW_DETAIL: return SHOW_WIREFRAME;
-			default: return OFF;
-		}
-	}
 }
