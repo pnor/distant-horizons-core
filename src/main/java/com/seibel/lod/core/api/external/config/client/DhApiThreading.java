@@ -25,9 +25,20 @@ public class DhApiThreading
 	 * 1.0 = 1 thread active 100% of the time <br>
 	 * 1.5 = 2 threads active 100% of the time (partial values are rounded up) <br>
 	 * 2.0 = 2 threads active 100% of the time <br>
+	 *
+	 * @deprecated this (and the related config) should be replaced with an int
+	 * 				count of threads and then a double percent active config.
 	 */
+	@Deprecated
 	public static IDhApiConfig<Double> getWorldGeneratorThreadConfig()
 	{ return new DhApiConfig<>(Threading.numberOfWorldGenerationThreads); }
+	
+	// TODO the above should be replaced with these
+//	public static IDhApiConfig<Integer> getWorldGeneratorThreadConfig()
+//	{ return new DhApiConfig<>(Threading.numberOfWorldGenerationThreads); }
+	
+//	public static IDhApiConfig<Double> getWorldGeneratorThreadActivePercentConfig()
+//	{ return new DhApiConfig<>(Threading.ToBeDetermined); }
 	
 	
 	/** Returns the config related to the buffer (GPU Terrain data) builder threads. */
