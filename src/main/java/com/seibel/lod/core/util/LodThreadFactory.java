@@ -24,9 +24,9 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadFactory;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Just a simple ThreadFactory to name ExecutorService
@@ -41,7 +41,7 @@ public class LodThreadFactory implements ThreadFactory
 	public final String threadName;
 	public final int priority;
 	private int threadCount = 0;
-	private LinkedList<WeakReference<Thread>> threads = new LinkedList<WeakReference<Thread>>();
+	private final LinkedList<WeakReference<Thread>> threads = new LinkedList<>();
 	
 	
 	public LodThreadFactory(String newThreadName, int priority)
@@ -52,11 +52,11 @@ public class LodThreadFactory implements ThreadFactory
 	}
 	
 	@Override
-	public Thread newThread(Runnable r)
+	public Thread newThread(@NotNull Runnable r)
 	{
 		Thread t = new Thread(r, threadName + "[" + (threadCount++) + "]");
 		t.setPriority(priority);
-		threads.add(new WeakReference<Thread>(t));
+		threads.add(new WeakReference<>(t));
 		return t;
 	}
 	
@@ -83,7 +83,7 @@ public class LodThreadFactory implements ThreadFactory
 				}
 			}
 		}
-		threads.removeIf((weakRef) -> {return weakRef.get() == null;});
+		threads.removeIf((weakRef) -> weakRef.get() == null);
 	}
 	
 }

@@ -1,5 +1,6 @@
 package com.seibel.lod.core.a7.render;
 
+import com.seibel.lod.core.a7.level.IClientLevel;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.datatype.LodRenderSource;
 import com.seibel.lod.core.a7.save.io.render.IRenderSourceProvider;
@@ -18,21 +19,24 @@ public class LodRenderSection {
     private LodRenderSource lodRenderSource;
     private CompletableFuture<LodRenderSource> loadFuture;
     private boolean isRenderEnabled = false;
+    private IClientLevel level; //FIXME: Hack to pass level into enableRender() for renderSource
 
     // Create sub region
     public LodRenderSection(DhSectionPos pos) {
         this.pos = pos;
     }
 
-    public void enableRender(LodQuadTree quadTree) {
+    public void enableRender(IClientLevel level, LodQuadTree quadTree) {
         if (isRenderEnabled) return;
         if (lodRenderSource != null) {
-            lodRenderSource.enableRender(quadTree);
+            lodRenderSource.enableRender(level, quadTree);
         }
+        this.level = level;
         isRenderEnabled = true;
     }
     public void disableRender() {
         if (!isRenderEnabled) return;
+        level = null;
         if (lodRenderSource != null) {
             lodRenderSource.disableRender();
         }
@@ -49,7 +53,7 @@ public class LodRenderSection {
             lodRenderSource = loadFuture.join();
             loadFuture = null;
             if (isRenderEnabled) {
-                lodRenderSource.enableRender(quadTree);
+                lodRenderSource.enableRender(level, quadTree);
             }
         }
     }

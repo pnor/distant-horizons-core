@@ -19,6 +19,7 @@
 
 package com.seibel.lod.core.objects;
 
+#if abc
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,3 +179,4 @@ public class PosToRenderContainer
 		return builder.toString();
 	}
 }
+#endif

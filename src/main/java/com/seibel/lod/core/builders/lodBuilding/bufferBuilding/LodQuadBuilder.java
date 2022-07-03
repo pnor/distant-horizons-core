@@ -25,16 +25,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.enums.ELodDirection.Axis;
 import com.seibel.lod.core.enums.config.EGpuUploadMethod;
-import com.seibel.lod.core.render.LodRenderer;
+import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
 import com.seibel.lod.core.util.ColorUtil;
 import com.seibel.lod.core.util.LodUtil;
-
-import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Used to create the quads before they are converted to renderable buffers.
@@ -43,9 +41,9 @@ import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
  */
 public class LodQuadBuilder
 {
+	private static final Logger LOGGER = DhLoggerBuilder.getLogger();
 	public final boolean skipQuadsWithZeroSkylight;
 	public final short skyLightCullingBelow;
-	
 	final ArrayList<BufferQuad>[] quads = (ArrayList<BufferQuad>[]) new ArrayList[6];
 	
 	public static final int[][][] DIRECTION_VERTEX_IBO_QUAD = new int[][][]
@@ -160,14 +158,16 @@ public class LodQuadBuilder
 			};
 	
 	private int premergeCount = 0;
+	private final boolean useIBO;
 
-	public LodQuadBuilder(boolean enableSkylightCulling, int skyLightCullingBelow)
+	public LodQuadBuilder(boolean enableSkylightCulling, short skyLightCullingBelow, boolean useIBO)
 	{
 		for (int i = 0; i < 6; i++)
 			quads[i] = new ArrayList<>();
 		
 		this.skipQuadsWithZeroSkylight = enableSkylightCulling;
-		this.skyLightCullingBelow = (short) (skyLightCullingBelow - LodBuilder.MIN_WORLD_HEIGHT);
+		this.skyLightCullingBelow = skyLightCullingBelow;
+		this.useIBO = useIBO;
 	}
 	
 	
@@ -259,9 +259,9 @@ public class LodQuadBuilder
 		bb.put(a);
 	}
 	
-	private static void putQuad(ByteBuffer bb, BufferQuad quad)
+	private static void putQuad(boolean useIBO, ByteBuffer bb, BufferQuad quad)
 	{
-		int[][] quadBase = LodRenderer.ENABLE_IBO ? DIRECTION_VERTEX_IBO_QUAD[quad.direction.ordinal()] : DIRECTION_VERTEX_QUAD[quad.direction.ordinal()];
+		int[][] quadBase = useIBO ? DIRECTION_VERTEX_IBO_QUAD[quad.direction.ordinal()] : DIRECTION_VERTEX_QUAD[quad.direction.ordinal()];
 		short widthEastWest = quad.widthEastWest;
 		short widthNorthSouth = quad.widthNorthSouthOrUpDown;
 		Axis axis = quad.direction.getAxis();
@@ -326,7 +326,7 @@ public class LodQuadBuilder
 		}
 		long postQuadsCount = getCurrentQuadsCount();
 		//if (mergeCount != 0)
-		EVENT_LOGGER.debug("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount / (double) preQuadsCount);
+		LOGGER.debug("Merged {}/{}({}) quads", mergeCount, preQuadsCount, mergeCount / (double) preQuadsCount);
 	}
 
 	/** Merges all of this builder's quads for the given directionIndex (up, down, left, etc.) in the given direction */
@@ -411,7 +411,7 @@ public class LodQuadBuilder
 					{
 						break;
 					}
-					putQuad(bb, quads[dir].get(i));
+					putQuad(useIBO, bb, quads[dir].get(i));
 				}
 				
 				if (i >= quads[dir].size())
@@ -469,7 +469,7 @@ public class LodQuadBuilder
 				}
 				bb.rewind();
 				vbo.unmapBuffer();
-				vbo.setVertexCount(LodRenderer.ENABLE_IBO ? numOfQuads*4 : numOfQuads*6);
+				vbo.setVertexCount(useIBO ? numOfQuads*4 : numOfQuads*6);
 				return dir < 6;
 			}
 			
@@ -494,7 +494,7 @@ public class LodQuadBuilder
 					{
 						break;
 					}
-					putQuad(bb, quads[dir].get(i));
+					putQuad(useIBO, bb, quads[dir].get(i));
 				}
 				
 				if (i >= quads[dir].size())

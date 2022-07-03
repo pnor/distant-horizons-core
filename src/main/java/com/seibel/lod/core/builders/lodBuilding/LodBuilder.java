@@ -19,6 +19,8 @@
 
 package com.seibel.lod.core.builders.lodBuilding;
 
+#if ABC
+
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +32,6 @@ import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.DHBlockPos;
-import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.lod.LodRegion;
 import com.seibel.lod.core.objects.lod.LodWorld;
 import com.seibel.lod.core.util.DataPointUtil;
@@ -565,3 +566,4 @@ public class LodBuilder
 		return block != null && block.shouldRender(avoid);
 	}
 }
+#endif

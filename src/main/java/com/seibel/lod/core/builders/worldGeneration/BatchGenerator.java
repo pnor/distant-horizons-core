@@ -19,14 +19,14 @@
 
 package com.seibel.lod.core.builders.worldGeneration;
 
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.a7.level.IClientLevel;
+import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EDistanceGenerationMode;
 import com.seibel.lod.core.enums.config.EGenerationPriority;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.objects.PosToGenerateContainer;
-import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.util.LevelPosUtil;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
@@ -45,7 +45,7 @@ public class BatchGenerator
 	private static final IMinecraftClientWrapper MC = SingletonHandler.get(IMinecraftClientWrapper.class);
 	private static final IWrapperFactory FACTORY = SingletonHandler.get(IWrapperFactory.class);
 	public AbstractBatchGenerationEnvionmentWrapper generationGroup;
-	public LodDimension targetLodDim;
+	public ILevel targetLodLevel;
 	public static final int generationGroupSize = 4;
 	public static int previousThreadCount = Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()<1 ? 1 : (int) Math.ceil(Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get());
 	private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
@@ -53,24 +53,14 @@ public class BatchGenerator
 	private int estimatedSampleNeeded = 128;
 	private int estimatedPointsToQueue = 1;
 
-	public BatchGenerator(LodBuilder newLodBuilder, LodDimension newLodDimension) {
-		ILevelWrapper world = LodUtil.getServerWorldFromDimension(newLodDimension.dimension);
-		targetLodDim = newLodDimension;
-		generationGroup = FACTORY.createBatchGenerator(newLodBuilder, newLodDimension, world);
-		MC.sendChatMessage("NOTE: You are currently using Distant Horizon's Batch Chunk Pre-Generator.");
+	public BatchGenerator(ILevel targetLodLevel) {
+		this.targetLodLevel = targetLodLevel;
+		generationGroup = FACTORY.createBatchGenerator(targetLodLevel);
 		LOGGER.info("Batch Chunk Generator initialized");
 	}
 
 	@SuppressWarnings("unused")
-	public void queueGenerationRequests(LodDimension lodDim, LodBuilder lodBuilder) {
-		if (lodDim != targetLodDim) {
-			stop(false);
-			ILevelWrapper dim = LodUtil.getServerWorldFromDimension(lodDim.dimension);
-			generationGroup = FACTORY.createBatchGenerator(lodBuilder, lodDim, dim);
-			targetLodDim = lodDim;
-			LOGGER.info("1.18 Experimental Chunk Generator reinitialized");
-		}
-
+	public void queueGenerationRequests() {
 		EDistanceGenerationMode mode = Config.Client.WorldGenerator.distanceGenerationMode.get();
 		int newThreadCount = Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()<1 ? 1 : (int) Math.ceil(Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get());
 		if (newThreadCount != previousThreadCount) {
@@ -107,8 +97,9 @@ public class BatchGenerator
 		int playerPosZ = MC.getPlayerBlockPos().getZ();
 		double runTimeRatio = Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get()>1 ? 1.0 : Config.Client.Advanced.Threading.numberOfWorldGenerationThreads.get();
 
-		PosToGenerateContainer posToGenerate = lodDim.getPosToGenerate(estimatedSampleNeeded, playerPosX, playerPosZ,
-				priority, mode);
+		//FIXME
+		PosToGenerateContainer posToGenerate = null;//lodDim.getPosToGenerate(estimatedSampleNeeded, playerPosX, playerPosZ,
+				//priority, mode);
 
 		if (eventsCount == 0 && posToGenerate.getNumberOfPos() >= estimatedSampleNeeded) {
 			estimatedPointsToQueue++;

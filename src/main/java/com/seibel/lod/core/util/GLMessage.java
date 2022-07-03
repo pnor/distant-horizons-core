@@ -19,7 +19,6 @@
  
 package com.seibel.lod.core.util;
 
-import com.seibel.lod.core.api.internal.InternalApiShared;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import org.apache.logging.log4j.Logger;
 

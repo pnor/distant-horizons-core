@@ -1,7 +1,7 @@
 package com.seibel.lod.core.api.external;
 
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.handlers.LodDimensionFileHandler;
+import com.seibel.lod.core.a7.datatype.full.FullDataSource;
 
 /**
  * This holds API methods related to version numbers and other unchanging endpoints.
@@ -42,7 +42,7 @@ public class DhApiMain
 	/** Returns the LOD file version. */
 	public static int getLodFileFormatVersion()
 	{
-		return LodDimensionFileHandler.LOD_SAVE_FILE_VERSION;
+		return FullDataSource.LATEST_VERSION;
 	}
 	
 }

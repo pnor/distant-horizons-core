@@ -16,7 +16,7 @@ import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 public interface LodRenderSource {
-    void enableRender(LodQuadTree quadTree);
+    void enableRender(IClientLevel level, LodQuadTree quadTree);
     void disableRender();
     boolean isRenderReady();
     void dispose(); // notify the container that the parent lodSection is now disposed (can be in loaded or unloaded state)

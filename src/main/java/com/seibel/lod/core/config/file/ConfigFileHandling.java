@@ -2,7 +2,7 @@ package com.seibel.lod.core.config.file;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.seibel.lod.core.ModInfo;
-import com.seibel.lod.core.api.internal.ClientApi;
+import com.seibel.lod.core.api.internal.a7.ClientApi;
 import com.seibel.lod.core.config.ConfigBase;
 import com.seibel.lod.core.config.types.AbstractConfigType;
 import com.seibel.lod.core.config.types.ConfigEntry;

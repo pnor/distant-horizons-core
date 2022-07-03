@@ -14,8 +14,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class EmptyRenderSource implements LodRenderSource {
     public static final EmptyRenderSource INSTANCE = new EmptyRenderSource();
 
+
     @Override
-    public void enableRender(LodQuadTree quadTree) {
+    public void enableRender(IClientLevel level, LodQuadTree quadTree) {
     }
 
     @Override

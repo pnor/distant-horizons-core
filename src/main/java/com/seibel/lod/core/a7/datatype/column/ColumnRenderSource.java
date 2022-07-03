@@ -251,7 +251,7 @@ public class ColumnRenderSource implements LodRenderSource, IColumnDatatype {
     private ColumnRenderBuffer usedBuffer = null;
 
 
-    private void tryBuildBuffer(LodQuadTree quadTree) {
+    private void tryBuildBuffer(IClientLevel level, LodQuadTree quadTree) {
         if (inBuildRenderBuffer == null) {
             ColumnRenderSource[] data = new ColumnRenderSource[ELodDirection.ADJ_DIRECTIONS.length];
             for (ELodDirection direction : ELodDirection.ADJ_DIRECTIONS) {
@@ -260,7 +260,7 @@ public class ColumnRenderSource implements LodRenderSource, IColumnDatatype {
                     data[direction.ordinal()-2] = ((ColumnRenderSource) section.getRenderContainer());
                 }
             }
-            inBuildRenderBuffer = ColumnRenderBuffer.build(usedBuffer, this, data);
+            inBuildRenderBuffer = ColumnRenderBuffer.build(level, usedBuffer, this, data);
         }
     }
     private void cancelBuildBuffer() {
@@ -269,9 +269,12 @@ public class ColumnRenderSource implements LodRenderSource, IColumnDatatype {
             inBuildRenderBuffer = null;
         }
     }
+
+    private IClientLevel level = null; //FIXME: hack to pass level into tryBuildBuffer
     @Override
-    public void enableRender(LodQuadTree quadTree) {
-        tryBuildBuffer(quadTree);
+    public void enableRender(IClientLevel level, LodQuadTree quadTree) {
+        this.level = level;
+        tryBuildBuffer(level, quadTree);
     }
 
     @Override
@@ -298,7 +301,7 @@ public class ColumnRenderSource implements LodRenderSource, IColumnDatatype {
             inBuildRenderBuffer = null;
             return true;
         } else {
-            tryBuildBuffer(quadTree);
+            tryBuildBuffer(level, quadTree);
         }
         return false;
     }

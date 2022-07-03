@@ -19,17 +19,14 @@
  
 package com.seibel.lod.core.wrapperInterfaces.worldGeneration;
 
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
-import com.seibel.lod.core.objects.lod.LodDimension;
-import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
+import com.seibel.lod.core.a7.level.ILevel;
 
 public abstract class AbstractBatchGenerationEnvionmentWrapper {
-	public static enum Steps {
+	public enum Steps {
 		Empty, StructureStart, StructureReference, Biomes, Noise, Surface, Carvers, LiquidCarvers, Features, Light,
 	}
 
-	public AbstractBatchGenerationEnvionmentWrapper(ILevelWrapper serverLevel, LodBuilder lodBuilder,
-                                                    LodDimension lodDim) {
+	public AbstractBatchGenerationEnvionmentWrapper(ILevel level) {
 	}
 
 	public abstract void resizeThreadPool(int newThreadCount);

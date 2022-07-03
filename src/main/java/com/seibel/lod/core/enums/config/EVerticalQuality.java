@@ -115,5 +115,10 @@ public enum EVerticalQuality
 			return null;
 		}
 	}
-	
+
+    public int calculateMaxVerticalData(byte dataDetail) {
+		if (dataDetail >= maxVerticalData.length)
+			dataDetail = (byte) (maxVerticalData.length-1);
+		return maxVerticalData[dataDetail];
+    }
 }

@@ -52,4 +52,8 @@ public class DhServerLevel implements IServerLevel {
     public void doWorldGen() {
 
     }
+    @Override
+    public ILevelWrapper getLevelWrapper() {
+        return level;
+    }
 }

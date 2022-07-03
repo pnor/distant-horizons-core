@@ -1,6 +1,7 @@
 package com.seibel.lod.core.a7.render;
 
 import com.seibel.lod.core.a7.datatype.column.ColumnRenderSource;
+import com.seibel.lod.core.a7.level.IClientLevel;
 import com.seibel.lod.core.a7.pos.DhBlockPos2D;
 import com.seibel.lod.core.a7.pos.DhSectionPos;
 import com.seibel.lod.core.a7.save.io.render.IRenderSourceProvider;
@@ -47,14 +48,17 @@ public class LodQuadTree {
     private final MovableGridRingList<LodRenderSection>[] ringLists;
     public final int viewDistance;
     private final IRenderSourceProvider renderSourceProvider;
-    
+
+    private final IClientLevel level; //FIXME: Proper hierarchy to remove this reference!
+
     /**
      * Constructor of the quadTree
      * @param viewDistance View distance in blocks
      * @param initialPlayerX player x coordinate
      * @param initialPlayerZ player z coordinate
      */
-    public LodQuadTree(int viewDistance, int initialPlayerX, int initialPlayerZ, IRenderSourceProvider provider) {
+    public LodQuadTree(IClientLevel level, int viewDistance, int initialPlayerX, int initialPlayerZ, IRenderSourceProvider provider) {
+        this.level = level;
         renderSourceProvider = provider;
         this.viewDistance = viewDistance;
 
@@ -360,7 +364,7 @@ public class LodQuadTree {
                     if (!section.isLoaded() && !section.isLoading()) {
                         section.load(renderSourceProvider);
                     }
-                    if (section.childCount == 4) section.enableRender(this);
+                    if (section.childCount == 4) section.enableRender(level, this);
                     if (section.childCount == 0) section.disableRender();
                     section.tick(this);
                 }

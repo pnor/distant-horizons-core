@@ -19,12 +19,10 @@
 
 package com.seibel.lod.core.wrapperInterfaces;
 
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
+import com.seibel.lod.core.a7.level.ILevel;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
-import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockStateWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IBiomeWrapper;
-import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
 import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenerationEnvionmentWrapper;
 
 /**
@@ -35,9 +33,7 @@ import com.seibel.lod.core.wrapperInterfaces.worldGeneration.AbstractBatchGenera
  */
 public interface IWrapperFactory extends IBindable 
 {
-	AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(LodBuilder newLodBuilder,
-			LodDimension newLodDimension, ILevelWrapper worldWrapper);
-
+	AbstractBatchGenerationEnvionmentWrapper createBatchGenerator(ILevel targetLevel);
 	IBiomeWrapper deserializeBiomeWrapper(String str);
 	IBlockStateWrapper deserializeBlockStateWrapper(String str);
 }

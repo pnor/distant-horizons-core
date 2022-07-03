@@ -1,8 +1,7 @@
 package com.seibel.lod.core.config;
 
-import com.seibel.lod.core.api.internal.ClientApi;
+import com.seibel.lod.core.api.internal.a7.ClientApi;
 import com.seibel.lod.core.config.file.ConfigFileHandling;
-import com.seibel.lod.core.config.gui.AbstractScreen;
 import com.seibel.lod.core.config.types.AbstractConfigType;
 import com.seibel.lod.core.config.types.ConfigCategory;
 import com.seibel.lod.core.config.types.ConfigEntry;

@@ -44,6 +44,8 @@ public class SingleFullArrayView implements IFullDataView {
         dataArrays[offset] = newArray;
     }
 
+    public int getSingleLength() { return dataArrays[offset].length; }
+
     @Override
     public int width() {
         return 1;

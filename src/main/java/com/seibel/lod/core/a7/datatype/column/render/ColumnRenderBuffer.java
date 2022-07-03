@@ -2,11 +2,10 @@ package com.seibel.lod.core.a7.datatype.column.render;
 
 import com.seibel.lod.core.a7.datatype.column.ColumnRenderSource;
 import com.seibel.lod.core.a7.datatype.column.accessor.ColumnArrayView;
+import com.seibel.lod.core.a7.level.IClientLevel;
 import com.seibel.lod.core.a7.util.UncheckedInterruptedException;
 import com.seibel.lod.core.a7.render.RenderBuffer;
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.api.internal.ClientApi;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.CubicLodTemplate;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodBufferBuilderFactory;
 import com.seibel.lod.core.builders.lodBuilding.bufferBuilding.LodQuadBuilder;
@@ -18,7 +17,6 @@ import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.DhLoggerBuilder;
 import com.seibel.lod.core.render.GLProxy;
 import com.seibel.lod.core.render.LodRenderProgram;
-import com.seibel.lod.core.render.LodRenderer;
 import com.seibel.lod.core.render.objects.GLVertexBuffer;
 import com.seibel.lod.core.util.*;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +40,7 @@ public class ColumnRenderBuffer extends RenderBuffer {
             Executors.newCachedThreadPool(new LodThreadFactory("ColumnBufferBuilders", 5));
     public static final ExecutorService BUFFER_UPLOADER = LodUtil.makeSingleThreadPool("ColumnBufferUploader");
 
-    public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodRenderer.class),
+    public static final ConfigBasedLogger EVENT_LOGGER = new ConfigBasedLogger(LogManager.getLogger(),
             () -> Config.Client.Advanced.Debugging.DebugSwitch.logRendererBufferEvent.get());
     private static final Logger LOGGER = DhLoggerBuilder.getLogger(MethodHandles.lookup().lookupClass().getSimpleName());
     private static final long MAX_BUFFER_UPLOAD_TIMEOUT_NANOSECONDS = 1_000_000;
@@ -146,8 +144,11 @@ public class ColumnRenderBuffer extends RenderBuffer {
             hasRendered = true;
             vbo.bind();
             shaderProgram.bindVertexBuffer(vbo.getId());
-            if (LodRenderer.ENABLE_IBO) {
-                GL32.glDrawElements(GL32.GL_TRIANGLES, (vbo.getVertexCount()/4)*6, ClientApi.renderer.quadIBO.getType(), 0);
+            //FIXME: Fix this! Need to pass this down
+            if (/*LodRenderer.ENABLE_IBO*/ true) {
+                GL32.glDrawElements(GL32.GL_TRIANGLES, (vbo.getVertexCount()/4)*6,
+                        GL32.GL_INT //FIXME: Fix this! Need to pass this as argument down the chains!
+                        , 0);
             } else {
                 GL32.glDrawArrays(GL32.GL_TRIANGLES, 0, vbo.getVertexCount());
             }
@@ -182,15 +183,16 @@ public class ColumnRenderBuffer extends RenderBuffer {
     }
 
 
-    public static CompletableFuture<ColumnRenderBuffer> build(ColumnRenderBuffer usedBuffer, ColumnRenderSource data, ColumnRenderSource[] adjData) {
+    public static CompletableFuture<ColumnRenderBuffer> build(IClientLevel clientLevel, ColumnRenderBuffer usedBuffer, ColumnRenderSource data, ColumnRenderSource[] adjData) {
         EVENT_LOGGER.trace("RenderRegion startBuild @ {}", data.sectionPos);
         return CompletableFuture.supplyAsync(() -> {
                     try {
                         EVENT_LOGGER.trace("RenderRegion start QuadBuild @ {}", data.sectionPos);
                         int skyLightCullingBelow = Config.Client.Graphics.AdvancedGraphics.caveCullingHeight.get();
                         // FIXME: Clamp also to the max world height.
-                        skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
-                        LodQuadBuilder builder = new LodQuadBuilder(true, skyLightCullingBelow);
+                        skyLightCullingBelow = Math.max(skyLightCullingBelow, clientLevel.getMinY());
+                        LodQuadBuilder builder = new LodQuadBuilder(true,
+                                (short) (skyLightCullingBelow - clientLevel.getMinY()));
                         makeLodRenderData(builder, data, adjData);
                         EVENT_LOGGER.trace("RenderRegion end QuadBuild @ {}", data.sectionPos);
                         return builder;

@@ -21,6 +21,7 @@ package com.seibel.lod.core.wrapperInterfaces.chunk;
 
 import com.seibel.lod.core.enums.ELodDirection;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
+import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockDetailWrapper;
 import com.seibel.lod.core.wrapperInterfaces.block.IBlockStateWrapper;
@@ -104,4 +105,8 @@ public interface IChunkWrapper extends IBindable
 	}
 
 	IBlockStateWrapper getBlockState(int x, int y, int z);
+
+    default DHChunkPos getChunkPos() {
+		return new DHChunkPos(getChunkPosX(), getChunkPosZ());
+	}
 }

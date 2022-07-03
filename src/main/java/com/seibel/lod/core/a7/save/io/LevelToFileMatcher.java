@@ -1,15 +1,11 @@
 package com.seibel.lod.core.a7.save.io;
 
-import com.seibel.lod.core.a7.world.DhClientWorld;
-import com.seibel.lod.core.builders.lodBuilding.LodBuilder;
 import com.seibel.lod.core.config.Config;
-import com.seibel.lod.core.handlers.LodDimensionFinder;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.handlers.dimensionFinder.PlayerData;
 import com.seibel.lod.core.handlers.dimensionFinder.SubDimCompare;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.objects.DHChunkPos;
-import com.seibel.lod.core.a7.level.DhClientServerLevel;
 import com.seibel.lod.core.util.LodUtil;
 import com.seibel.lod.core.wrapperInterfaces.chunk.IChunkWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
@@ -25,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LevelToFileMatcher implements AutoCloseable {
     private static final IMinecraftClientWrapper MC_CLIENT = SingletonHandler.get(IMinecraftClientWrapper.class);
-    public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(LogManager.getLogger(LodDimensionFinder.class),
+    public static final ConfigBasedLogger LOGGER = new ConfigBasedLogger(LogManager.getLogger(),
             () -> Config.Client.Advanced.Debugging.DebugSwitch.logFileSubDimEvent.get());
 
     private final ExecutorService matcherThread = LodUtil.makeSingleThreadPool("Level-To-File-Matcher");
@@ -268,7 +264,8 @@ public class LevelToFileMatcher implements AutoCloseable {
     public boolean CanDetermineLevelFolder(IChunkWrapper chunk)
     {
         // we can only guess if the given chunk can be converted into a LOD
-        return LodBuilder.canGenerateLodFromChunk(chunk);
+        return false; //FIXME: Fix this after LodBUilder is done.
+        //return LodBuilder.canGenerateLodFromChunk(chunk);
     }
 
     @Override

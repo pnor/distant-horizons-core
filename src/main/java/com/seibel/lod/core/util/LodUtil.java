@@ -27,25 +27,18 @@ import java.util.concurrent.Executors;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.EServerFolderNameMode;
 import com.seibel.lod.core.enums.config.EVanillaOverdraw;
-import com.seibel.lod.core.handlers.IReflectionHandler;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.objects.DHChunkPos;
 import com.seibel.lod.core.objects.ParsedIp;
 import com.seibel.lod.core.objects.Pos2D;
-import com.seibel.lod.core.objects.lod.LodDimension;
 import com.seibel.lod.core.objects.DHRegionPos;
 import com.seibel.lod.core.objects.opengl.DefaultLodVertexFormats;
 import com.seibel.lod.core.objects.opengl.LodVertexFormat;
 import com.seibel.lod.core.util.gridList.EdgeDistanceBooleanGrid;
-import com.seibel.lod.core.wrapperInterfaces.IVersionConstants;
-import com.seibel.lod.core.wrapperInterfaces.IWrapperFactory;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftRenderWrapper;
 import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
-import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftSharedWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.ILevelWrapper;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 /**
  * This class holds methods and constants that may be used in multiple places.
@@ -347,7 +340,7 @@ public class LodUtil
 		return a > b ? a : b;
 	}
 
-	public static int computeOverdrawOffset(LodDimension lodDim) {
+	public static int computeOverdrawOffset() {
 		int chunkRenderDist = MC_RENDER.getRenderDistance() + 1;
 		EVanillaOverdraw overdraw = Config.Client.Graphics.AdvancedGraphics.vanillaOverdraw.get();
 		if (overdraw == EVanillaOverdraw.ALWAYS) return Integer.MAX_VALUE;
@@ -368,8 +361,8 @@ public class LodUtil
 		return offset;
 	}
 
-	public static EdgeDistanceBooleanGrid readVanillaRenderedChunks(LodDimension lodDim) {
-		int offset = computeOverdrawOffset(lodDim);
+	public static EdgeDistanceBooleanGrid readVanillaRenderedChunks() {
+		int offset = computeOverdrawOffset();
 		if (offset == Integer.MAX_VALUE) return null;
 		int renderDist = MC_RENDER.getRenderDistance() + 1;
 
@@ -413,7 +406,7 @@ public class LodUtil
 	// https://stackoverflow.com/questions/3571203/what-are-runtime-getruntime-totalmemory-and-freememory
 	public static boolean checkRamUsage(double minFreeMemoryPercent, int minFreeMemoryMB) {
 		long freeMem = Runtime.getRuntime().freeMemory() + Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory();
-		if (freeMem < minFreeMemoryMB * 1024 * 1024) return false;
+		if (freeMem < minFreeMemoryMB * 1024L * 1024L) return false;
 		long maxMem = Runtime.getRuntime().maxMemory();
 		if (freeMem/(double)maxMem < minFreeMemoryPercent) return false;
 		return true;

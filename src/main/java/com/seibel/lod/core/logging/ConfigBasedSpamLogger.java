@@ -19,7 +19,7 @@
  
 package com.seibel.lod.core.logging;
 
-import com.seibel.lod.core.api.internal.ClientApi;
+import com.seibel.lod.core.api.internal.a7.ClientApi;
 import com.seibel.lod.core.enums.config.ELoggerMode;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;

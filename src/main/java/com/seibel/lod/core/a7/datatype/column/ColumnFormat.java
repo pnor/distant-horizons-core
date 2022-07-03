@@ -106,6 +106,16 @@ public class ColumnFormat
 				ColorUtil.getBlue(color),
 				height, depth, lightSky, lightBlock, generationMode);
 	}
+
+	public static long createDataPoint(int height, int depth, int color, byte light, int generationMode)
+	{
+		return createDataPoint(
+				ColorUtil.getAlpha(color),
+				ColorUtil.getRed(color),
+				ColorUtil.getGreen(color),
+				ColorUtil.getBlue(color),
+				height, depth, light%16, light/16, generationMode);
+	}
 	
 	public static long createDataPoint(int alpha, int red, int green, int blue, int height, int depth, int lightSky, int lightBlock, int generationMode)
 	{
