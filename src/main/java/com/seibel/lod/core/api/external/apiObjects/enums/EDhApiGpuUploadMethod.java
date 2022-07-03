@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * AUTO, 					<br>
@@ -30,45 +30,35 @@ package com.seibel.lod.core.enums.config;
  * @author James Seibel
  * @version 2022-7-2
  */
-public enum EGpuUploadMethod
+public enum EDhApiGpuUploadMethod
 {
 	/** Picks the best option based on the GPU the user has. */
-	AUTO(false, false),
-
-	// commented out since it isn't currently in use
-	//BUFFER_STORAGE_MAPPING(true, true),
+	AUTO,
 	
 	/**
 	 * Default for NVIDIA if OpenGL 4.5 is supported. <br>
 	 * Fast rendering, no stuttering.
 	 */
-	BUFFER_STORAGE(false, true),
+	BUFFER_STORAGE,
 	
 	/**
 	 * Backup option for NVIDIA. <br>
 	 * Fast rendering but may stutter when uploading.
 	 */
-	SUB_DATA(false, false),
-
-	/** 
+	SUB_DATA,
+	
+	/**
 	 * Default option for AMD/Intel. <br>
 	 * May end up storing buffers in System memory. <br>
 	 * Fast rending if in GPU memory, slow if in system memory, <br>
-	 * but won't stutter when uploading. 
+	 * but won't stutter when uploading.
 	 */
-	BUFFER_MAPPING(true, false),
-
-	/** 
-	 * Backup option for AMD/Intel. <br>
-	 * Fast rendering but may stutter when uploading. 
-	 */
-	DATA(false, false);
+	BUFFER_MAPPING,
 	
-	public final boolean useEarlyMapping;
-	public final boolean useBufferStorage;
-	EGpuUploadMethod(boolean useEarlyMapping, boolean useBufferStorage) {
-		this.useEarlyMapping = useEarlyMapping;
-		this.useBufferStorage = useBufferStorage;
-	}
+	/**
+	 * Backup option for AMD/Intel. <br>
+	 * Fast rendering but may stutter when uploading.
+	 */
+	DATA;
 	
 }

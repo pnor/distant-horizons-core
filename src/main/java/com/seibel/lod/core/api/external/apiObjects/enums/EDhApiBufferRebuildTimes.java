@@ -17,7 +17,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * CONSTANT <br>
@@ -30,26 +30,10 @@ package com.seibel.lod.core.enums.config;
  * @author Leonardo Amato
  * @version 9-25-2021
  */
-public enum EBufferRebuildTimes
+public enum EDhApiBufferRebuildTimes
 {
-	CONSTANT(0, 0, 0, 1),
-	
-	FREQUENT(1000, 500, 2500, 1),
-	
-	NORMAL(2000, 1000, 5000, 4),
-	
-	RARE(5000, 2000, 10000, 16);
-	
-	public final int playerMoveTimeout;
-	public final int renderedChunkTimeout;
-	public final int chunkChangeTimeout;
-	public final int playerMoveDistance;
-	
-	EBufferRebuildTimes(int playerMoveTimeout, int renderedChunkTimeout, int chunkChangeTimeout, int playerMoveDistance)
-	{
-		this.playerMoveTimeout = playerMoveTimeout;
-		this.renderedChunkTimeout = renderedChunkTimeout;
-		this.chunkChangeTimeout = chunkChangeTimeout;
-		this.playerMoveDistance = playerMoveDistance;
-	}
+	CONSTANT,
+	FREQUENT,
+	NORMAL,
+	RARE;
 }
