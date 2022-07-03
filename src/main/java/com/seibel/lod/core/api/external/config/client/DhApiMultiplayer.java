@@ -29,7 +29,7 @@ public class DhApiMultiplayer
 	 * what level a specific dimension belongs too. <br>
 	 * This is specifically to support serverside mods like Multiverse.
 	 */
-	public static IDhApiConfig<EDhApiDistanceGenerationMode> getDistantGeneratorModeConfig()
+	public static IDhApiConfig<Double> getDistantGeneratorModeConfig()
 	{ return new DhApiConfig<>(Multiplayer.multiDimensionRequiredSimilarity); }
 	
 	
