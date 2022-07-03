@@ -18,7 +18,7 @@
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.seibel.lod.core.enums.config;
+package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * AUTO, <br>
@@ -31,7 +31,7 @@ package com.seibel.lod.core.enums.config;
  * @author James Seibel
  * @version 2022-7-1
  */
-public enum EServerFolderNameMode
+public enum EDhApiServerFolderNameMode
 {
 	// Reminder:
 	// when adding items up the API minor version
@@ -53,7 +53,7 @@ public enum EServerFolderNameMode
 	 */
 	NAME_IP,
 	
-	/**
+	/** 
 	 * {SERVER_NAME} IP {IP}:{PORT} <br>
 	 * Example: Minecraft Server IP 192.168.1.40:25565
 	 */

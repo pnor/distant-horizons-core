@@ -630,7 +630,8 @@ public class Config
                             + " " + EServerFolderNameMode.AUTO + ": " + EServerFolderNameMode.NAME_IP + " for LAN connections, " + EServerFolderNameMode.NAME_IP_PORT + " for all others. \n"
                             + " " + EServerFolderNameMode.NAME_ONLY + ": Example: \"Minecraft Server\" \n"
                             + " " + EServerFolderNameMode.NAME_IP + ": Example: \"Minecraft Server IP 192.168.1.40\" \n"
-                            + " " + EServerFolderNameMode.NAME_IP_PORT + ": Example: \"Minecraft Server IP 192.168.1.40:25565\"")
+                            + " " + EServerFolderNameMode.NAME_IP_PORT + ": Example: \"Minecraft Server IP 192.168.1.40:25565\""
+                            + " " + EServerFolderNameMode.NAME_IP_PORT_MC_VERSION + ": Example: \"Minecraft Server IP 192.168.1.40:25565 GameVersion 1.16.5\"")
                     .build();
 
             public static ConfigEntry<Double> multiDimensionRequiredSimilarity = new ConfigEntry.Builder<Double>()
