@@ -147,6 +147,14 @@ public class DhApiGraphics
 	public static IDhApiConfig<Boolean> getEarthCurvatureRatioConfig()
 	{ return new DhApiConfig<>(AdvancedGraphics.earthCurveRatio); }
 	
+	/**
+	 * Returns the config related to whether Distant Horizons'
+	 * should disable vanilla rendering so only Distant Horizons'
+	 * fake chunks are rendered.
+	 */
+	public static IDhApiConfig<Boolean> getEnableLodOnlyModeConfig()
+	{ return new DhApiConfig<>(Config.Client.Advanced.lodOnlyMode); }
+	
 	
 	
 }

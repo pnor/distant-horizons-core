@@ -664,11 +664,11 @@ public class Config
             public static ConfigEntry<Boolean> lodOnlyMode = new ConfigEntry.Builder<Boolean>()
                     .set(false)
                     .comment(""
-                            + "Due to some demand for playing without vanilla terrains, \n"
+                            + " Due to some demand for playing without vanilla terrain, \n"
                             + " we decided to add this mode for fun. \n"
                             + "\n"
-                            + "NOTE: Do not report any issues when this mode is on! \n"
-                            + "    Again, this setting is only for fun, and mod \n"
+                            + " NOTE: Do not report any issues when this mode is on! \n"
+                            + "    This setting is only for fun, and mod \n"
                             + "    compatibility is not guaranteed.")
                     .build();
 
@@ -680,17 +680,17 @@ public class Config
                                 (double) Math.min(Runtime.getRuntime().availableProcessors()/2, 4),
                                 (double) Runtime.getRuntime().availableProcessors())
                         .comment(""
-                                + "How many threads should be used when generating fake \n"
+                                + " How many threads should be used when generating fake \n"
                                 + " chunks outside the normal render distance? \n"
                                 + "\n"
-                                + "If it's less than 1, it will be treated as a percentage \n"
+                                + " If it's less than 1, it will be treated as a percentage \n"
                                 + " of time single thread can run before going to idle. \n"
                                 + "\n"
-                                + "If you experience stuttering when generating distant LODs, \n"
+                                + " If you experience stuttering when generating distant LODs, \n"
                                 + " decrease  this number. If you want to increase LOD \n"
                                 + " generation speed, increase this number. \n"
                                 + "\n"
-                                + "This and the number of buffer builder threads are independent, \n"
+                                + " This and the number of buffer builder threads are independent, \n"
                                 + " so if they add up to more threads than your CPU has cores, \n"
                                 + " that shouldn't cause an issue.")
                         .build();
