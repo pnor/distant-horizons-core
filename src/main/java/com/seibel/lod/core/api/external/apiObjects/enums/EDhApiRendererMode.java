@@ -26,7 +26,7 @@ package com.seibel.lod.core.api.external.apiObjects.enums;
  *
  * @version 2022-6-2
  */
-public enum EDhApiRendererType
+public enum EDhApiRendererMode
 {
     // Reminder:
     // when adding items up the API minor version

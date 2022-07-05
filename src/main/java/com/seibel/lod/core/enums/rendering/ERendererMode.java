@@ -26,7 +26,7 @@ package com.seibel.lod.core.enums.rendering;
  *
  * @version 2022-6-2
  */
-public enum ERendererType
+public enum ERendererMode
 {
     // Reminder:
     // when adding items up the API minor version
@@ -39,7 +39,7 @@ public enum ERendererType
     
     
     /** Used by the config GUI to cycle through the available rendering options */
-    public static ERendererType next(ERendererType type)
+    public static ERendererMode next(ERendererMode type)
     {
         switch (type)
         {
@@ -50,7 +50,7 @@ public enum ERendererType
     }
     
     /** Used by the config GUI to cycle through the available rendering options */
-    public static ERendererType previous(ERendererType type)
+    public static ERendererMode previous(ERendererMode type)
     {
         switch (type)
         {

@@ -24,7 +24,7 @@ import com.seibel.lod.core.a7.world.*;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.ModInfo;
 import com.seibel.lod.core.enums.rendering.EDebugMode;
-import com.seibel.lod.core.enums.rendering.ERendererType;
+import com.seibel.lod.core.enums.rendering.ERendererMode;
 import com.seibel.lod.core.handlers.dependencyInjection.SingletonHandler;
 import com.seibel.lod.core.logging.ConfigBasedLogger;
 import com.seibel.lod.core.logging.ConfigBasedSpamLogger;
@@ -198,7 +198,7 @@ public class ClientApi
 				level.dumpRamUsage();
 			}
 
-			if (Config.Client.Advanced.Debugging.rendererType.get() == ERendererType.DEFAULT) {
+			if (Config.Client.Advanced.Debugging.rendererMode.get() == ERendererMode.DEFAULT) {
 				if (MC_RENDER.playerHasBlindnessEffect()) {
 					// if the player is blind, don't render LODs,
 					// and don't change minecraft's fog
@@ -224,7 +224,7 @@ public class ClientApi
 					}
 				}
 				profiler.pop(); // "Render-Lods"
-			} else if (Config.Client.Advanced.Debugging.rendererType.get() == ERendererType.DEBUG) {
+			} else if (Config.Client.Advanced.Debugging.rendererMode.get() == ERendererMode.DEBUG) {
 				profiler.push("Render-Test");
 				try {
 					ClientApi.testRenderer.render();
@@ -280,8 +280,8 @@ public class ClientApi
 		}
 		if (glfwKey == GLFW.GLFW_KEY_F6)
 		{
-			Config.Client.Advanced.Debugging.rendererType.set(ERendererType.next(Config.Client.Advanced.Debugging.rendererType.get()));
-			MC.sendChatMessage("F6: Set rendering to " + Config.Client.Advanced.Debugging.rendererType.get());
+			Config.Client.Advanced.Debugging.rendererMode.set(ERendererMode.next(Config.Client.Advanced.Debugging.rendererMode.get()));
+			MC.sendChatMessage("F6: Set rendering to " + Config.Client.Advanced.Debugging.rendererMode.get());
 		}
 		if (glfwKey == GLFW.GLFW_KEY_P)
 		{

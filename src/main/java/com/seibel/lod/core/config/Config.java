@@ -23,7 +23,7 @@ package com.seibel.lod.core.config;
 import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.enums.rendering.EFogColorMode;
 import com.seibel.lod.core.enums.rendering.EFogDistance;
-import com.seibel.lod.core.enums.rendering.ERendererType;
+import com.seibel.lod.core.enums.rendering.ERendererMode;
 import com.seibel.lod.core.config.types.*;
 
 import com.seibel.lod.core.enums.config.*;
@@ -732,14 +732,14 @@ public class Config
 
             public static class Debugging
             {
-                public static ConfigEntry<ERendererType> rendererType = new ConfigEntry.Builder<ERendererType>()
-                        .set(ERendererType.DEFAULT)
+                public static ConfigEntry<ERendererMode> rendererMode = new ConfigEntry.Builder<ERendererMode>()
+                        .set(ERendererMode.DEFAULT)
                         .comment(""
                                 + "What renderer is active? \n"
                                 + "\n"
-                                + ERendererType.DEFAULT + ": Default lod renderer \n"
-                                + ERendererType.DEBUG + ": Debug testing renderer \n"
-                                + ERendererType.DISABLED + ": Disable rendering")
+                                + ERendererMode.DEFAULT + ": Default lod renderer \n"
+                                + ERendererMode.DEBUG + ": Debug testing renderer \n"
+                                + ERendererMode.DISABLED + ": Disable rendering")
                         .build();
 
                 public static ConfigEntry<EDebugMode> debugMode = new ConfigEntry.Builder<EDebugMode>()

@@ -3,7 +3,7 @@ package com.seibel.lod.core.wrapperInterfaces.config;
 import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.enums.rendering.EFogColorMode;
 import com.seibel.lod.core.enums.rendering.EFogDistance;
-import com.seibel.lod.core.enums.rendering.ERendererType;
+import com.seibel.lod.core.enums.rendering.ERendererMode;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
@@ -729,12 +729,12 @@ public class LodConfigWrapperSingleton implements ILodConfigWrapperSingleton
 				 * DISABLED
 				 * */
 				@Override
-				public ERendererType getRendererType() {
-					return Config.Client.Advanced.Debugging.rendererType.get();
+				public ERendererMode getRendererType() {
+					return Config.Client.Advanced.Debugging.rendererMode.get();
 				}
 				@Override
-				public void setRendererType(ERendererType newRenderType) {
-					Config.Client.Advanced.Debugging.rendererType.set(newRenderType);
+				public void setRendererType(ERendererMode newRenderType) {
+					Config.Client.Advanced.Debugging.rendererMode.set(newRenderType);
 				}
 
 				@Override

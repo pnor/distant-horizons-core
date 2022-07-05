@@ -23,7 +23,7 @@ import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.rendering.EFogDrawMode;
 import com.seibel.lod.core.enums.rendering.EFogColorMode;
 import com.seibel.lod.core.enums.rendering.EFogDistance;
-import com.seibel.lod.core.enums.rendering.ERendererType;
+import com.seibel.lod.core.enums.rendering.ERendererMode;
 import com.seibel.lod.core.enums.config.*;
 import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.handlers.dependencyInjection.IBindable;
@@ -311,8 +311,8 @@ public interface ILodConfigWrapperSingleton extends IBindable
 			@Deprecated
 			interface IDebugging
 			{
-				ERendererType getRendererType();
-				void setRendererType(ERendererType newRendererType);
+				ERendererMode getRendererType();
+				void setRendererType(ERendererMode newRendererType);
 
 				EDebugMode getDebugMode();
 				void setDebugMode(EDebugMode newDebugMode);
