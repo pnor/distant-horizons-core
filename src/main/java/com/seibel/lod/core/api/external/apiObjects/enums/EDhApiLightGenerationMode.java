@@ -21,7 +21,7 @@ package com.seibel.lod.core.api.external.apiObjects.enums;
 
 /**
  * FAST, <br>
- * RANCY,
+ * FANCY,
  *
  * @author Leetom
  * @version 2022-7-1

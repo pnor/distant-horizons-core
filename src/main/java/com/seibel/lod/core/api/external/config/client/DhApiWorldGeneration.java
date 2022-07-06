@@ -30,65 +30,57 @@ import com.seibel.lod.core.enums.config.EGenerationPriority;
 import com.seibel.lod.core.enums.config.ELightGenerationMode;
 
 /**
- * Distant Horizons world generation configuration.
+ * Distant Horizons' world generation configuration. <br><br>
+ *
+ * Note: Fake chunks are NOT saved in Minecraft's vanilla save system.
  *
  * @author James Seibel
- * @version 2022-7-4
+ * @version 2022-7-5
  */
 public class DhApiWorldGeneration
 {
 	
 	/**
-	 * Returns the config related to whether Distant Horizons
-	 * will attempt to generate fake chunks outside Minecraft's
-	 * vanilla render distance.
+	 * Defines whether fake chunks will be generated
+	 * outside Minecraft's vanilla render distance.
 	 */
 	public static IDhApiConfig<Boolean> getEnableDistantWorldGenerationConfig()
-	{ return new DhApiConfig<>(WorldGenerator.enableDistantGeneration); }
+	{ return new DhApiConfig<Boolean, Boolean>(WorldGenerator.enableDistantGeneration); }
 	
-	/**
-	 * Returns the config related to how Distant Horizons' distant world
-	 * generator will generate chunks.
-	 */
-	public static IDhApiConfig<EDhApiDistanceGenerationMode> getDistantGeneratorModeConfig()
-	{ return new DhApiConfig<>(WorldGenerator.distanceGenerationMode, new GenericEnumConverter<>(EDistanceGenerationMode.class, EDhApiDistanceGenerationMode.class)); }
+	/** Defines to what level fake chunks will be generated. */
+	public static IDhApiConfig<EDhApiDistanceGenerationMode> getDistantGeneratorDetailLevelConfig()
+	{ return new DhApiConfig<EDistanceGenerationMode, EDhApiDistanceGenerationMode>(WorldGenerator.distanceGenerationMode, new GenericEnumConverter<>(EDistanceGenerationMode.class, EDhApiDistanceGenerationMode.class)); }
 	
-	/**
-	 * Returns the config related to how Distant Horizons' distant world
-	 * generator will light the chunks it generates.
-	 */
+	/** Defines how generated fake chunks will be lit. */
 	public static IDhApiConfig<EDhApiLightGenerationMode> getLightingModeConfig()
-	{ return new DhApiConfig<>(WorldGenerator.lightGenerationMode, new GenericEnumConverter<>(ELightGenerationMode.class, EDhApiLightGenerationMode.class)); }
+	{ return new DhApiConfig<ELightGenerationMode, EDhApiLightGenerationMode>(WorldGenerator.lightGenerationMode, new GenericEnumConverter<>(ELightGenerationMode.class, EDhApiLightGenerationMode.class)); }
 	
-	/**
-	 * Returns the config related to the order Distant Horizons' distant world
-	 * generator will generate chunks.
-	 */
+	/** Defines the order in which fake chunks will be generated. */
 	public static IDhApiConfig<EDhApiLightGenerationMode> getGenerationPriorityConfig()
-	{ return new DhApiConfig<>(WorldGenerator.generationPriority, new GenericEnumConverter<>(EGenerationPriority.class, EDhApiLightGenerationMode.class)); }
+	{ return new DhApiConfig<EGenerationPriority, EDhApiLightGenerationMode>(WorldGenerator.generationPriority, new GenericEnumConverter<>(EGenerationPriority.class, EDhApiLightGenerationMode.class)); }
 	
 	/**
-	 * Returns the config related to what blocks Distant Horizons' distant world
-	 * generator will ignore when generating LODs.
+	 * Defines what blocks will be ignored when generating LODs.
 	 *
+	 * TODO if this isn't deprecated before 1.7 it should probably be moved to the graphics tab
 	 * @deprecated this method won't be needed once we transition to an ID based save system <br>
 	 * 				(vs the color based system we have currently)
 	 */
 	@Deprecated
 	public static IDhApiConfig<EDhApiBlocksToAvoid> getBlocksToAvoidConfig()
-	{ return new DhApiConfig<>(WorldGenerator.blocksToAvoid, new GenericEnumConverter<>(EBlocksToAvoid.class, EDhApiBlocksToAvoid.class)); }
+	{ return new DhApiConfig<EBlocksToAvoid, EDhApiBlocksToAvoid>(WorldGenerator.blocksToAvoid, new GenericEnumConverter<>(EBlocksToAvoid.class, EDhApiBlocksToAvoid.class)); }
 	
 	/**
-	 * Returns the config related to whether Distant Horizons' distant world
-	 * generator will color the blocks below an avoided block. <Br>
+	 * Defines if the color of avoided blocks will color the block below them. <Br>
 	 * (IE: if flowers are avoided should they color the grass below them?)
 	 *
+	 * TODO if this isn't deprecated before 1.7 it should probably be moved to the graphics tab
 	 * @deprecated this method won't be needed once we transition to an ID based save system <br>
 	 * 				(vs the color based system we have currently)
 	 */
 	@Deprecated
 	public static IDhApiConfig<Boolean> getTintWithAvoidedBlocksConfig()
-	{ return new DhApiConfig<>(WorldGenerator.tintWithAvoidedBlocks); }
+	{ return new DhApiConfig<Boolean, Boolean>(WorldGenerator.tintWithAvoidedBlocks); }
 	
 	
 }

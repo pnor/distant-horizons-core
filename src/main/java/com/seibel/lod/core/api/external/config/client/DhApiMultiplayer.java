@@ -52,7 +52,7 @@ public class DhApiMultiplayer
 	 * or similar mods.
 	 */
 	public static IDhApiConfig<Double> getMultiverseSimilarityRequirementConfig()
-	{ return new DhApiConfig<>(Multiplayer.multiDimensionRequiredSimilarity); }
+	{ return new DhApiConfig<Double, Double>(Multiplayer.multiDimensionRequiredSimilarity); }
 	
 	
 }

@@ -62,6 +62,6 @@ public class DhApiThreading
 	
 	/** Defines how many buffer (GPU Terrain data) builder threads are used. */
 	public static IDhApiConfig<Integer> getBufferBuilderThreadConfig()
-	{ return new DhApiConfig<>(Threading.numberOfBufferBuilderThreads); }
+	{ return new DhApiConfig<Integer, Integer>(Threading.numberOfBufferBuilderThreads); }
 	
 }
