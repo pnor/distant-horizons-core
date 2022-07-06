@@ -24,21 +24,22 @@ import com.seibel.lod.core.api.implementation.wrappers.DhApiConfig;
 import com.seibel.lod.core.config.Config.Client.Advanced.Threading;
 
 /**
- * Distant Horizons threading configuration.
+ * Distant Horizons' threading configuration.
  *
  * @author James Seibel
- * @version 2022-7-4
+ * @version 2022-7-5
  */
 public class DhApiThreading
 {
 	
 	/**
-	 * Returns the config related to the world generator threads. <br>
+	 * Defines how many world generator threads are used to generate
+	 * terrain outside Minecraf's vanilla render distance. <br>
 	 * <br>
 	 * If the number of threads is less than 1 it will be treated as a percentage
-	 * representing how often a single thread will be actively generating terrain. <br> <br>
+	 * representing how often the single thread will actively generate terrain. <br> <br>
 	 *
-	 * 0.0 = 1 thread active 0% of the time <br>
+	 * 0.1 = 1 thread active 10% of the time <br>
 	 * 0.5 = 1 thread active 50% of the time <br>
 	 * 1.0 = 1 thread active 100% of the time <br>
 	 * 1.5 = 2 threads active 100% of the time (partial values are rounded up) <br>
@@ -49,7 +50,7 @@ public class DhApiThreading
 	 */
 	@Deprecated
 	public static IDhApiConfig<Double> getWorldGeneratorThreadConfig()
-	{ return new DhApiConfig<>(Threading.numberOfWorldGenerationThreads); }
+	{ return new DhApiConfig<Double, Double>(Threading.numberOfWorldGenerationThreads); }
 	
 	// TODO the above should be replaced with these
 //	public static IDhApiConfig<Integer> getWorldGeneratorThreadConfig()
@@ -59,7 +60,7 @@ public class DhApiThreading
 //	{ return new DhApiConfig<>(Threading.ToBeDetermined); }
 	
 	
-	/** Returns the config related to the buffer (GPU Terrain data) builder threads. */
+	/** Defines how many buffer (GPU Terrain data) builder threads are used. */
 	public static IDhApiConfig<Integer> getBufferBuilderThreadConfig()
 	{ return new DhApiConfig<>(Threading.numberOfBufferBuilderThreads); }
 	
