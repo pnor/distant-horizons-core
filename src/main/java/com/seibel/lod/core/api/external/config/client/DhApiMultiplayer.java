@@ -27,27 +27,31 @@ import com.seibel.lod.core.config.Config.Client.Multiplayer;
 import com.seibel.lod.core.enums.config.EServerFolderNameMode;
 
 /**
- * Distant Horizons client-side multiplayer configuration.
+ * Distant Horizons' client-side multiplayer configuration.
  *
  * @author James Seibel
- * @version 2022-7-4
+ * @version 2022-7-5
  */
 public class DhApiMultiplayer
 {
 	
 	/**
-	 * Returns the config related to how Distant Horizons
-	 * names multiplayer server folders.
+	 * Defines how multiplayer server folders are named. <br>
+	 * Note: Changing this while connected to a multiplayer world will cause undefined behavior!
 	 */
 	public static IDhApiConfig<EDhApiServerFolderNameMode> getFolderSavingModeConfig()
-	{ return new DhApiConfig<>(Multiplayer.serverFolderNameMode, new GenericEnumConverter<>(EServerFolderNameMode.class, EDhApiServerFolderNameMode.class)); }
+	{ return new DhApiConfig<EServerFolderNameMode, EDhApiServerFolderNameMode>(Multiplayer.serverFolderNameMode, new GenericEnumConverter<>(EServerFolderNameMode.class, EDhApiServerFolderNameMode.class)); }
 	
 	/**
-	 * Returns the config related to how Distant Horizons' determines
-	 * what level a specific dimension belongs too. <br>
-	 * This is specifically to support serverside mods like Multiverse.
+	 * Defines the necessary similarity (as a percent) that two potential levels
+	 * need in order to be considered the same. <br> <br>
+	 *
+	 * Setting this to zero causes every level of a specific dimension type to be consider
+	 * the same level. <br>
+	 * Setting this to a non-zero value allows for usage in servers that user Multiverse
+	 * or similar mods.
 	 */
-	public static IDhApiConfig<Double> getDistantGeneratorModeConfig()
+	public static IDhApiConfig<Double> getMultiverseSimilarityRequirementConfig()
 	{ return new DhApiConfig<>(Multiplayer.multiDimensionRequiredSimilarity); }
 	
 	
