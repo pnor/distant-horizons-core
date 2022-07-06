@@ -21,11 +21,12 @@ package com.seibel.lod.core.api.external.config.client.graphics;
 
 import com.seibel.lod.core.api.external.apiObjects.enums.*;
 import com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces.IDhApiConfig;
+import com.seibel.lod.core.api.implementation.objects.DefaultConverter;
 import com.seibel.lod.core.api.implementation.objects.GenericEnumConverter;
 import com.seibel.lod.core.api.implementation.wrappers.DhApiConfig;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.*;
-import com.seibel.lod.core.enums.rendering.ERendererType;
+import com.seibel.lod.core.enums.rendering.ERendererMode;
 import com.seibel.lod.core.config.Config.Client.Graphics.Quality;
 import com.seibel.lod.core.config.Config.Client.Advanced.Debugging;
 import com.seibel.lod.core.config.Config.Client.Graphics.AdvancedGraphics;
@@ -38,21 +39,29 @@ import com.seibel.lod.core.config.Config.Client.Graphics.AdvancedGraphics;
  */
 public class DhApiGraphics
 {
+	// developer note:
+	// DhApiConfig needs types explicitly defined otherwise Intellij
+	// won't do type checking and the wrong types can be used.
+	// For example returning IDhApiConfig<Integer> when the config should be a Boolean.
+	
 	
 	//========================//
 	// basic graphic settings //
 	//========================//
 	
-	/**
-	 * Returns the config related to Distant Horizons render distance. <br>
-	 * The distance is a radius in measured in chunks.
-	 */
+	/** The distance is the radius measured in chunks. */
 	public static IDhApiConfig<Integer> getChunkRenderDistanceConfig()
-	{ return new DhApiConfig<>(Quality.lodChunkRenderDistance); }
+	{ return new DhApiConfig<Integer, Integer>(Quality.lodChunkRenderDistance); }
 	
-	/** Returns the config related to how Distant Horizons is set to render. */
-	public static IDhApiConfig<EDhApiRendererType> getRenderingTypeConfig()
-	{ return new DhApiConfig<>(Debugging.rendererType, new GenericEnumConverter<>(ERendererType.class, EDhApiRendererType.class)); }
+	/**
+	 * Can be used to enable/disable fake chunk rendering or enable the debug renderer. <br><br>
+	 *
+	 * The debug renderer is used to confirm rendering is working at and will draw
+	 * a single multicolor rhombus on the screen in skybox space (AKA behind MC's rendering).
+	 */
+	// TODO replace with enable/disable renderer and move the debug renderer over to the debug menu
+//	public static IDhApiConfig<EDhApiRendererMode> getRenderingModeConfig()
+//	{ return new DhApiConfig<>(Debugging.rendererMode, new GenericEnumConverter<>(ERendererMode.class, EDhApiRendererMode.class)); }
 	
 	
 	
@@ -60,40 +69,37 @@ public class DhApiGraphics
 	// graphic settings //
 	//==================//
 	
-	/**
-	 * Returns the config related to what the maximum detail level
-	 * Distant Horizons' fake chunks should be rendered at.
-	 */
-	public static IDhApiConfig<EDhApiHorizontalQuality> getMaxDetailLevelConfig()
-	{ return new DhApiConfig<>(Quality.drawResolution, new GenericEnumConverter<>(EHorizontalResolution.class, EDhApiHorizontalQuality.class)); }
+	/** Defines how detailed fake chunks are in the horizontal direction */
+	public static IDhApiConfig<EDhApiHorizontalResolution> getMaxDetailLevelConfig()
+	{ return new DhApiConfig<EHorizontalResolution, EDhApiHorizontalResolution>(Quality.drawResolution, new GenericEnumConverter<>(EHorizontalResolution.class, EDhApiHorizontalResolution.class)); }
 	
-	/**
-	 * Returns the config related to how detailed Distant Horizons fake chunks
-	 * should be on the vertical axis.
-	 */
+	/** Defines how detailed fake chunks are in the vertical direction */
 	public static IDhApiConfig<EDhApiVerticalQuality> getVerticalQualityConfig()
-	{ return new DhApiConfig<>(Quality.verticalQuality, new GenericEnumConverter<>(EVerticalQuality.class, EDhApiVerticalQuality.class)); }
+	{ return new DhApiConfig<EVerticalQuality, EDhApiVerticalQuality>(Quality.verticalQuality, new GenericEnumConverter<>(EVerticalQuality.class, EDhApiVerticalQuality.class)); }
 	
-	/**
-	 * Returns the config related to how quickly Distant Horizons fake chunks
-	 * drop in quality as they get farther away from the player.
-	 */
+	/** Modifies the quadratic function fake chunks use for horizontal quality drop-off. */
 	public static IDhApiConfig<EDhApiHorizontalQuality> getHorizontalQualityDropoffConfig()
-	{ return new DhApiConfig<>(Quality.horizontalQuality, new GenericEnumConverter<>(EHorizontalQuality.class, EDhApiHorizontalQuality.class)); }
+	{ return new DhApiConfig<EHorizontalQuality, EDhApiHorizontalQuality>(Quality.horizontalQuality, new GenericEnumConverter<>(EHorizontalQuality.class, EDhApiHorizontalQuality.class)); }
 	
 	/**
-	 * Returns the config related to how quickly Distant Horizons fake chunks
-	 * drop in quality as they get farther away from the player.
-	 */
+	 * Defines how fake chunks drop off in quality. <br><br>
+	 *
+	 * Higher quality settings require fake chunk geometry data to be
+	 * rebuilt more often when moving but make quality drop-off less noticeable.
+	 * */
 	public static IDhApiConfig<EDhApiDropoffQuality> getHorizontalQualityDropoffMethodConfig()
-	{ return new DhApiConfig<>(Quality.dropoffQuality, new GenericEnumConverter<>(EDropoffQuality.class, EDhApiDropoffQuality.class)); }
+	{ return new DhApiConfig<EDropoffQuality, EDhApiDropoffQuality>(Quality.dropoffQuality, new GenericEnumConverter<>(EDropoffQuality.class, EDhApiDropoffQuality.class)); }
 	
 	/**
-	 * Returns the config related to how smooth Distant Horizons fake chunk
-	 * biome blending should be generated.
+	 * The same as vanilla Minecraft's biome blending. <br><br>
+	 *
+	 * 0 = blending of 1x1 aka off	<br>
+	 * 1 = blending of 3x3			<br>
+	 * 2 = blending of 5x5			<br>
+	 * ...							<br>
 	 */
 	public static IDhApiConfig<Integer> getBiomeBlendingConfig()
-	{ return new DhApiConfig<>(Quality.lodBiomeBlending); }
+	{ return new DhApiConfig<Integer, Integer>(Quality.lodBiomeBlending); }
 	
 	
 	
@@ -101,77 +107,56 @@ public class DhApiGraphics
 	// advanced graphic settings //
 	//===========================//
 	
-	/**
-	 * Returns the config related to whether Distant Horizons
-	 * should disable its directional culling.
-	 */
+	/** If directional culling is disabled fake chunks will be rendered behind the camera. */
 	public static IDhApiConfig<Boolean> getDisableDirectionalCullingConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.disableDirectionalCulling); }
+	{ return new DhApiConfig<Boolean, Boolean>(AdvancedGraphics.disableDirectionalCulling); }
 	
-	/**
-	 * Returns the config related to how Distant Horizons will
-	 * overdraw underneath vanilla Minecraft chunks.
-	 */
+	/** Determines how fake chunks are rendered in comparison to vanilla MC's chunks. */
 	public static IDhApiConfig<EDhApiVanillaOverdraw> getVanillaOverdrawConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.vanillaOverdraw, new GenericEnumConverter<>(EVanillaOverdraw.class, EDhApiVanillaOverdraw.class)); }
+	{ return new DhApiConfig<EVanillaOverdraw, EDhApiVanillaOverdraw>(AdvancedGraphics.vanillaOverdraw, new GenericEnumConverter<>(EVanillaOverdraw.class, EDhApiVanillaOverdraw.class)); }
 	
-	/**
-	 * Returns the config related to how near (or far) Distant Horizons
-	 * will overdraw if it can't determine which Minecraft chunks are being rendered.
-	 */
+	/** Modifies how far the vanilla overdraw is rendered in chunks. */
 	public static IDhApiConfig<Integer> getVanillaOverdrawOffsetConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.overdrawOffset); }
+	{ return new DhApiConfig<Integer, Integer>(AdvancedGraphics.overdrawOffset); }
 	
 	/**
-	 * Returns the config related to whether Distant Horizons
-	 * should use an extended near clip plane.
+	 * If enabled the near clip plane is extended to reduce
+	 * overdraw and improve Z-fighting at extreme render distances. <br>
+	 * Disabling this reduces holes in the world due to the near clip plane
+	 * being too close to the camera and the terrain not being covered by vanilla terrain.
 	 */
 	public static IDhApiConfig<Boolean> getUseExtendedNearClipPlaneConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.useExtendedNearClipPlane); }
+	{ return new DhApiConfig<Boolean, Boolean>(AdvancedGraphics.useExtendedNearClipPlane); }
 	
 	/**
-	 * Returns the config related to Distant Horizons'
-	 * fake chunk brightness multiplier.
+	 * Modifies how bright fake chunks are. <br>
+	 * This is done when generating the vertex data and is applied before any shaders.
 	 */
 	public static IDhApiConfig<Double> getBrightnessMultiplierConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.brightnessMultiplier); }
+	{ return new DhApiConfig<Double, Double>(AdvancedGraphics.brightnessMultiplier); }
 	
 	/**
-	 * Returns the config related to Distant Horizons'
-	 * fake chunk saturation multiplier.
+	 * Modifies how saturated fake chunks are. <br>
+	 * This is done when generating the vertex data and is applied before any shaders.
 	 */
 	public static IDhApiConfig<Double> getSaturationMultiplierConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.saturationMultiplier); }
+	{ return new DhApiConfig<Double, Double>(AdvancedGraphics.saturationMultiplier); }
 	
-	/**
-	 * Returns the config related to whether Distant Horizons
-	 * should attempt to cull caves.
-	 */
+	/** Defines if Distant Horizons should attempt to cull fake chunk cave geometry. */
 	public static IDhApiConfig<Boolean> getCaveCullingEnabledConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.enableCaveCulling); }
+	{ return new DhApiConfig<Boolean, Boolean>(AdvancedGraphics.enableCaveCulling); }
 	
-	/**
-	 * Returns the config related to what height Distant Horizons
-	 * will attempt to cull caves.
-	 */
-	public static IDhApiConfig<Boolean> getCaveCullingHeightConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.caveCullingHeight); }
+	/** Defines what height cave culling should be used below if enabled. */
+	public static IDhApiConfig<Integer> getCaveCullingHeightConfig()
+	{ return new DhApiConfig<Integer, Integer>(AdvancedGraphics.caveCullingHeight); }
 	
-	/**
-	 * Returns the config related to Distant Horizons'
-	 * earth curvature distance ratio. <br>
-	 * (The ratio is relative to Earth's real world curvature)
-	 */
-	public static IDhApiConfig<Boolean> getEarthCurvatureRatioConfig()
-	{ return new DhApiConfig<>(AdvancedGraphics.earthCurveRatio); }
+	/** This ratio is relative to Earth's real world curvature. */
+	public static IDhApiConfig<Integer> getEarthCurvatureRatioConfig()
+	{ return new DhApiConfig<Integer, Integer>(AdvancedGraphics.earthCurveRatio); }
 	
-	/**
-	 * Returns the config related to whether Distant Horizons'
-	 * should disable vanilla rendering so only Distant Horizons'
-	 * fake chunks are rendered.
-	 */
+	/** If enabled vanilla chunk rendering is disabled and only fake chunks are rendered. */
 	public static IDhApiConfig<Boolean> getEnableLodOnlyModeConfig()
-	{ return new DhApiConfig<>(Config.Client.Advanced.lodOnlyMode); }
+	{ return new DhApiConfig<Boolean, Boolean>(Config.Client.Advanced.lodOnlyMode); }
 	
 	
 	

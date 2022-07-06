@@ -22,9 +22,8 @@ package com.seibel.lod.core.api.external.apiObjects.enums;
 /**
  * NEVER, 	<br>
  * DYNAMIC, <br>
- * ALWAYS	<br>
+ * ALWAYS	<br> <br>
  *
- * <p>
  * This represents how far the LODs should overlap with
  * the vanilla Minecraft terrain.
  * 

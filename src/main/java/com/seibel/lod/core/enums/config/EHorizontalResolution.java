@@ -25,15 +25,15 @@ import java.util.Collections;
 import com.seibel.lod.core.util.LodUtil;
 
 /**
- * chunk <Br>
- * half_chunk <Br>
- * four_blocks <br>
- * two_blocks <Br>
- * block <br>
+ * BLOCK <Br>
+ * TWO_BLOCKS <Br>
+ * FOUR_BLOCKS <br>
+ * HALF_CHUNK <Br>
+ * CHUNK <br>
  * 
  * @author James Seibel
  * @author Leonardo Amato
- * @version 9-25-2021
+ * @version 2022-7-5
  */
 public enum EHorizontalResolution
 {
