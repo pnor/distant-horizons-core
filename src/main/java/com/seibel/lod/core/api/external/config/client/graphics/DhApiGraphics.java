@@ -23,6 +23,7 @@ import com.seibel.lod.core.api.external.apiObjects.enums.*;
 import com.seibel.lod.core.api.external.apiObjects.wrapperInterfaces.IDhApiConfig;
 import com.seibel.lod.core.api.implementation.objects.DefaultConverter;
 import com.seibel.lod.core.api.implementation.objects.GenericEnumConverter;
+import com.seibel.lod.core.api.implementation.objects.RenderModeEnabledConverter;
 import com.seibel.lod.core.api.implementation.wrappers.DhApiConfig;
 import com.seibel.lod.core.config.Config;
 import com.seibel.lod.core.enums.config.*;
@@ -35,7 +36,7 @@ import com.seibel.lod.core.config.Config.Client.Graphics.AdvancedGraphics;
  * Distant Horizons graphics/rendering configuration.
  *
  * @author James Seibel
- * @version 2022-7-4
+ * @version 2022-7-5
  */
 public class DhApiGraphics
 {
@@ -54,14 +55,24 @@ public class DhApiGraphics
 	{ return new DhApiConfig<Integer, Integer>(Quality.lodChunkRenderDistance); }
 	
 	/**
+	 * Simplified version of {@link DhApiGraphics#getRenderingModeConfig()}
+	 * that only enables/disables the fake chunk rendering. <br><br>
+	 *
+	 * Changing this config also changes {@link DhApiGraphics#getRenderingModeConfig()}'s value.
+	 */
+	public static IDhApiConfig<Boolean> getRenderingEnabledConfig()
+	{ return new DhApiConfig<ERendererMode, Boolean>(Debugging.rendererMode, new RenderModeEnabledConverter()); }
+	
+	/**
 	 * Can be used to enable/disable fake chunk rendering or enable the debug renderer. <br><br>
 	 *
 	 * The debug renderer is used to confirm rendering is working at and will draw
-	 * a single multicolor rhombus on the screen in skybox space (AKA behind MC's rendering).
+	 * a single multicolor rhombus on the screen in skybox space (AKA behind MC's rendering). <br><br>
+	 *
+	 * Changing this config also changes {@link DhApiGraphics#getRenderingEnabledConfig()}'s value.
 	 */
-	// TODO replace with enable/disable renderer and move the debug renderer over to the debug menu
-//	public static IDhApiConfig<EDhApiRendererMode> getRenderingModeConfig()
-//	{ return new DhApiConfig<>(Debugging.rendererMode, new GenericEnumConverter<>(ERendererMode.class, EDhApiRendererMode.class)); }
+	public static IDhApiConfig<EDhApiRendererMode> getRenderingModeConfig()
+	{ return new DhApiConfig<ERendererMode, EDhApiRendererMode>(Debugging.rendererMode, new GenericEnumConverter<>(ERendererMode.class, EDhApiRendererMode.class)); }
 	
 	
 	
