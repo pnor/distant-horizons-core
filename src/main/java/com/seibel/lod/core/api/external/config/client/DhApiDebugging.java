@@ -27,27 +27,20 @@ import com.seibel.lod.core.config.Config.Client.Advanced.Debugging;
 import com.seibel.lod.core.enums.rendering.EDebugMode;
 
 /**
- * Distant Horizons debug configuration.
+ * Distant Horizons' debug configuration.
  *
  * @author James Seibel
- * @version 2022-7-4
+ * @version 2022-7-5
  */
 public class DhApiDebugging
 {
-	
-	/**
-	 * Returns the config related to if/how Distant Horizons
-	 * uses debug rendering.
-	 */
+	/** Can be used to debug the standard fake chunk rendering. */
 	public static IDhApiConfig<EDhApiDebugMode> getDebugRenderModeConfig()
-	{ return new DhApiConfig<>(Debugging.debugMode, new GenericEnumConverter<>(EDebugMode.class, EDhApiDebugMode.class)); }
+	{ return new DhApiConfig<EDebugMode, EDhApiDebugMode>(Debugging.debugMode, new GenericEnumConverter<>(EDebugMode.class, EDhApiDebugMode.class)); }
 	
-	/**
-	 * Returns the config related to if Distant Horizons
-	 * debug keybindings are active or not.
-	 */
-	public static IDhApiConfig<Double> getEnableDebugKeybindingsConfig()
-	{ return new DhApiConfig<>(Debugging.enableDebugKeybindings); }
+	/** If enabled debug keybindings can be used. */
+	public static IDhApiConfig<Boolean> getEnableDebugKeybindingsConfig()
+	{ return new DhApiConfig<Boolean, Boolean>(Debugging.enableDebugKeybindings); }
 	
 	
 }

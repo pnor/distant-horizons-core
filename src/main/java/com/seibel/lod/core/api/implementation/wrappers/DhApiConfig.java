@@ -8,6 +8,10 @@ import com.seibel.lod.core.config.types.ConfigEntry;
 /**
  * A wrapper used to interface with Distant Horizon's Config.
  *
+ * When using this object you need to explicitly define the generic types,
+ * otherwise Intellij won't do any type checking and the wrong types can be used. <br>
+ * For example a method returning IDhApiConfig<Integer> when the config should be a Boolean.
+ *
  * @param <apiType>
  * @author James Seibel
  * @version 2022-6-30

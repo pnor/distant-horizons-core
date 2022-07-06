@@ -36,11 +36,6 @@ import com.seibel.lod.core.enums.config.EGpuUploadMethod;
  */
 public class DhApiBuffers
 {
-	// developer note:
-	// DhApiConfig needs types explicitly defined otherwise Intellij
-	// won't do type checking and the wrong types can be used.
-	// For example returning IDhApiConfig<Integer> when the config should be a Boolean.
-	
 	
 	/** Defines how geometry data is uploaded to the GPU. */
 	public static IDhApiConfig<EDhApiGpuUploadMethod> getGpuUploadMethodConfig()

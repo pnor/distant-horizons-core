@@ -40,11 +40,6 @@ import com.seibel.lod.core.config.Config.Client.Graphics.AdvancedGraphics;
  */
 public class DhApiGraphics
 {
-	// developer note:
-	// DhApiConfig needs types explicitly defined otherwise Intellij
-	// won't do type checking and the wrong types can be used.
-	// For example returning IDhApiConfig<Integer> when the config should be a Boolean.
-	
 	
 	//========================//
 	// basic graphic settings //
