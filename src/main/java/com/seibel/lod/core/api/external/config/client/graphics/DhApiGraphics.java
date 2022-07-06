@@ -33,7 +33,7 @@ import com.seibel.lod.core.config.Config.Client.Advanced.Debugging;
 import com.seibel.lod.core.config.Config.Client.Graphics.AdvancedGraphics;
 
 /**
- * Distant Horizons graphics/rendering configuration.
+ * Distant Horizons' graphics/rendering configuration.
  *
  * @author James Seibel
  * @version 2022-7-5
@@ -168,6 +168,10 @@ public class DhApiGraphics
 	/** If enabled vanilla chunk rendering is disabled and only fake chunks are rendered. */
 	public static IDhApiConfig<Boolean> getEnableLodOnlyModeConfig()
 	{ return new DhApiConfig<Boolean, Boolean>(Config.Client.Advanced.lodOnlyMode); }
+	
+	/** Defines how often the geometry should be rebuilt when the player moves. */
+	public static IDhApiConfig<EDhApiBufferRebuildTimes> getGeometryRebuildFrequencyConfig()
+	{ return new DhApiConfig<EBufferRebuildTimes, EDhApiBufferRebuildTimes>(Config.Client.Advanced.Buffers.rebuildTimes, new GenericEnumConverter<>(EBufferRebuildTimes.class, EDhApiBufferRebuildTimes.class)); }
 	
 	
 	

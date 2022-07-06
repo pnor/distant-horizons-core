@@ -27,7 +27,7 @@ import com.seibel.lod.core.enums.rendering.*;
 import com.seibel.lod.core.config.Config.Client.Graphics.FogQuality;
 
 /**
- * Distant Horizons fog configuration. <br><br>
+ * Distant Horizons' fog configuration. <br><br>
  *
  * Note: unless an option explicitly states that it modifies
  * Minecraft's vanilla rendering (like DisableVanillaFog)

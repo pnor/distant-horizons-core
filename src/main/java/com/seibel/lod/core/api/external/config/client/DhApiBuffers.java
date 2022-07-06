@@ -29,35 +29,31 @@ import com.seibel.lod.core.enums.config.EBufferRebuildTimes;
 import com.seibel.lod.core.enums.config.EGpuUploadMethod;
 
 /**
- * Distant Horizons OpenGL buffer configuration.
+ * Distant Horizons' OpenGL buffer configuration.
  *
  * @author James Seibel
- * @version 2022-7-4
+ * @version 2022-7-5
  */
 public class DhApiBuffers
 {
+	// developer note:
+	// DhApiConfig needs types explicitly defined otherwise Intellij
+	// won't do type checking and the wrong types can be used.
+	// For example returning IDhApiConfig<Integer> when the config should be a Boolean.
 	
-	/**
-	 * Returns the config related to how geometry data is
-	 * uploaded to the GPU.
-	 */
+	
+	/** Defines how geometry data is uploaded to the GPU. */
 	public static IDhApiConfig<EDhApiGpuUploadMethod> getGpuUploadMethodConfig()
-	{ return new DhApiConfig<>(Buffers.gpuUploadMethod, new GenericEnumConverter<>(EGpuUploadMethod.class, EDhApiGpuUploadMethod.class)); }
+	{ return new DhApiConfig<EGpuUploadMethod, EDhApiGpuUploadMethod>(Buffers.gpuUploadMethod, new GenericEnumConverter<>(EGpuUploadMethod.class, EDhApiGpuUploadMethod.class)); }
 	
 	/**
-	 * Returns the config related to how long we should wait after
-	 * uploading one Megabyte of geometry data to the GPU before uploading
-	 * the next Megabyte of data.
+	 * Defines how long we should wait after uploading one
+	 * Megabyte of geometry data to the GPU before uploading
+	 * the next Megabyte of data. <br>
+	 * This can be set to a non-zero number to reduce stuttering caused by
+	 * uploading buffers to the GPU.
 	 */
 	public static IDhApiConfig<Integer> getBufferUploadTimeoutPerMegabyteInMillisecondsConfig()
-	{ return new DhApiConfig<>(Buffers.gpuUploadPerMegabyteInMilliseconds); }
-	
-	/**
-	 * Returns the config related to how long we should wait after
-	 * uploading one Megabyte of geometry data to the GPU before uploading
-	 * the next Megabyte of data.
-	 */
-	public static IDhApiConfig<EDhApiBufferRebuildTimes> getBufferRebuildTimeConfig()
-	{ return new DhApiConfig<>(Buffers.rebuildTimes, new GenericEnumConverter<>(EBufferRebuildTimes.class, EDhApiBufferRebuildTimes.class)); }
+	{ return new DhApiConfig<Integer, Integer>(Buffers.gpuUploadPerMegabyteInMilliseconds); }
 	
 }
