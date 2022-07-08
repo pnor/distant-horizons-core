@@ -1,85 +1,121 @@
 package com.seibel.lod.core.jar.installer;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.swing.*;
-import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Gets the releases available on gitlab and sends out the link
+ *
+ * @author coolGi
+ */
 public class GitlabGetter {
     public static final String GitLabApi = "https://gitlab.com/api/v4/projects/";
     public static final String projectID = "18204078";
+    public static JSONArray projectRelease = new JSONArray();
 
-    public static JSONObject projectReleases = new JSONObject();
+    public static List<String> releaseNames = new ArrayList<>(); // This list contains the release ID's
+    public static List<String> readableReleaseNames = new ArrayList<>(); // This list contains the readable names of the ID's
+    private static List<String> mcVersionReleases = new ArrayList<>(); // A list of all minecraft releases
+
+
 
     public static void init() {
         try {
-            projectReleases = (JSONObject) new JSONParser().parse(downloadAsString(GitLabApi+projectID+"/releases"));
+            projectRelease = (JSONArray) new JSONParser().parse(WebDownloader.downloadAsString(new URL(GitLabApi+projectID+"/releases")));
+            for (int i = 0; i < projectRelease.size(); i++) {
+                releaseNames.add(((JSONObject) projectRelease.get(i)).get("tag_name").toString());
+                readableReleaseNames.add(((JSONObject) projectRelease.get(i)).get("name").toString());
+            }
+
+            // Some tests for getting the release versions
+//            System.out.println(getRelease("1.6.3a", "1.18.2"));
+//            System.out.println(getRelease("1.16.4-a1.2", null)); // The oldest downloadable version is 1.2 as versions before that didn't include downloads
+
+            // Set the mcVersionReleases
+            JSONArray minecraftReleases = (JSONArray) ((JSONObject) new JSONParser().parse(WebDownloader.downloadAsString(new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json")))).get("versions");
+            for (int i = 0; i < minecraftReleases.size(); i++) {
+                JSONObject jsonObject = (JSONObject) minecraftReleases.get(i);
+                if (jsonObject.get("type").toString().equals("release"))
+                    mcVersionReleases.add(jsonObject.get("id").toString());
+            }
+
+            // Some tests to get minecraft versions available in that version of the mod
+//            System.out.println(getMcVersionsInRelease("1.6.5a"));
+//            System.out.println(getMcVersionsInRelease("1.16.4-a1.2"));
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    /** Gets the compatible minecraft versions a release of the mod works with */
+    public static List<String> getMcVersionsInRelease(String version) {
+        List<String> versions = new ArrayList<>();
 
-    public static boolean netIsAvailable() {
+        JSONArray releaseArray = null;
         try {
-            final URL url = new URL("https://gitlab.com");
-            final URLConnection conn = url.openConnection();
-            conn.connect();
-            conn.getInputStream().close();
-            return true;
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            return false;
+            releaseArray = (
+                    ((JSONArray)
+                            ((JSONObject)
+                                    ((JSONObject)
+                                            projectRelease.get(releaseNames.indexOf(version))
+                                    ).get("assets")
+                            ).get("links")));
+        } catch (Exception e) {
+            System.out.println("ERROR: Release ["+version+"] is not a valid release. Printing stacktrace...");
+            e.printStackTrace();
+            return null;
         }
-    }
 
 
-    public static void downloadAsFile(String urlS, File file) {
-        try {
-            URL url = new URL(urlS);
-            HttpsURLConnection connection = (HttpsURLConnection) url
-                    .openConnection();
-            long filesize = connection.getContentLengthLong();
-            if (filesize == -1) {
-                throw new Exception("Content length must not be -1 (unknown)!");
-            }
-            long totalDataRead = 0;
-            try (java.io.BufferedInputStream in = new java.io.BufferedInputStream(
-                    connection.getInputStream())) {
-                java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
-                try (java.io.BufferedOutputStream bout = new BufferedOutputStream(
-                        fos, 1024)) {
-                    byte[] data = new byte[1024];
-                    int i;
-                    while ((i = in.read(data, 0, 1024)) >= 0) {
-                        totalDataRead = totalDataRead + i;
-                        bout.write(data, 0, i);
-//                        int percent = (int) ((totalDataRead * 100) / filesize);
-//                        System.out.println(percent);
-                    }
+        for (int i = 0; i < releaseArray.size(); i++) {
+            String name = ((JSONObject) releaseArray.get(i)).get("name").toString();
+            for (String mcVersion : mcVersionReleases) {
+                if (name.contains(mcVersion)) {
+                    versions.add(mcVersion);
+                    break;
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        }
+
+        return versions;
     }
-
-    public static String downloadAsString(String urlS) {
-        StringBuilder stringBuilder = new StringBuilder();
+    /** Gets the url to the download of a release of the mod */
+    public static URL getRelease(String version, String mcVersion) {
+        // Get the asset links of the releases
+        JSONArray releaseArray = null;
         try {
-            URL url = new URL(urlS);
-            URLConnection urlConnection = url.openConnection();
-            urlConnection.setConnectTimeout(1000);
-            urlConnection.setReadTimeout(1000);
-            BufferedReader bReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            releaseArray = (
+                    ((JSONArray)
+                            ((JSONObject)
+                                    ((JSONObject)
+                                            projectRelease.get(releaseNames.indexOf(version))
+                                    ).get("assets")
+                            ).get("links")));
+        } catch (Exception e) {
+            System.out.println("ERROR: Release ["+version+"] is not a valid release. Printing stacktrace...");
+            e.printStackTrace();
+            return null;
+        }
 
-            String line;
-            while ((line = bReader.readLine()) != null) {
-                stringBuilder.append(line);
+
+        if (mcVersion != null) {
+            for (int i = 0; i < releaseArray.size(); i++) {
+                if (((JSONObject) releaseArray.get(i)).get("name").toString().contains(mcVersion)) { // With the way our GitLab releases is set up, the only way to check the mc version is to check if it is in the name
+                    try {
+                        return new URL(((JSONObject) releaseArray.get(i)).get("direct_asset_url").toString());
+                    } catch (Exception e) { e.printStackTrace(); }
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return (stringBuilder.toString());
+        } else {
+            // If version is null it gets the first version available
+            try {
+                return new URL(((JSONObject) releaseArray.get(0)).get("direct_asset_url").toString());
+            } catch (Exception e) { e.printStackTrace(); }
+        }
+
+        return null;
     }
 }

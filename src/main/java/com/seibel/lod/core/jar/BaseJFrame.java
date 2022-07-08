@@ -21,6 +21,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 
+/**
+ * @author coolGi
+ */
+// This will be removed later on to make a better ui
 public class BaseJFrame extends JFrame {
     public BaseJFrame() {
         init();
