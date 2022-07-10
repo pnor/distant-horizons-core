@@ -6,7 +6,10 @@ import org.json.simple.parser.JSONParser;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Gets the releases available on gitlab and sends out the link
@@ -26,10 +29,23 @@ public class GitlabGetter {
 
     public static void init() {
         try {
+            // TODO: Modify the projectRelease to fix 1.6.0a's versions rather than fixing it everytime we want to use projectReleases
             projectRelease = (JSONArray) new JSONParser().parse(WebDownloader.downloadAsString(new URL(GitLabApi+projectID+"/releases")));
+
             for (int i = 0; i < projectRelease.size(); i++) {
-                releaseNames.add(((JSONObject) projectRelease.get(i)).get("tag_name").toString());
-                readableReleaseNames.add(((JSONObject) projectRelease.get(i)).get("name").toString());
+                JSONObject currentRelease = (JSONObject) projectRelease.get(i);
+                if (!currentRelease.get("tag_name").toString().contains("-1.6.0a")) { // We have to do this cus 1.6.0a stuffed up some ordering
+                    releaseNames.add(currentRelease.get("tag_name").toString());
+                    if (currentRelease.get("tag_name").toString().startsWith("1.16.4") || currentRelease.get("tag_name").toString().startsWith("1.16.5")) {
+                        // We want to do this to remove the mc version from the start of the name in 1.5.4 and prior
+                        readableReleaseNames.add(currentRelease.get("name").toString().replace("1.16.4 ","").replace("1.16.5 ",""));
+                    } else {
+                        readableReleaseNames.add(currentRelease.get("name").toString());
+                    }
+                } else if (!releaseNames.contains("1.6.0a")) {
+                    releaseNames.add("1.6.0a");
+                    readableReleaseNames.add("Alpha 1.6.0");
+                }
             }
 
             // Some tests for getting the release versions
@@ -54,20 +70,7 @@ public class GitlabGetter {
     public static List<String> getMcVersionsInRelease(String version) {
         List<String> versions = new ArrayList<>();
 
-        JSONArray releaseArray = null;
-        try {
-            releaseArray = (
-                    ((JSONArray)
-                            ((JSONObject)
-                                    ((JSONObject)
-                                            projectRelease.get(releaseNames.indexOf(version))
-                                    ).get("assets")
-                            ).get("links")));
-        } catch (Exception e) {
-            System.out.println("ERROR: Release ["+version+"] is not a valid release. Printing stacktrace...");
-            e.printStackTrace();
-            return null;
-        }
+        JSONArray releaseArray = getScuffedReleaseArray(version);
 
 
         for (int i = 0; i < releaseArray.size(); i++) {
@@ -80,26 +83,15 @@ public class GitlabGetter {
             }
         }
 
+        // Sort it so the newest versions of minecraft are at the top
+        Collections.sort(versions);
+        Collections.reverse(versions);
+
         return versions;
     }
     /** Gets the url to the download of a release of the mod */
     public static URL getRelease(String version, String mcVersion) {
-        // Get the asset links of the releases
-        JSONArray releaseArray = null;
-        try {
-            releaseArray = (
-                    ((JSONArray)
-                            ((JSONObject)
-                                    ((JSONObject)
-                                            projectRelease.get(releaseNames.indexOf(version))
-                                    ).get("assets")
-                            ).get("links")));
-        } catch (Exception e) {
-            System.out.println("ERROR: Release ["+version+"] is not a valid release. Printing stacktrace...");
-            e.printStackTrace();
-            return null;
-        }
-
+        JSONArray releaseArray = getScuffedReleaseArray(version);
 
         if (mcVersion != null) {
             for (int i = 0; i < releaseArray.size(); i++) {
@@ -117,5 +109,52 @@ public class GitlabGetter {
         }
 
         return null;
+    }
+
+
+    public static JSONArray getScuffedReleaseArray(String version) {
+        // Get the asset links of the releases
+        JSONArray releaseArray = new JSONArray();
+
+        if (!version.equals("1.6.0a")) { // We have to do this cus 1.6.0a stuffed up some ordering
+            try {
+                // Do this hack to remove all the mcVer-1.6.0a items from the releaseNames
+                int newVer = releaseNames.indexOf(version);
+                if (releaseNames.indexOf(version) > releaseNames.size()-14)
+                    newVer += 2;
+
+                releaseArray = (
+                        ((JSONArray)
+                                ((JSONObject)
+                                        ((JSONObject)
+                                                projectRelease.get(newVer)
+                                        ).get("assets")
+                                ).get("links")));
+            } catch (Exception e) {
+                System.out.println("ERROR: Release [" + version + "] is not a valid release. Printing stacktrace...");
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            try {
+                for (int i = 0; i < projectRelease.size(); i++) {
+                    JSONObject currentRelease = ((JSONObject) new JSONParser().parse(projectRelease.get(i).toString()));
+                    if (currentRelease.get("tag_name").toString().contains("-1.6.0a")) {
+                        releaseArray.add(
+                                ((JSONArray)
+                                    ((JSONObject)
+                                        currentRelease.get("assets")
+                                    ).get("links")
+                                ).get(0)
+                        );
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        return releaseArray;
     }
 }

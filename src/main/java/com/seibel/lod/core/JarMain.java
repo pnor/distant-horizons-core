@@ -96,7 +96,6 @@ public class JarMain {
                             String[].class
                     ))
             );
-            frame.validate();
         });
         frame.add(modVersions);
         frame.add(modMcVersion);
@@ -126,15 +125,17 @@ public class JarMain {
                     downloadPath = new URL(downloadPath.toString() + "/file");
             } catch (Exception f) { f.printStackTrace(); }
 
-            if (!WebDownloader.downloadAsFile(
+            try {
+                WebDownloader.downloadAsFile(
                     downloadPath,
                     minecraftDirPop.getSelectedFile().toPath().resolve(
                         ModInfo.NAME+"-"+GitlabGetter.releaseNames.get(modVersions.getSelectedIndex())+"-"+((String) modMcVersion.getSelectedItem())+".jar"
-                    ).toFile()
-            ))
-                JOptionPane.showMessageDialog(frame, "Download failed. Check your internet connection", ModInfo.READABLE_NAME, JOptionPane.ERROR_MESSAGE);
-            else
+                    ).toFile());
+
                 JOptionPane.showMessageDialog(frame, "Installation done. \nYou can now close the installer", ModInfo.READABLE_NAME, JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception f) {
+                JOptionPane.showMessageDialog(frame, "Download failed. Check your internet connection \nStacktrace: " + f.getMessage(), ModInfo.READABLE_NAME, JOptionPane.ERROR_MESSAGE);
+            }
         });
         frame.add(installMod);
 
