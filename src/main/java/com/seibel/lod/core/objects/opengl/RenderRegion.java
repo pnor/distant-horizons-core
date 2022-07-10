@@ -16,7 +16,7 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.seibel.lod.core.objects.opengl;
 
 import java.util.ConcurrentModificationException;
@@ -52,53 +52,50 @@ import com.seibel.lod.core.util.StatsMap;
 import com.seibel.lod.core.util.gridList.PosArrayGridList;
 import com.seibel.lod.core.wrapperInterfaces.block.AbstractBlockPosWrapper;
 import com.seibel.lod.core.wrapperInterfaces.config.ILodConfigWrapperSingleton;
+import org.apache.logging.log4j.Level;
 
 import static com.seibel.lod.core.render.LodRenderer.EVENT_LOGGER;
 
-public class RenderRegion implements AutoCloseable
-{
+public class RenderRegion implements AutoCloseable {
 	private static final ILodConfigWrapperSingleton CONFIG = SingletonHandler.get(ILodConfigWrapperSingleton.class);
-	
+
 	/** stores if the region at the given x and z index needs to be regenerated */
 	// Use int because I need Tri state:
 	private final AtomicInteger needRegen = new AtomicInteger(2);
-	
+
 	private enum BackState {
-		Unused,
-		Building,
-		Complete,
+		Unused, Building, Complete,
 	}
+
 	private enum FrontState {
-		Unused,
-		Rendering,
-		Invalidated,
+		Unused, Rendering, Invalidated,
 	}
-	
+
 	final RegionPos regionPos;
 	RenderBuffer renderBufferBack = null;
-	AtomicReference<BackState> backState =
-			new AtomicReference<BackState>(BackState.Unused);
-	AtomicReference<FrontState> frontState =
-			new AtomicReference<FrontState>(FrontState.Unused);
+	AtomicReference<BackState> backState = new AtomicReference<BackState>(BackState.Unused);
+	AtomicReference<FrontState> frontState = new AtomicReference<FrontState>(FrontState.Unused);
 	RenderBuffer renderBufferFront = null;
 	final LodDimension lodDim;
-	
+
 	public RenderRegion(RegionPos regPos, LodDimension lodDim) {
 		regionPos = regPos;
 		this.lodDim = lodDim;
 	}
-	
+
 	public boolean canRender(LodDimension lodDim, RegionPos regPos) {
 		return lodDim == this.lodDim && regPos.equals(regionPos);
 	}
-	
+
 	public void setNeedRegen() {
 		needRegen.set(2);
-	} 
-	
-	public Optional<CompletableFuture<Void>> updateStatus(Executor bufferUploader, Executor bufferBuilder, boolean alwaysRegen, int playerPosX, int playerPosZ, boolean doCaveCulling) {
-		if (alwaysRegen) setNeedRegen();
-		
+	}
+
+	public Optional<CompletableFuture<Void>> updateStatus(Executor bufferUploader, Executor bufferBuilder,
+			boolean alwaysRegen, int playerPosX, int playerPosZ, boolean doCaveCulling) {
+		if (alwaysRegen)
+			setNeedRegen();
+
 		BackState state = backState.get();
 		if (state != BackState.Unused) {
 			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: BackState is {}", regionPos, state);
@@ -106,7 +103,7 @@ public class RenderRegion implements AutoCloseable
 		}
 
 		LodRegion r = lodDim.getRegion(regionPos.x, regionPos.z);
-		if (r==null) {
+		if (r == null) {
 			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: Region is null", regionPos);
 			return Optional.empty();
 		}
@@ -114,7 +111,7 @@ public class RenderRegion implements AutoCloseable
 			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: Region doesn't need regen", regionPos);
 			return Optional.empty();
 		}
-		
+
 		if (!backState.compareAndSet(BackState.Unused, BackState.Building)) {
 			EVENT_LOGGER.trace("{}: UpdateStatus rejected. Cause: CAS on BackState failed: ", backState.get());
 			return Optional.empty();
@@ -122,63 +119,73 @@ public class RenderRegion implements AutoCloseable
 		needRegen.decrementAndGet();
 		return Optional.of(startBuid(bufferUploader, bufferBuilder, r, lodDim, playerPosX, playerPosZ, doCaveCulling));
 	}
-	
-	public boolean render(LodDimension renderDim,
-			Vec3d cameraPos, AbstractBlockPosWrapper cameraBlockPos, Vec3f cameraDir,
-			boolean enableDirectionalCulling, LodRenderProgram program) {
-		if (!frontState.compareAndSet(FrontState.Unused, FrontState.Rendering)) return false;
-		try {
-		if (renderDim != lodDim) return false;
-		if (enableDirectionalCulling &&
-				!RenderUtil.isRegionInViewFrustum(cameraBlockPos,
-						cameraDir, regionPos.x, regionPos.z)) return false;
-		BackState state = backState.get();
-		if (state == BackState.Complete) {
-			if (renderBufferBack != null) {
-				EVENT_LOGGER.debug("RenderRegion swap @ {}", regionPos);
-				boolean shouldKeep = renderBufferFront != null && renderBufferFront.onSwapToBack();
-				RenderBuffer temp = shouldKeep ? renderBufferFront : null;
-				renderBufferFront = renderBufferBack;
-				renderBufferBack = temp;
-				if (renderBufferFront != null) renderBufferFront.onSwapToFront();
-			}
-			if (!backState.compareAndSet(BackState.Complete, BackState.Unused)) {
-				EVENT_LOGGER.error("RenderRegion.render() got illegal state on swapping buffer!");
-			}
-		}
-		if (renderBufferFront == null) return false;
-		program.setModelPos(new Vec3f(
-				(float) ((regionPos.x * LodUtil.REGION_WIDTH) - cameraPos.x),
-				(float) (LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y),
-				(float) ((regionPos.z * LodUtil.REGION_WIDTH) - cameraPos.z)));
 
-		return renderBufferFront.render(program);
+	public boolean render(LodDimension renderDim, Vec3d cameraPos, AbstractBlockPosWrapper cameraBlockPos,
+			Vec3f cameraDir, boolean enableDirectionalCulling, LodRenderProgram program) {
+		if (!frontState.compareAndSet(FrontState.Unused, FrontState.Rendering))
+			return false;
+		try {
+			if (renderDim != lodDim)
+				return false;
+			if (enableDirectionalCulling
+					&& !RenderUtil.isRegionInViewFrustum(cameraBlockPos, cameraDir, regionPos.x, regionPos.z))
+				return false;
+			BackState state = backState.get();
+			if (state == BackState.Complete) {
+				if (renderBufferBack != null) {
+					EVENT_LOGGER.debug("RenderRegion swap @ {}", regionPos);
+					boolean shouldKeep = renderBufferFront != null && renderBufferFront.onSwapToBack();
+					RenderBuffer temp = shouldKeep ? renderBufferFront : null;
+					renderBufferFront = renderBufferBack;
+					renderBufferBack = temp;
+					if (renderBufferFront != null)
+						renderBufferFront.onSwapToFront();
+				}
+				if (!backState.compareAndSet(BackState.Complete, BackState.Unused)) {
+					EVENT_LOGGER.error("RenderRegion.render() got illegal state on swapping buffer!");
+				}
+			}
+			if (renderBufferFront == null)
+				return false;
+
+			// program.setModelPos(new Vec3f((float) ((regionPos.x * LodUtil.REGION_WIDTH) - cameraPos.x),
+			// 		(float) (LodBuilder.MIN_WORLD_HEIGHT - cameraPos.y),
+			// 		(float) ((regionPos.z * LodUtil.REGION_WIDTH) - cameraPos.z)));
+			program.setModelPos(new Vec3f((float) ((regionPos.x * LodUtil.REGION_WIDTH) - cameraPos.x),
+					(float) (-64 - cameraPos.y),
+					(float) ((regionPos.z * LodUtil.REGION_WIDTH) - cameraPos.z)));
+
+			return renderBufferFront.render(program);
 		} finally {
 			frontState.compareAndSet(FrontState.Rendering, FrontState.Unused);
 		}
-		 
+
 	}
-	
+
 	private void recreateBuffer(LodQuadBuilder builder) {
-		if (renderBufferBack != null) throw new RuntimeException("Assert Error");
+		if (renderBufferBack != null)
+			throw new RuntimeException("Assert Error");
 		boolean useSimpleBuffer = (builder.getCurrentNeededVertexBufferCount() <= 6) || true;
-		renderBufferBack = useSimpleBuffer ?
-				new SimpleRenderBuffer()
-				: null; //new ComplexRenderRegion(regPos);
+		renderBufferBack = useSimpleBuffer ? new SimpleRenderBuffer() : null; // new ComplexRenderRegion(regPos);
 	}
-	
-	private CompletableFuture<Void> startBuid(Executor bufferUploader, Executor bufferBuilder, LodRegion region, LodDimension lodDim, int playerPosX, int playerPosZ, boolean doCaveCulling) {
+
+	private CompletableFuture<Void> startBuid(Executor bufferUploader, Executor bufferBuilder, LodRegion region,
+			LodDimension lodDim, int playerPosX, int playerPosZ, boolean doCaveCulling) {
 		EVENT_LOGGER.trace("RenderRegion startBuild @ {}", regionPos);
 		LodRegion[] adjRegions = new LodRegion[4];
 		try {
-			if (renderBufferBack != null) renderBufferBack.onReuse();
+			if (renderBufferBack != null)
+				renderBufferBack.onReuse();
 			for (LodDirection dir : LodDirection.ADJ_DIRECTIONS) {
-				adjRegions[dir.ordinal() - 2] = lodDim.getRegion(regionPos.x+dir.getNormal().x, regionPos.z+dir.getNormal().z);
+				adjRegions[dir.ordinal() - 2] = lodDim.getRegion(regionPos.x + dir.getNormal().x,
+						regionPos.z + dir.getNormal().z);
 			}
-		} catch (NullPointerException | ArrayIndexOutOfBoundsException e) { // HOTFIX: Error ignoring for a concurrency caused issue
+		} catch (NullPointerException | ArrayIndexOutOfBoundsException e) { // HOTFIX: Error ignoring for a concurrency
+																			// caused issue
 			setNeedRegen();
 			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
-				EVENT_LOGGER.error("\"Lod Builder Starter\""
+				EVENT_LOGGER.error(
+						"\"Lod Builder Starter\""
 								+ " encountered error on catching exceptions and fallback on starting build task: ",
 						new ConcurrentModificationException("RenderRegion Illegal State"));
 			}
@@ -187,9 +194,10 @@ public class RenderRegion implements AutoCloseable
 		} catch (Throwable t) {
 			setNeedRegen();
 			if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
-				EVENT_LOGGER.error("\"Lod Builder Starter\""
-					+ " encountered error on catching exceptions and fallback on starting build task: ",
-					new ConcurrentModificationException("RenderRegion Illegal State"));
+				EVENT_LOGGER.error(
+						"\"Lod Builder Starter\""
+								+ " encountered error on catching exceptions and fallback on starting build task: ",
+						new ConcurrentModificationException("RenderRegion Illegal State"));
 			}
 			throw t;
 		}
@@ -200,7 +208,7 @@ public class RenderRegion implements AutoCloseable
 				// FIXME: Clamp also to the max world height.
 				skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
 				LodQuadBuilder builder = new LodQuadBuilder(doCaveCulling, skyLightCullingBelow);
-				Runnable buildRun = ()->{
+				Runnable buildRun = () -> {
 					makeLodRenderData(builder, region, adjRegions, playerPosX, playerPosZ);
 				};
 				if (renderBufferBack != null)
@@ -217,67 +225,58 @@ public class RenderRegion implements AutoCloseable
 				throw e3;
 			}
 		}, bufferBuilder)
-				
+
 				.thenAcceptAsync((builder) -> {
-			try {
-				EVENT_LOGGER.trace("RenderRegion start Upload @ {}", regionPos);
-				GLProxy glProxy = GLProxy.getInstance();
-				GpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
-				GLProxyContext oldContext = glProxy.getGlContext();
-				glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
-				try {
-					if (renderBufferBack == null) recreateBuffer(builder);
-					if (!renderBufferBack.tryUploadBuffers(builder, method)) {
-						renderBufferBack = null;
-						recreateBuffer(builder);
-						if (!renderBufferBack.tryUploadBuffers(builder, method)) {
-							throw new RuntimeException("Newly created renderBuffer "
-									+ "is still returning false on tryUploadBuffers!");
+					try {
+						EVENT_LOGGER.trace("RenderRegion start Upload @ {}", regionPos);
+						GLProxy glProxy = GLProxy.getInstance();
+						GpuUploadMethod method = GLProxy.getInstance().getGpuUploadMethod();
+						GLProxyContext oldContext = glProxy.getGlContext();
+						glProxy.setGlContext(GLProxyContext.LOD_BUILDER);
+						try {
+							if (renderBufferBack == null)
+								recreateBuffer(builder);
+							if (!renderBufferBack.tryUploadBuffers(builder, method)) {
+								renderBufferBack = null;
+								recreateBuffer(builder);
+								if (!renderBufferBack.tryUploadBuffers(builder, method)) {
+									throw new RuntimeException("Newly created renderBuffer "
+											+ "is still returning false on tryUploadBuffers!");
+								}
+							}
+						} finally {
+							glProxy.setGlContext(oldContext);
+						}
+						EVENT_LOGGER.trace("RenderRegion end Upload @ {}", regionPos);
+					} catch (Throwable e3) {
+						EVENT_LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
+						throw e3;
+					}
+				}, bufferUploader).handle((v, e) -> {
+					if (e != null) {
+						setNeedRegen();
+						if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
+							EVENT_LOGGER.error("\"LodNodeBufferBuilder\"" + " encountered error on exit: ",
+									new ConcurrentModificationException("RenderRegion Illegal State"));
+						}
+					} else {
+						if (!backState.compareAndSet(BackState.Building, BackState.Complete)) {
+							EVENT_LOGGER.error("\"LodNodeBufferBuilder\"" + " encountered error on exit: ",
+									new ConcurrentModificationException("RenderRegion Illegal State"));
 						}
 					}
-				} finally {
-					glProxy.setGlContext(oldContext);
-				}
-				EVENT_LOGGER.trace("RenderRegion end Upload @ {}", regionPos);
-			} catch (Throwable e3) {
-				EVENT_LOGGER.error("\"LodNodeBufferBuilder\" was unable to upload buffer: ", e3);
-				throw e3;
-			}
-		}, bufferUploader).handle((v, e) -> {
-			if (e != null) {
-				setNeedRegen();
-				if (!backState.compareAndSet(BackState.Building, BackState.Unused)) {
-					EVENT_LOGGER.error("\"LodNodeBufferBuilder\""
-						+ " encountered error on exit: ",
-						new ConcurrentModificationException("RenderRegion Illegal State"));
-				}
-			} else {
-				if (!backState.compareAndSet(BackState.Building, BackState.Complete)) {
-					EVENT_LOGGER.error("\"LodNodeBufferBuilder\""
-							+ " encountered error on exit: ",
-							new ConcurrentModificationException("RenderRegion Illegal State"));
-				}
-			}
-			return (Void) null;
-		});
+					return (Void) null;
+				});
 	}
 
-	private static final int ADJACENT8[][] = {
-			{-1,-1},
-			{-1, 0},
-			{-1, 1},
-			{ 0,-1},
-			//{ 0, 0},
-			{ 0, 1},
-			{ 1,-1},
-			{ 1, 0},
-			{ 1, 1}
-	};
+	private static final int ADJACENT8[][] = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 },
+			// { 0, 0},
+			{ 0, 1 }, { 1, -1 }, { 1, 0 }, { 1, 1 } };
 
-	private static void makeLodRenderData(LodQuadBuilder quadBuilder, LodRegion region, LodRegion[] adjRegions, int playerX,
-			int playerZ) {
+	private static void makeLodRenderData(LodQuadBuilder quadBuilder, LodRegion region, LodRegion[] adjRegions,
+			int playerX, int playerZ) {
 		byte minDetail = region.getMinDetailLevel();
-		
+
 		// Variable initialization
 		DebugMode debugMode = CONFIG.client().advanced().debugging().getDebugMode();
 
@@ -292,7 +291,7 @@ public class RenderRegion implements AutoCloseable
 			byte detailLevel = posToRender.getNthDetailLevel(index);
 			int posX = posToRender.getNthPosX(index);
 			int posZ = posToRender.getNthPosZ(index);
-			
+
 			// TODO: In the future, We don't need to ignore rendered chunks! Just build it
 			// and leave it for the renderer to decide!
 			// We don't want to render this fake block if
@@ -304,14 +303,15 @@ public class RenderRegion implements AutoCloseable
 				int chunkX = LevelPosUtil.getChunkPos(detailLevel, posX);
 				int chunkZ = LevelPosUtil.getChunkPos(detailLevel, posZ);
 				// skip any chunks that Minecraft is going to render
-				if (chunkGrid != null && chunkGrid.get(chunkX, chunkZ) != null) continue;
+				if (chunkGrid != null && chunkGrid.get(chunkX, chunkZ) != null)
+					continue;
 			}
 
 			long[] posData = region.getAllData(detailLevel, posX, posZ);
 			if (posData == null || posData.length == 0 || !DataPointUtil.doesItExist(posData[0])
 					|| DataPointUtil.isVoid(posData[0]))
 				continue;
-			
+
 			long[][][] adjData = new long[4][][];
 			boolean[] adjUseBlack = new boolean[4];
 
@@ -321,9 +321,9 @@ public class RenderRegion implements AutoCloseable
 			// border when we have transparent block like water or glass
 			// to avoid having a "darker border" underground
 			// Arrays.fill(adjShadeDisabled, false);
-			
+
 			// We check every adj block in each direction
-			
+
 			// If the adj block is rendered in the same region and with same detail
 			// and is positioned in a place that is not going to be rendered by vanilla game
 			// then we can set this position as adj
@@ -336,38 +336,42 @@ public class RenderRegion implements AutoCloseable
 					int zAdj = posZ + lodDirection.getNormal().z;
 					int chunkXAdj = LevelPosUtil.getChunkPos(detailLevel, xAdj);
 					int chunkZAdj = LevelPosUtil.getChunkPos(detailLevel, zAdj);
-					if (chunkGrid != null && chunkGrid.get(chunkXAdj, chunkZAdj)!=null) {
-						adjUseBlack[lodDirection.ordinal()-2] = true;
+					if (chunkGrid != null && chunkGrid.get(chunkXAdj, chunkZAdj) != null) {
+						adjUseBlack[lodDirection.ordinal() - 2] = true;
 					}
 
-					boolean isCrossRegionBoundary = LevelPosUtil.getRegion(detailLevel, xAdj) != region.regionPosX ||
-							LevelPosUtil.getRegion(detailLevel, zAdj) != region.regionPosZ;
+					boolean isCrossRegionBoundary = LevelPosUtil.getRegion(detailLevel, xAdj) != region.regionPosX
+							|| LevelPosUtil.getRegion(detailLevel, zAdj) != region.regionPosZ;
 
 					LodRegion adjRegion;
 					byte adjDetail;
-					int childXAdj = xAdj*2 + (lodDirection.getNormal().x<0 ? 1 : 0);
-					int childZAdj = zAdj*2 + (lodDirection.getNormal().z<0 ? 1 : 0);
+					int childXAdj = xAdj * 2 + (lodDirection.getNormal().x < 0 ? 1 : 0);
+					int childZAdj = zAdj * 2 + (lodDirection.getNormal().z < 0 ? 1 : 0);
 
-					//we check if the detail of the adjPos is equal to the correct one (region border fix)
-					//or if the detail is wrong by 1 value (region+circle border fix)
+					// we check if the detail of the adjPos is equal to the correct one (region
+					// border fix)
+					// or if the detail is wrong by 1 value (region+circle border fix)
 					if (isCrossRegionBoundary) {
-						//we compute at which detail that position should be rendered
-						adjRegion = adjRegions[lodDirection.ordinal()-2];
-						if(adjRegion == null) continue;
+						// we compute at which detail that position should be rendered
+						adjRegion = adjRegions[lodDirection.ordinal() - 2];
+						if (adjRegion == null)
+							continue;
 						adjDetail = adjRegion.getRenderDetailLevelAt(playerX, playerZ, detailLevel, xAdj, zAdj);
 					} else {
 						adjRegion = region;
-						if (posToRender.contains(detailLevel, xAdj, zAdj)) adjDetail = detailLevel;
-						else if (detailLevel>0 &&
-								posToRender.contains((byte) (detailLevel-1), childXAdj, childZAdj))
-							adjDetail = (byte) (detailLevel-1);
-						else if (detailLevel<LodUtil.REGION_DETAIL_LEVEL &&
-								posToRender.contains((byte) (detailLevel+1), xAdj/2, zAdj/2))
-							adjDetail = (byte) (detailLevel+1);
-						else continue;
+						if (posToRender.contains(detailLevel, xAdj, zAdj))
+							adjDetail = detailLevel;
+						else if (detailLevel > 0
+								&& posToRender.contains((byte) (detailLevel - 1), childXAdj, childZAdj))
+							adjDetail = (byte) (detailLevel - 1);
+						else if (detailLevel < LodUtil.REGION_DETAIL_LEVEL
+								&& posToRender.contains((byte) (detailLevel + 1), xAdj / 2, zAdj / 2))
+							adjDetail = (byte) (detailLevel + 1);
+						else
+							continue;
 					}
 
-					if (adjDetail < detailLevel-1 || adjDetail > detailLevel+1) {
+					if (adjDetail < detailLevel - 1 || adjDetail > detailLevel + 1) {
 						continue;
 					}
 
@@ -378,18 +382,18 @@ public class RenderRegion implements AutoCloseable
 								LevelPosUtil.convert(detailLevel, zAdj, adjDetail));
 					} else {
 						adjData[lodDirection.ordinal() - 2] = new long[2][];
-						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail,
-								childXAdj, childZAdj);
+						adjData[lodDirection.ordinal() - 2][0] = adjRegion.getAllData(adjDetail, childXAdj, childZAdj);
 						adjData[lodDirection.ordinal() - 2][1] = adjRegion.getAllData(adjDetail,
-								childXAdj + (lodDirection.getAxis()==LodDirection.Axis.X ? 0 : 1),
-								childZAdj + (lodDirection.getAxis()==LodDirection.Axis.Z ? 0 : 1));
+								childXAdj + (lodDirection.getAxis() == LodDirection.Axis.X ? 0 : 1),
+								childZAdj + (lodDirection.getAxis() == LodDirection.Axis.Z ? 0 : 1));
 					}
 				} catch (RuntimeException e) {
-					EVENT_LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, posX, posZ, lodDirection);
+					EVENT_LOGGER.warn("Failed to get adj data for [{}:{},{}] at [{}]", detailLevel, posX, posZ,
+							lodDirection);
 					EVENT_LOGGER.warn("Detail exception: ", e);
 				}
 			}
-			
+
 			// We render every vertical lod present in this position
 			// We only stop when we find a block that is void or non-existing block
 			for (int i = 0; i < posData.length; i++) {
@@ -410,36 +414,35 @@ public class RenderRegion implements AutoCloseable
 
 		} // for pos to in list to render
 			// the thread executed successfully
-		// Merge all quads
+			// Merge all quads
 		quadBuilder.mergeQuads();
 	}
 
-	
 	@Override
-	public void close()
-	{
-		if (renderBufferBack != null) renderBufferBack.close();
-		while (frontState.get() != FrontState.Invalidated && !frontState.compareAndSet(FrontState.Unused, FrontState.Invalidated)) {
-			Thread.yield(); //FIXME: If on java 9, use Thread.onSpinWait();
+	public void close() {
+		if (renderBufferBack != null)
+			renderBufferBack.close();
+		while (frontState.get() != FrontState.Invalidated
+				&& !frontState.compareAndSet(FrontState.Unused, FrontState.Invalidated)) {
+			Thread.yield(); // FIXME: If on java 9, use Thread.onSpinWait();
 		}
-		if (renderBufferFront != null) renderBufferFront.close();
+		if (renderBufferFront != null)
+			renderBufferFront.close();
 	}
 
-	public void debugDumpStats(StatsMap statsMap)
-	{
+	public void debugDumpStats(StatsMap statsMap) {
 		statsMap.incStat("RenderRegions");
 		RenderBuffer front = renderBufferFront;
-		if (front!=null) {
+		if (front != null) {
 			statsMap.incStat("FrontBuffers");
 			front.debugDumpStats(statsMap);
 		}
-		
+
 		RenderBuffer back = renderBufferBack;
-		if (back!=null) {
+		if (back != null) {
 			statsMap.incStat("BackBuffers");
 			back.debugDumpStats(statsMap);
 		}
-		
-		
+
 	}
 }

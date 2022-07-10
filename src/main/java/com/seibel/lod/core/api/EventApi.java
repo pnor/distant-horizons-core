@@ -37,6 +37,10 @@ import com.seibel.lod.core.wrapperInterfaces.minecraft.IMinecraftClientWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 
+// NOTE: me <3
+import com.seibel.lod.core.api.ClientApi;
+import org.apache.logging.log4j.Level;
+
 /**
  * This holds the methods that should be called by the host mod loader (Fabric,
  * Forge, etc.). Specifically server and client events.
