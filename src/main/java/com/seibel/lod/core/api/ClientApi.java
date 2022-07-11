@@ -257,7 +257,7 @@ public class ClientApi {
 
 				if (!rendererDisabledBecauseOfExceptions) {
 					try {
-						if (lodDim.dimension.getDimensionName() == "overworld") {
+						if (lodDim.dimension.getDimensionName().equals("overworld")) {
 							ClientApi.renderer.drawLODs(lodDim, mcModelViewMatrix, mcProjectionMatrix, partialTicks,
 									MC.getProfiler());
 						}

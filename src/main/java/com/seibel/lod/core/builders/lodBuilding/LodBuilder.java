@@ -47,6 +47,8 @@ import com.seibel.lod.core.wrapperInterfaces.world.IDimensionTypeWrapper;
 import com.seibel.lod.core.wrapperInterfaces.world.IWorldWrapper;
 import org.apache.logging.log4j.LogManager;
 
+import org.apache.logging.log4j.Level;
+
 /**
  * This object is in charge of creating Lod related objects.
  *
@@ -120,19 +122,22 @@ public class LodBuilder {
       try {
         // we need a loaded client world in order to
         // get the textures for blocks
-        if (MC.getWrappedClientWorld() == null)
+        if (MC.getWrappedClientWorld() == null) {
           return;
+        }
 
         // don't try to generate LODs if the user isn't in the world anymore
         // (this happens a lot when the user leaves a world/server)
-        if (!MC.hasSinglePlayerServer() && !MC.connectedToServer())
+        if (!MC.hasSinglePlayerServer() && !MC.connectedToServer()) {
           return;
+        }
 
         // make sure the dimension exists
         // if not, it prob means that player left
         LodDimension lodDim = lodWorld.getLodDimension(dim);
-        if (lodDim == null)
+        if (lodDim == null) {
           return;
+        }
 
         retryNeeded = !generateLodNodeFromChunk(lodDim, chunk, new LodBuilderConfig(generationMode), override, genAll);
       } catch (RuntimeException e) {
@@ -218,7 +223,7 @@ public class LodBuilder {
   public static boolean canGenerateLodFromChunk(IChunkWrapper chunk) {
     // return chunk != null && chunk.isLightCorrect() &&
     // chunk.doesNearbyChunksExist();
-    return chunk != null && chunk.isLightCorrect() && chunk.doesNearbyChunksExist() && chunk.getChunkPosZ() > 10;
+    return chunk != null && chunk.isLightCorrect() && chunk.doesNearbyChunksExist();
   }
 
   private boolean writeAllLodNodeData(LodDimension lodDim, LodRegion region, int chunkX, int chunkZ, long[] data,

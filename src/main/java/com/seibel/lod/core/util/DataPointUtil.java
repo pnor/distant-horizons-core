@@ -476,15 +476,10 @@ public class DataPointUtil {
                   // ClientApi.logToChat(Level.INFO, "botPos: " + botPos);
                   // ClientApi.logToChat(Level.INFO, "botPos * 2 + 1: " + (botPos * 2 + 1));
 
-                  // if (botPos * 2 + 1 >= heightAndDepth.length) {
-                  // // ClientApi.logToChat(Level.INFO, "would be an index oob");
-                  // } else {
-                  // // ClientApi.logToChat(Level.INFO, "setting to value at botPos * 2 + 1: " +
-                  // // heightAndDepth[botPos * 2 + 1]);
-                  // // both top and bottom are within some exiting blocks, possibly merging them
+                  if (botPos * 2 + 1 < heightAndDepth.length && topPos * 2 + 1 >= 0 && botPos * 2 + 1 >= 0) {
+                    heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+                  }
                   // heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
-                  // }
-                  heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
 
                   // ClientApi.logToChat(Level.INFO, "==========");
                 } else {
@@ -502,7 +497,11 @@ public class DataPointUtil {
                   // // top falls between some blocks, extending it there
                   // heightAndDepth[topPos * 2 + 1] = depth;
                   // }
-                  heightAndDepth[topPos * 2 + 1] = depth;
+                  if (topPos * 2 + 1 < heightAndDepth.length && topPos * 2 + 1 >= 0) {
+                    // ClientApi.logToChat(Level.INFO, "would be an index oob");
+                    heightAndDepth[topPos * 2 + 1] = depth;
+                  }
+                  // heightAndDepth[topPos * 2 + 1] = depth;
                   // ClientApi.logToChat(Level.INFO, "==========");
                 }
 
@@ -512,18 +511,26 @@ public class DataPointUtil {
                 if (!botExtend) {
                   // only top is within some exiting block, extending it
                   topPos++; // to make it easier
-                  heightAndDepth[topPos * 2] = height;
-                  heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
-                  shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
-                  count -= botPos - topPos;
+                  if (topPos * 2 >= 0 && topPos * 2 < heightAndDepth.length) {
+                    heightAndDepth[topPos * 2] = height;
+                  }
+                  if (topPos * 2 + 1 >= 0 && topPos * 2 + 1 < heightAndDepth.length && botPos * 2 + 1 >= 0 && botPos * 2 + 1 < heightAndDepth.length) {
+                    heightAndDepth[topPos * 2 + 1] = heightAndDepth[botPos * 2 + 1];
+                  }
+                    shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
+                    count -= botPos - topPos;
                 } else {
                   // both top and bottom are outside existing blocks
                   shrinkArray(heightAndDepth, 2, topPos + 1, botPos - topPos, count);
                   count -= botPos - topPos;
                   extendArray(heightAndDepth, 2, topPos + 1, 1, count);
                   count++;
-                  heightAndDepth[topPos * 2 + 2] = height;
-                  heightAndDepth[topPos * 2 + 3] = depth;
+                  if (topPos * 2 + 2 < heightAndDepth.length && topPos * 2 + 2 >= 0) {
+                    heightAndDepth[topPos * 2 + 2] = height;
+                  }
+                  if (topPos * 2 + 3 < heightAndDepth.length && topPos * 2 + 3 >= 0) {
+                    heightAndDepth[topPos * 2 + 3] = depth;
+                  }
                 }
               }
             }

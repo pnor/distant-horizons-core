@@ -170,7 +170,8 @@ public class LodQuadBuilder
 			quads[i] = new ArrayList<>();
 		
 		this.skipQuadsWithZeroSkylight = enableSkylightCulling;
-		this.skyLightCullingBelow = (short) (skyLightCullingBelow - LodBuilder.MIN_WORLD_HEIGHT);
+		// this.skyLightCullingBelow = (short) (skyLightCullingBelow - LodBuilder.MIN_WORLD_HEIGHT);
+		this.skyLightCullingBelow = (short) (skyLightCullingBelow - -64);
 	}
 	
 	

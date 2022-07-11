@@ -206,7 +206,8 @@ public class RenderRegion implements AutoCloseable {
 				EVENT_LOGGER.trace("RenderRegion start QuadBuild @ {}", regionPos);
 				int skyLightCullingBelow = CONFIG.client().graphics().advancedGraphics().getCaveCullingHeight();
 				// FIXME: Clamp also to the max world height.
-				skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
+				// skyLightCullingBelow = Math.max(skyLightCullingBelow, LodBuilder.MIN_WORLD_HEIGHT);
+				skyLightCullingBelow = Math.max(skyLightCullingBelow, -64);
 				LodQuadBuilder builder = new LodQuadBuilder(doCaveCulling, skyLightCullingBelow);
 				Runnable buildRun = () -> {
 					makeLodRenderData(builder, region, adjRegions, playerPosX, playerPosZ);
