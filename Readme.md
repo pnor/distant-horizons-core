@@ -1,3 +1,7 @@
+Original repo: https://gitlab.com/jeseibel/distant-horizons-core
+
+what is this? trying to hack together a fix to use in a world with Immersive Portals
+
 # Distant Horizons
 
 This repo is for the Distant Horizons mod.
